@@ -1,8 +1,8 @@
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Type=Application
-Name=LipaX Translator
-Name[ru]=LipaX — переводчик для игр
+Name=LipaX
+Name[ru]=LipaX
 Comment=Real-time game text translator for KDE Plasma
 Exec=lipa
 Icon=io.lipa.Translator

@@ -43,7 +43,7 @@ ApplicationWindow {
         { value: "solid", label: "Сплошной фон" }
     ]
     readonly property bool solidStyle: (current.overlay_style || "solid") === "solid"
-    readonly property var appearanceKeys: ["overlay_style", "blur_enabled", "blur_tint", "dim_inverse", "overlay_corner_radius",
+    readonly property var appearanceKeys: ["translation_display", "overlay_style", "blur_enabled", "blur_tint", "dim_inverse", "overlay_corner_radius",
         "font_family", "font_size", "font_bold", "font_italic", "text_color", "background_color",
         "opacity", "border_color", "border_opacity", "border_width", "border_pattern", "border_always", "border_seconds", "overlay_padding", "text_alignment",
         "text_wrap", "text_outline", "outline_color", "line_spacing", "show_original", "original_font_family",
@@ -230,7 +230,7 @@ ApplicationWindow {
         id: tabs
         objectName: "settingsTabs"
         Repeater {
-            model: ["Распознавание", "Перевод и захват", "Окно перевода", "Внешний вид перевода", "Области", "История", "Статус", "Клавиши"]
+            model: ["Распознавание", "Перевод и захват", "Окно перевода", "Внешний вид перевода", "Область", "Клавиши", "Статус", "О программе"]
             TabButton { text: modelData; width: implicitWidth }
         }
         onCurrentIndexChanged: if (currentIndex === 6 && win.diagnostics.length === 0) win.controller.refreshDiagnostics()
@@ -279,7 +279,7 @@ ApplicationWindow {
             Label {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap
                 visible: win.current.ocr_engine === "paddleocr"
-                text: "PaddleOCR использует основной язык; дополнительные языки относятся к Tesseract. При первом запуске загружаются модели. Установка: docs/PADDLEOCR.md."
+                text: "PaddleOCR использует основной язык; дополнительные языки относятся к Tesseract. При первом запуске загружаются модели. Установка: docs/PaddleOCR.md."
             }
 
             // ── Tesseract OCR: состояние и языки ────────────────────────────────
@@ -594,6 +594,22 @@ ApplicationWindow {
                 columnSpacing: 24
                 rowSpacing: 12
             SectionTitle { text: "Режим отображения" }
+            FieldLabel { text: "Где показывать перевод" }
+            ComboBox {
+                objectName: "translationDisplay"
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                model: ["В окне перевода", "Поверх оригинала"]
+                currentIndex: win.current.translation_display === "inplace" ? 1 : 0
+                onActivated: win.set("translation_display", currentIndex === 1 ? "inplace" : "overlay")
+            }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
+                visible: win.current.translation_display === "inplace"
+                text: "Перевод закрывает исходный текст в каждой активной области: размытая заливка цвета фона, "
+                      + "цвет, размер и начертание оцениваются по кадру; длинный перевод уменьшается. "
+                      + "Можно выбрать свой шрифт ниже. Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Поверх игры». "
+                      + "Нужен захват через KWin: при захвате через portal используется окно перевода."
+            }
             FieldLabel { text: "Фон перевода" }
             ComboBox {
                 objectName: "overlayStyle"
@@ -949,50 +965,38 @@ ApplicationWindow {
                 width: page5.availableWidth - 16
                 columns: 2
                 columnSpacing: 24
-                rowSpacing: 12
-            FieldLabel { text: "Вести историю" }
-            Switch { checked: win.current.history_enabled !== false; onToggled: win.set("history_enabled", checked) }
-            FieldLabel { text: "Сохранять историю между запусками" }
-            Switch { checked: win.current.history_persist === true; onToggled: win.set("history_persist", checked) }
-            FieldLabel { text: "Хранить записей" }
-            SpinBox {
-                from: 10; to: 1000; stepSize: 10; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
-                value: win.current.history_limit || 200
-                onValueModified: win.set("history_limit", value)
-            }
-            RowLayout {
-                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
-                Label { text: "Записей: " + win.history.length; Layout.fillWidth: true; opacity: 0.7 }
-                Button { text: "Очистить историю"; enabled: win.history.length > 0; onClicked: win.controller.clearHistory() }
-            }
-            ResetButton { keys: ["history_enabled", "history_persist", "history_limit"] }
+                rowSpacing: 14
+            // ── Горячие клавиши ─────────────────────────────────────────────────
+            Label { text: "Горячие клавиши"; font.bold: true; Layout.columnSpan: 2 }
             Label {
-                Layout.columnSpan: 2; visible: win.history.length === 0; opacity: 0.6
-                text: "История пуста"
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
+                text: "Нажмите кнопку и сочетание. Backspace — очистить, Esc — отмена. Применяются автоматически; "
+                      + "если сочетание занято другой программой, будет показано в статусе."
             }
             Repeater {
-                // Newest first; long histories render the most recent 200 entries.
-                model: win.history.slice(-200).reverse()
-                delegate: Frame {
-                    required property var modelData
+                model: win.hotkeyRows
+                delegate: RowLayout {
                     Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
-                    ColumnLayout {
-                        width: parent.width
-                        spacing: 4
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Label {
-                                Layout.fillWidth: true; Layout.minimumWidth: 0; elide: Text.ElideRight; opacity: 0.6; font.pixelSize: 12
-                                text: new Date(modelData.timestamp).toLocaleString(Qt.locale(), "dd.MM HH:mm:ss") + " · " + modelData.region
-                            }
-                            Button { text: "Копировать"; flat: true; onClicked: win.controller.copyText(modelData.translation) }
-                            Button { text: "Оригинал"; flat: true; onClicked: win.controller.copyText(modelData.original) }
-                        }
-                        Label { Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7; text: modelData.original }
-                        Label { Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; text: modelData.translation }
+                    Label { wrapMode: Text.Wrap; text: modelData.title; Layout.fillWidth: true; Layout.minimumWidth: 0 }
+                    HotkeyButton {
+                        Layout.preferredWidth: 190
+                        value: (win.current.hotkeys || ({}))[modelData.key] || ""
+                        conflict: win.hotkeyDuplicate(modelData.key)
+                        onEdited: (v) => win.setHotkey(modelData.key, v)
                     }
                 }
             }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; color: "#ff6b6b"
+                visible: win.hasDuplicateHotkeys
+                text: "Одинаковые сочетания у разных действий — работать будет только одно."
+            }
+            Button {
+                Layout.columnSpan: 2
+                text: "Сбросить клавиши по умолчанию"
+                onClicked: win.resetKeys(["hotkeys"])
+            }
+
             }
         }
         ScrollView {
@@ -1069,40 +1073,65 @@ ApplicationWindow {
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             GridLayout {
                 width: page7.availableWidth - 16
-                columns: 2
-                columnSpacing: 24
-                rowSpacing: 14
-            // ── Горячие клавиши ─────────────────────────────────────────────────
-            Label { text: "Горячие клавиши"; font.bold: true; Layout.columnSpan: 2 }
-            Label {
-                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
-                text: "Нажмите кнопку и сочетание. Backspace — очистить, Esc — отмена. Применяются сразу после «Применить»; "
-                      + "если сочетание занято другой программой, будет показано в статусе."
-            }
-            Repeater {
-                model: win.hotkeyRows
-                delegate: RowLayout {
-                    Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
-                    Label { wrapMode: Text.Wrap; text: modelData.title; Layout.fillWidth: true; Layout.minimumWidth: 0 }
-                    HotkeyButton {
-                        Layout.preferredWidth: 190
-                        value: (win.current.hotkeys || ({}))[modelData.key] || ""
-                        conflict: win.hotkeyDuplicate(modelData.key)
-                        onEdited: (v) => win.setHotkey(modelData.key, v)
+                columns: 1
+                rowSpacing: 20
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 155
+                    Image {
+                        id: aboutIcon
+                        objectName: "aboutIcon"
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 140; height: 140
+                        source: Qt.resolvedUrl(".").toString().indexOf("qrc:") === 0 ? "qrc:/lipa/icon.svg" : "../assets/lipa.svg"
+                        sourceSize.width: 280; sourceSize.height: 280
+                        SequentialAnimation on y {
+                            running: win.visible && tabs.currentIndex === 7
+                            loops: Animation.Infinite
+                            NumberAnimation { from: 10; to: 2; duration: 850; easing.type: Easing.InOutSine }
+                            NumberAnimation { from: 2; to: 10; duration: 850; easing.type: Easing.InOutSine }
+                        }
                     }
                 }
-            }
-            Label {
-                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; color: "#ff6b6b"
-                visible: win.hasDuplicateHotkeys
-                text: "Одинаковые сочетания у разных действий — работать будет только одно."
-            }
-            Button {
-                Layout.columnSpan: 2
-                text: "Сбросить клавиши по умолчанию"
-                onClicked: win.resetKeys(["hotkeys"])
-            }
-
+                Item {
+                    id: tickerViewport
+                    Layout.fillWidth: true; Layout.preferredHeight: 32
+                    clip: true
+                    Label {
+                        id: tickerText
+                        objectName: "aboutTicker"
+                        text: "LipaX — распознавание и перевод игрового текста · Qt / KDE / Wayland"
+                        font.pixelSize: 16
+                        NumberAnimation on x {
+                            running: win.visible && tabs.currentIndex === 7
+                            from: tickerViewport.width; to: -tickerText.implicitWidth
+                            duration: 18000; loops: Animation.Infinite
+                        }
+                    }
+                }
+                Label { text: "Автор: GrayRat"; font.bold: true; font.pixelSize: 18 }
+                Label {
+                    Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap
+                    textFormat: Text.RichText
+                    text: 'Репозиторий проекта: <a href="https://github.com/GrayRats/lipax-qt">https://github.com/GrayRats/lipax-qt</a>'
+                    onLinkActivated: (url) => Qt.openUrlExternally(url)
+                }
+                Label { text: "Другие исходники проекта:"; font.bold: true }
+                Repeater {
+                    model: [
+                        {url: "https://github.com/satix-one/lipa.git", role: "форк"},
+                        {url: "https://github.com/rtr46/meikipop", role: "зависимость"},
+                        {url: "https://github.com/tesseract-ocr/tesseract", role: "зависимость"},
+                        {url: "https://github.com/tesseract-ocr/tessdata", role: "зависимость"}
+                    ]
+                    Label {
+                        required property var modelData
+                        Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap
+                        textFormat: Text.RichText
+                        text: '<a href="' + modelData.url + '">' + modelData.url + '</a> (' + modelData.role + ')'
+                        onLinkActivated: (url) => Qt.openUrlExternally(url)
+                    }
+                }
             }
         }
     }

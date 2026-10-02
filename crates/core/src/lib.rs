@@ -6,6 +6,7 @@ pub mod cache;
 pub mod capture;
 pub mod detect;
 pub mod hotkeys;
+pub mod layout;
 pub mod ocr;
 pub mod pipeline;
 pub mod settings;

@@ -10,6 +10,8 @@ fn main() {
         "qml/FrameOverlay.qml",
         "qml/ErrorPattern.qml",
         "qml/RegionFrame.qml",
+        "qml/InplaceText.qml",
+        "qml/HistoryWindow.qml",
     ]))
     .files(["src/bridge.rs", "src/icon.rs"])
     .include_dir("src")

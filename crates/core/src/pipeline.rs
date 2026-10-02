@@ -1,5 +1,5 @@
 //! Independent region state, bounded retries and a 60-second operation deadline.
-use crate::{cache::TranslationCache, capture::Capture, detect::ChangeDetector, ocr::Ocr,
+use crate::{cache::TranslationCache, layout::{self, TextLayout}, capture::Capture, detect::ChangeDetector, ocr::Ocr,
     settings::{Settings, RegionProfile}, tesseract::primary_lang, text, translate::{Translate, tess_to_iso}};
 use std::{collections::HashMap, time::{Duration, Instant}};
 use tokio::{sync::{mpsc, watch}, time::MissedTickBehavior};
@@ -11,8 +11,10 @@ const MAX_UNSTABLE: Duration = Duration::from_secs(2);
 #[derive(Debug, Clone, PartialEq)]
 pub enum Event {
     Status(String),
-    Translation { region_id: String, region_name: String, original: String, text: String },
+    /// `layout` is computed only when the translation is drawn over the original.
+    Translation { region_id: String, region_name: String, original: String, text: String, layout: Option<TextLayout> },
     Error { region_id: String, message: String, terminal: bool },
+    Placement { region_id: String, layout: Option<TextLayout> },
     /// A failing region works again without producing a new translation.
     Cleared { region_id: String },
 }
@@ -133,13 +135,22 @@ impl<C: Capture, O: Ocr, T: Translate> Pipeline<C, O, T> {
             state.dirty_since = None;
             state.dirty_first = None;
             // В кадре нет ничего похожего на текст: OCR не запускаем.
-            if !state.detector.has_text() { self.status("Ожидание текста", out); return; }
+            if !state.detector.has_text() {
+                if s.translation_display == "inplace" { let _ = out.send(Event::Placement { region_id: region.id.clone(), layout: None }); }
+                self.status("Ожидание текста", out); return;
+            }
         }
         self.status("Распознавание окна…", out);
         let raw = stage!(self.ocr.recognize(&frame, s), "Ошибка OCR");
         let original = text::normalize(&raw);
-        if !text::is_meaningful(&original) { state.settle(region, out); self.status("OCR: текст не обнаружен", out); return; }
-        if !force && text::similarity(&original, &state.last_text) >= SAME_TEXT_RATIO { state.settle(region, out); self.status("Ожидание текста", out); return; }
+        if !text::is_meaningful(&original) {
+            if s.translation_display == "inplace" { let _ = out.send(Event::Placement { region_id: region.id.clone(), layout: None }); }
+            state.settle(region, out); self.status("OCR: текст не обнаружен", out); return;
+        }
+        if !force && text::similarity(&original, &state.last_text) >= SAME_TEXT_RATIO {
+            if s.translation_display == "inplace" { let _ = out.send(Event::Placement { region_id: region.id.clone(), layout: layout::analyze(&frame) }); }
+            state.settle(region, out); self.status("Ожидание текста", out); return;
+        }
         let src = tess_to_iso(primary_lang(&s.source_lang));
         let translated = match self.cache.get(src, &s.target_lang, &original) {
             Some(t) => t,
@@ -152,7 +163,8 @@ impl<C: Capture, O: Ocr, T: Translate> Pipeline<C, O, T> {
         state.last_text = original.clone();
         state.recovered();
         self.last_status = "Перевод обновлён".into();
-        let _ = out.send(Event::Translation { region_id: region.id.clone(), region_name: region.name.clone(), original, text: translated });
+        let layout = if s.translation_display == "inplace" { layout::analyze(&frame) } else { None };
+        let _ = out.send(Event::Translation { region_id: region.id.clone(), region_name: region.name.clone(), original, text: translated, layout });
     }
 
     pub async fn run(mut self, settings: watch::Receiver<Settings>, mut running: watch::Receiver<bool>, mut cmds: mpsc::UnboundedReceiver<Cmd>, out: mpsc::UnboundedSender<Event>) {
@@ -253,7 +265,7 @@ mod tests {
         assert_eq!(ocr_n.load(Ordering::SeqCst), 0);
         p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
         assert_eq!(ocr_n.load(Ordering::SeqCst), 1);
-        assert_eq!(drain(&mut rx), vec![Event::Translation { region_id: "subtitles".into(), region_name: "Субтитры".into(), original: "Where are you going?".into(), text: "RU:Where are you going?".into() }]);
+        assert_eq!(drain(&mut rx), vec![Event::Translation { region_id: "subtitles".into(), region_name: "Субтитры".into(), original: "Where are you going?".into(), text: "RU:Where are you going?".into(), layout: None }]);
 
         // Без изменений кадра OCR больше не запускается.
         p.tick(&s, false, t0 + Duration::from_millis(400), &tx).await;
@@ -300,6 +312,50 @@ mod tests {
         p.tick(&s, false, step(450), &tx).await;
         p.tick(&s, false, step(650), &tx).await;
         assert_eq!(tr_n.load(Ordering::SeqCst), 2, "третий текст берётся из кэша");
+    }
+
+    #[tokio::test]
+    async fn layout_only_when_drawing_over_the_original() {
+        for (display, expect) in [("overlay", false), ("inplace", true)] {
+            let cap = Arc::new(MockCapture(Mutex::new(10)));
+            let mut p = Pipeline::new(cap, MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), MockTr(Arc::new(AtomicUsize::new(0))));
+            let (tx, mut rx) = mpsc::unbounded_channel();
+            let s = Settings { translation_display: display.into(), ..settings() };
+            let t0 = Instant::now();
+            p.tick(&s, false, t0, &tx).await;
+            p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
+            match drain(&mut rx).as_slice() {
+                [Event::Translation { layout, .. }] => assert_eq!(layout.is_some(), expect, "{display}"),
+                other => panic!("{display}: {other:?}"),
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn inplace_moves_without_retranslation_and_clears_when_ocr_is_empty() {
+        let cap = Arc::new(MockCapture(Mutex::new(10)));
+        let translated = Arc::new(AtomicUsize::new(0));
+        let mut p = Pipeline::new(cap.clone(), MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), MockTr(translated.clone()));
+        let s = Settings { translation_display: "inplace".into(), ..settings() };
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let t0 = Instant::now();
+        p.tick(&s, false, t0, &tx).await;
+        p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
+        let initial_x = match drain(&mut rx).as_slice() {
+            [Event::Translation { layout: Some(l), .. }] => l.bbox[0],
+            events => panic!("expected first translation: {events:?}"),
+        };
+        *cap.0.lock().unwrap() = 200;
+        p.tick(&s, false, t0 + Duration::from_millis(200), &tx).await;
+        p.tick(&s, false, t0 + Duration::from_millis(400), &tx).await;
+        match drain(&mut rx).as_slice() {
+            [Event::Placement { layout: Some(l), .. }] => assert!(l.bbox[0] > initial_x),
+            events => panic!("expected moved placement without a history entry: {events:?}"),
+        }
+        assert_eq!(translated.load(Ordering::SeqCst), 1);
+        p.ocr.0.lock().unwrap().clear();
+        p.tick(&s, true, t0 + Duration::from_millis(600), &tx).await;
+        assert_eq!(drain(&mut rx), vec![Event::Placement { region_id: "subtitles".into(), layout: None }]);
     }
 
     #[tokio::test]

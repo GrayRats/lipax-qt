@@ -47,9 +47,9 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
                 "Создайте venv: python3 -m venv ~/.local/share/lipa/paddle-venv; затем ~/.local/share/lipa/paddle-venv/bin/python -m pip install 'paddlepaddle>=3,<4' 'paddleocr>=3,<4'. Укажите абсолютный путь Python во вкладке «Распознавание»."));
             let models = data["models"].as_array().map(|a| a.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>().join(", ")).unwrap_or_default();
             rows.push(row("Модели PaddleOCR", "warning", if models.is_empty() { "Локальные модели не найдены; первый OCR потребует загрузки из сети.".into() } else { format!("В кэше: {models}. Совместимость выбранного языка проверяется при распознавании.") },
-                "Первый перевод с PaddleOCR загружает модели. Если загрузка не укладывается в 60 с, подготовьте модели отдельно по docs/PADDLEOCR.md и нажмите «Повторить»."));
+                "Первый перевод с PaddleOCR загружает модели. Если загрузка не укладывается в 60 с, подготовьте модели отдельно по docs/PaddleOCR.md и нажмите «Повторить»."));
         },
-        Err(e) => rows.push(row("Python / PaddleOCR", "error", e, "Укажите путь к Python из venv; инструкция: docs/PADDLEOCR.md.")),
+        Err(e) => rows.push(row("Python / PaddleOCR", "error", e, "Укажите путь к Python из venv; инструкция: docs/PaddleOCR.md.")),
     }
     let langs = output("tesseract", &["--list-langs"]).await;
     let missing: Vec<_> = s.source_lang.split('+').filter(|l| !langs.as_ref().is_ok_and(|text| text.lines().any(|line| line.trim() == *l))).collect();

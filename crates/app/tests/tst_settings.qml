@@ -72,6 +72,10 @@ TestCase {
         settings.height = 540
         const tabs = findChild(settings, "settingsTabs")
         verify(tabs !== null)
+        compare(tabs.itemAt(4).text, "Область")
+        compare(tabs.itemAt(5).text, "Клавиши")
+        compare(tabs.itemAt(6).text, "Статус")
+        compare(tabs.itemAt(7).text, "О программе")
         for (let i = 0; i < 8; ++i) {
             tabs.currentIndex = i
             wait(100)

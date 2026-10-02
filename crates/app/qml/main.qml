@@ -12,6 +12,15 @@ ApplicationWindow {
     minimumHeight: 520
     title: "LipaX — переводчик для игр"
 
+    menuBar: MenuBar {
+        Menu {
+            title: "Перевод"
+            MenuItem { text: "Перевести сейчас"; enabled: ctl.hasRegion; onTriggered: ctl.translateOnce() }
+            MenuItem { objectName: "historyMenuItem"; text: "История…"; onTriggered: historyWin.openWindow() }
+        }
+    }
+    HistoryWindow { id: historyWin; settingsWindow: settingsWin }
+
     Controller {
         id: ctl
         onFrameRequested: (x, y, w, h) => selectionFrame.flash(x, y, w, h)
@@ -21,6 +30,23 @@ ApplicationWindow {
     }
 
     SettingsWindow { id: settingsWin; controller: ctl; onSelectRegionRequested: regionWin.begin() }
+
+    // "Over the original": one window per active region with a known text block. Needs the game
+    // window geometry (KWin); with portal capture the translation window is used instead.
+    readonly property bool inplaceActive: settingsWin.current.translation_display === "inplace" && ctl.gameGeometry.length > 0
+    readonly property var inplaceEntries: { try { return JSON.parse(ctl.inplaceJson || "[]") } catch (e) { return [] } }
+    readonly property string inplaceIds: JSON.stringify(inplaceEntries.map(e => e.id))
+    Instantiator {
+        model: JSON.parse(root.inplaceIds)
+        delegate: InplaceText {
+            required property string modelData
+            settings: settingsWin.current
+            entry: root.inplaceEntries.find(e => e.id === modelData) || null
+            gameGeometry: ctl.gameGeometry
+            visible: root.inplaceActive && overlayEnabled.checked && !relocating && !!desktopRect && !!entry && entry.text.length > 0
+            onHideRequested: overlayEnabled.checked = false
+        }
+    }
 
     // One outline per active region with an area; each has its own timer.
     property bool started: false
@@ -46,7 +72,7 @@ ApplicationWindow {
         translation: ctl.translation
         original: ctl.original
         gameGeometry: ctl.gameGeometry
-        visible: overlayEnabled.checked && ctl.translation.length > 0 && !relocating
+        visible: overlayEnabled.checked && ctl.translation.length > 0 && !relocating && !root.inplaceActive
         settings: settingsWin.current
         onMoved: (x, y) => { settingsWin.set("overlay_pos", [x, y]); settingsWin.apply() }
         onPinToggled: (p) => { settingsWin.set("overlay_pinned", p); settingsWin.apply() }

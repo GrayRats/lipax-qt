@@ -19,6 +19,8 @@ pub mod qobject {
         #[qproperty(bool, diagnostics_busy, cxx_name = "diagnosticsBusy")]
         #[qproperty(QString, original)]
         #[qproperty(QString, translation)]
+        /// Translations drawn over the original text, JSON array (one entry per active region).
+        #[qproperty(QString, inplace_json, cxx_name = "inplaceJson")]
         #[qproperty(QString, window_title, cxx_name = "windowTitle")]
         #[qproperty(QString, preview_source, cxx_name = "previewSource")]
         #[qproperty(QString, tesseract_json, cxx_name = "tesseractJson")]
@@ -199,6 +201,8 @@ pub struct ControllerRust {
     diagnostics_busy: bool,
     history: History,
     region_text: std::collections::BTreeMap<String, (String, String)>,
+    region_layout: std::collections::BTreeMap<String, serde_json::Value>,
+    inplace_json: QString,
     faults: std::collections::BTreeMap<String, (String, bool)>,
     original: QString,
     translation: QString,
@@ -236,6 +240,8 @@ impl Default for ControllerRust {
             diagnostics_busy: false,
             history,
             region_text: Default::default(),
+            region_layout: Default::default(),
+            inplace_json: QString::from("[]"),
             faults: Default::default(),
             original: QString::default(),
             translation: QString::default(),
@@ -393,9 +399,20 @@ impl cxx_qt::Initialize for qobject::Controller {
                         o.as_mut().rust_mut().faults.insert(region_id, (message, terminal));
                         o.as_mut().publish_faults();
                     },
-                    Event::Translation { region_id, region_name, original, text } => {
+                    Event::Placement { region_id, layout } => {
+                        match layout.and_then(|l| layout_json(&region_id, &l)) {
+                            Some(json) => { o.as_mut().rust_mut().region_layout.insert(region_id, json); },
+                            None => { o.as_mut().rust_mut().region_layout.remove(&region_id); },
+                        }
+                        o.as_mut().publish_translation();
+                    },
+                    Event::Translation { region_id, region_name, original, text, layout } => {
                         let settings = o.rust().shared.settings.borrow().clone();
                         if !settings.capture_regions().iter().any(|r| r.id == region_id) { return; }
+                        match layout.and_then(|l| layout_json(&region_id, &l)) {
+                            Some(json) => o.as_mut().rust_mut().region_layout.insert(region_id.clone(), json),
+                            None => o.as_mut().rust_mut().region_layout.remove(&region_id),
+                        };
                         o.as_mut().rust_mut().faults.remove(&region_id);
                         o.as_mut().rust_mut().region_text.insert(region_id, (original.clone(), text.clone()));
                         if settings.history_enabled {
@@ -441,6 +458,17 @@ impl qobject::Controller {
         let translation = regions.iter().filter_map(|r| texts.get(&r.id).map(|t| if regions.len() > 1 { format!("{}: {}", r.name, t.1) } else { t.1.clone() })).collect::<Vec<_>>().join("\n\n");
         self.as_mut().set_original(QString::from(original.as_str()));
         self.as_mut().set_translation(QString::from(translation.as_str()));
+        self.as_mut().rust_mut().region_layout.retain(|id, _| regions.iter().any(|r| &r.id == id));
+        let (texts, layouts) = (&self.rust().region_text, &self.rust().region_layout);
+        let inplace: Vec<_> = regions.iter().filter_map(|r| {
+            let (mut entry, text) = (layouts.get(&r.id)?.clone(), texts.get(&r.id)?);
+            entry["id"] = r.id.clone().into();
+            entry["rect"] = serde_json::json!(r.rect);
+            entry["text"] = text.1.clone().into();
+            Some(entry)
+        }).collect();
+        let json = serde_json::to_string(&inplace).unwrap();
+        self.as_mut().set_inplace_json(QString::from(json.as_str()));
     }
     fn publish_faults(mut self: Pin<&mut Self>) {
         if self.rust().faults.is_empty() { return; }
@@ -484,6 +512,7 @@ impl qobject::Controller {
     fn apply_settings(mut self: Pin<&mut Self>, json: &QString) {
         match serde_json::from_str::<Settings>(&json.to_string()) {
             Ok(new) => {
+                let before = self.rust().shared.settings.borrow().processing_key();
                 // Окно и область меняются отдельными действиями — не затираем их из формы.
                 self.rust().shared.update(|s| {
                     let (w, r, t) = (s.window.take(), s.region.take(), std::mem::take(&mut s.portal_token));
@@ -494,6 +523,10 @@ impl qobject::Controller {
                         ..new
                     };
                 });
+                if self.rust().shared.settings.borrow().processing_key() != before {
+                    // A block measured in the old region must not be drawn over the new one.
+                    self.as_mut().rust_mut().region_layout.clear();
+                }
                 self.as_mut().publish_settings();
                 self.as_mut().publish_translation();
                 self.as_mut().publish_history();
@@ -619,6 +652,9 @@ impl qobject::Controller {
             s.region = None;
             if let Some(r) = s.regions.iter_mut().find(|r| r.id == s.active_region) { r.rect = Some(rect); r.enabled = true; }
         });
+        let active = self.rust().shared.settings.borrow().active_region.clone();
+        self.as_mut().rust_mut().region_layout.remove(&active);
+        self.as_mut().publish_translation();
         // The region outline (RegionFrame) flashes by itself when the area changes.
         self.as_mut().publish_settings();
         self.as_mut().set_has_region(true);
@@ -654,6 +690,23 @@ impl qobject::Controller {
         self.as_mut().set_status(QString::from("Распознавание окна…"));
         let _ = self.rust().shared.cmds.send(Cmd::TranslateOnce);
     }
+}
+
+/// Text layout for QML; the blurred backdrop is written next to the window previews.
+fn layout_json(region_id: &str, l: &lipa_core::layout::TextLayout) -> Option<serde_json::Value> {
+    let dir = dirs::runtime_dir().unwrap_or_else(std::env::temp_dir).join("lipa");
+    std::fs::create_dir_all(&dir).ok()?;
+    let name: String = region_id.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-').collect();
+    let path = dir.join(format!("inplace-{}-{name}.png", std::process::id()));
+    l.backdrop.save(&path).ok()?;
+    let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0);
+    let hex = |c: [u8; 3]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
+    Some(serde_json::json!({
+        "bbox": l.bbox, "frame": [l.frame.0, l.frame.1], "lines": l.lines, "font_px": l.font_px, "bold": l.bold, "font_family": l.font_family,
+        "text_color": hex(l.text_color), "background_color": hex(l.background_color),
+        // The changing query makes QML reload the image.
+        "backdrop": format!("file://{}?{stamp}", path.display()),
+    }))
 }
 
 /// Снимок Tesseract в JSON; тяжёлые вызовы (tesseract, pacman/dpkg) выполняются вне GUI-потока.

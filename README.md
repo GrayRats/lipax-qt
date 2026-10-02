@@ -1,4 +1,4 @@
-# lipa
+# LipaX
 
 ### Русский
 
@@ -11,8 +11,8 @@
 Клонируйте репозиторий и соберите пакет:
 
 ```
-git clone https://github.com/satix-one/lipa.git
-cd lipa
+git clone https://github.com/GrayRats/lipax-qt.git
+cd lipax-qt
 makepkg -si
 
 ```
@@ -41,8 +41,8 @@ A lightweight Wayland screen translation tool built with Rust and Qt 6 / QML.
 Clone the repository and build the package:
 
 ```
-git clone https://github.com/satix-one/lipa.git
-cd lipa
+git clone https://github.com/GrayRats/lipax-qt.git
+cd lipax-qt
 makepkg -si
 
 ```
@@ -70,8 +70,8 @@ makepkg -si
 Пакет появится в `dist/`. Установка от root:
 
 ```bash
-pacman -U /полный/путь/к/lipa-0.3.0-2-x86_64.pkg.tar.zst
+pacman -U /полный/путь/к/LipaXQT-0.3.0-3-x86_64.pkg.tar.zst
 ```
 
 [Список доработок и предложения](docs/IMPROVEMENTS.md) ·
-[Подключение PaddleOCR](docs/PADDLEOCR.md)
+[Подключение PaddleOCR](docs/PaddleOCR.md)

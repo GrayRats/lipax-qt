@@ -76,6 +76,9 @@ pub struct WindowFrames {
 /// находим его по размеру и вырезаем клиентскую часть. `None` — кадр уже равен клиентской
 /// области или не совпал ни с одним прямоугольником (тогда он остаётся как есть).
 pub fn client_crop(width: u32, height: u32, f: &WindowFrames) -> Option<(u32, u32, u32, u32)> {
+    if width == 0 || height == 0 {
+        return None;
+    }
     let (iw, ih) = (width as f64, height as f64);
     for c in [f.client, f.frame, f.buffer, f.frame.union(&f.buffer)] {
         if !c.contains(&f.client) {
@@ -298,6 +301,7 @@ mod tests {
 
         // Неизвестный размер кадра: не режем вслепую.
         assert_eq!(client_crop(1000, 1000, &ssd), None);
+        assert_eq!(client_crop(0, 0, &ssd), None, "empty frame during resize");
     }
 
     #[test]

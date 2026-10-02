@@ -37,7 +37,7 @@ impl Drop for Worker {
 
 fn setup(message: impl std::fmt::Display) -> OcrError {
     OcrError::Setup(format!(
-        "PaddleOCR: {message}. Нужны PaddleOCR 3.x и PaddlePaddle в выбранном Python (см. docs/PADDLEOCR.md)."
+        "PaddleOCR: {message}. Нужны PaddleOCR 3.x и PaddlePaddle в выбранном Python (см. docs/PaddleOCR.md)."
     ))
 }
 

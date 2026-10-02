@@ -117,6 +117,8 @@ pub struct Settings {
     pub auto_translate: bool,
     pub overlay_mode: OverlayMode,
     pub overlay_pinned: bool,
+    /// "overlay": translation window; "inplace": translation drawn over the original text.
+    pub translation_display: String,
     /// One of `OVERLAY_STYLES`.
     pub overlay_style: String,
     /// "blur" style: compositor blur behind the overlay and the opacity of its dark tint (0–0.8).
@@ -222,6 +224,7 @@ impl Default for Settings {
             auto_translate: true,
             overlay_mode: OverlayMode::Overlay,
             overlay_pinned: false,
+            translation_display: "overlay".into(),
             overlay_style: "solid".into(),
             blur_enabled: true,
             blur_tint: 0.3,
@@ -308,6 +311,7 @@ impl Settings {
         self.border_opacity = self.border_opacity.clamp(0.0, 1.0);
         self.border_seconds = self.border_seconds.clamp(1, 120);
         self.frame_seconds = self.frame_seconds.clamp(1, 60);
+        if !["overlay", "inplace"].contains(&self.translation_display.as_str()) { self.translation_display = "overlay".into(); }
         if !OVERLAY_STYLES.contains(&self.overlay_style.as_str()) { self.overlay_style = "solid".into(); }
         self.overlay_corner_radius = self.overlay_corner_radius.min(32);
         self.blur_tint = if self.blur_tint.is_finite() { self.blur_tint.clamp(0.0, 0.8) } else { 0.3 };
@@ -357,7 +361,9 @@ impl Settings {
     pub fn processing_key(&self) -> String {
         serde_json::json!([self.window, self.region, self.regions, self.source_lang, self.target_lang,
             self.ocr_engine, self.paddle_python, self.translator, self.custom_url, self.custom_api_key,
-            self.yandex_api_key, self.yandex_folder_id, self.interval_ms, self.debounce_ms, self.sensitivity]).to_string()
+            self.yandex_api_key, self.yandex_folder_id, self.interval_ms, self.debounce_ms, self.sensitivity,
+            // Switching to "over the original" re-reads the text so its layout is known.
+            self.translation_display]).to_string()
     }
 
     pub fn save(&self) -> std::io::Result<()> {
