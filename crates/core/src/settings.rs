@@ -1,5 +1,114 @@
+use crate::layout::{FontWeight, Padding, TextAlignment, WrapMode};
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::path::PathBuf;
+
+/// Свойство, которое оценивается автоматически или задано пользователем. Каждое свойство
+/// переключается отдельно: ручной шрифт не отключает автоматический размер и т. п.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "mode", content = "value", rename_all = "snake_case")]
+#[derive(Default)]
+pub enum PropertyMode<T> {
+    #[default]
+    Auto,
+    Manual(T),
+}
+
+
+impl<T: Clone> PropertyMode<T> {
+    pub fn manual(&self) -> Option<&T> {
+        match self { Self::Manual(v) => Some(v), Self::Auto => None }
+    }
+    /// Ручное значение или результат автоматической оценки.
+    pub fn resolve(&self, auto: T) -> T {
+        self.manual().cloned().unwrap_or(auto)
+    }
+}
+
+/// Чем закрывается оригинал под переводом. Не связано с фоном окна перевода (`overlay_style`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum InplaceBackgroundMode {
+    /// По фону вокруг текста: однородный — заливка, сложный — восстановление с размытием.
+    #[default]
+    Auto,
+    InpaintBlur,
+    SolidFill,
+    AdaptivePaddingFill,
+    Transparent,
+}
+
+/// Настройки режима «перевод поверх оригинала».
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct InplaceSettings {
+    pub background_mode: InplaceBackgroundMode,
+    pub font_family: PropertyMode<String>,
+    /// Кегль, px экрана.
+    pub font_size: PropertyMode<f32>,
+    pub font_weight: PropertyMode<FontWeight>,
+    pub italic: PropertyMode<bool>,
+    /// Межстрочный интервал, множитель высоты строки.
+    pub line_height: PropertyMode<f32>,
+    /// Дополнительный трекинг, px экрана.
+    pub letter_spacing: PropertyMode<f32>,
+    pub alignment: PropertyMode<TextAlignment>,
+    pub wrap_mode: PropertyMode<WrapMode>,
+    /// `#rrggbb`.
+    pub text_color: PropertyMode<String>,
+    /// Поля, px экрана.
+    pub padding: PropertyMode<Padding>,
+    pub minimum_font_size: f32,
+    pub maximum_font_size: f32,
+    /// Разрешить узкий вариант шрифта, если перевод не помещается.
+    pub allow_condensed_fallback: bool,
+    /// Замена шрифта для категории: `"serif" = "PT Serif"` (ключ — категория в snake_case).
+    pub font_overrides: BTreeMap<String, String>,
+    /// Семейства, которые проверяются первыми при автоматическом выборе.
+    pub preferred_fonts: Vec<String>,
+}
+
+impl Default for InplaceSettings {
+    fn default() -> Self {
+        Self {
+            background_mode: InplaceBackgroundMode::Auto,
+            font_family: PropertyMode::Auto,
+            font_size: PropertyMode::Auto,
+            font_weight: PropertyMode::Auto,
+            italic: PropertyMode::Auto,
+            line_height: PropertyMode::Auto,
+            letter_spacing: PropertyMode::Auto,
+            alignment: PropertyMode::Auto,
+            wrap_mode: PropertyMode::Auto,
+            text_color: PropertyMode::Auto,
+            padding: PropertyMode::Auto,
+            minimum_font_size: 8.0,
+            maximum_font_size: 96.0,
+            allow_condensed_fallback: true,
+            font_overrides: BTreeMap::new(),
+            preferred_fonts: Vec::new(),
+        }
+    }
+}
+
+impl InplaceSettings {
+    fn sanitize(&mut self) {
+        let finite = |v: f32, d: f32| if v.is_finite() { v } else { d };
+        self.minimum_font_size = finite(self.minimum_font_size, 8.0).clamp(4.0, 200.0);
+        self.maximum_font_size = finite(self.maximum_font_size, 96.0).clamp(self.minimum_font_size, 400.0);
+        if let PropertyMode::Manual(v) = &mut self.font_size { *v = finite(*v, 20.0).clamp(4.0, 400.0); }
+        if let PropertyMode::Manual(v) = &mut self.line_height { *v = finite(*v, 1.0).clamp(0.7, 3.0); }
+        if let PropertyMode::Manual(v) = &mut self.letter_spacing { *v = finite(*v, 0.0).clamp(-3.0, 20.0); }
+        if let PropertyMode::Manual(p) = &mut self.padding {
+            for v in [&mut p.left, &mut p.right, &mut p.top, &mut p.bottom] { *v = finite(*v, 0.0).clamp(0.0, 64.0); }
+        }
+        if let PropertyMode::Manual(c) = &self.text_color
+            && (c.len() != 7 || !c.starts_with('#') || !c[1..].bytes().all(|b| b.is_ascii_hexdigit())) { self.text_color = PropertyMode::Auto; }
+        if let PropertyMode::Manual(f) = &self.font_family && f.trim().is_empty() { self.font_family = PropertyMode::Auto; }
+        self.preferred_fonts.retain(|f| !f.trim().is_empty());
+        self.font_overrides.retain(|_, f| !f.trim().is_empty());
+    }
+}
 
 /// Upper bound for any screen side in logical pixels (8K, rotated or not).
 pub const MAX_SCREEN_SIDE: u32 = 16384;
@@ -119,6 +228,7 @@ pub struct Settings {
     pub overlay_pinned: bool,
     /// "overlay": translation window; "inplace": translation drawn over the original text.
     pub translation_display: String,
+    pub inplace: InplaceSettings,
     /// One of `OVERLAY_STYLES`.
     pub overlay_style: String,
     /// "blur" style: compositor blur behind the overlay and the opacity of its dark tint (0–0.8).
@@ -225,6 +335,7 @@ impl Default for Settings {
             overlay_mode: OverlayMode::Overlay,
             overlay_pinned: false,
             translation_display: "overlay".into(),
+            inplace: InplaceSettings::default(),
             overlay_style: "solid".into(),
             blur_enabled: true,
             blur_tint: 0.3,
@@ -285,9 +396,8 @@ impl Settings {
         let text = std::fs::read_to_string(Self::path()).unwrap_or_default();
         let mut settings = Self::from_toml(&text);
         // Migrate the old single rectangle into the first named region.
-        if settings.regions.iter().all(|r| r.rect.is_none()) {
-            if let Some(first) = settings.regions.first_mut() { first.rect = settings.region; }
-        }
+        if settings.regions.iter().all(|r| r.rect.is_none())
+            && let Some(first) = settings.regions.first_mut() { first.rect = settings.region; }
         settings.sanitize();
         settings
     }
@@ -312,6 +422,7 @@ impl Settings {
         self.border_seconds = self.border_seconds.clamp(1, 120);
         self.frame_seconds = self.frame_seconds.clamp(1, 60);
         if !["overlay", "inplace"].contains(&self.translation_display.as_str()) { self.translation_display = "overlay".into(); }
+        self.inplace.sanitize();
         if !OVERLAY_STYLES.contains(&self.overlay_style.as_str()) { self.overlay_style = "solid".into(); }
         self.overlay_corner_radius = self.overlay_corner_radius.min(32);
         self.blur_tint = if self.blur_tint.is_finite() { self.blur_tint.clamp(0.0, 0.8) } else { 0.3 };
@@ -442,6 +553,32 @@ mod tests {
         bad.sanitize();
         assert_eq!(bad.region_frame_mode, "selection");
         assert_eq!(bad.regions[0].frame_mode, "", "unknown per-region mode falls back to the global one");
+    }
+
+    #[test]
+    fn inplace_properties_are_independent_and_roundtrip() {
+        let mut s = Settings::default();
+        assert_eq!(s.inplace.font_family, PropertyMode::Auto);
+        s.inplace.font_family = PropertyMode::Manual("PT Serif".into());
+        s.inplace.letter_spacing = PropertyMode::Manual(1.5);
+        s.inplace.padding = PropertyMode::Manual(crate::layout::Padding::uniform(4.0));
+        s.inplace.background_mode = InplaceBackgroundMode::InpaintBlur;
+        s.inplace.font_overrides.insert("serif".into(), "Noto Serif".into());
+        let t = toml::to_string_pretty(&s).unwrap();
+        let back: Settings = toml::from_str(&t).unwrap();
+        assert_eq!(back.inplace, s.inplace);
+        assert_eq!(back.inplace.font_size, PropertyMode::Auto, "other properties stay automatic");
+        let json = serde_json::to_value(&s.inplace).unwrap();
+        assert_eq!(json["font_family"], serde_json::json!({"mode": "manual", "value": "PT Serif"}));
+        assert_eq!(json["font_size"], serde_json::json!({"mode": "auto"}));
+
+        let mut bad = Settings::default();
+        bad.inplace.text_color = PropertyMode::Manual("red".into());
+        bad.inplace.minimum_font_size = 50.0;
+        bad.inplace.maximum_font_size = 10.0;
+        bad.sanitize();
+        assert_eq!(bad.inplace.text_color, PropertyMode::Auto);
+        assert!(bad.inplace.maximum_font_size >= bad.inplace.minimum_font_size);
     }
 
     #[test]

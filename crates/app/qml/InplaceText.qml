@@ -1,31 +1,30 @@
 import QtQuick
 import org.kde.layershell 1.0 as LayerShell
 
-// Translation drawn over the original text of one region: a blurred fill made from the
-// captured frame hides the original, and the translation takes its colour, size and weight,
-// shrinking until it fits the block. MMB hides the translation without focusing the game away.
+// One tracked text field drawn over the original. Everything is decided in Rust (font chosen once
+// per field, typography, Qt-metric fitting, background); this item only renders `entry`:
+//   InplaceText
+//   ├── BackgroundItem — the replacement background (never chooses the font)
+//   └── TextItem       — the translation (never reconstructs the background)
+// Instances are reused by field key, so a stable field keeps its window between scans.
 Window {
     id: win
     property var settings: ({})
-    // Entry of Controller.inplaceJson: rect (region in the window), bbox (text block in the
-    // region frame), frame size, font_px, bold, text_color, background_color, backdrop, text.
+    // Element of Controller.inplaceJson.
     property var entry: null
     property string gameGeometry: ""
     property bool relocating: false
     signal hideRequested()
 
-    // Desktop rectangle of the text block: window → region → block.
+    // Desktop rectangle: game window → region → field box (box is relative to the region frame).
     readonly property var desktopRect: {
         try {
-            const g = JSON.parse(gameGeometry), r = entry && entry.rect, b = entry && entry.bbox
+            const g = JSON.parse(gameGeometry), r = entry && entry.rect, b = entry && entry.box
             if (!g || !r || !b || g[2] <= 0) return null
             const rx = g[0] + r.x * g[2], ry = g[1] + r.y * g[3], rw = r.w * g[2], rh = r.h * g[3]
             return [rx + b[0] * rw, ry + b[1] * rh, b[2] * rw, b[3] * rh]
         } catch (e) { return null }
     }
-    // Screen pixels per pixel of the captured frame (capture is in native resolution).
-    readonly property real scale: desktopRect && entry.frame && entry.frame[0] > 0
-        ? desktopRect[2] / (entry.bbox[2] * entry.frame[0]) : 1
     readonly property var targetScreen: {
         if (!desktopRect) return null
         const cx = desktopRect[0] + desktopRect[2] / 2, cy = desktopRect[1] + desktopRect[3] / 2
@@ -55,40 +54,66 @@ Window {
     LayerShell.Window.exclusionZone: -1
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityNone
 
-    // A few pixels of the frame stretched with smoothing: a blur of the scene around the text.
-    Image {
-        objectName: "inplaceBackdrop"
+    readonly property var bg: entry ? entry.background : ({ mode: "transparent", color: "#000000", image: "" })
+
+    Item {
+        id: backgroundItem
+        objectName: "inplaceBackground"
         anchors.fill: parent
-        source: win.entry ? win.entry.backdrop : ""
-        fillMode: Image.Stretch
-        smooth: true
-        cache: false
+        visible: win.bg.mode !== "transparent"
+        // Inpaint + blur: a small reconstructed image stretched with smoothing.
+        Image {
+            objectName: "inplaceBackdrop"
+            anchors.fill: parent
+            visible: win.bg.mode === "inpaint_blur" && source.toString().length > 0
+            source: win.bg.image || ""
+            fillMode: Image.Stretch
+            smooth: true
+            cache: false
+        }
+        // Solid / adaptive padding fill: the colour sampled around the original glyphs.
+        Rectangle {
+            objectName: "inplaceFill"
+            anchors.fill: parent
+            visible: win.bg.mode === "solid_fill" || win.bg.mode === "adaptive_padding_fill"
+            radius: Math.min(4, height / 6)
+            color: win.bg.color
+        }
     }
-    // Background colour around the block hides what the blur leaves of the original.
-    Rectangle {
-        objectName: "inplaceFill"
-        anchors.fill: parent
-        radius: 0
-        color: win.entry ? win.entry.background_color : "#000000"
-        opacity: 0.72
-    }
+
     Text {
+        id: textItem
         objectName: "inplaceText"
-        anchors.fill: parent
-        anchors.margins: 2
+        readonly property var inner: win.entry ? win.entry.inner : [0, 0, 0, 0]
+        x: inner[0]
+        y: inner[1]
+        width: Math.max(1, parent.width - inner[0] - inner[2])
+        height: Math.max(1, parent.height - inner[1] - inner[3])
         text: win.entry ? win.entry.text : ""
         textFormat: Text.PlainText
         color: win.entry ? win.entry.text_color : "#ffffff"
-        font.family: win.settings.font_family || (win.entry && win.entry.font_family) || Qt.application.font.family
-        font.bold: !!(win.entry && win.entry.bold)
-        // Start from the original size; shrink until the translation fits the block.
-        font.pixelSize: Math.max(8, Math.round((win.entry ? win.entry.font_px : 20) * win.scale))
-        fontSizeMode: Text.Fit
-        minimumPixelSize: 7
-        wrapMode: Text.Wrap
-        horizontalAlignment: Text.AlignHCenter
+        font.family: win.entry ? win.entry.font_family : Qt.application.font.family
+        font.pixelSize: win.entry ? win.entry.font_px : 16
+        font.weight: win.entry ? win.entry.font_weight : Font.Normal
+        font.italic: !!(win.entry && win.entry.italic)
+        font.letterSpacing: win.entry ? win.entry.letter_spacing : 0
+        lineHeightMode: Text.ProportionalHeight
+        lineHeight: win.entry ? win.entry.line_height : 1.0
+        wrapMode: !win.entry ? Text.Wrap
+            : win.entry.wrap === "anywhere" ? Text.WrapAnywhere
+            : win.entry.wrap === "none" ? Text.NoWrap : Text.Wrap
+        // Explicit overflow fallback: never drawn outside the field.
+        elide: win.entry && win.entry.wrap === "elide" ? Text.ElideRight : Text.ElideNone
+        maximumLineCount: win.entry && win.entry.wrap === "elide" ? win.entry.max_lines : 10000
+        clip: true
+        horizontalAlignment: !win.entry ? Text.AlignHCenter
+            : win.entry.alignment === "left" ? Text.AlignLeft
+            : win.entry.alignment === "right" ? Text.AlignRight : Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
+        style: win.entry && win.entry.outline ? Text.Outline : Text.Normal
+        styleColor: win.entry ? win.entry.outline_color : "#000000"
     }
+
     MouseArea {
         objectName: "inplaceMouse"
         anchors.fill: parent

@@ -29,11 +29,10 @@ impl TranslationCache {
         let k = key(src, dst, text);
         if self.map.insert(k.clone(), translation).is_some() {
             self.order.retain(|x| x != &k);
-        } else if self.map.len() > self.cap {
-            if let Some(old) = self.order.pop_front() {
+        } else if self.map.len() > self.cap
+            && let Some(old) = self.order.pop_front() {
                 self.map.remove(&old);
             }
-        }
         self.order.push_back(k);
     }
 }

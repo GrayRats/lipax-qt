@@ -45,3 +45,35 @@ inline void configureOverlayInput(bool passthrough, rust::Slice<const int32_t> r
     }
 }
 inline void copyLipaText(const QString &text) { QGuiApplication::clipboard()->setText(text); }
+
+// ── Font metrics for fitting the in-place translation (layout::fit::TextMeasure) ──
+#include <QFont>
+#include <QFontMetricsF>
+#include <cmath>
+inline QFont lipaFont(rust::Str family, int weight, bool italic, double px, double letterSpacing) {
+    QFont f(QString::fromUtf8(family.data(), int(family.size())));
+    f.setPixelSize(qMax(1, int(std::floor(px))));
+    f.setWeight(QFont::Weight(weight));
+    f.setItalic(italic);
+    f.setLetterSpacing(QFont::AbsoluteSpacing, letterSpacing);
+    return f;
+}
+// wrap: 0 word, 1 anywhere, 2 none. out: width, height, line spacing, line count.
+inline void measureLipaText(rust::Str family, int weight, bool italic, double px, double letterSpacing,
+                            double width, int wrap, rust::Str text, rust::Slice<double> out) {
+    const QFontMetricsF fm(lipaFont(family, weight, italic, px, letterSpacing));
+    const int flags = wrap == 0 ? Qt::TextWordWrap : wrap == 1 ? Qt::TextWrapAnywhere : 0;
+    const QRectF r = fm.boundingRect(QRectF(0, 0, wrap == 2 ? 1e7 : width, 1e7), flags,
+                                     QString::fromUtf8(text.data(), int(text.size())));
+    const double spacing = fm.lineSpacing();
+    out[0] = r.width();
+    out[1] = r.height();
+    out[2] = spacing;
+    out[3] = spacing > 0 ? qMax(1.0, std::round(r.height() / spacing)) : 1.0;
+}
+// Cap height relative to the pixel size; 0.7 if the font does not report it.
+inline double lipaCapRatio(rust::Str family, int weight, bool italic) {
+    const QFontMetricsF fm(lipaFont(family, weight, italic, 100.0, 0.0));
+    const double cap = fm.capHeight();
+    return cap > 0 ? cap / 100.0 : 0.7;
+}

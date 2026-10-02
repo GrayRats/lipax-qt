@@ -198,11 +198,10 @@ pub async fn listen(
                 if component != COMPONENT {
                     continue;
                 }
-                if let Some(a) = HotkeyAction::from_id(&action) {
-                    if tx.send(HotkeyEvent::Pressed(a)).is_err() {
+                if let Some(a) = HotkeyAction::from_id(&action)
+                    && tx.send(HotkeyEvent::Pressed(a)).is_err() {
                         break;
                     }
-                }
             }
             changed = hotkeys.changed() => {
                 if changed.is_err() {

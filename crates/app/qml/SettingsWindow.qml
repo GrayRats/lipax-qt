@@ -54,6 +54,48 @@ ApplicationWindow {
     readonly property var fontFamilies: ["Системный"].concat(Qt.fontFamilies())
     function fontIndex(name) { return name ? Math.max(0, fontFamilies.indexOf(name)) : 0 }
 
+    // ── «Поверх оригинала»: каждое свойство отдельно — Авто или Вручную ──
+    function inplace() { return current.inplace || ({}) }
+    function setInplace(key, value) { const i = Object.assign({}, inplace()); i[key] = value; set("inplace", i) }
+    function propManual(key) { const v = inplace()[key]; return !!v && v.mode === "manual" }
+    function propValue(key, fallback) { const v = inplace()[key]; return v && v.mode === "manual" ? v.value : fallback }
+    function setProp(key, manual, value) { setInplace(key, manual ? { mode: "manual", value: value } : { mode: "auto" }) }
+    readonly property var inplaceBackgrounds: [
+        { value: "auto", label: "Авто (по фону вокруг текста)" },
+        { value: "inpaint_blur", label: "Восстановить и размыть" },
+        { value: "solid_fill", label: "Заливка цветом фона" },
+        { value: "adaptive_padding_fill", label: "Заливка с расширенными полями" },
+        { value: "transparent", label: "Прозрачный (обводка текста)" }
+    ]
+    readonly property var weightNames: [
+        { value: "thin", label: "Тонкий" }, { value: "extra_light", label: "Сверхсветлый" }, { value: "light", label: "Светлый" },
+        { value: "normal", label: "Обычный" }, { value: "medium", label: "Средний" }, { value: "demi_bold", label: "Полужирный" },
+        { value: "bold", label: "Жирный" }, { value: "extra_bold", label: "Сверхжирный" }, { value: "black", label: "Чёрный" }
+    ]
+    readonly property var wrapNames: [
+        { value: "word_wrap", label: "По словам" }, { value: "wrap_anywhere", label: "По символам" },
+        { value: "no_wrap", label: "Без переноса" }, { value: "elide", label: "Обрезать с многоточием" }
+    ]
+    readonly property var fontCategories: [
+        { value: "serif", label: "С засечками" }, { value: "sans_serif", label: "Без засечек" },
+        { value: "slab_serif", label: "Брусковые засечки" }, { value: "monospace", label: "Моноширинный" },
+        { value: "cjk_sans", label: "CJK без засечек" }, { value: "cjk_serif", label: "CJK с засечками" }
+    ]
+    // Строка свойства: «Авто / Вручную» и редактор значения (дочерние элементы экземпляра).
+    component PropRow: RowLayout {
+        id: propRow
+        property string key
+        property var defaultValue
+        readonly property bool manual: win.propManual(key)
+        Layout.fillWidth: true; Layout.minimumWidth: 0
+        ComboBox {
+            Layout.preferredWidth: 120
+            model: ["Авто", "Вручную"]
+            currentIndex: propRow.manual ? 1 : 0
+            onActivated: win.setProp(propRow.key, currentIndex === 1, win.propValue(propRow.key, propRow.defaultValue))
+        }
+    }
+
     component FieldLabel: Label {
         wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0
     }
@@ -609,6 +651,200 @@ ApplicationWindow {
                       + "цвет, размер и начертание оцениваются по кадру; длинный перевод уменьшается. "
                       + "Можно выбрать свой шрифт ниже. Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Поверх игры». "
                       + "Нужен захват через KWin: при захвате через portal используется окно перевода."
+            }
+            GridLayout {
+                objectName: "inplaceSettings"
+                visible: win.current.translation_display === "inplace"
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                columns: 2
+                columnSpacing: 24
+                rowSpacing: 10
+                Label {
+                    Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
+                    text: "Каждое поле текста находится и отслеживается отдельно. Шрифт для поля выбирается один раз — "
+                          + "по признакам начертания оригинала и среди установленных шрифтов с глифами языка перевода — и дальше не меняется. "
+                          + "Каждое свойство ниже можно оставить автоматическим или задать вручную независимо от остальных."
+                }
+                FieldLabel { text: "Фон под переводом" }
+                ComboBox {
+                    objectName: "inplaceBackground"
+                    Layout.fillWidth: true; Layout.minimumWidth: 0
+                    model: win.inplaceBackgrounds.map(m => m.label)
+                    currentIndex: Math.max(0, win.inplaceBackgrounds.findIndex(m => m.value === (win.inplace().background_mode || "auto")))
+                    onActivated: win.setInplace("background_mode", win.inplaceBackgrounds[currentIndex].value)
+                }
+                FieldLabel { text: "Шрифт" }
+                PropRow {
+                    id: fontRow
+                    key: "font_family"; defaultValue: Qt.application.font.family
+                    ComboBox {
+                        visible: fontRow.manual
+                        Layout.fillWidth: true; Layout.minimumWidth: 0
+                        model: Qt.fontFamilies()
+                        currentIndex: Math.max(0, model.indexOf(win.propValue("font_family", "")))
+                        onActivated: win.setProp("font_family", true, currentText)
+                    }
+                }
+                FieldLabel { text: "Размер, px" }
+                PropRow {
+                    id: sizeRow
+                    key: "font_size"; defaultValue: 20
+                    SpinBox {
+                        visible: sizeRow.manual
+                        from: 4; to: 400; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                        value: win.propValue("font_size", 20)
+                        onValueModified: win.setProp("font_size", true, value)
+                    }
+                }
+                FieldLabel { text: "Насыщенность" }
+                PropRow {
+                    id: weightRow
+                    key: "font_weight"; defaultValue: "normal"
+                    ComboBox {
+                        visible: weightRow.manual
+                        Layout.fillWidth: true; Layout.minimumWidth: 0
+                        model: win.weightNames.map(w => w.label)
+                        currentIndex: Math.max(0, win.weightNames.findIndex(w => w.value === win.propValue("font_weight", "normal")))
+                        onActivated: win.setProp("font_weight", true, win.weightNames[currentIndex].value)
+                    }
+                }
+                FieldLabel { text: "Курсив" }
+                PropRow {
+                    id: italicRow
+                    key: "italic"; defaultValue: false
+                    CheckBox { visible: italicRow.manual; text: "Курсив"; checked: win.propValue("italic", false) === true; onToggled: win.setProp("italic", true, checked) }
+                    Item { Layout.fillWidth: true }
+                }
+                FieldLabel { text: "Межстрочный интервал, %" }
+                PropRow {
+                    id: lineRow
+                    key: "line_height"; defaultValue: 1.0
+                    SpinBox {
+                        visible: lineRow.manual
+                        from: 70; to: 300; stepSize: 5; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                        value: Math.round(win.propValue("line_height", 1.0) * 100)
+                        onValueModified: win.setProp("line_height", true, value / 100)
+                    }
+                }
+                FieldLabel { text: "Трекинг, px" }
+                PropRow {
+                    id: spacingRow
+                    key: "letter_spacing"; defaultValue: 0
+                    SpinBox {
+                        visible: spacingRow.manual
+                        from: -3; to: 20; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                        value: win.propValue("letter_spacing", 0)
+                        onValueModified: win.setProp("letter_spacing", true, value)
+                    }
+                }
+                FieldLabel { text: "Выравнивание" }
+                PropRow {
+                    id: alignRow
+                    key: "alignment"; defaultValue: "center"
+                    ComboBox {
+                        visible: alignRow.manual
+                        Layout.fillWidth: true; Layout.minimumWidth: 0
+                        readonly property var values: ["left", "center", "right"]
+                        model: ["По левому краю", "По центру", "По правому краю"]
+                        currentIndex: Math.max(0, values.indexOf(win.propValue("alignment", "center")))
+                        onActivated: win.setProp("alignment", true, values[currentIndex])
+                    }
+                }
+                FieldLabel { text: "Перенос строк" }
+                PropRow {
+                    id: wrapRow
+                    key: "wrap_mode"; defaultValue: "word_wrap"
+                    ComboBox {
+                        visible: wrapRow.manual
+                        Layout.fillWidth: true; Layout.minimumWidth: 0
+                        model: win.wrapNames.map(w => w.label)
+                        currentIndex: Math.max(0, win.wrapNames.findIndex(w => w.value === win.propValue("wrap_mode", "word_wrap")))
+                        onActivated: win.setProp("wrap_mode", true, win.wrapNames[currentIndex].value)
+                    }
+                }
+                FieldLabel { text: "Цвет текста" }
+                PropRow {
+                    id: colorRow
+                    key: "text_color"; defaultValue: "#ffffff"
+                    Rectangle {
+                        visible: colorRow.manual
+                        implicitWidth: 24; implicitHeight: 24; radius: 4
+                        color: win.propValue("text_color", "#ffffff"); border.width: 1; border.color: palette.mid
+                    }
+                    TextField {
+                        visible: colorRow.manual
+                        Layout.preferredWidth: 100
+                        maximumLength: 7
+                        text: win.propValue("text_color", "#ffffff")
+                        validator: RegularExpressionValidator { regularExpression: /#[0-9a-fA-F]{0,6}/ }
+                        onTextEdited: if (/^#[0-9a-fA-F]{6}$/.test(text)) win.setProp("text_color", true, text.toLowerCase())
+                    }
+                    Item { Layout.fillWidth: true }
+                }
+                FieldLabel { text: "Поля, px" }
+                PropRow {
+                    id: paddingRow
+                    key: "padding"; defaultValue: ({ left: 4, right: 4, top: 4, bottom: 4 })
+                    SpinBox {
+                        visible: paddingRow.manual
+                        from: 0; to: 64; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                        value: win.propValue("padding", { left: 4 }).left
+                        onValueModified: win.setProp("padding", true, { left: value, right: value, top: value, bottom: value })
+                    }
+                }
+                FieldLabel { text: "Кегль: от / до, px" }
+                RowLayout {
+                    Layout.fillWidth: true; Layout.minimumWidth: 0
+                    SpinBox {
+                        Layout.fillWidth: true; Layout.minimumWidth: 0
+                        from: 4; to: 200; editable: true
+                        value: win.inplace().minimum_font_size || 8
+                        onValueModified: win.setInplace("minimum_font_size", value)
+                    }
+                    SpinBox {
+                        Layout.fillWidth: true; Layout.minimumWidth: 0
+                        from: 4; to: 400; editable: true
+                        value: win.inplace().maximum_font_size || 96
+                        onValueModified: win.setInplace("maximum_font_size", value)
+                    }
+                }
+                FieldLabel { text: "Узкий шрифт, если перевод не помещается" }
+                Switch { checked: win.inplace().allow_condensed_fallback !== false; onToggled: win.setInplace("allow_condensed_fallback", checked) }
+                FieldLabel { text: "Предпочтительные шрифты (через запятую)" }
+                TextField {
+                    Layout.fillWidth: true; Layout.minimumWidth: 0
+                    placeholderText: "PT Serif, Inter"
+                    text: (win.inplace().preferred_fonts || []).join(", ")
+                    onEditingFinished: win.setInplace("preferred_fonts", text.split(",").map(f => f.trim()).filter(f => f.length > 0))
+                }
+                Label { text: "Замена шрифта по начертанию оригинала"; font.bold: true; Layout.columnSpan: 2; Layout.topMargin: 4 }
+                Repeater {
+                    model: win.fontCategories
+                    delegate: RowLayout {
+                        required property var modelData
+                        Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                        FieldLabel { text: modelData.label }
+                        ComboBox {
+                            Layout.fillWidth: true; Layout.minimumWidth: 0
+                            model: ["Авто"].concat(Qt.fontFamilies())
+                            currentIndex: Math.max(0, model.indexOf((win.inplace().font_overrides || {})[modelData.value] || ""))
+                            onActivated: {
+                                const o = Object.assign({}, win.inplace().font_overrides || {})
+                                if (currentIndex === 0) delete o[modelData.value]; else o[modelData.value] = currentText
+                                win.setInplace("font_overrides", o)
+                            }
+                        }
+                    }
+                }
+                RowLayout {
+                    Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                    Button {
+                        text: "Определить шрифты заново"
+                        onClicked: if (win.controller.reanalyzeFonts) win.controller.reanalyzeFonts()
+                    }
+                    Item { Layout.fillWidth: true }
+                    Button { text: "Сбросить «Поверх оригинала»"; onClicked: win.resetKeys(["inplace"]) }
+                }
             }
             FieldLabel { text: "Фон перевода" }
             ComboBox {

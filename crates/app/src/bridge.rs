@@ -73,6 +73,10 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "translateOnce"]
         fn translate_once(self: Pin<&mut Controller>);
+        /// «Поверх оригинала»: определить шрифты полей заново (выбор шрифта иначе зафиксирован за полем).
+        #[qinvokable]
+        #[cxx_name = "reanalyzeFonts"]
+        fn reanalyze_fonts(self: Pin<&mut Controller>);
         /// Заново проверить Tesseract и список языков (без перезапуска приложения).
         #[qinvokable]
         #[cxx_name = "refreshTesseract"]
@@ -120,6 +124,7 @@ use lipa_core::capture::AnyCapture;
 use lipa_core::hotkeys::{self, HotkeyAction, HotkeyEvent};
 use lipa_core::ocr::AnyOcr;
 use lipa_core::history::{History, Entry};
+use lipa_core::layout::engine::InplaceBlock;
 use lipa_core::pipeline::{Cmd, Event, Pipeline};
 use lipa_core::settings::{CaptureBackendKind, NormRect, Settings};
 use lipa_core::tesseract::{TesseractInfo, TesseractManager};
@@ -201,7 +206,10 @@ pub struct ControllerRust {
     diagnostics_busy: bool,
     history: History,
     region_text: std::collections::BTreeMap<String, (String, String)>,
-    region_layout: std::collections::BTreeMap<String, serde_json::Value>,
+    /// Последние поля «поверх оригинала» каждой области: размер кадра и поля.
+    region_inplace: std::collections::BTreeMap<String, ((u32, u32), Vec<InplaceBlock>)>,
+    /// PNG подложек: (область, поле) → (ревизия, URL). Файл пишется только при новой ревизии.
+    inplace_images: std::collections::HashMap<(String, u64), (u64, String)>,
     inplace_json: QString,
     faults: std::collections::BTreeMap<String, (String, bool)>,
     original: QString,
@@ -240,7 +248,8 @@ impl Default for ControllerRust {
             diagnostics_busy: false,
             history,
             region_text: Default::default(),
-            region_layout: Default::default(),
+            region_inplace: Default::default(),
+            inplace_images: Default::default(),
             inplace_json: QString::from("[]"),
             faults: Default::default(),
             original: QString::default(),
@@ -367,7 +376,11 @@ impl cxx_qt::Initialize for qobject::Controller {
                 let json = geometry.map(|g| serde_json::json!([g.x, g.y, g.w, g.h]).to_string()).unwrap_or_default();
                 if last.as_ref() == Some(&json) { continue; }
                 last = Some(json.clone());
-                if qt.queue(move |mut o| o.as_mut().set_game_geometry(QString::from(json.as_str()))).is_err() { break; }
+                if qt.queue(move |mut o| {
+                    o.as_mut().set_game_geometry(QString::from(json.as_str()));
+                    // Кегль и поля подгоняются в пикселях экрана: окно изменило размер — подогнать заново.
+                    o.as_mut().publish_inplace();
+                }).is_err() { break; }
             }
         });
 
@@ -399,20 +412,30 @@ impl cxx_qt::Initialize for qobject::Controller {
                         o.as_mut().rust_mut().faults.insert(region_id, (message, terminal));
                         o.as_mut().publish_faults();
                     },
-                    Event::Placement { region_id, layout } => {
-                        match layout.and_then(|l| layout_json(&region_id, &l)) {
-                            Some(json) => { o.as_mut().rust_mut().region_layout.insert(region_id, json); },
-                            None => { o.as_mut().rust_mut().region_layout.remove(&region_id); },
-                        }
-                        o.as_mut().publish_translation();
-                    },
-                    Event::Translation { region_id, region_name, original, text, layout } => {
+                    Event::Inplace { region_id, region_name, frame } => {
                         let settings = o.rust().shared.settings.borrow().clone();
                         if !settings.capture_regions().iter().any(|r| r.id == region_id) { return; }
-                        match layout.and_then(|l| layout_json(&region_id, &l)) {
-                            Some(json) => o.as_mut().rust_mut().region_layout.insert(region_id.clone(), json),
-                            None => o.as_mut().rust_mut().region_layout.remove(&region_id),
-                        };
+                        o.as_mut().rust_mut().faults.remove(&region_id);
+                        let original = frame.blocks.iter().map(|b| b.original.as_str()).collect::<Vec<_>>().join("\n");
+                        let text = frame.blocks.iter().map(|b| b.translation.as_str()).collect::<Vec<_>>().join("\n");
+                        o.as_mut().rust_mut().region_text.insert(region_id.clone(), (original, text));
+                        if settings.history_enabled && !frame.new_translations.is_empty() {
+                            let timestamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
+                            for (original, translation) in &frame.new_translations {
+                                o.as_mut().rust_mut().history.push(Entry { timestamp, region: region_name.clone(), original: original.clone(), translation: translation.clone() }, settings.history_limit);
+                            }
+                            o.as_mut().publish_history();
+                        }
+                        let frame = *frame;
+                        o.as_mut().rust_mut().region_inplace.insert(region_id, (frame.frame, frame.blocks));
+                        o.as_mut().publish_translation();
+                        o.as_mut().set_status(QString::from("Перевод обновлён"));
+                        o.as_mut().set_status_kind(QString::from("info"));
+                        o.as_mut().publish_faults();
+                    },
+                    Event::Translation { region_id, region_name, original, text } => {
+                        let settings = o.rust().shared.settings.borrow().clone();
+                        if !settings.capture_regions().iter().any(|r| r.id == region_id) { return; }
                         o.as_mut().rust_mut().faults.remove(&region_id);
                         o.as_mut().rust_mut().region_text.insert(region_id, (original.clone(), text.clone()));
                         if settings.history_enabled {
@@ -458,17 +481,48 @@ impl qobject::Controller {
         let translation = regions.iter().filter_map(|r| texts.get(&r.id).map(|t| if regions.len() > 1 { format!("{}: {}", r.name, t.1) } else { t.1.clone() })).collect::<Vec<_>>().join("\n\n");
         self.as_mut().set_original(QString::from(original.as_str()));
         self.as_mut().set_translation(QString::from(translation.as_str()));
-        self.as_mut().rust_mut().region_layout.retain(|id, _| regions.iter().any(|r| &r.id == id));
-        let (texts, layouts) = (&self.rust().region_text, &self.rust().region_layout);
-        let inplace: Vec<_> = regions.iter().filter_map(|r| {
-            let (mut entry, text) = (layouts.get(&r.id)?.clone(), texts.get(&r.id)?);
-            entry["id"] = r.id.clone().into();
-            entry["rect"] = serde_json::json!(r.rect);
-            entry["text"] = text.1.clone().into();
-            Some(entry)
-        }).collect();
-        let json = serde_json::to_string(&inplace).unwrap();
-        self.as_mut().set_inplace_json(QString::from(json.as_str()));
+        self.as_mut().publish_inplace();
+    }
+    /// Поля «поверх оригинала» для QML: всё уже решено (шрифт, кегль после подгонки метриками
+    /// Qt, типографика, фон); QML только рисует. Неизменное состояние не переустанавливается.
+    fn publish_inplace(mut self: Pin<&mut Self>) {
+        let settings = self.rust().shared.settings.borrow().clone();
+        let regions = settings.capture_regions();
+        self.as_mut().rust_mut().region_inplace.retain(|id, _| regions.iter().any(|r| &r.id == id));
+        let geometry: Option<[f64; 4]> = serde_json::from_str(&self.game_geometry().to_string()).ok();
+        let mut entries = Vec::new();
+        let mut live = std::collections::HashSet::new();
+        for r in &regions {
+            let (Some(rect), Some(g)) = (r.rect, geometry) else { continue };
+            let Some((frame, blocks)) = self.rust().region_inplace.get(&r.id).cloned() else { continue };
+            // Пикселей экрана на пиксель кадра (кадр — в родном разрешении окна).
+            let scale = rect.w * g[2] / frame.0.max(1) as f64;
+            for b in &blocks {
+                live.insert((r.id.clone(), b.id));
+                let image = b.background.image.as_ref().and_then(|img| {
+                    let key = (r.id.clone(), b.id);
+                    match self.rust().inplace_images.get(&key) {
+                        Some((rev, url)) if *rev == b.revision => Some(url.clone()),
+                        _ => {
+                            let url = save_backdrop(&r.id, b.id, b.revision, img)?;
+                            self.as_mut().rust_mut().inplace_images.insert(key, (b.revision, url.clone()));
+                            Some(url)
+                        }
+                    }
+                });
+                entries.push(inplace_placement(r, frame, b, scale as f32, image.as_deref()));
+            }
+        }
+        // Подложки исчезнувших полей больше не нужны.
+        let gone: Vec<_> = self.rust().inplace_images.keys().filter(|k| !live.contains(*k)).cloned().collect();
+        for key in gone {
+            self.as_mut().rust_mut().inplace_images.remove(&key);
+            let _ = std::fs::remove_file(backdrop_path(&key.0, key.1));
+        }
+        let json = serde_json::to_string(&entries).unwrap();
+        if *self.inplace_json() != QString::from(json.as_str()) {
+            self.as_mut().set_inplace_json(QString::from(json.as_str()));
+        }
     }
     fn publish_faults(mut self: Pin<&mut Self>) {
         if self.rust().faults.is_empty() { return; }
@@ -524,8 +578,8 @@ impl qobject::Controller {
                     };
                 });
                 if self.rust().shared.settings.borrow().processing_key() != before {
-                    // A block measured in the old region must not be drawn over the new one.
-                    self.as_mut().rust_mut().region_layout.clear();
+                    // Поля, найденные в прежней области, не рисуются поверх новой.
+                    self.as_mut().rust_mut().region_inplace.clear();
                 }
                 self.as_mut().publish_settings();
                 self.as_mut().publish_translation();
@@ -653,7 +707,7 @@ impl qobject::Controller {
             if let Some(r) = s.regions.iter_mut().find(|r| r.id == s.active_region) { r.rect = Some(rect); r.enabled = true; }
         });
         let active = self.rust().shared.settings.borrow().active_region.clone();
-        self.as_mut().rust_mut().region_layout.remove(&active);
+        self.as_mut().rust_mut().region_inplace.remove(&active);
         self.as_mut().publish_translation();
         // The region outline (RegionFrame) flashes by itself when the area changes.
         self.as_mut().publish_settings();
@@ -690,23 +744,87 @@ impl qobject::Controller {
         self.as_mut().set_status(QString::from("Распознавание окна…"));
         let _ = self.rust().shared.cmds.send(Cmd::TranslateOnce);
     }
+
+    fn reanalyze_fonts(mut self: Pin<&mut Self>) {
+        lipa_core::layout::font_database::InstalledFontDatabase::reload();
+        let _ = self.rust().shared.cmds.send(Cmd::ReanalyzeFonts);
+        self.as_mut().set_status(QString::from("Шрифты полей будут определены заново"));
+    }
 }
 
-/// Text layout for QML; the blurred backdrop is written next to the window previews.
-fn layout_json(region_id: &str, l: &lipa_core::layout::TextLayout) -> Option<serde_json::Value> {
-    let dir = dirs::runtime_dir().unwrap_or_else(std::env::temp_dir).join("lipa");
-    std::fs::create_dir_all(&dir).ok()?;
+fn backdrop_path(region_id: &str, block: u64) -> std::path::PathBuf {
     let name: String = region_id.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-').collect();
-    let path = dir.join(format!("inplace-{}-{name}.png", std::process::id()));
-    l.backdrop.save(&path).ok()?;
-    let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0);
-    let hex = |c: [u8; 3]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
-    Some(serde_json::json!({
-        "bbox": l.bbox, "frame": [l.frame.0, l.frame.1], "lines": l.lines, "font_px": l.font_px, "bold": l.bold, "font_family": l.font_family,
-        "text_color": hex(l.text_color), "background_color": hex(l.background_color),
-        // The changing query makes QML reload the image.
-        "backdrop": format!("file://{}?{stamp}", path.display()),
-    }))
+    dirs::runtime_dir().unwrap_or_else(std::env::temp_dir).join("lipa").join(format!("inplace-{}-{name}-{block}.png", std::process::id()))
+}
+
+/// Размытая подложка поля рядом с превью окна; ревизия в URL заставляет QML перечитать файл.
+fn save_backdrop(region_id: &str, block: u64, revision: u64, img: &image::RgbaImage) -> Option<String> {
+    let path = backdrop_path(region_id, block);
+    std::fs::create_dir_all(path.parent()?).ok()?;
+    img.save(&path).ok()?;
+    Some(format!("file://{}?r={revision}", path.display()))
+}
+
+/// Размещение поля для QML: подгонка перевода метриками Qt и все решённые свойства.
+fn inplace_placement(region: &lipa_core::settings::RegionProfile, frame: (u32, u32), b: &InplaceBlock, scale: f32, image: Option<&str>) -> serde_json::Value {
+    use lipa_core::layout::fit::{FitInput, FontSpec, fit_translation_to_box};
+    use lipa_core::layout::{TextAlignment, WrapMode, contrast_ratio, hex};
+    use lipa_core::settings::InplaceBackgroundMode;
+    let st = &b.style;
+    let (fw, fh) = (frame.0.max(1) as f32, frame.1.max(1) as f32);
+    let transparent = b.background.mode == InplaceBackgroundMode::Transparent;
+    // Заливка закрывает поле с полями; в прозрачном режиме — только сам текст.
+    let area = if transparent { b.text_rect } else { b.background.rect };
+    // Отступы текста внутри заливки, px экрана: ручные — как заданы, иначе — где был оригинал.
+    let inner = if st.padding_manual {
+        [st.padding.left, st.padding.top, st.padding.right, st.padding.bottom]
+    } else {
+        [(b.text_rect.x - area.x) * scale, (b.text_rect.y - area.y) * scale,
+         (area.right() - b.text_rect.right()) * scale, (area.bottom() - b.text_rect.bottom()) * scale]
+    };
+    let width = (area.w * scale - inner[0] - inner[2]).max(1.0);
+    let height = (area.h * scale - inner[1] - inner[3]).max(1.0);
+    let font = FontSpec { family: st.font_family.clone(), weight: st.font_weight, italic: st.italic };
+    let fit = fit_translation_to_box(&FitInput {
+        text: &b.translation, width, height, font,
+        manual_px: st.font_size, cap_height_px: st.cap_height_px * scale,
+        min_px: st.min_font_size, max_px: st.max_font_size, source_lines: st.source_lines,
+        manual_line_height: st.line_height, source_line_px: st.line_height_px.map(|v| v * scale),
+        letter_spacing: if st.letter_spacing_manual { st.letter_spacing } else { st.letter_spacing * scale },
+        letter_spacing_manual: st.letter_spacing_manual, manual_wrap: st.wrap_mode, script: b.script,
+        condensed_family: if st.allow_condensed && st.font_size.is_none() { b.font.condensed_family.clone() } else { None },
+    }, &crate::icon::QtMeasure);
+    let outline = if contrast_ratio(st.text_color, [0; 3]) >= contrast_ratio(st.text_color, [255; 3]) { [0, 0, 0] } else { [255, 255, 255] };
+    serde_json::json!({
+        "key": format!("{}:{}", region.id, b.id),
+        "region_id": region.id,
+        "block_id": b.id,
+        "block_type": b.block_type,
+        "rect": region.rect,
+        "box": [area.x / fw, area.y / fh, area.w / fw, area.h / fh],
+        "inner": inner,
+        "text": b.translation,
+        "original": b.original,
+        "font_family": fit.family,
+        "font_px": fit.font_px.floor().max(1.0),
+        "font_weight": st.font_weight.value(),
+        "italic": st.italic,
+        "line_height": fit.line_height,
+        "letter_spacing": fit.letter_spacing,
+        "alignment": match st.alignment { TextAlignment::Left => "left", TextAlignment::Center => "center", TextAlignment::Right => "right" },
+        "wrap": match fit.wrap_mode { WrapMode::WordWrap => "word", WrapMode::WrapAnywhere => "anywhere", WrapMode::NoWrap => "none", WrapMode::Elide => "elide" },
+        "max_lines": fit.max_lines,
+        "text_color": hex(st.text_color),
+        // Без заливки текст читается за счёт контрастной обводки.
+        "outline": transparent,
+        "outline_color": hex(outline),
+        "background": {
+            "mode": b.background.mode,
+            "color": hex(b.background.color),
+            "image": image.unwrap_or(""),
+        },
+        "font_selection": { "category": b.font.category, "generic": b.font.generic, "confidence": b.font.confidence },
+    })
 }
 
 /// Снимок Tesseract в JSON; тяжёлые вызовы (tesseract, pacman/dpkg) выполняются вне GUI-потока.

@@ -252,7 +252,7 @@ pub fn rgba_from_raw(w: u32, h: u32, stride: u32, format: u32, data: &[u8]) -> R
     }
     let mut out = Vec::with_capacity(w_ * h_ * 4);
     for row in 0..h_ {
-        for px in data[row * stride_..row * stride_ + w_ * 4].chunks_exact(4) {
+        for px in data[row * stride_..row * stride_ + w_ * 4].as_chunks::<4>().0 {
             let (r, g, b) = if bgr { (px[2], px[1], px[0]) } else { (px[0], px[1], px[2]) };
             out.extend_from_slice(&[r, g, b, 255]);
         }

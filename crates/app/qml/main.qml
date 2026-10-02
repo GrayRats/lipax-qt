@@ -12,13 +12,6 @@ ApplicationWindow {
     minimumHeight: 520
     title: "LipaX — переводчик для игр"
 
-    menuBar: MenuBar {
-        Menu {
-            title: "Перевод"
-            MenuItem { text: "Перевести сейчас"; enabled: ctl.hasRegion; onTriggered: ctl.translateOnce() }
-            MenuItem { objectName: "historyMenuItem"; text: "История…"; onTriggered: historyWin.openWindow() }
-        }
-    }
     HistoryWindow { id: historyWin; settingsWindow: settingsWin }
 
     Controller {
@@ -35,13 +28,14 @@ ApplicationWindow {
     // window geometry (KWin); with portal capture the translation window is used instead.
     readonly property bool inplaceActive: settingsWin.current.translation_display === "inplace" && ctl.gameGeometry.length > 0
     readonly property var inplaceEntries: { try { return JSON.parse(ctl.inplaceJson || "[]") } catch (e) { return [] } }
-    readonly property string inplaceIds: JSON.stringify(inplaceEntries.map(e => e.id))
+    // Keyed by "region:field": a stable field keeps its window; only its properties update.
+    readonly property string inplaceKeys: JSON.stringify(inplaceEntries.map(e => e.key))
     Instantiator {
-        model: JSON.parse(root.inplaceIds)
+        model: JSON.parse(root.inplaceKeys)
         delegate: InplaceText {
             required property string modelData
             settings: settingsWin.current
-            entry: root.inplaceEntries.find(e => e.id === modelData) || null
+            entry: root.inplaceEntries.find(e => e.key === modelData) || null
             gameGeometry: ctl.gameGeometry
             visible: root.inplaceActive && overlayEnabled.checked && !relocating && !!desktopRect && !!entry && entry.text.length > 0
             onHideRequested: overlayEnabled.checked = false
@@ -135,13 +129,9 @@ ApplicationWindow {
                 enabled: ctl.hasRegion
                 onClicked: ctl.running ? ctl.stop() : ctl.start()
             }
-            Button {
-                text: "Перевести сейчас"
-                enabled: ctl.hasRegion
-                onClicked: ctl.translateOnce()
-            }
             CheckBox { id: overlayEnabled; text: "Поверх игры"; checked: true }
             Item { Layout.fillWidth: true }
+            Button { objectName: "historyButton"; text: "История"; onClicked: historyWin.openWindow() }
             Button { text: "Настройки"; onClicked: settingsWin.openWindow() }
         }
 
