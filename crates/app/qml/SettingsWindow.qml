@@ -164,6 +164,49 @@ ApplicationWindow {
     }
     readonly property var history: { try { return JSON.parse(controller.historyJson || "[]") } catch (e) { return [] } }
     readonly property var diagnostics: { try { return JSON.parse(controller.diagnosticsJson || "[]") } catch (e) { return [] } }
+    // ── Regions: at most `maxRegions`; one active unless several are allowed ──
+    readonly property int maxRegions: 3
+    property string regionNotice: ""
+    Timer { id: regionNoticeTimer; interval: 4000; onTriggered: win.regionNotice = "" }
+    function notifyRegions(text) { regionNotice = text; regionNoticeTimer.restart() }
+    function withRegions(regions, extra) {
+        const c = Object.assign({}, current, extra || ({}))
+        c.regions = regions
+        current = c
+    }
+    function activateRegion(index, on) {
+        const r = (current.regions || []).map(x => Object.assign({}, x))
+        if (!r[index]) return
+        if (on && current.allow_multiple_regions !== true) r.forEach((x, i) => x.enabled = false)
+        r[index].enabled = on
+        withRegions(r, on ? { active_region: r[index].id } : ({}))
+    }
+    function setAllowMultipleRegions(on) {
+        const r = (current.regions || []).map(x => Object.assign({}, x))
+        if (!on) {
+            let keep = r.findIndex(x => x.enabled && x.id === current.active_region)
+            if (keep < 0) keep = r.findIndex(x => x.enabled)
+            r.forEach((x, i) => x.enabled = i === keep)
+        }
+        withRegions(r, { allow_multiple_regions: on })
+    }
+    function addRegion() {
+        const r = (current.regions || []).slice()
+        if (r.length >= maxRegions) {
+            notifyRegions("Можно создать не больше " + maxRegions + " областей. Удалите одну, чтобы добавить новую.")
+            return false
+        }
+        let n = r.length + 1
+        while (r.some(x => x.id === "region-" + n)) ++n
+        // A new region starts inactive: it becomes active once its area is selected.
+        r.push({ id: "region-" + n, name: "Область " + n, enabled: false, rect: null, source_lang: "", target_lang: "",
+                 ocr_engine: "", interval_ms: 500, debounce_ms: 400 })
+        withRegions(r)
+        return true
+    }
+    function removeRegion(index) {
+        withRegions((current.regions || []).filter((_, i) => i !== index))
+    }
     function setRegionField(index, key, v) {
         const r = (current.regions || []).map(x => Object.assign({}, x))
         r[index][key] = v
@@ -706,7 +749,20 @@ ApplicationWindow {
                 rowSpacing: 12
             Label {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
-                text: "Каждая зона распознаётся отдельно. Пустые поля берутся из общих настроек. Выключенная зона сохраняет свою область."
+                text: "До " + win.maxRegions + " областей. Каждая распознаётся отдельно; пустые поля берутся из общих настроек. "
+                      + "Выключенная область сохраняет выделение."
+            }
+            FieldLabel { text: "Разрешить несколько активных областей" }
+            Switch {
+                objectName: "allowMultipleRegions"
+                checked: win.current.allow_multiple_regions === true
+                onToggled: win.setAllowMultipleRegions(checked)
+            }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
+                text: win.current.allow_multiple_regions === true
+                      ? "Активными могут быть до " + win.maxRegions + " областей одновременно."
+                      : "Активна одна область: включение другой выключает предыдущую."
             }
             Repeater {
                 model: win.current.regions || []
@@ -722,8 +778,9 @@ ApplicationWindow {
                         columnSpacing: 16
                         rowSpacing: 8
                         Switch {
-                            checked: regionFrame.modelData.enabled !== false
-                            onToggled: win.setRegionField(regionFrame.index, "enabled", checked)
+                            text: "Активна"
+                            checked: regionFrame.modelData.enabled === true
+                            onToggled: win.activateRegion(regionFrame.index, checked)
                         }
                         TextField {
                             Layout.fillWidth: true; Layout.minimumWidth: 0
@@ -740,7 +797,7 @@ ApplicationWindow {
                                 text: "Выделить на экране"
                                 enabled: win.controller.windowTitle !== undefined && win.controller.windowTitle.length > 0
                                 onClicked: {
-                                    win.set("active_region", regionFrame.modelData.id)
+                                    win.activateRegion(regionFrame.index, true)
                                     win.apply()
                                     win.selectRegionRequested()
                                 }
@@ -754,7 +811,7 @@ ApplicationWindow {
                             Button {
                                 text: "Удалить"
                                 enabled: (win.current.regions || []).length > 1
-                                onClicked: win.set("regions", win.current.regions.filter((_, i) => i !== regionFrame.index))
+                                onClicked: win.removeRegion(regionFrame.index)
                             }
                         }
                         FieldLabel { text: "Язык текста (OCR)" }
@@ -798,20 +855,20 @@ ApplicationWindow {
                     }
                 }
             }
-            Button {
-                Layout.columnSpan: 2
-                text: "Добавить зону"
-                enabled: (win.current.regions || []).length < 8
-                onClicked: {
-                    const r = (win.current.regions || []).slice()
-                    let n = r.length + 1
-                    while (r.some(x => x.id === "region-" + n)) ++n
-                    r.push({ id: "region-" + n, name: "Зона " + n, enabled: true, rect: null, source_lang: "", target_lang: "",
-                             ocr_engine: "", interval_ms: 500, debounce_ms: 400 })
-                    win.set("regions", r)
-                }
+            RowLayout {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                // Stays enabled at the limit: pressing it explains why nothing was added.
+                Button { objectName: "addRegion"; text: "Добавить область"; onClicked: win.addRegion() }
+                Label { text: (win.current.regions || []).length + " из " + win.maxRegions; opacity: 0.7 }
             }
-            ResetButton { keys: ["regions", "active_region"]; text: "Сбросить зоны по умолчанию (области будут очищены)" }
+            Label {
+                objectName: "regionNotice"
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap
+                visible: win.regionNotice.length > 0
+                text: win.regionNotice
+                color: "#ffc23d"
+            }
+            ResetButton { keys: ["regions", "active_region", "allow_multiple_regions"]; text: "Сбросить области по умолчанию (выделения будут очищены)" }
             }
         }
         ScrollView {

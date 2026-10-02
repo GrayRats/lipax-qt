@@ -65,9 +65,12 @@ impl Default for RegionProfile {
     }
 }
 
+/// No more translation regions than this can exist at once.
+pub const MAX_REGIONS: usize = 3;
+
+/// A single active region; more are added from the settings, up to `MAX_REGIONS`.
 pub fn default_regions() -> Vec<RegionProfile> {
-    [("subtitles", "Субтитры"), ("dialogue", "Диалоги"), ("quests", "Задания")].into_iter()
-        .map(|(id, name)| RegionProfile { id: id.into(), name: name.into(), ..Default::default() }).collect()
+    vec![RegionProfile::default()]
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -126,7 +129,10 @@ pub struct Settings {
     pub history_persist: bool,
     pub history_limit: usize,
     pub regions: Vec<RegionProfile>,
+    /// Region that "select area" targets; without `allow_multiple_regions` it is the only active one.
     pub active_region: String,
+    /// Off: activating a region deactivates the others.
+    pub allow_multiple_regions: bool,
     pub font_size: u32,
     pub opacity: f64,
     pub click_through: bool,
@@ -212,6 +218,7 @@ impl Default for Settings {
             history_limit: 200,
             regions: default_regions(),
             active_region: "subtitles".into(),
+            allow_multiple_regions: false,
             font_size: 20,
             opacity: 0.85,
             click_through: true,
@@ -261,7 +268,7 @@ impl Settings {
         self.overlay_size.1 = self.overlay_size.1.clamp(60, MAX_SCREEN_SIDE);
         self.history_limit = self.history_limit.clamp(10, 1000);
         if self.regions.is_empty() { self.regions = default_regions(); }
-        self.regions.truncate(8);
+        self.regions.truncate(MAX_REGIONS);
         let mut ids = std::collections::HashSet::new();
         for (index, r) in self.regions.iter_mut().enumerate() {
             if r.id.is_empty() || !ids.insert(r.id.clone()) { r.id = format!("region-{index}"); ids.insert(r.id.clone()); }
@@ -270,6 +277,12 @@ impl Settings {
             if r.rect.is_some_and(|r| ![r.x, r.y, r.w, r.h].iter().all(|v| v.is_finite()) || r.w <= 0.0 || r.h <= 0.0 || r.x < 0.0 || r.y < 0.0 || r.x+r.w > 1.000001 || r.y+r.h > 1.000001) { r.rect = None; }
         }
         if !self.regions.iter().any(|r| r.id == self.active_region) { self.active_region = self.regions[0].id.clone(); }
+        if !self.allow_multiple_regions {
+            // Keep the active region if it is on, otherwise the first enabled one.
+            let keep = self.regions.iter().position(|r| r.enabled && r.id == self.active_region)
+                .or_else(|| self.regions.iter().position(|r| r.enabled));
+            for (i, r) in self.regions.iter_mut().enumerate() { r.enabled = Some(i) == keep; }
+        }
         let defaults = Self::default();
         for (value, fallback) in [(&mut self.text_color, defaults.text_color), (&mut self.background_color, defaults.background_color), (&mut self.border_color, defaults.border_color),
             (&mut self.outline_color, defaults.outline_color), (&mut self.original_color, defaults.original_color)] {
@@ -323,6 +336,37 @@ mod tests {
         s.region = Some(NormRect { x: 0.1, y: 0.6, w: 0.8, h: 0.3 });
         let t = toml::to_string_pretty(&s).unwrap();
         assert_eq!(toml::from_str::<Settings>(&t).unwrap(), s);
+    }
+
+    fn region(id: &str, enabled: bool) -> RegionProfile {
+        RegionProfile { id: id.into(), name: id.into(), enabled, ..Default::default() }
+    }
+
+    #[test]
+    fn regions_are_limited_and_single_active_by_default() {
+        let mut s = Settings::default();
+        assert_eq!(s.regions.len(), 1);
+        s.regions = ["a", "b", "c", "d"].map(|id| region(id, true)).to_vec();
+        s.active_region = "b".into();
+        s.sanitize();
+        assert_eq!(s.regions.len(), MAX_REGIONS, "a fourth region is dropped");
+        let active: Vec<_> = s.regions.iter().filter(|r| r.enabled).map(|r| r.id.as_str()).collect();
+        assert_eq!(active, ["b"], "only the active region stays on");
+
+        s.active_region = "c".into();
+        s.regions[2].enabled = false;
+        s.regions[0].enabled = true;
+        s.sanitize();
+        let active: Vec<_> = s.regions.iter().filter(|r| r.enabled).map(|r| r.id.as_str()).collect();
+        assert_eq!(active, ["a"], "an inactive target falls back to the first enabled region");
+    }
+
+    #[test]
+    fn several_active_regions_when_allowed() {
+        let mut s = Settings { allow_multiple_regions: true, ..Settings::default() };
+        s.regions = ["a", "b", "c"].map(|id| region(id, true)).to_vec();
+        s.sanitize();
+        assert_eq!(s.regions.iter().filter(|r| r.enabled).count(), 3);
     }
 
     #[test]

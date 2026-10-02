@@ -39,6 +39,33 @@ TestCase {
     }
     Lipa.SettingsWindow { id: settings; controller: controller }
 
+    function test_regionModel() {
+        settings.reload()
+        const enabled = () => settings.current.regions.filter(r => r.enabled).map(r => r.id)
+        compare(settings.current.regions.length, 2)
+        verify(settings.addRegion(), "third region is created")
+        compare(settings.current.regions.length, 3)
+        verify(!settings.current.regions[2].enabled, "a new region starts inactive")
+        verify(!settings.addRegion(), "fourth region is refused")
+        compare(settings.current.regions.length, 3)
+        verify(settings.regionNotice.length > 0, "the user is told why")
+
+        settings.activateRegion(1, true)
+        compare(enabled(), ["dialogue"], "activating one deactivates the previous")
+        compare(settings.current.active_region, "dialogue")
+
+        settings.setAllowMultipleRegions(true)
+        settings.activateRegion(0, true)
+        settings.activateRegion(2, true)
+        compare(enabled().length, 3, "up to three active when allowed")
+
+        settings.setAllowMultipleRegions(false)
+        compare(enabled(), [settings.current.active_region], "turning the option off keeps only the active one")
+        settings.removeRegion(2)
+        verify(settings.addRegion(), "after removing one, a region can be added again")
+        settings.reload()
+    }
+
     function test_layoutAndSave() {
         settings.show()
         settings.width = 740

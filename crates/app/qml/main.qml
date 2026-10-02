@@ -65,9 +65,10 @@ ApplicationWindow {
                     id: regionBox
                     Layout.preferredWidth: 140
                     readonly property var regions: settingsWin.current.regions || []
-                    model: regions.map(r => (r.rect ? "" : "○ ") + r.name)
+                    model: regions.map(r => (r.rect ? "" : "○ ") + r.name + (r.enabled ? "" : " (выкл.)"))
                     currentIndex: Math.max(0, regions.findIndex(r => r.id === settingsWin.current.active_region))
-                    onActivated: { settingsWin.set("active_region", regions[currentIndex].id); settingsWin.apply() }
+                    // Choosing a region activates it (and, by default, deactivates the others).
+                    onActivated: { settingsWin.activateRegion(currentIndex, true); settingsWin.apply() }
                 }
                 Button {
                     text: "Выбрать область"
