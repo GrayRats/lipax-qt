@@ -129,7 +129,12 @@ ApplicationWindow {
     }
     readonly property bool hasDuplicateHotkeys: hotkeyRows.some(r => hotkeyDuplicate(r.key))
 
-    readonly property bool frameColorValid: /^#[0-9a-fA-F]{6}$/.test(current.frame_color || "")
+    readonly property var frameModes: [
+        { value: "pattern", label: "Узор (error purple/black)" },
+        { value: "solid", label: "Простая красная обводка" },
+        { value: "off", label: "Выкл." },
+        { value: "selection", label: "При выделении" }
+    ]
 
     function setLangs(primary, extras) { set("source_lang", [primary].concat(extras.filter(c => c !== primary)).join("+")) }
 
@@ -524,50 +529,48 @@ ApplicationWindow {
             }
 
             // ── Рамка выбора ────────────────────────────────────────────────────
-            Label { text: "Рамка выбора окна и области"; font.bold: true; Layout.columnSpan: 2 }
-            Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Цвет рамки" }
-            RowLayout {
+            SectionTitle { text: "Рамка областей в игре" }
+            FieldLabel { text: "Показывать рамку" }
+            ComboBox {
+                objectName: "regionFrameMode"
                 Layout.fillWidth: true; Layout.minimumWidth: 0
-                Rectangle {
-                    implicitWidth: 28; implicitHeight: 28; radius: 4
-                    color: win.frameColorValid ? win.current.frame_color : "transparent"
-                    border.width: 1; border.color: palette.mid
-                }
-                TextField {
-                    Layout.fillWidth: true; Layout.minimumWidth: 0
-                    placeholderText: "#ff0000"
-                    maximumLength: 7
-                    text: win.current.frame_color || "#ff0000"
-                    onTextEdited: win.set("frame_color", text)
-                }
-                Repeater {
-                    model: ["#ff0000", "#00c800", "#1e90ff", "#ffd400", "#ffffff"]
-                    Rectangle {
-                        implicitWidth: 22; implicitHeight: 22; radius: 4; color: modelData
-                        border.width: 1; border.color: palette.mid
-                        MouseArea { anchors.fill: parent; onClicked: win.set("frame_color", modelData) }
-                    }
-                }
+                model: win.frameModes.map(m => m.label)
+                currentIndex: Math.max(0, win.frameModes.findIndex(m => m.value === (win.current.region_frame_mode || "selection")))
+                onActivated: win.set("region_frame_mode", win.frameModes[currentIndex].value)
             }
-            Label {
-                Layout.columnSpan: 2; Layout.fillWidth: true; wrapMode: Text.Wrap
-                visible: !win.frameColorValid
-                color: "#ff6b6b"
-                text: "Введите цвет в формате #rrggbb, например #ff0000."
-            }
-            Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Толщина рамки, px" }
+            FieldLabel { text: "Исчезает через, с"; visible: win.current.region_frame_mode === "selection" }
             SpinBox {
+                visible: win.current.region_frame_mode === "selection"
+                from: 1; to: 60; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.frame_seconds || 3
+                onValueModified: win.set("frame_seconds", value)
+            }
+            FieldLabel { text: "Цвет обводки"; visible: win.current.region_frame_mode !== "pattern" && win.current.region_frame_mode !== "off" }
+            ColorRow {
+                visible: win.current.region_frame_mode !== "pattern" && win.current.region_frame_mode !== "off"
+                key: "frame_color"; presets: ["#ff0000", "#00c800", "#1e90ff", "#ffd400", "#ffffff"]
+            }
+            FieldLabel { text: "Толщина рамки, px"; visible: win.current.region_frame_mode !== "off" }
+            SpinBox {
+                visible: win.current.region_frame_mode !== "off"
                 from: 1; to: 12; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
                 value: win.current.frame_width || 2
                 onValueModified: win.set("frame_width", value)
             }
-            Label { Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Показывать после выбора, с (0 — не показывать)"; wrapMode: Text.Wrap; Layout.fillWidth: true }
-            SpinBox {
-                from: 0; to: 30; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
-                value: win.current.frame_seconds !== undefined ? win.current.frame_seconds : 3
-                onValueModified: win.set("frame_seconds", value)
+            FieldLabel { text: "Когда перевод закреплён" }
+            ComboBox {
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                model: ["Полупрозрачная обводка", "Скрыть обводку"]
+                currentIndex: win.current.region_frame_pinned === "hide" ? 1 : 0
+                onActivated: win.set("region_frame_pinned", currentIndex === 1 ? "hide" : "dim")
             }
-            ResetButton { keys: ["overlay_screen", "overlay_pinned", "click_through", "overlay_pos", "overlay_size", "frame_color", "frame_width", "frame_seconds"] }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
+                text: "Рамка рисуется вокруг каждой активной области и не мешает кликам. У каждой области свой таймер; "
+                      + "режим можно переопределить для отдельной области во вкладке «Области». "
+                      + "Для окна, выбранного через portal, положение на экране неизвестно, и рамка не показывается."
+            }
+            ResetButton { keys: ["overlay_screen", "overlay_pinned", "click_through", "overlay_pos", "overlay_size", "frame_color", "frame_width", "frame_seconds", "region_frame_mode", "region_frame_pinned"] }
 
             }
         }
@@ -691,7 +694,7 @@ ApplicationWindow {
                 text: "Рамка появляется на заданное время после выделения или изменения области. Незакреплённый перевод показывает рамку всегда."
             }
             FieldLabel { text: "Узор «текстура ошибки» (цвет/чёрный)" }
-            Switch { checked: win.current.border_pattern !== false; onToggled: win.set("border_pattern", checked) }
+            Switch { checked: win.current.border_pattern === true; onToggled: win.set("border_pattern", checked) }
             FieldLabel { text: "Непрозрачность рамки" }
             RowLayout {
                 Layout.fillWidth: true; Layout.minimumWidth: 0
@@ -835,6 +838,13 @@ ApplicationWindow {
                             model: ["Как в общих настройках", "Tesseract", "PaddleOCR"]
                             currentIndex: Math.max(0, values.indexOf(regionFrame.modelData.ocr_engine || ""))
                             onActivated: win.setRegionField(regionFrame.index, "ocr_engine", values[currentIndex])
+                        }
+                        FieldLabel { text: "Рамка области" }
+                        ComboBox {
+                            Layout.fillWidth: true; Layout.minimumWidth: 0
+                            model: ["Как в общих настройках"].concat(win.frameModes.map(m => m.label))
+                            currentIndex: Math.max(0, win.frameModes.findIndex(m => m.value === regionFrame.modelData.frame_mode) + 1)
+                            onActivated: win.setRegionField(regionFrame.index, "frame_mode", currentIndex === 0 ? "" : win.frameModes[currentIndex - 1].value)
                         }
                         FieldLabel { text: "Интервал / ожидание стабилизации, мс" }
                         RowLayout {

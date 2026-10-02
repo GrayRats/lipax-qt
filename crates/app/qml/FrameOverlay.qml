@@ -20,8 +20,8 @@ Window {
     }
 
     function flash(x, y, w, h) {
-        const seconds = settings.frame_seconds !== undefined ? settings.frame_seconds : 3
-        if (seconds <= 0 || w < 1 || h < 1) return
+        const seconds = settings.frame_seconds || 3
+        if (settings.region_frame_mode === "off" || w < 1 || h < 1) return
         const scr = screenFor(x + w / 2, y + h / 2)
         if (scr && win.screen !== scr) {
             win.visible = false // Recreate the layer surface on the new output.

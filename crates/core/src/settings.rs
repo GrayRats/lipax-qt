@@ -56,14 +56,24 @@ pub struct RegionProfile {
     pub ocr_engine: String,
     pub interval_ms: u64,
     pub debounce_ms: u64,
+    /// Outline of this region in the game; empty inherits `Settings::region_frame_mode`.
+    pub frame_mode: String,
 }
 impl Default for RegionProfile {
     fn default() -> Self {
         Self { id: "subtitles".into(), name: "Субтитры".into(), enabled: true, rect: None,
             source_lang: String::new(), target_lang: String::new(), ocr_engine: String::new(),
-            interval_ms: 500, debounce_ms: 400 }
+            interval_ms: 500, debounce_ms: 400, frame_mode: String::new() }
     }
 }
+
+/// Outline around a capture region in the game.
+pub const REGION_FRAME_MODES: [&str; 4] = [
+    "pattern",   // purple/black "error texture", always shown
+    "solid",     // plain outline in `frame_color`, always shown
+    "off",
+    "selection", // shown on selection, fades out after `frame_seconds`
+];
 
 /// No more translation regions than this can exist at once.
 pub const MAX_REGIONS: usize = 3;
@@ -139,10 +149,15 @@ pub struct Settings {
     pub overlay_pos: (i32, i32),
     pub overlay_size: (u32, u32),
     pub hotkeys: Hotkeys,
-    /// Рамка вокруг выбранного окна/области: цвет `#rrggbb`, толщина в пикселях, секунд показа (0 — не показывать).
+    /// Рамка вокруг выбранного окна и областей: цвет `#rrggbb` простой обводки, толщина в пикселях
+    /// и время показа в режиме «при выделении».
     pub frame_color: String,
     pub frame_width: u32,
     pub frame_seconds: u32,
+    /// One of `REGION_FRAME_MODES`.
+    pub region_frame_mode: String,
+    /// Region outlines while the translation is pinned: "dim" (semi-transparent) or "hide".
+    pub region_frame_pinned: String,
     pub window: Option<WindowKey>,
     pub region: Option<NormRect>,
 }
@@ -198,7 +213,7 @@ impl Default for Settings {
             border_color: "#ff00ff".into(),
             border_opacity: 0.65,
             border_width: 2,
-            border_pattern: true,
+            border_pattern: false,
             border_always: true,
             border_seconds: 5,
             overlay_padding: 16,
@@ -228,6 +243,8 @@ impl Default for Settings {
             frame_color: "#ff0000".into(),
             frame_width: 2,
             frame_seconds: 3,
+            region_frame_mode: "selection".into(),
+            region_frame_pinned: "dim".into(),
             window: None,
             region: None,
         }
@@ -240,15 +257,23 @@ impl Settings {
     }
 
     pub fn load() -> Self {
-        let mut settings: Self = std::fs::read_to_string(Self::path())
-            .ok()
-            .and_then(|s| toml::from_str(&s).ok())
-            .unwrap_or_default();
+        let text = std::fs::read_to_string(Self::path()).unwrap_or_default();
+        let mut settings = Self::from_toml(&text);
         // Migrate the old single rectangle into the first named region.
         if settings.regions.iter().all(|r| r.rect.is_none()) {
             if let Some(first) = settings.regions.first_mut() { first.rect = settings.region; }
         }
         settings.sanitize();
+        settings
+    }
+
+    /// Parse a saved config, migrating older formats.
+    pub fn from_toml(text: &str) -> Self {
+        let mut settings: Self = toml::from_str(text).unwrap_or_default();
+        // Before frame modes, `frame_seconds = 0` meant "never show the frame".
+        if settings.frame_seconds == 0 && !text.contains("region_frame_mode") {
+            settings.region_frame_mode = "off".into();
+        }
         settings
     }
 
@@ -260,6 +285,10 @@ impl Settings {
         self.border_width = self.border_width.clamp(1, 16);
         self.border_opacity = self.border_opacity.clamp(0.0, 1.0);
         self.border_seconds = self.border_seconds.clamp(1, 120);
+        self.frame_seconds = self.frame_seconds.clamp(1, 60);
+        self.frame_width = self.frame_width.clamp(1, 12);
+        if !REGION_FRAME_MODES.contains(&self.region_frame_mode.as_str()) { self.region_frame_mode = "selection".into(); }
+        if !["dim", "hide"].contains(&self.region_frame_pinned.as_str()) { self.region_frame_pinned = "dim".into(); }
         self.opacity = self.opacity.clamp(0.0, 1.0);
         self.overlay_padding = self.overlay_padding.min(64);
         // Only sanity bounds: the overlay itself is clamped to the size of its actual screen.
@@ -274,6 +303,7 @@ impl Settings {
             if r.id.is_empty() || !ids.insert(r.id.clone()) { r.id = format!("region-{index}"); ids.insert(r.id.clone()); }
             r.interval_ms = r.interval_ms.clamp(100, 10000);
             r.debounce_ms = r.debounce_ms.min(5000);
+            if !r.frame_mode.is_empty() && !REGION_FRAME_MODES.contains(&r.frame_mode.as_str()) { r.frame_mode.clear(); }
             if r.rect.is_some_and(|r| ![r.x, r.y, r.w, r.h].iter().all(|v| v.is_finite()) || r.w <= 0.0 || r.h <= 0.0 || r.x < 0.0 || r.y < 0.0 || r.x+r.w > 1.000001 || r.y+r.h > 1.000001) { r.rect = None; }
         }
         if !self.regions.iter().any(|r| r.id == self.active_region) { self.active_region = self.regions[0].id.clone(); }
@@ -284,7 +314,7 @@ impl Settings {
             for (i, r) in self.regions.iter_mut().enumerate() { r.enabled = Some(i) == keep; }
         }
         let defaults = Self::default();
-        for (value, fallback) in [(&mut self.text_color, defaults.text_color), (&mut self.background_color, defaults.background_color), (&mut self.border_color, defaults.border_color),
+        for (value, fallback) in [(&mut self.text_color, defaults.text_color), (&mut self.background_color, defaults.background_color), (&mut self.border_color, defaults.border_color), (&mut self.frame_color, defaults.frame_color),
             (&mut self.outline_color, defaults.outline_color), (&mut self.original_color, defaults.original_color)] {
             if value.len() != 7 || !value.starts_with('#') || !value[1..].bytes().all(|b| b.is_ascii_hexdigit()) { *value = fallback; }
         }
@@ -367,6 +397,20 @@ mod tests {
         s.regions = ["a", "b", "c"].map(|id| region(id, true)).to_vec();
         s.sanitize();
         assert_eq!(s.regions.iter().filter(|r| r.enabled).count(), 3);
+    }
+
+    #[test]
+    fn region_frame_defaults_and_migration() {
+        let s = Settings::default();
+        assert!(!s.border_pattern, "the error pattern is off by default");
+        assert_eq!((s.region_frame_mode.as_str(), s.frame_seconds), ("selection", 3));
+        assert_eq!(Settings::from_toml("frame_seconds = 0").region_frame_mode, "off", "old 'never show' is kept");
+        assert_eq!(Settings::from_toml("frame_seconds = 0\nregion_frame_mode = \"solid\"").region_frame_mode, "solid");
+        let mut bad = Settings { region_frame_mode: "blink".into(), ..Settings::default() };
+        bad.regions[0].frame_mode = "blink".into();
+        bad.sanitize();
+        assert_eq!(bad.region_frame_mode, "selection");
+        assert_eq!(bad.regions[0].frame_mode, "", "unknown per-region mode falls back to the global one");
     }
 
     #[test]

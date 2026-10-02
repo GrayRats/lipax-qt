@@ -44,7 +44,6 @@ Window {
             posX = settings.overlay_pos ? settings.overlay_pos[0] : 100
             posY = settings.overlay_pos ? settings.overlay_pos[1] : 100
         }
-        borderCanvas.requestPaint()
         Qt.callLater(updateInput)
     }
     Component.onCompleted: updateScreen()
@@ -89,10 +88,10 @@ Window {
     }
     onFrameVisibleChanged: Qt.callLater(updateInput)
     // Show the frame briefly on every pin change so the new state is visible in any frame mode.
-    onPinnedChanged: { flashFrame(); Qt.callLater(updateInput); borderCanvas.requestPaint() }
+    onPinnedChanged: { flashFrame(); Qt.callLater(updateInput) }
     onClickThroughChanged: Qt.callLater(updateInput)
-    onWidthChanged: { Qt.callLater(updateInput); borderCanvas.requestPaint() }
-    onHeightChanged: { Qt.callLater(updateInput); borderCanvas.requestPaint() }
+    onWidthChanged: Qt.callLater(updateInput)
+    onHeightChanged: Qt.callLater(updateInput)
     onVisibleChanged: if (visible) Qt.callLater(updateInput)
 
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus
@@ -121,28 +120,17 @@ Window {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        visible: win.frameVisible
+        visible: win.frameVisible && win.settings.border_pattern !== true
         border.width: win.frameWidth
-        border.color: win.settings.border_pattern !== false ? "#000000" : (win.settings.border_color || "#ff00ff")
+        border.color: win.settings.border_color || "#ff00ff"
         opacity: win.settings.border_opacity !== undefined ? win.settings.border_opacity : 0.65
     }
-    Canvas {
-        id: borderCanvas
+    ErrorPattern {
         anchors.fill: parent
-        visible: win.frameVisible && win.settings.border_pattern !== false
+        visible: win.frameVisible && win.settings.border_pattern === true
+        band: win.frameWidth
+        color: win.settings.border_color || "#ff00ff"
         opacity: win.settings.border_opacity !== undefined ? win.settings.border_opacity : 0.65
-        onPaint: {
-            const ctx = getContext("2d")
-            ctx.reset()
-            ctx.fillStyle = win.settings.border_color || "#ff00ff"
-            const b = win.frameWidth, tile = 12
-            for (let x = 0; x < width; x += tile * 2) {
-                ctx.fillRect(x, 0, tile, b); ctx.fillRect(x + tile, height - b, tile, b)
-            }
-            for (let y = b; y < height - b; y += tile * 2) {
-                ctx.fillRect(0, y, b, tile); ctx.fillRect(width - b, y + tile, b, tile)
-            }
-        }
     }
     Flickable {
         id: textScroll

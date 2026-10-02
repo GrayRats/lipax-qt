@@ -21,6 +21,23 @@ ApplicationWindow {
     }
 
     SettingsWindow { id: settingsWin; controller: ctl; onSelectRegionRequested: regionWin.begin() }
+
+    // One outline per active region with an area; each has its own timer.
+    property bool started: false
+    Timer { interval: 1500; running: true; onTriggered: root.started = true }
+    readonly property string frameRegionIds:
+        JSON.stringify((settingsWin.current.regions || []).filter(r => r.enabled && r.rect).map(r => r.id))
+    Instantiator {
+        model: JSON.parse(root.frameRegionIds)
+        delegate: RegionFrame {
+            required property string modelData
+            settings: settingsWin.current
+            region: (settingsWin.current.regions || []).find(r => r.id === modelData) || null
+            gameGeometry: ctl.gameGeometry
+            pinned: settingsWin.current.overlay_pinned === true
+            flashOnCreate: root.started
+        }
+    }
     RegionSelector { id: regionWin; controller: ctl }
     FrameOverlay { id: selectionFrame; settings: settingsWin.current }
     TranslationOverlay {

@@ -8,6 +8,8 @@ fn main() {
         "qml/TranslationOverlay.qml",
         "qml/HotkeyButton.qml",
         "qml/FrameOverlay.qml",
+        "qml/ErrorPattern.qml",
+        "qml/RegionFrame.qml",
     ]))
     .files(["src/bridge.rs", "src/icon.rs"])
     .include_dir("src")

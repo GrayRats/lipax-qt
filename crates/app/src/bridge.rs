@@ -540,7 +540,7 @@ impl qobject::Controller {
                         s.region = None;
                         for r in &mut s.regions { r.rect = None; }
                     });
-                    show_frame(shared.clone(), qt.clone(), None);
+                    show_frame(shared.clone(), qt.clone());
                     let _ = qt.queue(move |mut o| {
                         o.as_mut().set_window_title(QString::from(title.as_str()));
                         o.as_mut().set_has_region(false);
@@ -615,8 +615,8 @@ impl qobject::Controller {
             s.region = None;
             if let Some(r) = s.regions.iter_mut().find(|r| r.id == s.active_region) { r.rect = Some(rect); r.enabled = true; }
         });
+        // The region outline (RegionFrame) flashes by itself when the area changes.
         self.as_mut().publish_settings();
-        show_frame(self.rust().shared.clone(), self.qt_thread(), Some(rect));
         self.as_mut().set_has_region(true);
         self.as_mut().set_status(QString::from("Область сохранена"));
     }
@@ -761,15 +761,14 @@ impl qobject::Controller {
     }
 }
 
-/// Рамка вокруг выбранного окна (`region == None`) или области внутри него. Геометрию отдаёт KWin.
-fn show_frame(shared: Arc<Shared>, qt: cxx_qt::CxxQtThread<qobject::Controller>, region: Option<NormRect>) {
+/// Рамка вокруг только что выбранного окна. Геометрию отдаёт KWin; рамки областей рисует QML (RegionFrame).
+fn show_frame(shared: Arc<Shared>, qt: cxx_qt::CxxQtThread<qobject::Controller>) {
     rt().spawn(async move {
         let Some(uuid) = shared.settings.borrow().window.clone().filter(|w| !is_portal_window(w)).map(|w| w.uuid) else {
             return; // у portal-окна геометрия на рабочем столе неизвестна
         };
         let Ok(kwin) = shared.kwin().await else { return };
         let Some(g) = kwin.window_geometry(&uuid).await else { return };
-        let g = region.map_or(g, |r| g.region(r));
         let _ = qt.queue(move |mut o| o.as_mut().frame_requested(g.x, g.y, g.w, g.h));
     });
 }
