@@ -1,6 +1,6 @@
-//! KWin's public window-info API exposes the decorated frame. Its scripting API
-//! exposes clientGeometry in logical desktop coordinates, matching CaptureWindow.
-use super::kwin::WindowGeometry;
+//! KWin's public window-info API exposes only the decorated frame. Its scripting API
+//! exposes client, frame and buffer geometry in logical desktop coordinates.
+use super::kwin::{WindowFrames, WindowGeometry};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, OnceLock};
 use tokio::sync::Notify;
@@ -25,7 +25,7 @@ pub async fn shutdown() {
 
 #[derive(Default)]
 struct State {
-    windows: Mutex<HashMap<String, WindowGeometry>>,
+    windows: Mutex<HashMap<String, WindowFrames>>,
     ready: Notify,
 }
 
@@ -33,16 +33,20 @@ struct GeometryService(Arc<State>);
 
 #[zbus::interface(name = "io.lipa.Geometry", spawn = false)]
 impl GeometryService {
+    /// `[client, frame, buffer]`, each `[x, y, w, h]`; anything else (`null` on close) forgets the window.
     fn update(&self, uuid: &str, geometry: &str) {
-        let Ok([x, y, w, h]) = serde_json::from_str::<[f64; 4]>(geometry) else {
-            return;
+        let rect = |[x, y, w, h]: [f64; 4]| {
+            ([x, y, w, h].iter().all(|v| v.is_finite()) && w > 0.0 && h > 0.0).then_some(WindowGeometry { x, y, w, h })
         };
+        let frames = serde_json::from_str::<[[f64; 4]; 3]>(geometry).ok().and_then(|[c, f, b]| {
+            let client = rect(c)?;
+            Some(WindowFrames { client, frame: rect(f).unwrap_or(client), buffer: rect(b).unwrap_or(client) })
+        });
         let mut windows = self.0.windows.lock().unwrap();
-        if [x, y, w, h].iter().all(|v| v.is_finite()) && w > 0.0 && h > 0.0 {
-            windows.insert(uuid.into(), WindowGeometry { x, y, w, h });
-        } else {
-            windows.remove(uuid);
-        }
+        match frames {
+            Some(frames) => windows.insert(uuid.into(), frames),
+            None => windows.remove(uuid),
+        };
     }
 
     fn ready(&self) {
@@ -124,7 +128,7 @@ impl ClientGeometry {
         result
     }
 
-    pub fn get(&self, uuid: &str) -> Option<WindowGeometry> {
+    pub fn get(&self, uuid: &str) -> Option<WindowFrames> {
         self.state.windows.lock().unwrap().get(uuid).copied()
     }
 }
@@ -164,8 +168,10 @@ mod tests {
         let state = Arc::new(State::default());
         let service = GeometryService(state.clone());
         // Outer window is (100, 50, 808, 634); client origin includes 4px side + 30px title.
-        service.update("game", "[104,80,800,600]");
-        let g = state.windows.lock().unwrap()["game"];
+        service.update("game", "[[104,80,800,600],[100,50,808,634],[104,80,800,600]]");
+        let frames = state.windows.lock().unwrap()["game"];
+        assert_eq!(frames.frame, WindowGeometry { x: 100.0, y: 50.0, w: 808.0, h: 634.0 });
+        let g = frames.client;
         assert_eq!(
             g.region(NormRect {
                 x: 0.0,
@@ -189,9 +195,11 @@ mod tests {
                 h: 150.0
             }
         );
-        service.update("game", "[-1200,100,800,600]");
-        assert_eq!(state.windows.lock().unwrap()["game"].x, -1200.0);
-        service.update("game", "[0,0,0,0]");
+        service.update("game", "[[-1200,100,800,600],[0,0,0,0],[-1200,100,800,600]]");
+        let moved = state.windows.lock().unwrap()["game"];
+        assert_eq!(moved.client.x, -1200.0);
+        assert_eq!(moved.frame, moved.client, "invalid frame falls back to the client area");
+        service.update("game", "null");
         assert!(!state.windows.lock().unwrap().contains_key("game"));
     }
 }

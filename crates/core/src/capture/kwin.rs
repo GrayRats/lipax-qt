@@ -17,7 +17,11 @@ use zbus::zvariant::{Fd, OwnedValue, Value};
 pub struct KwinCapture {
     conn: zbus::Connection,
     geometry: tokio::sync::OnceCell<super::geometry::ClientGeometry>,
+    /// Failed script loads are retried at most every `GEOMETRY_RETRY`, not on every frame.
+    geometry_failed: std::sync::Mutex<Option<std::time::Instant>>,
 }
+
+const GEOMETRY_RETRY: std::time::Duration = std::time::Duration::from_secs(30);
 
 fn unavailable(e: impl std::fmt::Display) -> CaptureError {
     CaptureError::Unavailable(e.to_string())
@@ -46,12 +50,58 @@ impl WindowGeometry {
     pub fn region(&self, r: NormRect) -> WindowGeometry {
         WindowGeometry { x: self.x + r.x * self.w, y: self.y + r.y * self.h, w: r.w * self.w, h: r.h * self.h }
     }
+
+    fn contains(&self, o: &WindowGeometry) -> bool {
+        const EPS: f64 = 0.5;
+        o.x >= self.x - EPS && o.y >= self.y - EPS && o.x + o.w <= self.x + self.w + EPS && o.y + o.h <= self.y + self.h + EPS
+    }
+
+    fn union(&self, o: &WindowGeometry) -> WindowGeometry {
+        let (x, y) = (self.x.min(o.x), self.y.min(o.y));
+        WindowGeometry { x, y, w: (self.x + self.w).max(o.x + o.w) - x, h: (self.y + self.h).max(o.y + o.h) - y }
+    }
+}
+
+/// Прямоугольники окна в KWin: клиентская область (без рамки и заголовка KWin), рамка
+/// с серверной декорацией и буфер (у окон с CSD — вместе с тенью).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WindowFrames {
+    pub client: WindowGeometry,
+    pub frame: WindowGeometry,
+    pub buffer: WindowGeometry,
+}
+
+/// Где в кадре KWin лежит клиентская область, в пикселях кадра. Кадр соответствует одному
+/// из прямоугольников окна (клиент, рамка, буфер или их объединение) в масштабе вывода:
+/// находим его по размеру и вырезаем клиентскую часть. `None` — кадр уже равен клиентской
+/// области или не совпал ни с одним прямоугольником (тогда он остаётся как есть).
+pub fn client_crop(width: u32, height: u32, f: &WindowFrames) -> Option<(u32, u32, u32, u32)> {
+    let (iw, ih) = (width as f64, height as f64);
+    for c in [f.client, f.frame, f.buffer, f.frame.union(&f.buffer)] {
+        if !c.contains(&f.client) {
+            continue;
+        }
+        let scale = iw / c.w;
+        // Округление размеров при дробном масштабе — до 2 px.
+        if !(0.5..=4.0).contains(&scale) || (ih - c.h * scale).abs() > 2.0 {
+            continue;
+        }
+        let px = |v: f64, max: u32| (v * scale).round().clamp(0.0, max as f64) as u32;
+        let (x, y) = (px(f.client.x - c.x, width - 1), px(f.client.y - c.y, height - 1));
+        let (w, h) = (px(f.client.w, width - x).max(1), px(f.client.h, height - y).max(1));
+        // Кадр уже совпадает с клиентской областью с точностью до округления.
+        if x <= 1 && y <= 1 && width - w <= 2 && height - h <= 2 {
+            return None;
+        }
+        return Some((x, y, w, h));
+    }
+    None
 }
 
 impl KwinCapture {
     pub async fn connect() -> Result<Self, CaptureError> {
         let conn = zbus::Connection::session().await.map_err(unavailable)?;
-        Ok(Self { conn, geometry: tokio::sync::OnceCell::new() })
+        Ok(Self { conn, geometry: tokio::sync::OnceCell::new(), geometry_failed: Default::default() })
     }
 
     /// Пользователь кликает по окну; возвращает его ключ. Отмена (Esc) даёт `None`.
@@ -94,19 +144,39 @@ impl KwinCapture {
         }
     }
 
-    /// Положение и размер окна на рабочем столе (логические координаты KWin), если окно существует.
-    pub async fn window_geometry(&self, uuid: &str) -> Option<WindowGeometry> {
+    /// Прямоугольники окна (логические координаты KWin), если окно существует.
+    pub async fn window_frames(&self, uuid: &str) -> Option<WindowFrames> {
+        if let Some(tracker) = self.geometry.get() {
+            return tracker.get(uuid);
+        }
+        if self.geometry_failed.lock().unwrap().is_some_and(|t| t.elapsed() < GEOMETRY_RETRY) {
+            return None;
+        }
         match self.geometry.get_or_try_init(super::geometry::ClientGeometry::connect).await {
             Ok(tracker) => tracker.get(uuid),
             Err(e) => {
                 tracing::warn!("KWin client geometry unavailable: {e}");
+                *self.geometry_failed.lock().unwrap() = Some(std::time::Instant::now());
                 None // Do not draw a misleading frame using decorated geometry.
             }
         }
     }
 
-    /// Полный кадр окна.
+    /// Клиентская область окна на рабочем столе (без рамки и заголовка KWin).
+    pub async fn window_geometry(&self, uuid: &str) -> Option<WindowGeometry> {
+        self.window_frames(uuid).await.map(|f| f.client)
+    }
+
+    /// Кадр клиентской области окна: без рамки, заголовка, кнопок и теней.
     pub async fn grab_window(&self, uuid: &str) -> Result<DynamicImage, CaptureError> {
+        let img = self.capture_window(uuid).await?;
+        Ok(match self.window_frames(uuid).await.and_then(|f| client_crop(img.width(), img.height(), &f)) {
+            Some((x, y, w, h)) => img.crop_imm(x, y, w, h),
+            None => img,
+        })
+    }
+
+    async fn capture_window(&self, uuid: &str) -> Result<DynamicImage, CaptureError> {
         let (reader, writer) = std::io::pipe().map_err(unavailable)?;
         // Читаем параллельно с вызовом: кадр больше буфера pipe, иначе взаимная блокировка.
         let read = tokio::task::spawn_blocking(move || {
@@ -119,6 +189,8 @@ impl KwinCapture {
         let mut options: HashMap<&str, Value> = HashMap::new();
         options.insert("include-cursor", false.into());
         options.insert("include-decoration", false.into());
+        // По умолчанию KWin добавляет тень: у окон без серверной рамки (CSD) кадр был бы шире окна.
+        options.insert("include-shadow", false.into());
         options.insert("native-resolution", true.into());
 
         let reply = self
@@ -205,6 +277,27 @@ mod tests {
         let g = WindowGeometry { x: 100.0, y: 50.0, w: 800.0, h: 600.0 };
         let r = g.region(NormRect { x: 0.5, y: 0.25, w: 0.25, h: 0.5 });
         assert_eq!(r, WindowGeometry { x: 500.0, y: 200.0, w: 200.0, h: 300.0 });
+    }
+
+    fn rect(x: f64, y: f64, w: f64, h: f64) -> WindowGeometry {
+        WindowGeometry { x, y, w, h }
+    }
+
+    #[test]
+    fn client_crop_strips_decoration_and_shadow() {
+        // Серверная рамка KWin: 4 px по бокам, заголовок 30 px.
+        let ssd = WindowFrames { client: rect(104.0, 80.0, 800.0, 600.0), frame: rect(100.0, 50.0, 808.0, 634.0), buffer: rect(104.0, 80.0, 800.0, 600.0) };
+        assert_eq!(client_crop(800, 600, &ssd), None, "KWin already returned the client area");
+        assert_eq!(client_crop(808, 634, &ssd), Some((4, 30, 800, 600)), "decoration included");
+        assert_eq!(client_crop(1212, 951, &ssd), Some((6, 45, 1200, 900)), "fractional scale 1.5");
+
+        // CSD с тенью 20 px в буфере (GTK, libdecor, XWayland с _GTK_FRAME_EXTENTS).
+        let csd = WindowFrames { client: rect(0.0, 0.0, 640.0, 480.0), frame: rect(0.0, 0.0, 640.0, 480.0), buffer: rect(-20.0, -20.0, 680.0, 520.0) };
+        assert_eq!(client_crop(1360, 1040, &csd), Some((40, 40, 1280, 960)), "shadow at scale 2");
+        assert_eq!(client_crop(1280, 960, &csd), None);
+
+        // Неизвестный размер кадра: не режем вслепую.
+        assert_eq!(client_crop(1000, 1000, &ssd), None);
     }
 
     #[test]
