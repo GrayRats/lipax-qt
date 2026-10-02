@@ -6,13 +6,15 @@ TestCase {
     name: "Overlay"
     when: windowShown
     property var moves: []
+    property int closes: 0
     QtObject {
         id: ctl
         property bool passthrough: false
         property var rects: []
         function configureOverlay(p, json) { passthrough = p; rects = JSON.parse(json) }
         property bool blur: false
-        function configureOverlayBlur(enable, radius) { blur = enable }
+        property int blurRadius: -1
+        function configureOverlayBlur(enable, radius) { blur = enable; blurRadius = radius }
     }
     Lipa.TranslationOverlay {
         id: ov
@@ -24,6 +26,7 @@ TestCase {
         // As in main.qml: the toggle is saved into settings, which flips `pinned`.
         onPinToggled: (p) => settings = Object.assign({}, settings, { overlay_pinned: p })
         onMoved: (x, y) => moves.push([x, y])
+        onCloseRequested: closes++
     }
 
     function init() {
@@ -92,6 +95,42 @@ TestCase {
         verify(Qt.colorEqual(text.color, data.text), "text colour")
         tryVerify(() => ctl.blur === data.blur, 1000, "compositor blur")
         ov.contentItem.grabToImage(r => r.saveToFile("/tmp/lipa-overlay-" + data.tag + ".png")); wait(100)
+    }
+
+    // Floating (unpinned) window in every display style and every frame mode: rounded, draggable,
+    // closable; pinning squares it off again; MMB still toggles.
+    function test_floatingWindow_data() {
+        const rows = []
+        for (const style of ["blur", "transparent", "dim", "solid"])
+            for (const frame of [{ border_always: true }, { border_always: false, border_seconds: 1 }, { border_pattern: true }])
+                rows.push({ tag: style + "/" + JSON.stringify(frame), set: Object.assign({ overlay_style: style }, frame) })
+        return rows
+    }
+    function test_floatingWindow(data) {
+        ov.settings = Object.assign({}, ov.settings, data.set)
+        const bg = findChild(ov.contentItem, "overlayBackground")
+        const close = findChild(ov.contentItem, "closeButton")
+        const area = findChild(ov.contentItem, "overlayDragArea")
+        const handle = findChild(ov.contentItem, "pinHandle")
+        verify(ov.floating)
+        compare(bg.radius, 12, "rounded background")
+        verify(close.visible, "close button shown")
+        if (ov.blurBehind) tryCompare(ctl, "blurRadius", 12, 1000, "blur follows the rounded shape")
+
+        moves = []
+        mouseDrag(area, 200, 70, 30, 20, Qt.LeftButton)
+        compare(moves.length, 1, "draggable")
+
+        closes = 0
+        mouseClick(close, close.width / 2, close.height / 2, Qt.LeftButton)
+        compare(closes, 1, "closable")
+
+        mouseClick(area, handle.x + handle.width / 2, handle.y + handle.height / 2, Qt.MiddleButton)
+        verify(ov.pinned)
+        compare(bg.radius, 0, "pinned overlay is square")
+        verify(!close.visible)
+        mouseClick(area, handle.x + handle.width / 2, handle.y + handle.height / 2, Qt.MiddleButton)
+        verify(!ov.pinned, "MMB unpins again")
     }
 
     function test_screenshot() {

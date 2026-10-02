@@ -72,7 +72,8 @@ Window {
     // The pin handle is always shown and always accepts input, whatever the frame mode: MMB on it
     // unpins even when the frame is hidden. The frame band accepts input only while it is visible.
     readonly property int handleSize: 26
-    readonly property var handleRect: [width - handleSize - 2, 2, handleSize, handleSize]
+    readonly property int handleInset: 2 + Math.round(cornerRadius / 3)
+    readonly property var handleRect: [width - handleSize - handleInset, handleInset, handleSize, handleSize]
     readonly property bool passthrough: pinned && clickThrough
     function inputRects() {
         const rects = [handleRect]
@@ -99,7 +100,10 @@ Window {
     readonly property bool inverse: style === "dim" && settings.dim_inverse === true
     // The dim style relies on the same compositor blur, under a denser tint so it reads as faint.
     readonly property bool blurBehind: (style === "blur" && settings.blur_enabled !== false) || style === "dim"
-    readonly property int cornerRadius: 0
+    // Unpinned, the overlay is a floating window with rounded corners and a close button.
+    readonly property bool floating: !pinned
+    readonly property int cornerRadius: floating ? (settings.overlay_corner_radius !== undefined ? settings.overlay_corner_radius : 12) : 0
+    signal closeRequested()
     readonly property color backgroundColor: style === "solid" ? (settings.background_color || "#181818")
         : inverse ? "#f2f2f2" : "#000000"
     readonly property real backgroundOpacity: style === "solid" ? (settings.opacity !== undefined ? settings.opacity : 0.85)
@@ -145,6 +149,7 @@ Window {
         anchors.fill: parent
         color: "transparent"
         visible: win.frameVisible && win.settings.border_pattern !== true
+        radius: win.cornerRadius
         border.width: win.frameWidth
         border.color: win.settings.border_color || "#ff00ff"
         opacity: win.settings.border_opacity !== undefined ? win.settings.border_opacity : 0.65
@@ -153,6 +158,7 @@ Window {
         anchors.fill: parent
         visible: win.frameVisible && win.settings.border_pattern === true
         band: win.frameWidth
+        radius: win.cornerRadius
         color: win.settings.border_color || "#ff00ff"
         opacity: win.settings.border_opacity !== undefined ? win.settings.border_opacity : 0.65
     }
@@ -259,6 +265,25 @@ Window {
         onCanceled: { if (moving) { moving = false; win.moved(win.actualX, win.actualY) } }
         onWheel: (wheel) => {
             if (!win.pinned) textScroll.contentY = Math.max(0, Math.min(textScroll.contentY - wheel.angleDelta.y, textScroll.contentHeight - textScroll.height))
+        }
+    }
+    // Close button of the floating window; above the drag area so it gets the click.
+    Rectangle {
+        id: closeButton
+        objectName: "closeButton"
+        visible: win.floating
+        x: win.handleRect[0] - width - 4; y: win.handleRect[1]
+        width: win.handleSize; height: win.handleSize; radius: width / 2
+        color: closeArea.containsMouse ? "#c0d03030" : "#80000000"
+        border.width: 1
+        border.color: win.settings.border_color || "#ff00ff"
+        Text { anchors.centerIn: parent; text: "✕"; color: "#ffffff"; font.pixelSize: 13 }
+        MouseArea {
+            id: closeArea
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton
+            onClicked: win.closeRequested()
         }
     }
 }

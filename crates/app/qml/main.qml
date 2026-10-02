@@ -50,6 +50,8 @@ ApplicationWindow {
         settings: settingsWin.current
         onMoved: (x, y) => { settingsWin.set("overlay_pos", [x, y]); settingsWin.apply() }
         onPinToggled: (p) => { settingsWin.set("overlay_pinned", p); settingsWin.apply() }
+        // Closing the floating window hides the translation; "Поверх игры" or Ctrl+Alt+H shows it again.
+        onCloseRequested: overlayEnabled.checked = false
         // Any change of the selected areas (KWin or portal) briefly reveals a hidden frame.
         readonly property string areasKey: JSON.stringify((settingsWin.current.regions || []).map(r => [r.enabled, r.rect]))
         onAreasKeyChanged: flashFrame()

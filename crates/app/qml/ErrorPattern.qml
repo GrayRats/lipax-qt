@@ -7,6 +7,9 @@ Canvas {
     property color color: "#ff00ff"
     property int band: 2
     property int tile: 12
+    // Rounded outline: the band is clipped between two rounded rectangles.
+    property real radius: 0
+    onRadiusChanged: requestPaint()
 
     onColorChanged: requestPaint()
     onBandChanged: requestPaint()
@@ -16,6 +19,14 @@ Canvas {
         const ctx = getContext("2d")
         ctx.reset()
         const b = Math.min(band, width / 2, height / 2)
+        if (radius > 0) {
+            ctx.beginPath()
+            ctx.roundedRect(0, 0, width, height, radius, radius)
+            const inner = Math.max(0, radius - b)
+            ctx.roundedRect(b, b, width - 2 * b, height - 2 * b, inner, inner)
+            ctx.fillRule = Qt.OddEvenFill
+            ctx.clip()
+        }
         ctx.fillStyle = "#000000"
         ctx.fillRect(0, 0, width, b); ctx.fillRect(0, height - b, width, b)
         ctx.fillRect(0, b, b, height - 2 * b); ctx.fillRect(width - b, b, b, height - 2 * b)

@@ -43,7 +43,7 @@ ApplicationWindow {
         { value: "solid", label: "Сплошной фон" }
     ]
     readonly property bool solidStyle: (current.overlay_style || "solid") === "solid"
-    readonly property var appearanceKeys: ["overlay_style", "blur_enabled", "blur_tint", "dim_inverse",
+    readonly property var appearanceKeys: ["overlay_style", "blur_enabled", "blur_tint", "dim_inverse", "overlay_corner_radius",
         "font_family", "font_size", "font_bold", "font_italic", "text_color", "background_color",
         "opacity", "border_color", "border_opacity", "border_width", "border_pattern", "border_always", "border_seconds", "overlay_padding", "text_alignment",
         "text_wrap", "text_outline", "outline_color", "line_spacing", "show_original", "original_font_family",
@@ -770,6 +770,12 @@ ApplicationWindow {
             }
 
             SectionTitle { text: "Размеры" }
+            FieldLabel { text: "Скругление углов открепленного окна, px" }
+            SpinBox {
+                from: 0; to: 32; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.overlay_corner_radius !== undefined ? win.current.overlay_corner_radius : 12
+                onValueModified: win.set("overlay_corner_radius", value)
+            }
             FieldLabel { text: "Внутренние отступы, px" }
             SpinBox {
                 from: 0; to: 64; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0

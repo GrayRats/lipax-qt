@@ -124,6 +124,8 @@ pub struct Settings {
     pub blur_tint: f64,
     /// "dim" style: light background with dark text instead of dark with white.
     pub dim_inverse: bool,
+    /// Corner radius of the unpinned (floating) translation window, px.
+    pub overlay_corner_radius: u32,
     pub font_family: String,
     pub font_bold: bool,
     pub font_italic: bool,
@@ -224,6 +226,7 @@ impl Default for Settings {
             blur_enabled: true,
             blur_tint: 0.3,
             dim_inverse: false,
+            overlay_corner_radius: 12,
             font_family: String::new(),
             font_bold: false,
             font_italic: false,
@@ -306,6 +309,7 @@ impl Settings {
         self.border_seconds = self.border_seconds.clamp(1, 120);
         self.frame_seconds = self.frame_seconds.clamp(1, 60);
         if !OVERLAY_STYLES.contains(&self.overlay_style.as_str()) { self.overlay_style = "solid".into(); }
+        self.overlay_corner_radius = self.overlay_corner_radius.min(32);
         self.blur_tint = if self.blur_tint.is_finite() { self.blur_tint.clamp(0.0, 0.8) } else { 0.3 };
         self.frame_width = self.frame_width.clamp(1, 12);
         if !REGION_FRAME_MODES.contains(&self.region_frame_mode.as_str()) { self.region_frame_mode = "selection".into(); }
