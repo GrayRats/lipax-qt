@@ -24,10 +24,11 @@ pub enum HotkeyAction {
     SelectRegion,
     TranslateOnce,
     ToggleOverlay,
+    TogglePin,
 }
 
 impl HotkeyAction {
-    const ALL: [HotkeyAction; 4] = [Self::Toggle, Self::SelectRegion, Self::TranslateOnce, Self::ToggleOverlay];
+    const ALL: [HotkeyAction; 5] = [Self::Toggle, Self::SelectRegion, Self::TranslateOnce, Self::ToggleOverlay, Self::TogglePin];
 
     fn id(self) -> &'static str {
         match self {
@@ -35,6 +36,7 @@ impl HotkeyAction {
             Self::SelectRegion => "select_region",
             Self::TranslateOnce => "translate_once",
             Self::ToggleOverlay => "toggle_overlay",
+            Self::TogglePin => "toggle_pin",
         }
     }
 
@@ -44,6 +46,7 @@ impl HotkeyAction {
             Self::SelectRegion => "Выбрать область перевода",
             Self::TranslateOnce => "Перевести сейчас",
             Self::ToggleOverlay => "Показать / скрыть overlay",
+            Self::TogglePin => "Закрепить / открепить перевод",
         }
     }
 
@@ -57,6 +60,7 @@ impl HotkeyAction {
             Self::SelectRegion => &h.select_region,
             Self::TranslateOnce => &h.translate_once,
             Self::ToggleOverlay => &h.toggle_overlay,
+            Self::TogglePin => &h.toggle_pin,
         }
     }
 }

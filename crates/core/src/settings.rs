@@ -148,6 +148,7 @@ pub struct Hotkeys {
     pub select_region: String,
     pub translate_once: String,
     pub toggle_overlay: String,
+    pub toggle_pin: String,
 }
 
 impl Default for Hotkeys {
@@ -157,6 +158,7 @@ impl Default for Hotkeys {
             select_region: "Ctrl+Alt+R".into(),
             translate_once: "Ctrl+Alt+Y".into(),
             toggle_overlay: "Ctrl+Alt+H".into(),
+            toggle_pin: "Ctrl+Alt+U".into(),
         }
     }
 }

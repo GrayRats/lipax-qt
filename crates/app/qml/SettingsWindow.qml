@@ -119,7 +119,8 @@ ApplicationWindow {
         { key: "toggle", title: "Запустить / остановить слежение" },
         { key: "select_region", title: "Выбрать область перевода" },
         { key: "translate_once", title: "Перевести сейчас" },
-        { key: "toggle_overlay", title: "Показать / скрыть перевод" }
+        { key: "toggle_overlay", title: "Показать / скрыть перевод" },
+        { key: "toggle_pin", title: "Закрепить / открепить перевод" }
     ]
     function setHotkey(key, v) { const h = Object.assign({}, current.hotkeys || ({})); h[key] = v; set("hotkeys", h) }
     function hotkeyDuplicate(key) {

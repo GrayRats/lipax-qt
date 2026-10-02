@@ -17,6 +17,7 @@ ApplicationWindow {
         onFrameRequested: (x, y, w, h) => selectionFrame.flash(x, y, w, h)
         onSelectRegionRequested: if (ctl.windowTitle.length > 0) regionWin.begin()
         onToggleOverlayRequested: overlayEnabled.checked = !overlayEnabled.checked
+        onTogglePinRequested: overlay.pinToggled(!overlay.pinned)
     }
 
     SettingsWindow { id: settingsWin; controller: ctl; onSelectRegionRequested: regionWin.begin() }

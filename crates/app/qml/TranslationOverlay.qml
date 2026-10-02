@@ -70,10 +70,26 @@ Window {
     signal pinToggled(bool pinned)
     objectName: "translationOverlay"
 
-    function updateInput() {
-        if (controller) controller.configureOverlay(pinned, clickThrough, frameWidth)
+    // The pin handle is always shown and always accepts input, whatever the frame mode: MMB on it
+    // unpins even when the frame is hidden. The frame band accepts input only while it is visible.
+    readonly property int handleSize: 26
+    readonly property var handleRect: [width - handleSize - 2, 2, handleSize, handleSize]
+    readonly property bool passthrough: pinned && clickThrough
+    function inputRects() {
+        const rects = [handleRect]
+        if (frameVisible) {
+            const band = Math.max(frameWidth, 10)
+            rects.push([0, 0, width, band], [0, height - band, width, band],
+                       [0, band, band, height - 2 * band], [width - band, band, band, height - 2 * band])
+        }
+        return rects
     }
-    onPinnedChanged: { Qt.callLater(updateInput); borderCanvas.requestPaint() }
+    function updateInput() {
+        if (controller) controller.configureOverlay(passthrough, JSON.stringify(inputRects()))
+    }
+    onFrameVisibleChanged: Qt.callLater(updateInput)
+    // Show the frame briefly on every pin change so the new state is visible in any frame mode.
+    onPinnedChanged: { flashFrame(); Qt.callLater(updateInput); borderCanvas.requestPaint() }
     onClickThroughChanged: Qt.callLater(updateInput)
     onWidthChanged: { Qt.callLater(updateInput); borderCanvas.requestPaint() }
     onHeightChanged: { Qt.callLater(updateInput); borderCanvas.requestPaint() }
@@ -176,13 +192,22 @@ Window {
             }
         }
     }
-    // Pin indicator; this corner stays clickable when pinned so MMB can unpin.
-    Text {
-        anchors.right: parent.right; anchors.top: parent.top; anchors.margins: win.frameWidth + 2
-        visible: win.frameVisible
-        text: win.pinned ? "●" : "✥"
-        color: win.settings.border_color || "#ff00ff"
-        font.pixelSize: 16
+    // Pin handle: stays visible in every frame mode, so there is always a target for MMB.
+    Rectangle {
+        id: pinHandle
+        objectName: "pinHandle"
+        x: win.handleRect[0]; y: win.handleRect[1]
+        width: win.handleSize; height: win.handleSize; radius: width / 2
+        color: "#80000000"
+        border.width: 1
+        border.color: win.settings.border_color || "#ff00ff"
+        opacity: win.pinned && !win.frameVisible ? 0.55 : 1
+        Text {
+            anchors.centerIn: parent
+            text: win.pinned ? "●" : "✥"
+            color: win.settings.border_color || "#ff00ff"
+            font.pixelSize: 14
+        }
     }
     Text {
         anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter

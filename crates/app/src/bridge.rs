@@ -42,7 +42,7 @@ pub mod qobject {
         fn refresh_diagnostics(self: Pin<&mut Controller>);
         #[qinvokable]
         #[cxx_name = "configureOverlay"]
-        fn configure_overlay(self: &Controller, pinned: bool, passthrough: bool, edge: i32);
+        fn configure_overlay(self: &Controller, passthrough: bool, rects: &QString);
         #[qinvokable]
         #[cxx_name = "settingsJson"]
         fn settings_json(self: &Controller) -> QString;
@@ -96,6 +96,10 @@ pub mod qobject {
         #[qsignal]
         #[cxx_name = "toggleOverlayRequested"]
         fn toggle_overlay_requested(self: Pin<&mut Controller>);
+        /// Горячая клавиша «закрепить / открепить перевод»: работает при любом режиме рамки.
+        #[qsignal]
+        #[cxx_name = "togglePinRequested"]
+        fn toggle_pin_requested(self: Pin<&mut Controller>);
     }
 
     impl cxx_qt::Threading for Controller {}
@@ -326,6 +330,7 @@ impl cxx_qt::Initialize for qobject::Controller {
                         HotkeyAction::TranslateOnce => o.as_mut().translate_once(),
                         HotkeyAction::SelectRegion => o.as_mut().select_region_requested(),
                         HotkeyAction::ToggleOverlay => o.as_mut().toggle_overlay_requested(),
+                        HotkeyAction::TogglePin => o.as_mut().toggle_pin_requested(),
                     },
                 });
             }
@@ -411,7 +416,11 @@ impl qobject::Controller {
         QString::from(serde_json::to_string(&Settings::default()).unwrap().as_str())
     }
     fn copy_text(&self, text: &QString) { crate::icon::copy_text(text); }
-    fn configure_overlay(&self, pinned: bool, passthrough: bool, edge: i32) { crate::icon::overlay_input(pinned, passthrough, edge); }
+    /// `rects` — JSON `[[x, y, w, h], ...]`: где overlay принимает ввод, когда клики идут сквозь него.
+    fn configure_overlay(&self, passthrough: bool, rects: &QString) {
+        let rects: Vec<[i32; 4]> = serde_json::from_str(&rects.to_string()).unwrap_or_default();
+        crate::icon::overlay_input(passthrough, &rects.concat());
+    }
     fn publish_settings(mut self: Pin<&mut Self>) {
         let s = self.rust().shared.settings.borrow().clone();
         self.as_mut().set_settings_state(QString::from(serde_json::to_string(&s).unwrap().as_str()));
