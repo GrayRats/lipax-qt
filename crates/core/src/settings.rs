@@ -67,6 +67,14 @@ impl Default for RegionProfile {
     }
 }
 
+/// How the translation overlay draws its background.
+pub const OVERLAY_STYLES: [&str; 4] = [
+    "blur",        // compositor blur with an adjustable dark tint
+    "transparent", // no background: white text with a light shadow
+    "dim",         // light dark tint over a faint blur, or its light inverse
+    "solid",       // `background_color` at `opacity`
+];
+
 /// Outline around a capture region in the game.
 pub const REGION_FRAME_MODES: [&str; 4] = [
     "pattern",   // purple/black "error texture", always shown
@@ -109,6 +117,13 @@ pub struct Settings {
     pub auto_translate: bool,
     pub overlay_mode: OverlayMode,
     pub overlay_pinned: bool,
+    /// One of `OVERLAY_STYLES`.
+    pub overlay_style: String,
+    /// "blur" style: compositor blur behind the overlay and the opacity of its dark tint (0–0.8).
+    pub blur_enabled: bool,
+    pub blur_tint: f64,
+    /// "dim" style: light background with dark text instead of dark with white.
+    pub dim_inverse: bool,
     pub font_family: String,
     pub font_bold: bool,
     pub font_italic: bool,
@@ -205,6 +220,10 @@ impl Default for Settings {
             auto_translate: true,
             overlay_mode: OverlayMode::Overlay,
             overlay_pinned: false,
+            overlay_style: "solid".into(),
+            blur_enabled: true,
+            blur_tint: 0.3,
+            dim_inverse: false,
             font_family: String::new(),
             font_bold: false,
             font_italic: false,
@@ -286,6 +305,8 @@ impl Settings {
         self.border_opacity = self.border_opacity.clamp(0.0, 1.0);
         self.border_seconds = self.border_seconds.clamp(1, 120);
         self.frame_seconds = self.frame_seconds.clamp(1, 60);
+        if !OVERLAY_STYLES.contains(&self.overlay_style.as_str()) { self.overlay_style = "solid".into(); }
+        self.blur_tint = if self.blur_tint.is_finite() { self.blur_tint.clamp(0.0, 0.8) } else { 0.3 };
         self.frame_width = self.frame_width.clamp(1, 12);
         if !REGION_FRAME_MODES.contains(&self.region_frame_mode.as_str()) { self.region_frame_mode = "selection".into(); }
         if !["dim", "hide"].contains(&self.region_frame_pinned.as_str()) { self.region_frame_pinned = "dim".into(); }

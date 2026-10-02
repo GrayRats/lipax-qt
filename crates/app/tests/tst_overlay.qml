@@ -11,6 +11,8 @@ TestCase {
         property bool passthrough: false
         property var rects: []
         function configureOverlay(p, json) { passthrough = p; rects = JSON.parse(json) }
+        property bool blur: false
+        function configureOverlayBlur(enable, radius) { blur = enable }
     }
     Lipa.TranslationOverlay {
         id: ov
@@ -68,6 +70,28 @@ TestCase {
         mouseClick(area, cx, cy, Qt.MiddleButton)
         verify(!ov.pinned, "MMB on the handle unpins")
         tryVerify(() => !ctl.passthrough, 1000, "input region is cleared after unpinning")
+    }
+
+    function test_displayStyles_data() {
+        return [
+            { tag: "solid", set: { overlay_style: "solid", background_color: "#102030", opacity: 0.85, text_color: "#ffe066" },
+              bg: "#102030", alpha: 0.85, text: "#ffe066", blur: false },
+            { tag: "blur", set: { overlay_style: "blur", blur_tint: 0.4 }, bg: "#000000", alpha: 0.4, text: "#ffffff", blur: true },
+            { tag: "blur-off", set: { overlay_style: "blur", blur_enabled: false, blur_tint: 0.2 }, bg: "#000000", alpha: 0.2, text: "#ffffff", blur: false },
+            { tag: "transparent", set: { overlay_style: "transparent" }, bg: "#000000", alpha: 0, text: "#ffffff", blur: false },
+            { tag: "dim", set: { overlay_style: "dim" }, bg: "#000000", alpha: 0.55, text: "#ffffff", blur: true },
+            { tag: "dim-inverse", set: { overlay_style: "dim", dim_inverse: true }, bg: "#f2f2f2", alpha: 0.72, text: "#141414", blur: true },
+        ]
+    }
+    function test_displayStyles(data) {
+        ov.settings = Object.assign({}, ov.settings, data.set)
+        const bg = findChild(ov.contentItem, "overlayBackground")
+        const text = findChild(ov.contentItem, "translatedText")
+        verify(Qt.colorEqual(bg.color, data.bg), "background colour")
+        fuzzyCompare(bg.opacity, data.alpha, 0.001)
+        verify(Qt.colorEqual(text.color, data.text), "text colour")
+        tryVerify(() => ctl.blur === data.blur, 1000, "compositor blur")
+        ov.contentItem.grabToImage(r => r.saveToFile("/tmp/lipa-overlay-" + data.tag + ".png")); wait(100)
     }
 
     function test_screenshot() {

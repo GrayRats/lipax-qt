@@ -10,7 +10,25 @@ inline void configureLipaApplication() {
 #include <QRegion>
 #include <QWindow>
 #include <QString>
+#include <QPainterPath>
+#include <KWindowEffects>
 #include "rust/cxx.h"
+
+// Blur behind the translation overlay, done by KWin (org_kde_kwin_blur). The strength is
+// KWin's global setting; elsewhere this is a no-op and only the tint is drawn.
+inline void configureOverlayBlur(bool enable, int radius) {
+    for (QWindow *window : QGuiApplication::allWindows()) {
+        if (window->objectName() != QStringLiteral("translationOverlay")) continue;
+        QRegion region;
+        if (enable && radius > 0) {
+            QPainterPath path;
+            path.addRoundedRect(QRectF(0, 0, window->width(), window->height()), radius, radius);
+            region = QRegion(path.toFillPolygon().toPolygon());
+        }
+        // An empty region with `enable` blurs the whole window.
+        KWindowEffects::enableBlurBehind(window, enable, region);
+    }
+}
 // `rects` is a flat list of x, y, w, h computed by the overlay QML: the only parts that keep
 // receiving input while clicks pass through to the game.
 inline void configureOverlayInput(bool passthrough, rust::Slice<const int32_t> rects) {

@@ -36,7 +36,15 @@ ApplicationWindow {
         for (const k of keys) c[k] = d[k]
         current = c
     }
-    readonly property var appearanceKeys: ["font_family", "font_size", "font_bold", "font_italic", "text_color", "background_color",
+    readonly property var overlayStyles: [
+        { value: "blur", label: "Фон с размытием" },
+        { value: "transparent", label: "Без фона (прозрачный)" },
+        { value: "dim", label: "Лёгкий тёмный фон" },
+        { value: "solid", label: "Сплошной фон" }
+    ]
+    readonly property bool solidStyle: (current.overlay_style || "solid") === "solid"
+    readonly property var appearanceKeys: ["overlay_style", "blur_enabled", "blur_tint", "dim_inverse",
+        "font_family", "font_size", "font_bold", "font_italic", "text_color", "background_color",
         "opacity", "border_color", "border_opacity", "border_width", "border_pattern", "border_always", "border_seconds", "overlay_padding", "text_alignment",
         "text_wrap", "text_outline", "outline_color", "line_spacing", "show_original", "original_font_family",
         "original_font_size", "original_color", "max_width_enabled", "overlay_max_width"]
@@ -585,6 +593,49 @@ ApplicationWindow {
                 columns: 2
                 columnSpacing: 24
                 rowSpacing: 12
+            SectionTitle { text: "Режим отображения" }
+            FieldLabel { text: "Фон перевода" }
+            ComboBox {
+                objectName: "overlayStyle"
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                model: win.overlayStyles.map(m => m.label)
+                currentIndex: Math.max(0, win.overlayStyles.findIndex(m => m.value === (win.current.overlay_style || "solid")))
+                onActivated: win.set("overlay_style", win.overlayStyles[currentIndex].value)
+            }
+            FieldLabel { text: "Размытие (KWin)"; visible: win.current.overlay_style === "blur" }
+            Switch {
+                visible: win.current.overlay_style === "blur"
+                checked: win.current.blur_enabled !== false
+                onToggled: win.set("blur_enabled", checked)
+            }
+            FieldLabel { text: "Прозрачность фона"; visible: win.current.overlay_style === "blur" }
+            RowLayout {
+                visible: win.current.overlay_style === "blur"
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                Slider {
+                    objectName: "blurTint"
+                    Layout.fillWidth: true; Layout.minimumWidth: 0
+                    from: 0; to: 0.8
+                    value: win.current.blur_tint !== undefined ? win.current.blur_tint : 0.3
+                    onMoved: win.set("blur_tint", Math.round(value * 100) / 100)
+                }
+                Label { text: Math.round((win.current.blur_tint !== undefined ? win.current.blur_tint : 0.3) * 100) + "%" }
+            }
+            FieldLabel { text: "Светлый фон, тёмный текст"; visible: win.current.overlay_style === "dim" }
+            Switch {
+                visible: win.current.overlay_style === "dim"
+                checked: win.current.dim_inverse === true
+                onToggled: win.set("dim_inverse", checked)
+            }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
+                visible: !win.solidStyle
+                text: win.current.overlay_style === "transparent"
+                      ? "Белый текст с лёгкой тенью, без фона. Цвета текста и фона ниже действуют только в режиме «Сплошной фон»."
+                      : "Размытие делает KWin; его силу задают «Системные настройки → Эффекты рабочего стола → Размытие». "
+                        + "Без KWin рисуется только тонированный фон. Цвета текста и фона ниже действуют только в режиме «Сплошной фон»."
+            }
+
             SectionTitle { text: "Текст перевода" }
             FieldLabel { text: "Шрифт" }
             ComboBox {
@@ -604,8 +655,8 @@ ApplicationWindow {
                 CheckBox { text: "Жирный"; checked: win.current.font_bold === true; onToggled: win.set("font_bold", checked) }
                 CheckBox { text: "Курсив"; checked: win.current.font_italic === true; onToggled: win.set("font_italic", checked) }
             }
-            FieldLabel { text: "Цвет текста" }
-            ColorRow { key: "text_color"; presets: ["#ffffff", "#ffe066", "#7cf29c", "#7cc7ff"] }
+            FieldLabel { text: "Цвет текста"; visible: win.solidStyle }
+            ColorRow { visible: win.solidStyle; key: "text_color"; presets: ["#ffffff", "#ffe066", "#7cf29c", "#7cc7ff"] }
             FieldLabel { text: "Обводка текста" }
             RowLayout {
                 Layout.fillWidth: true; Layout.minimumWidth: 0
@@ -656,10 +707,11 @@ ApplicationWindow {
             ColorRow { visible: win.current.show_original === true; key: "original_color"; presets: ["#b0b0b0", "#ffffff", "#ffe066"] }
 
             SectionTitle { text: "Фон и рамка" }
-            FieldLabel { text: "Цвет фона" }
-            ColorRow { key: "background_color"; presets: ["#181818", "#000000", "#202040", "#300030"] }
-            FieldLabel { text: "Непрозрачность фона" }
+            FieldLabel { text: "Цвет фона"; visible: win.solidStyle }
+            ColorRow { visible: win.solidStyle; key: "background_color"; presets: ["#181818", "#000000", "#202040", "#300030"] }
+            FieldLabel { text: "Непрозрачность фона"; visible: win.solidStyle }
             RowLayout {
+                visible: win.solidStyle
                 Layout.fillWidth: true; Layout.minimumWidth: 0
                 Slider {
                     Layout.fillWidth: true; Layout.minimumWidth: 0

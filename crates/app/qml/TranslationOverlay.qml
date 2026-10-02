@@ -90,9 +90,31 @@ Window {
     // Show the frame briefly on every pin change so the new state is visible in any frame mode.
     onPinnedChanged: { flashFrame(); Qt.callLater(updateInput) }
     onClickThroughChanged: Qt.callLater(updateInput)
-    onWidthChanged: Qt.callLater(updateInput)
-    onHeightChanged: Qt.callLater(updateInput)
-    onVisibleChanged: if (visible) Qt.callLater(updateInput)
+    onWidthChanged: { Qt.callLater(updateInput); Qt.callLater(updateBlur) }
+    onHeightChanged: { Qt.callLater(updateInput); Qt.callLater(updateBlur) }
+    onVisibleChanged: if (visible) { Qt.callLater(updateInput); Qt.callLater(updateBlur) }
+
+    // ── Display style: blur / transparent / dim (or its light inverse) / solid ──
+    readonly property string style: settings.overlay_style || "solid"
+    readonly property bool inverse: style === "dim" && settings.dim_inverse === true
+    // The dim style relies on the same compositor blur, under a denser tint so it reads as faint.
+    readonly property bool blurBehind: (style === "blur" && settings.blur_enabled !== false) || style === "dim"
+    readonly property int cornerRadius: 0
+    readonly property color backgroundColor: style === "solid" ? (settings.background_color || "#181818")
+        : inverse ? "#f2f2f2" : "#000000"
+    readonly property real backgroundOpacity: style === "solid" ? (settings.opacity !== undefined ? settings.opacity : 0.85)
+        : style === "blur" ? (settings.blur_tint !== undefined ? settings.blur_tint : 0.3)
+        : style === "dim" ? (inverse ? 0.72 : 0.55)
+        : 0
+    readonly property color textColor: style === "solid" ? (settings.text_color || "#ffffff") : inverse ? "#141414" : "#ffffff"
+    readonly property color originalColor: style === "solid" ? (settings.original_color || "#b0b0b0") : inverse ? "#4a4a4a" : "#d0d0d0"
+    // Outline only where the user chose it; the transparent style uses a soft shadow instead.
+    readonly property bool outlined: (style === "solid" || style === "blur") && settings.text_outline !== false
+    function updateBlur() {
+        if (controller && controller.configureOverlayBlur) controller.configureOverlayBlur(visible && blurBehind, cornerRadius)
+    }
+    onBlurBehindChanged: Qt.callLater(updateBlur)
+    onCornerRadiusChanged: Qt.callLater(updateBlur)
 
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus
     color: "transparent"
@@ -113,9 +135,11 @@ Window {
     height: Math.min(settings.overlay_size ? settings.overlay_size[1] : 120, screenHeight)
 
     Rectangle {
+        objectName: "overlayBackground"
         anchors.fill: parent
-        color: win.settings.background_color || "#181818"
-        opacity: win.settings.opacity !== undefined ? win.settings.opacity : 0.85
+        radius: win.cornerRadius
+        color: win.backgroundColor
+        opacity: win.backgroundOpacity
     }
     Rectangle {
         anchors.fill: parent
@@ -151,7 +175,7 @@ Window {
                 visible: win.settings.show_original === true && text.length > 0
                 text: win.original
                 textFormat: Text.PlainText
-                color: win.settings.original_color || "#b0b0b0"
+                color: win.originalColor
                 wrapMode: translatedText.wrapMode
                 elide: translatedText.elide
                 maximumLineCount: win.settings.text_wrap === false ? 1 : 1000
@@ -166,7 +190,8 @@ Window {
                 width: parent.width
                 text: win.translation
                 textFormat: Text.PlainText
-                color: win.settings.text_color || "#ffffff"
+                objectName: "translatedText"
+                color: win.textColor
                 wrapMode: win.settings.text_wrap !== false ? Text.Wrap : Text.NoWrap
                 elide: win.settings.text_wrap === false ? Text.ElideRight : Text.ElideNone
                 lineHeight: win.settings.line_spacing || 1.0
@@ -175,8 +200,9 @@ Window {
                 font.pixelSize: win.settings.font_size || 20
                 font.bold: win.settings.font_bold === true
                 font.italic: win.settings.font_italic === true
-                style: win.settings.text_outline !== false ? Text.Outline : Text.Normal
-                styleColor: win.settings.outline_color || "#000000"
+                // Transparent style: a light shadow (no shaders, so it also renders without GPU).
+                style: win.outlined ? Text.Outline : win.style === "transparent" ? Text.Raised : Text.Normal
+                styleColor: win.style === "transparent" ? "#b0000000" : (win.settings.outline_color || "#000000")
             }
         }
     }

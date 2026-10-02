@@ -44,6 +44,9 @@ pub mod qobject {
         #[cxx_name = "configureOverlay"]
         fn configure_overlay(self: &Controller, passthrough: bool, rects: &QString);
         #[qinvokable]
+        #[cxx_name = "configureOverlayBlur"]
+        fn configure_overlay_blur(self: &Controller, enable: bool, radius: i32);
+        #[qinvokable]
         #[cxx_name = "settingsJson"]
         fn settings_json(self: &Controller) -> QString;
         #[qinvokable]
@@ -416,6 +419,7 @@ impl qobject::Controller {
         QString::from(serde_json::to_string(&Settings::default()).unwrap().as_str())
     }
     fn copy_text(&self, text: &QString) { crate::icon::copy_text(text); }
+    fn configure_overlay_blur(&self, enable: bool, radius: i32) { crate::icon::overlay_blur(enable, radius); }
     /// `rects` — JSON `[[x, y, w, h], ...]`: где overlay принимает ввод, когда клики идут сквозь него.
     fn configure_overlay(&self, passthrough: bool, rects: &QString) {
         let rects: Vec<[i32; 4]> = serde_json::from_str(&rects.to_string()).unwrap_or_default();
