@@ -19,16 +19,22 @@ ApplicationWindow {
         onToggleOverlayRequested: overlayEnabled.checked = !overlayEnabled.checked
     }
 
-    SettingsWindow { id: settingsWin; controller: ctl }
+    SettingsWindow { id: settingsWin; controller: ctl; onSelectRegionRequested: regionWin.begin() }
     RegionSelector { id: regionWin; controller: ctl }
     FrameOverlay { id: selectionFrame; settings: settingsWin.current }
     TranslationOverlay {
         id: overlay
+        controller: ctl
         translation: ctl.translation
+        original: ctl.original
         gameGeometry: ctl.gameGeometry
         visible: overlayEnabled.checked && ctl.translation.length > 0 && !relocating
         settings: settingsWin.current
         onMoved: (x, y) => { settingsWin.set("overlay_pos", [x, y]); settingsWin.apply() }
+        onPinToggled: (p) => { settingsWin.set("overlay_pinned", p); settingsWin.apply() }
+        // Any change of the selected areas (KWin or portal) briefly reveals a hidden frame.
+        readonly property string areasKey: JSON.stringify((settingsWin.current.regions || []).map(r => [r.enabled, r.rect]))
+        onAreasKeyChanged: flashFrame()
     }
 
     ColumnLayout {
@@ -52,11 +58,22 @@ ApplicationWindow {
                 elide: Text.ElideRight
                 text: ctl.windowTitle.length ? ctl.windowTitle : "окно не выбрано"
             }
-            Button {
-                text: "Выбрать область перевода"
+            RowLayout {
                 Layout.fillWidth: true
-                enabled: ctl.windowTitle.length > 0
-                onClicked: regionWin.begin()
+                ComboBox {
+                    id: regionBox
+                    Layout.preferredWidth: 140
+                    readonly property var regions: settingsWin.current.regions || []
+                    model: regions.map(r => (r.rect ? "" : "○ ") + r.name)
+                    currentIndex: Math.max(0, regions.findIndex(r => r.id === settingsWin.current.active_region))
+                    onActivated: { settingsWin.set("active_region", regions[currentIndex].id); settingsWin.apply() }
+                }
+                Button {
+                    text: "Выбрать область"
+                    Layout.fillWidth: true
+                    enabled: ctl.windowTitle.length > 0
+                    onClicked: regionWin.begin()
+                }
             }
             RowLayout {
                 Label { text: ctl.hasRegion ? "область задана" : "область не задана"; Layout.fillWidth: true }
@@ -98,19 +115,46 @@ ApplicationWindow {
                 font.pixelSize: settingsWin.current.font_size || 20
             }
         }
-        ScrollView {
+        // Compact status line: one elided row, full text in the tooltip.
+        Rectangle {
+            id: statusBar
+            readonly property bool failed: ctl.statusKind === "error"
+            readonly property bool warned: ctl.statusKind === "warning"
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(96, statusText.implicitHeight)
-            contentWidth: availableWidth
-            clip: true
-            TextArea {
-                id: statusText
-                text: ctl.status
-                readOnly: true
-                selectByMouse: true
-                wrapMode: Text.Wrap
-                textFormat: Text.PlainText
-                font.pixelSize: 13
+            implicitHeight: 24
+            radius: 3
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0; color: statusBar.failed ? "#a01818" : statusBar.warned ? "#3a3000" : "transparent" }
+                GradientStop { position: 1; color: statusBar.failed ? "#b88a00" : "transparent" }
+            }
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 6
+                anchors.rightMargin: 2
+                spacing: 6
+                Label {
+                    id: statusLabel
+                    Layout.fillWidth: true
+                    text: ctl.status
+                    textFormat: Text.PlainText
+                    elide: Text.ElideRight
+                    maximumLineCount: 1
+                    font.pixelSize: 12
+                    color: statusBar.failed ? "#ffffff" : statusBar.warned ? "#ffc23d" : palette.text
+                    opacity: statusBar.failed || statusBar.warned ? 1 : 0.6
+                    HoverHandler { id: statusHover }
+                    ToolTip.visible: statusHover.hovered && truncated
+                    ToolTip.text: ctl.status
+                }
+                ToolButton {
+                    visible: (statusBar.failed || statusBar.warned) && ctl.hasRegion
+                    text: "Повторить"
+                    font.pixelSize: 12
+                    implicitHeight: 22
+                    padding: 2
+                    onClicked: ctl.translateOnce()
+                }
             }
         }
     }

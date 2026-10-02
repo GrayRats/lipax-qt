@@ -12,6 +12,11 @@ pub mod qobject {
         #[qobject]
         #[qml_element]
         #[qproperty(QString, status)]
+        #[qproperty(QString, status_kind, cxx_name = "statusKind")]
+        #[qproperty(QString, settings_state, cxx_name = "settingsState")]
+        #[qproperty(QString, history_json, cxx_name = "historyJson")]
+        #[qproperty(QString, diagnostics_json, cxx_name = "diagnosticsJson")]
+        #[qproperty(bool, diagnostics_busy, cxx_name = "diagnosticsBusy")]
         #[qproperty(QString, original)]
         #[qproperty(QString, translation)]
         #[qproperty(QString, window_title, cxx_name = "windowTitle")]
@@ -23,6 +28,21 @@ pub mod qobject {
         #[qproperty(bool, has_region, cxx_name = "hasRegion")]
         type Controller = super::ControllerRust;
 
+        #[qinvokable]
+        #[cxx_name = "defaultSettingsJson"]
+        fn default_settings_json(self: &Controller) -> QString;
+        #[qinvokable]
+        #[cxx_name = "clearHistory"]
+        fn clear_history(self: Pin<&mut Controller>);
+        #[qinvokable]
+        #[cxx_name = "copyText"]
+        fn copy_text(self: &Controller, text: &QString);
+        #[qinvokable]
+        #[cxx_name = "refreshDiagnostics"]
+        fn refresh_diagnostics(self: Pin<&mut Controller>);
+        #[qinvokable]
+        #[cxx_name = "configureOverlay"]
+        fn configure_overlay(self: &Controller, pinned: bool, passthrough: bool, edge: i32);
         #[qinvokable]
         #[cxx_name = "settingsJson"]
         fn settings_json(self: &Controller) -> QString;
@@ -90,6 +110,7 @@ use lipa_core::capture::portal::is_portal_window;
 use lipa_core::capture::AnyCapture;
 use lipa_core::hotkeys::{self, HotkeyAction, HotkeyEvent};
 use lipa_core::ocr::AnyOcr;
+use lipa_core::history::{History, Entry};
 use lipa_core::pipeline::{Cmd, Event, Pipeline};
 use lipa_core::settings::{CaptureBackendKind, NormRect, Settings};
 use lipa_core::tesseract::{TesseractInfo, TesseractManager};
@@ -144,11 +165,12 @@ impl Shared {
 
     /// Изменить настройки, сохранить на диск и сбросить состояние pipeline.
     fn update(&self, f: impl FnOnce(&mut Settings)) {
-        self.settings.send_modify(f);
+        let before = self.settings.borrow().processing_key();
+        self.settings.send_modify(|s| { f(s); s.sanitize(); });
         if let Err(e) = self.settings.borrow().save() {
             eprintln!("не удалось сохранить настройки: {e}");
         }
-        let _ = self.cmds.send(Cmd::Reset);
+        if self.settings.borrow().processing_key() != before { let _ = self.cmds.send(Cmd::Reset); }
         // Смена горячих клавиш применяется сразу, без перезапуска.
         let hk = self.settings.borrow().hotkeys.clone();
         self.hotkeys.send_if_modified(|h| {
@@ -163,6 +185,14 @@ impl Shared {
 
 pub struct ControllerRust {
     status: QString,
+    status_kind: QString,
+    settings_state: QString,
+    history_json: QString,
+    diagnostics_json: QString,
+    diagnostics_busy: bool,
+    history: History,
+    region_text: std::collections::BTreeMap<String, (String, String)>,
+    faults: std::collections::BTreeMap<String, (String, bool)>,
     original: QString,
     translation: QString,
     tesseract_json: QString,
@@ -185,12 +215,21 @@ pub struct ControllerRust {
 impl Default for ControllerRust {
     fn default() -> Self {
         let settings = Settings::load();
+        let history = if settings.history_persist { History::load(&History::path(), settings.history_limit) } else { History::default() };
         let (settings_tx, settings_rx) = watch::channel(settings.clone());
         let (running_tx, running_rx) = watch::channel(false);
         let (cmd_tx, cmd_rx) = mpsc::unbounded_channel();
         let (ev_tx, ev_rx) = mpsc::unbounded_channel();
         Self {
             status: QString::from("Выберите окно игры"),
+            status_kind: QString::from("info"),
+            settings_state: QString::from(serde_json::to_string(&settings).unwrap().as_str()),
+            history_json: QString::from(serde_json::to_string(&history.entries).unwrap().as_str()),
+            diagnostics_json: QString::from("[]"),
+            diagnostics_busy: false,
+            history,
+            region_text: Default::default(),
+            faults: Default::default(),
             original: QString::default(),
             translation: QString::default(),
             tesseract_json: QString::default(),
@@ -205,7 +244,7 @@ impl Default for ControllerRust {
             preview_source: QString::default(),
             game_geometry: QString::default(),
             running: false,
-            has_region: settings.region.is_some(),
+            has_region: !settings.capture_regions().is_empty(),
             shared: Arc::new(Shared {
                 hotkeys: watch::channel(settings.hotkeys.clone()).0,
                 settings: settings_tx,
@@ -297,6 +336,8 @@ impl cxx_qt::Initialize for qobject::Controller {
         let qt = self.qt_thread();
         let geometry_task = rt().spawn(async move {
             let mut ticker = tokio::time::interval(std::time::Duration::from_millis(500));
+            // Only changes reach the GUI thread.
+            let mut last: Option<String> = None;
             loop {
                 ticker.tick().await;
                 let window = sh.settings.borrow().window.clone();
@@ -310,6 +351,8 @@ impl cxx_qt::Initialize for qobject::Controller {
                 // Ignore a result for a window that was replaced during the await.
                 if sh.settings.borrow().window != window { continue; }
                 let json = geometry.map(|g| serde_json::json!([g.x, g.y, g.w, g.h]).to_string()).unwrap_or_default();
+                if last.as_ref() == Some(&json) { continue; }
+                last = Some(json.clone());
                 if qt.queue(move |mut o| o.as_mut().set_game_geometry(QString::from(json.as_str()))).is_err() { break; }
             }
         });
@@ -324,14 +367,38 @@ impl cxx_qt::Initialize for qobject::Controller {
         rt().spawn(async move {
             while let Some(ev) = ev_rx.recv().await {
                 let _ = qt.queue(move |mut o| match ev {
-                    Event::Status(s) => o.as_mut().set_status(QString::from(s.as_str())),
-                    Event::Error(e) => o
-                        .as_mut()
-                        .set_status(QString::from(format!("Ошибка: {e}").as_str())),
-                    Event::Translation { original, text } => {
-                        o.as_mut().set_original(QString::from(original.as_str()));
-                        o.as_mut().set_translation(QString::from(text.as_str()));
+                    Event::Status(s) => {
+                        if o.rust().faults.is_empty() {
+                            o.as_mut().set_status(QString::from(s.as_str()));
+                            o.as_mut().set_status_kind(QString::from("info"));
+                        }
+                    },
+                    Event::Cleared { region_id } => {
+                        o.as_mut().rust_mut().faults.remove(&region_id);
+                        if o.rust().faults.is_empty() {
+                            o.as_mut().set_status(QString::from("Ожидание текста"));
+                            o.as_mut().set_status_kind(QString::from("info"));
+                        }
+                        o.as_mut().publish_faults();
+                    },
+                    Event::Error { region_id, message, terminal } => {
+                        o.as_mut().rust_mut().faults.insert(region_id, (message, terminal));
+                        o.as_mut().publish_faults();
+                    },
+                    Event::Translation { region_id, region_name, original, text } => {
+                        let settings = o.rust().shared.settings.borrow().clone();
+                        if !settings.capture_regions().iter().any(|r| r.id == region_id) { return; }
+                        o.as_mut().rust_mut().faults.remove(&region_id);
+                        o.as_mut().rust_mut().region_text.insert(region_id, (original.clone(), text.clone()));
+                        if settings.history_enabled {
+                            let timestamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
+                            o.as_mut().rust_mut().history.push(Entry { timestamp, region: region_name, original, translation: text }, settings.history_limit);
+                            o.as_mut().publish_history();
+                        }
+                        o.as_mut().publish_translation();
                         o.as_mut().set_status(QString::from("Перевод обновлён"));
+                        o.as_mut().set_status_kind(QString::from("info"));
+                        o.as_mut().publish_faults();
                     }
                 });
             }
@@ -340,12 +407,68 @@ impl cxx_qt::Initialize for qobject::Controller {
 }
 
 impl qobject::Controller {
+    fn default_settings_json(&self) -> QString {
+        QString::from(serde_json::to_string(&Settings::default()).unwrap().as_str())
+    }
+    fn copy_text(&self, text: &QString) { crate::icon::copy_text(text); }
+    fn configure_overlay(&self, pinned: bool, passthrough: bool, edge: i32) { crate::icon::overlay_input(pinned, passthrough, edge); }
+    fn publish_settings(mut self: Pin<&mut Self>) {
+        let s = self.rust().shared.settings.borrow().clone();
+        self.as_mut().set_settings_state(QString::from(serde_json::to_string(&s).unwrap().as_str()));
+        self.as_mut().set_has_region(!s.capture_regions().is_empty());
+        let active: Vec<_> = s.capture_regions().into_iter().map(|r| r.id).collect();
+        self.as_mut().rust_mut().faults.retain(|id, _| active.contains(id));
+        self.as_mut().publish_faults();
+    }
+    fn publish_translation(mut self: Pin<&mut Self>) {
+        let regions = self.rust().shared.settings.borrow().capture_regions();
+        self.as_mut().rust_mut().region_text.retain(|id, _| regions.iter().any(|r| &r.id == id));
+        let texts = &self.rust().region_text;
+        let original = regions.iter().filter_map(|r| texts.get(&r.id).map(|t| format!("{}: {}", r.name, t.0))).collect::<Vec<_>>().join("\n");
+        let translation = regions.iter().filter_map(|r| texts.get(&r.id).map(|t| if regions.len() > 1 { format!("{}: {}", r.name, t.1) } else { t.1.clone() })).collect::<Vec<_>>().join("\n\n");
+        self.as_mut().set_original(QString::from(original.as_str()));
+        self.as_mut().set_translation(QString::from(translation.as_str()));
+    }
+    fn publish_faults(mut self: Pin<&mut Self>) {
+        if self.rust().faults.is_empty() { return; }
+        let text = self.rust().faults.values().map(|(s, _)| s.as_str()).collect::<Vec<_>>().join(" · ");
+        let kind = if self.rust().faults.values().any(|(_, terminal)| *terminal) { "error" } else { "warning" };
+        self.as_mut().set_status(QString::from(text.as_str()));
+        self.as_mut().set_status_kind(QString::from(kind));
+    }
+    fn publish_history(mut self: Pin<&mut Self>) {
+        let s = self.rust().shared.settings.borrow().clone();
+        self.as_mut().rust_mut().history.trim(s.history_limit);
+        let result = self.rust().history.save(&History::path(), s.history_persist);
+        let json = serde_json::to_string(&self.rust().history.entries).unwrap();
+        self.as_mut().set_history_json(QString::from(json.as_str()));
+        if let Err(e) = result { self.as_mut().set_status(QString::from(format!("История не сохранена: {e}").as_str())); }
+    }
+    fn clear_history(mut self: Pin<&mut Self>) {
+        self.as_mut().rust_mut().history.entries.clear();
+        self.as_mut().publish_history();
+    }
+    fn refresh_diagnostics(mut self: Pin<&mut Self>) {
+        if *self.diagnostics_busy() { return; }
+        self.as_mut().set_diagnostics_busy(true);
+        let s = self.rust().shared.settings.borrow().clone();
+        let qt = self.qt_thread();
+        rt().spawn(async move {
+            let result = lipa_core::diagnostics::inspect(&s).await;
+            let json = serde_json::to_string(&result).unwrap();
+            let _ = qt.queue(move |mut o| {
+                o.as_mut().set_diagnostics_json(QString::from(json.as_str()));
+                o.as_mut().set_diagnostics_busy(false);
+            });
+        });
+    }
+
     fn settings_json(&self) -> QString {
         let s = self.rust().shared.settings.borrow().clone();
         QString::from(serde_json::to_string(&s).unwrap_or_default().as_str())
     }
 
-    fn apply_settings(self: Pin<&mut Self>, json: &QString) {
+    fn apply_settings(mut self: Pin<&mut Self>, json: &QString) {
         match serde_json::from_str::<Settings>(&json.to_string()) {
             Ok(new) => {
                 // Окно и область меняются отдельными действиями — не затираем их из формы.
@@ -358,8 +481,14 @@ impl qobject::Controller {
                         ..new
                     };
                 });
+                self.as_mut().publish_settings();
+                self.as_mut().publish_translation();
+                self.as_mut().publish_history();
             }
-            Err(e) => eprintln!("некорректные настройки: {e}"),
+            Err(e) => {
+                self.as_mut().set_status(QString::from(format!("Настройки не сохранены: {e}").as_str()));
+                self.as_mut().set_status_kind(QString::from("error"));
+            },
         }
     }
 
@@ -400,11 +529,16 @@ impl qobject::Controller {
                     shared.update(|s| {
                         s.window = Some(key);
                         s.region = None;
+                        for r in &mut s.regions { r.rect = None; }
                     });
                     show_frame(shared.clone(), qt.clone(), None);
                     let _ = qt.queue(move |mut o| {
                         o.as_mut().set_window_title(QString::from(title.as_str()));
                         o.as_mut().set_has_region(false);
+                        o.as_mut().rust_mut().region_text.clear();
+                        o.as_mut().rust_mut().faults.clear();
+                        o.as_mut().publish_settings();
+                        o.as_mut().publish_translation();
                         o.as_mut().set_status(QString::from(
                             "Окно выбрано. Теперь выберите область перевода",
                         ));
@@ -468,22 +602,31 @@ impl qobject::Controller {
 
     fn set_region(mut self: Pin<&mut Self>, x: f64, y: f64, w: f64, h: f64) {
         let rect = NormRect { x, y, w, h };
-        self.rust().shared.update(|s| s.region = Some(rect));
+        self.rust().shared.update(|s| {
+            s.region = None;
+            if let Some(r) = s.regions.iter_mut().find(|r| r.id == s.active_region) { r.rect = Some(rect); r.enabled = true; }
+        });
+        self.as_mut().publish_settings();
         show_frame(self.rust().shared.clone(), self.qt_thread(), Some(rect));
         self.as_mut().set_has_region(true);
         self.as_mut().set_status(QString::from("Область сохранена"));
     }
 
     fn reset_region(mut self: Pin<&mut Self>) {
-        self.rust().shared.update(|s| s.region = None);
-        self.as_mut().set_has_region(false);
+        self.rust().shared.update(|s| {
+            s.region = None;
+            if let Some(r) = s.regions.iter_mut().find(|r| r.id == s.active_region) { r.rect = None; }
+        });
+        self.as_mut().publish_settings();
+        self.as_mut().publish_translation();
         self.as_mut().set_status(QString::from("Область сброшена"));
     }
 
     fn start(mut self: Pin<&mut Self>) {
         let _ = self.rust().shared.running.send(true);
         self.as_mut().set_running(true);
-        self.as_mut().set_status(QString::from("Слежение запущено"));
+        self.as_mut().set_status(QString::from("Ожидание текста"));
+        self.as_mut().set_status_kind(QString::from("info"));
     }
 
     fn stop(mut self: Pin<&mut Self>) {
@@ -492,7 +635,10 @@ impl qobject::Controller {
         self.as_mut().set_status(QString::from("Остановлено"));
     }
 
-    fn translate_once(self: Pin<&mut Self>) {
+    fn translate_once(mut self: Pin<&mut Self>) {
+        self.as_mut().rust_mut().faults.clear();
+        self.as_mut().set_status_kind(QString::from("info"));
+        self.as_mut().set_status(QString::from("Распознавание окна…"));
         let _ = self.rust().shared.cmds.send(Cmd::TranslateOnce);
     }
 }

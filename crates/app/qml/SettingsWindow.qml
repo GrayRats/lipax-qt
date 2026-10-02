@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 ApplicationWindow {
     id: win
@@ -18,10 +19,77 @@ ApplicationWindow {
     minimumHeight: 540
     visible: false
 
+    signal selectRegionRequested()
+
     Component.onCompleted: reload()
-    function reload() { current = JSON.parse(controller.settingsJson()) }
+    // Every edit is previewed at once (overlay binds to `current`) and saved after a short pause.
+    property string lastApplied: ""
+    function reload() { current = JSON.parse(controller.settingsJson()); lastApplied = JSON.stringify(current) }
     function openWindow() { reload(); show(); raise(); requestActivate() }
     function set(key, v) { const c = Object.assign({}, current); c[key] = v; current = c }
+    onCurrentChanged: if (JSON.stringify(current) !== lastApplied) autosave.restart()
+    Timer { id: autosave; interval: 500; onTriggered: win.apply() }
+    onClosing: if (autosave.running) { autosave.stop(); apply() }
+    function resetKeys(keys) {
+        const d = JSON.parse(controller.defaultSettingsJson())
+        const c = Object.assign({}, current)
+        for (const k of keys) c[k] = d[k]
+        current = c
+    }
+    readonly property var appearanceKeys: ["font_family", "font_size", "font_bold", "font_italic", "text_color", "background_color",
+        "opacity", "border_color", "border_opacity", "border_width", "border_pattern", "border_always", "border_seconds", "overlay_padding", "text_alignment",
+        "text_wrap", "text_outline", "outline_color", "line_spacing", "show_original", "original_font_family",
+        "original_font_size", "original_color", "max_width_enabled", "overlay_max_width"]
+    // Largest connected screen in logical pixels: bounds for overlay position and size.
+    readonly property int screenMaxWidth: Math.max(200, ...Qt.application.screens.map(s => s.width))
+    readonly property int screenMaxHeight: Math.max(60, ...Qt.application.screens.map(s => s.height))
+    readonly property var fontFamilies: ["Системный"].concat(Qt.fontFamilies())
+    function fontIndex(name) { return name ? Math.max(0, fontFamilies.indexOf(name)) : 0 }
+
+    component FieldLabel: Label {
+        wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0
+    }
+    component SectionTitle: Label { font.bold: true; Layout.columnSpan: 2; Layout.topMargin: 6 }
+    component ResetButton: Button {
+        property var keys: []
+        Layout.columnSpan: 2; Layout.topMargin: 10
+        text: "Сбросить раздел по умолчанию"
+        onClicked: win.resetKeys(keys)
+    }
+    // Swatch opens the system color dialog; text accepts only complete #rrggbb values.
+    component ColorRow: RowLayout {
+        id: colorRow
+        property string key
+        property var presets: []
+        readonly property string value: win.current[key] || "#000000"
+        Layout.fillWidth: true; Layout.minimumWidth: 0
+        Rectangle {
+            implicitWidth: 28; implicitHeight: 28; radius: 4; color: colorRow.value
+            border.width: 1; border.color: palette.mid
+            MouseArea { anchors.fill: parent; onClicked: { colorDialog.key = colorRow.key; colorDialog.selectedColor = colorRow.value; colorDialog.open() } }
+        }
+        TextField {
+            Layout.preferredWidth: 100
+            maximumLength: 7
+            text: colorRow.value
+            validator: RegularExpressionValidator { regularExpression: /#[0-9a-fA-F]{0,6}/ }
+            onTextEdited: if (/^#[0-9a-fA-F]{6}$/.test(text)) win.set(colorRow.key, text.toLowerCase())
+        }
+        Repeater {
+            model: colorRow.presets
+            Rectangle {
+                implicitWidth: 22; implicitHeight: 22; radius: 4; color: modelData
+                border.width: 1; border.color: palette.mid
+                MouseArea { anchors.fill: parent; onClicked: win.set(colorRow.key, modelData) }
+            }
+        }
+        Item { Layout.fillWidth: true }
+    }
+    ColorDialog {
+        id: colorDialog
+        property string key
+        onAccepted: win.set(key, selectedColor.toString().slice(0, 7))
+    }
     // ── Tesseract ───────────────────────────────────────────────────────
     readonly property var tess: {
         try { return JSON.parse(controller.tesseractJson || "{}") } catch (e) { return ({}) }
@@ -86,25 +154,39 @@ ApplicationWindow {
         onAccepted: win.controller.installPackage(win.pendingPackage)
     }
 
-    function apply() { controller.applySettings(JSON.stringify(current)); reload() }
+    function apply() { autosave.stop(); controller.applySettings(JSON.stringify(current)); reload() }
 
-    Connections { target: win.controller; function onHasRegionChanged() { win.reload() } }
+    // Changes made elsewhere (overlay drag, pin, region selection) arrive here; pending edits are saved first.
+    Connections {
+        target: win.controller
+        function onSettingsStateChanged() { if (autosave.running) win.apply(); else win.reload() }
+    }
+    readonly property var history: { try { return JSON.parse(controller.historyJson || "[]") } catch (e) { return [] } }
+    readonly property var diagnostics: { try { return JSON.parse(controller.diagnosticsJson || "[]") } catch (e) { return [] } }
+    function setRegionField(index, key, v) {
+        const r = (current.regions || []).map(x => Object.assign({}, x))
+        r[index][key] = v
+        set("regions", r)
+    }
 
     header: TabBar {
         id: tabs
         objectName: "settingsTabs"
-        TabButton { text: "Распознавание" }
-        TabButton { text: "Перевод и захват" }
-        TabButton { text: "Внешний вид" }
-        TabButton { text: "Клавиши" }
+        Repeater {
+            model: ["Распознавание", "Перевод и захват", "Окно перевода", "Внешний вид перевода", "Области", "История", "Статус", "Клавиши"]
+            TabButton { text: modelData; width: implicitWidth }
+        }
+        onCurrentIndexChanged: if (currentIndex === 6 && win.diagnostics.length === 0) win.controller.refreshDiagnostics()
     }
     footer: ToolBar {
         RowLayout {
             anchors.fill: parent
             anchors.margins: 10
-            Label { text: "Изменения сохраняются кнопкой «Применить»"; wrapMode: Text.Wrap; Layout.fillWidth: true; opacity: 0.7 }
+            Label {
+                text: autosave.running ? "Сохранение…" : "Изменения применяются сразу и сохраняются автоматически"
+                wrapMode: Text.Wrap; Layout.fillWidth: true; opacity: 0.7
+            }
             Button { text: "Закрыть"; onClicked: win.close() }
-            Button { text: "Применить"; highlighted: true; onClicked: win.apply() }
         }
         implicitHeight: 66
     }
@@ -234,6 +316,7 @@ ApplicationWindow {
                 enabled: !win.controller.tesseractBusy
                 onClicked: win.controller.refreshTesseract()
             }
+            ResetButton { keys: ["ocr_engine", "paddle_python", "source_lang"] }
 
             }
         }
@@ -315,7 +398,7 @@ ApplicationWindow {
                 value: win.current.interval_ms || 500
                 onValueModified: win.set("interval_ms", value)
             }
-            Label { Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Чувствительность к изменениям (ниже — чувствительнее)" ; wrapMode: Text.Wrap; Layout.fillWidth: true }
+            Label { Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Порог контраста букв для детектора смены текста (ниже — чувствительнее)" ; wrapMode: Text.Wrap; Layout.fillWidth: true }
             Slider {
                 from: 0.2; to: 20; Layout.fillWidth: true; Layout.minimumWidth: 0
                 value: win.current.sensitivity || 2
@@ -329,6 +412,7 @@ ApplicationWindow {
             }
             Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Автоматический перевод" }
             Switch { checked: win.current.auto_translate !== false; onToggled: win.set("auto_translate", checked) }
+            ResetButton { keys: ["target_lang", "capture_backend", "translator", "interval_ms", "sensitivity", "debounce_ms", "auto_translate"] }
 
             }
         }
@@ -355,17 +439,12 @@ ApplicationWindow {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
                 text: "В KWin перевод следует за окном игры. Для portal выберите монитор вручную: положение окна скрыто порталом. Координаты ниже считаются от угла этого экрана."
             }
-            Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Размер шрифта" }
-            SpinBox {
-                from: 8; to: 96; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
-                value: win.current.font_size || 20
-                onValueModified: win.set("font_size", value)
-            }
-            Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Непрозрачность фона" }
-            Slider {
-                from: 0.1; to: 1; Layout.fillWidth: true; Layout.minimumWidth: 0
-                value: win.current.opacity !== undefined ? win.current.opacity : 0.85
-                onMoved: win.set("opacity", value)
+            FieldLabel { text: "Закрепить перевод" }
+            Switch { checked: win.current.overlay_pinned === true; onToggled: win.set("overlay_pinned", checked) }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
+                text: "Средняя кнопка мыши по рамке перевода переключает закрепление. Незакреплённый перевод перетаскивается левой кнопкой, его рамка толще. "
+                      + "Закреплённый пропускает клики в игру (если включено ниже); рамка и значок в углу остаются доступны для средней кнопки."
             }
             Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Пропускать клики мыши" }
             Switch { checked: win.current.click_through !== false; onToggled: win.set("click_through", checked) }
@@ -373,13 +452,13 @@ ApplicationWindow {
             RowLayout {
                 SpinBox {
                     Layout.fillWidth: true; Layout.minimumWidth: 0
-                    from: 0; to: 10000; editable: true
+                    from: 0; to: win.screenMaxWidth; editable: true
                     value: win.current.overlay_pos ? win.current.overlay_pos[0] : 0
                     onValueModified: win.set("overlay_pos", [value, win.current.overlay_pos[1]])
                 }
                 SpinBox {
                     Layout.fillWidth: true; Layout.minimumWidth: 0
-                    from: 0; to: 10000; editable: true
+                    from: 0; to: win.screenMaxHeight; editable: true
                     value: win.current.overlay_pos ? win.current.overlay_pos[1] : 0
                     onValueModified: win.set("overlay_pos", [win.current.overlay_pos[0], value])
                 }
@@ -388,13 +467,13 @@ ApplicationWindow {
             RowLayout {
                 SpinBox {
                     Layout.fillWidth: true; Layout.minimumWidth: 0
-                    from: 100; to: 5000; editable: true
+                    from: 200; to: win.screenMaxWidth; editable: true
                     value: win.current.overlay_size ? win.current.overlay_size[0] : 700
                     onValueModified: win.set("overlay_size", [value, win.current.overlay_size[1]])
                 }
                 SpinBox {
                     Layout.fillWidth: true; Layout.minimumWidth: 0
-                    from: 40; to: 3000; editable: true
+                    from: 60; to: win.screenMaxHeight; editable: true
                     value: win.current.overlay_size ? win.current.overlay_size[1] : 120
                     onValueModified: win.set("overlay_size", [win.current.overlay_size[0], value])
                 }
@@ -444,6 +523,7 @@ ApplicationWindow {
                 value: win.current.frame_seconds !== undefined ? win.current.frame_seconds : 3
                 onValueModified: win.set("frame_seconds", value)
             }
+            ResetButton { keys: ["overlay_screen", "overlay_pinned", "click_through", "overlay_pos", "overlay_size", "frame_color", "frame_width", "frame_seconds"] }
 
             }
         }
@@ -455,6 +535,414 @@ ApplicationWindow {
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             GridLayout {
                 width: page3.availableWidth - 16
+                columns: 2
+                columnSpacing: 24
+                rowSpacing: 12
+            SectionTitle { text: "Текст перевода" }
+            FieldLabel { text: "Шрифт" }
+            ComboBox {
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                model: win.fontFamilies
+                currentIndex: win.fontIndex(win.current.font_family)
+                onActivated: win.set("font_family", currentIndex === 0 ? "" : currentText)
+            }
+            FieldLabel { text: "Размер шрифта, px" }
+            SpinBox {
+                from: 8; to: 96; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.font_size || 20
+                onValueModified: win.set("font_size", value)
+            }
+            FieldLabel { text: "Начертание" }
+            RowLayout {
+                CheckBox { text: "Жирный"; checked: win.current.font_bold === true; onToggled: win.set("font_bold", checked) }
+                CheckBox { text: "Курсив"; checked: win.current.font_italic === true; onToggled: win.set("font_italic", checked) }
+            }
+            FieldLabel { text: "Цвет текста" }
+            ColorRow { key: "text_color"; presets: ["#ffffff", "#ffe066", "#7cf29c", "#7cc7ff"] }
+            FieldLabel { text: "Обводка текста" }
+            RowLayout {
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                Switch { checked: win.current.text_outline !== false; onToggled: win.set("text_outline", checked) }
+                ColorRow { key: "outline_color"; presets: ["#000000", "#400040"]; enabled: win.current.text_outline !== false }
+            }
+            FieldLabel { text: "Межстрочный интервал" }
+            RowLayout {
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                Slider {
+                    Layout.fillWidth: true; Layout.minimumWidth: 0
+                    from: 0.8; to: 2.5; stepSize: 0.05
+                    value: win.current.line_spacing || 1.0
+                    onMoved: win.set("line_spacing", Math.round(value * 100) / 100)
+                }
+                Label { text: (win.current.line_spacing || 1.0).toFixed(2) }
+            }
+            FieldLabel { text: "Выравнивание" }
+            ComboBox {
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                readonly property var values: ["left", "center", "right"]
+                model: ["По левому краю", "По центру", "По правому краю"]
+                currentIndex: Math.max(0, values.indexOf(win.current.text_alignment || "center"))
+                onActivated: win.set("text_alignment", values[currentIndex])
+            }
+            FieldLabel { text: "Переносить строки" }
+            Switch { checked: win.current.text_wrap !== false; onToggled: win.set("text_wrap", checked) }
+
+            SectionTitle { text: "Оригинал" }
+            FieldLabel { text: "Показывать оригинал над переводом" }
+            Switch { checked: win.current.show_original === true; onToggled: win.set("show_original", checked) }
+            FieldLabel { text: "Шрифт оригинала"; visible: win.current.show_original === true }
+            ComboBox {
+                visible: win.current.show_original === true
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                model: ["Как у перевода"].concat(win.fontFamilies.slice(1))
+                currentIndex: win.fontIndex(win.current.original_font_family)
+                onActivated: win.set("original_font_family", currentIndex === 0 ? "" : currentText)
+            }
+            FieldLabel { text: "Размер оригинала, px"; visible: win.current.show_original === true }
+            SpinBox {
+                visible: win.current.show_original === true
+                from: 8; to: 96; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.original_font_size || 14
+                onValueModified: win.set("original_font_size", value)
+            }
+            FieldLabel { text: "Цвет оригинала"; visible: win.current.show_original === true }
+            ColorRow { visible: win.current.show_original === true; key: "original_color"; presets: ["#b0b0b0", "#ffffff", "#ffe066"] }
+
+            SectionTitle { text: "Фон и рамка" }
+            FieldLabel { text: "Цвет фона" }
+            ColorRow { key: "background_color"; presets: ["#181818", "#000000", "#202040", "#300030"] }
+            FieldLabel { text: "Непрозрачность фона" }
+            RowLayout {
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                Slider {
+                    Layout.fillWidth: true; Layout.minimumWidth: 0
+                    from: 0; to: 1
+                    value: win.current.opacity !== undefined ? win.current.opacity : 0.85
+                    onMoved: win.set("opacity", Math.round(value * 100) / 100)
+                }
+                Label { text: Math.round((win.current.opacity !== undefined ? win.current.opacity : 0.85) * 100) + "%" }
+            }
+            FieldLabel { text: "Цвет рамки" }
+            ColorRow { key: "border_color"; presets: ["#ff00ff", "#ff2a6d", "#00e5ff", "#ffd400"] }
+            FieldLabel { text: "Показывать рамку" }
+            RowLayout {
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                ComboBox {
+                    Layout.fillWidth: true; Layout.minimumWidth: 0
+                    model: ["Всегда", "После выделения области"]
+                    currentIndex: win.current.border_always === false ? 1 : 0
+                    onActivated: win.set("border_always", currentIndex === 0)
+                }
+                SpinBox {
+                    visible: win.current.border_always === false
+                    from: 1; to: 120; editable: true
+                    value: win.current.border_seconds || 5
+                    onValueModified: win.set("border_seconds", value)
+                }
+                Label { visible: win.current.border_always === false; text: "с" }
+            }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
+                visible: win.current.border_always === false
+                text: "Рамка появляется на заданное время после выделения или изменения области. Незакреплённый перевод показывает рамку всегда."
+            }
+            FieldLabel { text: "Узор «текстура ошибки» (цвет/чёрный)" }
+            Switch { checked: win.current.border_pattern !== false; onToggled: win.set("border_pattern", checked) }
+            FieldLabel { text: "Непрозрачность рамки" }
+            RowLayout {
+                Layout.fillWidth: true; Layout.minimumWidth: 0
+                Slider {
+                    Layout.fillWidth: true; Layout.minimumWidth: 0
+                    from: 0; to: 1
+                    value: win.current.border_opacity !== undefined ? win.current.border_opacity : 0.65
+                    onMoved: win.set("border_opacity", Math.round(value * 100) / 100)
+                }
+                Label { text: Math.round((win.current.border_opacity !== undefined ? win.current.border_opacity : 0.65) * 100) + "%" }
+            }
+            FieldLabel { text: "Толщина рамки (закреплён), px" }
+            SpinBox {
+                from: 1; to: 16; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.border_width || 2
+                onValueModified: win.set("border_width", value)
+            }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
+                text: "Незакреплённый перевод показывается с рамкой на 2 px толще: так видно, что его можно перетаскивать."
+            }
+
+            SectionTitle { text: "Размеры" }
+            FieldLabel { text: "Внутренние отступы, px" }
+            SpinBox {
+                from: 0; to: 64; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.overlay_padding !== undefined ? win.current.overlay_padding : 16
+                onValueModified: win.set("overlay_padding", value)
+            }
+            CheckBox {
+                Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0
+                text: "Максимальная ширина, px"
+                checked: win.current.max_width_enabled !== false
+                onToggled: win.set("max_width_enabled", checked)
+            }
+            SpinBox {
+                enabled: win.current.max_width_enabled !== false
+                from: 200; to: win.screenMaxWidth; stepSize: 50; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.overlay_max_width || 900
+                onValueModified: win.set("overlay_max_width", value)
+            }
+            ResetButton { keys: win.appearanceKeys }
+            }
+        }
+        ScrollView {
+            id: page4
+            objectName: "settingsPage4"
+            contentWidth: availableWidth
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            GridLayout {
+                width: page4.availableWidth - 16
+                columns: 2
+                columnSpacing: 24
+                rowSpacing: 12
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
+                text: "Каждая зона распознаётся отдельно. Пустые поля берутся из общих настроек. Выключенная зона сохраняет свою область."
+            }
+            Repeater {
+                model: win.current.regions || []
+                delegate: Frame {
+                    id: regionFrame
+                    required property var modelData
+                    required property int index
+                    readonly property bool hasRect: !!modelData.rect
+                    Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                    GridLayout {
+                        width: parent.width
+                        columns: 2
+                        columnSpacing: 16
+                        rowSpacing: 8
+                        Switch {
+                            checked: regionFrame.modelData.enabled !== false
+                            onToggled: win.setRegionField(regionFrame.index, "enabled", checked)
+                        }
+                        TextField {
+                            Layout.fillWidth: true; Layout.minimumWidth: 0
+                            text: regionFrame.modelData.name
+                            onEditingFinished: if (text.trim().length && text !== regionFrame.modelData.name) win.setRegionField(regionFrame.index, "name", text.trim())
+                        }
+                        FieldLabel {
+                            text: regionFrame.hasRect ? "Область задана" : "Область не задана"
+                            color: regionFrame.hasRect ? palette.text : "#ffb347"
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true; Layout.minimumWidth: 0
+                            Button {
+                                text: "Выделить на экране"
+                                enabled: win.controller.windowTitle !== undefined && win.controller.windowTitle.length > 0
+                                onClicked: {
+                                    win.set("active_region", regionFrame.modelData.id)
+                                    win.apply()
+                                    win.selectRegionRequested()
+                                }
+                            }
+                            Button {
+                                text: "Очистить"
+                                enabled: regionFrame.hasRect
+                                onClicked: win.setRegionField(regionFrame.index, "rect", null)
+                            }
+                            Item { Layout.fillWidth: true }
+                            Button {
+                                text: "Удалить"
+                                enabled: (win.current.regions || []).length > 1
+                                onClicked: win.set("regions", win.current.regions.filter((_, i) => i !== regionFrame.index))
+                            }
+                        }
+                        FieldLabel { text: "Язык текста (OCR)" }
+                        ComboBox {
+                            Layout.fillWidth: true; Layout.minimumWidth: 0
+                            model: ["Как в общих настройках"].concat(win.langs)
+                            currentIndex: Math.max(0, win.langs.indexOf(regionFrame.modelData.source_lang) + 1)
+                            onActivated: win.setRegionField(regionFrame.index, "source_lang", currentIndex === 0 ? "" : currentText)
+                        }
+                        FieldLabel { text: "Язык перевода" }
+                        ComboBox {
+                            Layout.fillWidth: true; Layout.minimumWidth: 0
+                            model: ["Как в общих настройках"].concat(win.targets)
+                            currentIndex: Math.max(0, win.targets.indexOf(regionFrame.modelData.target_lang) + 1)
+                            onActivated: win.setRegionField(regionFrame.index, "target_lang", currentIndex === 0 ? "" : currentText)
+                        }
+                        FieldLabel { text: "OCR-движок" }
+                        ComboBox {
+                            Layout.fillWidth: true; Layout.minimumWidth: 0
+                            readonly property var values: ["", "tesseract", "paddleocr"]
+                            model: ["Как в общих настройках", "Tesseract", "PaddleOCR"]
+                            currentIndex: Math.max(0, values.indexOf(regionFrame.modelData.ocr_engine || ""))
+                            onActivated: win.setRegionField(regionFrame.index, "ocr_engine", values[currentIndex])
+                        }
+                        FieldLabel { text: "Интервал / ожидание стабилизации, мс" }
+                        RowLayout {
+                            Layout.fillWidth: true; Layout.minimumWidth: 0
+                            SpinBox {
+                                Layout.fillWidth: true; Layout.minimumWidth: 0
+                                from: 100; to: 10000; stepSize: 50; editable: true
+                                value: regionFrame.modelData.interval_ms || 500
+                                onValueModified: win.setRegionField(regionFrame.index, "interval_ms", value)
+                            }
+                            SpinBox {
+                                Layout.fillWidth: true; Layout.minimumWidth: 0
+                                from: 0; to: 5000; stepSize: 50; editable: true
+                                value: regionFrame.modelData.debounce_ms || 0
+                                onValueModified: win.setRegionField(regionFrame.index, "debounce_ms", value)
+                            }
+                        }
+                    }
+                }
+            }
+            Button {
+                Layout.columnSpan: 2
+                text: "Добавить зону"
+                enabled: (win.current.regions || []).length < 8
+                onClicked: {
+                    const r = (win.current.regions || []).slice()
+                    let n = r.length + 1
+                    while (r.some(x => x.id === "region-" + n)) ++n
+                    r.push({ id: "region-" + n, name: "Зона " + n, enabled: true, rect: null, source_lang: "", target_lang: "",
+                             ocr_engine: "", interval_ms: 500, debounce_ms: 400 })
+                    win.set("regions", r)
+                }
+            }
+            ResetButton { keys: ["regions", "active_region"]; text: "Сбросить зоны по умолчанию (области будут очищены)" }
+            }
+        }
+        ScrollView {
+            id: page5
+            objectName: "settingsPage5"
+            contentWidth: availableWidth
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            GridLayout {
+                width: page5.availableWidth - 16
+                columns: 2
+                columnSpacing: 24
+                rowSpacing: 12
+            FieldLabel { text: "Вести историю" }
+            Switch { checked: win.current.history_enabled !== false; onToggled: win.set("history_enabled", checked) }
+            FieldLabel { text: "Сохранять историю между запусками" }
+            Switch { checked: win.current.history_persist === true; onToggled: win.set("history_persist", checked) }
+            FieldLabel { text: "Хранить записей" }
+            SpinBox {
+                from: 10; to: 1000; stepSize: 10; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.history_limit || 200
+                onValueModified: win.set("history_limit", value)
+            }
+            RowLayout {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                Label { text: "Записей: " + win.history.length; Layout.fillWidth: true; opacity: 0.7 }
+                Button { text: "Очистить историю"; enabled: win.history.length > 0; onClicked: win.controller.clearHistory() }
+            }
+            ResetButton { keys: ["history_enabled", "history_persist", "history_limit"] }
+            Label {
+                Layout.columnSpan: 2; visible: win.history.length === 0; opacity: 0.6
+                text: "История пуста"
+            }
+            Repeater {
+                // Newest first; long histories render the most recent 200 entries.
+                model: win.history.slice(-200).reverse()
+                delegate: Frame {
+                    required property var modelData
+                    Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                    ColumnLayout {
+                        width: parent.width
+                        spacing: 4
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Label {
+                                Layout.fillWidth: true; Layout.minimumWidth: 0; elide: Text.ElideRight; opacity: 0.6; font.pixelSize: 12
+                                text: new Date(modelData.timestamp).toLocaleString(Qt.locale(), "dd.MM HH:mm:ss") + " · " + modelData.region
+                            }
+                            Button { text: "Копировать"; flat: true; onClicked: win.controller.copyText(modelData.translation) }
+                            Button { text: "Оригинал"; flat: true; onClicked: win.controller.copyText(modelData.original) }
+                        }
+                        Label { Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7; text: modelData.original }
+                        Label { Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; text: modelData.translation }
+                    }
+                }
+            }
+            }
+        }
+        ScrollView {
+            id: page6
+            objectName: "settingsPage6"
+            contentWidth: availableWidth
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            GridLayout {
+                width: page6.availableWidth - 16
+                columns: 2
+                columnSpacing: 24
+                rowSpacing: 10
+            RowLayout {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                Label {
+                    Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
+                    text: "Проверка только читает состояние системы: ничего не устанавливает и не скачивает."
+                }
+                Button {
+                    text: win.controller.diagnosticsBusy ? "Проверка…" : "Проверить снова"
+                    enabled: !win.controller.diagnosticsBusy
+                    onClicked: win.controller.refreshDiagnostics()
+                }
+            }
+            Repeater {
+                model: win.diagnostics
+                delegate: Frame {
+                    id: checkFrame
+                    required property var modelData
+                    readonly property color stateColor: modelData.state === "ready" ? "#3ecf6e" : modelData.state === "warning" ? "#ffc23d" : "#ff5555"
+                    Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                    ColumnLayout {
+                        width: parent.width
+                        spacing: 4
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Rectangle { implicitWidth: 12; implicitHeight: 12; radius: 6; color: checkFrame.stateColor }
+                            Label { text: modelData.name; font.bold: true; Layout.fillWidth: true; Layout.minimumWidth: 0; elide: Text.ElideRight }
+                            Label {
+                                text: modelData.state === "ready" ? "готово" : modelData.state === "warning" ? "внимание" : "нет"
+                                color: checkFrame.stateColor
+                            }
+                        }
+                        Label {
+                            Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.WrapAnywhere; opacity: 0.7; font.pixelSize: 12
+                            visible: text.length > 0; text: modelData.detail
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            visible: modelData.state !== "ready"
+                            TextEdit {
+                                Layout.fillWidth: true; Layout.minimumWidth: 0
+                                readOnly: true; selectByMouse: true; wrapMode: TextEdit.Wrap
+                                color: palette.text; selectionColor: palette.highlight
+                                text: modelData.instruction
+                            }
+                            Button { text: "Копировать"; flat: true; onClicked: win.controller.copyText(modelData.instruction) }
+                        }
+                    }
+                }
+            }
+            Label {
+                Layout.columnSpan: 2; visible: win.diagnostics.length === 0; opacity: 0.6
+                text: win.controller.diagnosticsBusy ? "Идёт проверка…" : "Нажмите «Проверить снова»"
+            }
+            }
+        }
+        ScrollView {
+            id: page7
+            objectName: "settingsPage7"
+            contentWidth: availableWidth
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            GridLayout {
+                width: page7.availableWidth - 16
                 columns: 2
                 columnSpacing: 24
                 rowSpacing: 14
@@ -486,7 +974,7 @@ ApplicationWindow {
             Button {
                 Layout.columnSpan: 2
                 text: "Сбросить клавиши по умолчанию"
-                onClicked: win.set("hotkeys", ({ toggle: "Ctrl+Alt+P", select_region: "Ctrl+Alt+R", translate_once: "Ctrl+Alt+Y", toggle_overlay: "Ctrl+Alt+H" }))
+                onClicked: win.resetKeys(["hotkeys"])
             }
 
             }
