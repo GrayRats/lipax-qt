@@ -144,9 +144,11 @@ impl Ocr for PaddleOcr {
                 include_str!("paddle_worker.py"),
             )?);
         }
+        // Own the worker across await: cancellation kills it instead of leaving a stale reply.
+        let mut worker = slot.take().unwrap();
         let result = tokio::time::timeout(
             Duration::from_secs(120),
-            slot.as_mut().unwrap().recognize(&png),
+            worker.recognize(&png),
         )
         .await
         .unwrap_or_else(|_| {
@@ -154,9 +156,7 @@ impl Ocr for PaddleOcr {
                 "превышено время ожидания (120 с); при первом запуске загружаются модели",
             ))
         });
-        if result.is_err() {
-            *slot = None;
-        }
+        if result.is_ok() { *slot = Some(worker); }
         result
     }
 }

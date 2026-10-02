@@ -12,3 +12,6 @@ pub mod settings;
 pub mod tesseract;
 pub mod text;
 pub mod translate;
+
+pub mod history;
+pub mod diagnostics;

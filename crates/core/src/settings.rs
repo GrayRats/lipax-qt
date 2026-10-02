@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+/// Upper bound for any screen side in logical pixels (8K, rotated or not).
+pub const MAX_SCREEN_SIDE: u32 = 16384;
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct NormRect {
     pub x: f64,
@@ -42,6 +45,33 @@ pub enum OverlayMode {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
+pub struct RegionProfile {
+    pub id: String,
+    pub name: String,
+    pub enabled: bool,
+    pub rect: Option<NormRect>,
+    /// Empty values inherit the global OCR/translation settings.
+    pub source_lang: String,
+    pub target_lang: String,
+    pub ocr_engine: String,
+    pub interval_ms: u64,
+    pub debounce_ms: u64,
+}
+impl Default for RegionProfile {
+    fn default() -> Self {
+        Self { id: "subtitles".into(), name: "Субтитры".into(), enabled: true, rect: None,
+            source_lang: String::new(), target_lang: String::new(), ocr_engine: String::new(),
+            interval_ms: 500, debounce_ms: 400 }
+    }
+}
+
+pub fn default_regions() -> Vec<RegionProfile> {
+    [("subtitles", "Субтитры"), ("dialogue", "Диалоги"), ("quests", "Задания")].into_iter()
+        .map(|(id, name)| RegionProfile { id: id.into(), name: name.into(), ..Default::default() }).collect()
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Settings {
     pub source_lang: String,
     pub target_lang: String,
@@ -60,11 +90,43 @@ pub struct Settings {
     /// Токен восстановления xdg-desktop-portal: повторный запуск без диалога выбора окна.
     pub portal_token: String,
     pub interval_ms: u64,
-    /// Порог change detection, средняя разница яркости 0..255.
+    /// Чувствительность детектора смены текста: порог контраста краёв букв 40 + 8·value (ниже — чувствительнее).
     pub sensitivity: f32,
     pub debounce_ms: u64,
     pub auto_translate: bool,
     pub overlay_mode: OverlayMode,
+    pub overlay_pinned: bool,
+    pub font_family: String,
+    pub font_bold: bool,
+    pub font_italic: bool,
+    pub text_color: String,
+    pub background_color: String,
+    pub border_color: String,
+    pub border_opacity: f64,
+    pub border_width: u32,
+    pub border_pattern: bool,
+    /// false: the frame shows for `border_seconds` after a region is selected (and while unpinned).
+    pub border_always: bool,
+    pub border_seconds: u32,
+    pub overlay_padding: u32,
+    pub text_alignment: String,
+    pub text_wrap: bool,
+    pub text_outline: bool,
+    pub outline_color: String,
+    /// Line height multiplier for the translated text.
+    pub line_spacing: f64,
+    /// Show the recognized original above the translation.
+    pub show_original: bool,
+    pub original_font_family: String,
+    pub original_font_size: u32,
+    pub original_color: String,
+    pub max_width_enabled: bool,
+    pub overlay_max_width: u32,
+    pub history_enabled: bool,
+    pub history_persist: bool,
+    pub history_limit: usize,
+    pub regions: Vec<RegionProfile>,
+    pub active_region: String,
     pub font_size: u32,
     pub opacity: f64,
     pub click_through: bool,
@@ -119,6 +181,35 @@ impl Default for Settings {
             debounce_ms: 400,
             auto_translate: true,
             overlay_mode: OverlayMode::Overlay,
+            overlay_pinned: false,
+            font_family: String::new(),
+            font_bold: false,
+            font_italic: false,
+            text_color: "#ffffff".into(),
+            background_color: "#181818".into(),
+            border_color: "#ff00ff".into(),
+            border_opacity: 0.65,
+            border_width: 2,
+            border_pattern: true,
+            border_always: true,
+            border_seconds: 5,
+            overlay_padding: 16,
+            text_alignment: "center".into(),
+            text_wrap: true,
+            text_outline: true,
+            outline_color: "#000000".into(),
+            line_spacing: 1.0,
+            show_original: false,
+            original_font_family: String::new(),
+            original_font_size: 14,
+            original_color: "#b0b0b0".into(),
+            max_width_enabled: true,
+            overlay_max_width: 900,
+            history_enabled: true,
+            history_persist: false,
+            history_limit: 200,
+            regions: default_regions(),
+            active_region: "subtitles".into(),
             font_size: 20,
             opacity: 0.85,
             click_through: true,
@@ -140,13 +231,68 @@ impl Settings {
     }
 
     pub fn load() -> Self {
-        std::fs::read_to_string(Self::path())
+        let mut settings: Self = std::fs::read_to_string(Self::path())
             .ok()
             .and_then(|s| toml::from_str(&s).ok())
-            .unwrap_or_default()
+            .unwrap_or_default();
+        // Migrate the old single rectangle into the first named region.
+        if settings.regions.iter().all(|r| r.rect.is_none()) {
+            if let Some(first) = settings.regions.first_mut() { first.rect = settings.region; }
+        }
+        settings.sanitize();
+        settings
+    }
+
+    pub fn sanitize(&mut self) {
+        self.font_size = self.font_size.clamp(8, 96);
+        self.original_font_size = self.original_font_size.clamp(8, 96);
+        self.line_spacing = if self.line_spacing.is_finite() { self.line_spacing.clamp(0.8, 2.5) } else { 1.0 };
+        if !["left", "center", "right"].contains(&self.text_alignment.as_str()) { self.text_alignment = "center".into(); }
+        self.border_width = self.border_width.clamp(1, 16);
+        self.border_opacity = self.border_opacity.clamp(0.0, 1.0);
+        self.border_seconds = self.border_seconds.clamp(1, 120);
+        self.opacity = self.opacity.clamp(0.0, 1.0);
+        self.overlay_padding = self.overlay_padding.min(64);
+        // Only sanity bounds: the overlay itself is clamped to the size of its actual screen.
+        self.overlay_max_width = self.overlay_max_width.clamp(200, MAX_SCREEN_SIDE);
+        self.overlay_size.0 = self.overlay_size.0.clamp(200, MAX_SCREEN_SIDE);
+        self.overlay_size.1 = self.overlay_size.1.clamp(60, MAX_SCREEN_SIDE);
+        self.history_limit = self.history_limit.clamp(10, 1000);
+        if self.regions.is_empty() { self.regions = default_regions(); }
+        self.regions.truncate(8);
+        let mut ids = std::collections::HashSet::new();
+        for (index, r) in self.regions.iter_mut().enumerate() {
+            if r.id.is_empty() || !ids.insert(r.id.clone()) { r.id = format!("region-{index}"); ids.insert(r.id.clone()); }
+            r.interval_ms = r.interval_ms.clamp(100, 10000);
+            r.debounce_ms = r.debounce_ms.min(5000);
+            if r.rect.is_some_and(|r| ![r.x, r.y, r.w, r.h].iter().all(|v| v.is_finite()) || r.w <= 0.0 || r.h <= 0.0 || r.x < 0.0 || r.y < 0.0 || r.x+r.w > 1.000001 || r.y+r.h > 1.000001) { r.rect = None; }
+        }
+        if !self.regions.iter().any(|r| r.id == self.active_region) { self.active_region = self.regions[0].id.clone(); }
+        let defaults = Self::default();
+        for (value, fallback) in [(&mut self.text_color, defaults.text_color), (&mut self.background_color, defaults.background_color), (&mut self.border_color, defaults.border_color),
+            (&mut self.outline_color, defaults.outline_color), (&mut self.original_color, defaults.original_color)] {
+            if value.len() != 7 || !value.starts_with('#') || !value[1..].bytes().all(|b| b.is_ascii_hexdigit()) { *value = fallback; }
+        }
+    }
+
+    pub fn capture_regions(&self) -> Vec<RegionProfile> {
+        if self.regions.iter().any(|r| r.rect.is_some()) {
+            self.regions.iter().filter(|r| r.enabled && r.rect.is_some()).cloned().collect()
+        } else {
+            self.region.map(|rect| vec![RegionProfile { rect: Some(rect), interval_ms: self.interval_ms, debounce_ms: self.debounce_ms, ..Default::default() }]).unwrap_or_default()
+        }
+    }
+
+    /// Display-only edits must not interrupt OCR or reset its retry budget.
+    pub fn processing_key(&self) -> String {
+        serde_json::json!([self.window, self.region, self.regions, self.source_lang, self.target_lang,
+            self.ocr_engine, self.paddle_python, self.translator, self.custom_url, self.custom_api_key,
+            self.yandex_api_key, self.yandex_folder_id, self.interval_ms, self.debounce_ms, self.sensitivity]).to_string()
     }
 
     pub fn save(&self) -> std::io::Result<()> {
+        static SAVE: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        let _guard = SAVE.lock().unwrap();
         let path = Self::path();
         if let Some(dir) = path.parent() {
             std::fs::create_dir_all(dir)?;
