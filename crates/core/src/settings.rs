@@ -46,6 +46,9 @@ pub struct Settings {
     pub source_lang: String,
     pub target_lang: String,
     pub ocr_engine: String,
+    pub paddle_python: String,
+    /// Empty: follow the selected game; otherwise a Qt screen name.
+    pub overlay_screen: String,
     pub translator: TranslatorKind,
     /// Yandex Cloud Translate v2: API-ключ сервисного аккаунта и ID каталога.
     pub yandex_api_key: String,
@@ -102,6 +105,8 @@ impl Default for Settings {
             source_lang: "eng".into(),
             target_lang: "ru".into(),
             ocr_engine: "tesseract".into(),
+            paddle_python: "python3".into(),
+            overlay_screen: String::new(),
             translator: TranslatorKind::Google,
             yandex_api_key: String::new(),
             yandex_folder_id: String::new(),

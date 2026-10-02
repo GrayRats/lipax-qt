@@ -6,8 +6,10 @@ import io.lipa
 ApplicationWindow {
     id: root
     visible: true
-    width: 560
-    height: 440
+    width: 820
+    height: 620
+    minimumWidth: 720
+    minimumHeight: 520
     title: "LipaX — переводчик для игр"
 
     Controller {
@@ -23,7 +25,8 @@ ApplicationWindow {
     TranslationOverlay {
         id: overlay
         translation: ctl.translation
-        visible: overlayEnabled.checked && ctl.translation.length > 0
+        gameGeometry: ctl.gameGeometry
+        visible: overlayEnabled.checked && ctl.translation.length > 0 && !relocating
         settings: settingsWin.current
         onMoved: (x, y) => { settingsWin.set("overlay_pos", [x, y]); settingsWin.apply() }
     }
@@ -73,7 +76,7 @@ ApplicationWindow {
                 enabled: ctl.hasRegion
                 onClicked: ctl.translateOnce()
             }
-            CheckBox { id: overlayEnabled; text: "Overlay"; checked: true }
+            CheckBox { id: overlayEnabled; text: "Поверх игры"; checked: true }
             Item { Layout.fillWidth: true }
             Button { text: "Настройки"; onClicked: settingsWin.openWindow() }
         }
@@ -95,6 +98,20 @@ ApplicationWindow {
                 font.pixelSize: settingsWin.current.font_size || 20
             }
         }
-        Label { text: ctl.status; Layout.fillWidth: true; elide: Text.ElideRight; opacity: 0.7 }
+        ScrollView {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Math.min(96, statusText.implicitHeight)
+            contentWidth: availableWidth
+            clip: true
+            TextArea {
+                id: statusText
+                text: ctl.status
+                readOnly: true
+                selectByMouse: true
+                wrapMode: Text.Wrap
+                textFormat: Text.PlainText
+                font.pixelSize: 13
+            }
+        }
     }
 }

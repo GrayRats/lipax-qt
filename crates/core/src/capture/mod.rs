@@ -1,6 +1,8 @@
 //! Захват изображения области окна. Бэкенды (KWin ScreenShot2, xdg-desktop-portal)
 //! реализуют [`Capture`]; pipeline от конкретного бэкенда не зависит.
 
+mod geometry;
+pub use geometry::shutdown as shutdown_geometry;
 pub mod kwin;
 pub mod portal;
 

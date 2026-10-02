@@ -23,7 +23,10 @@ Window {
         const seconds = settings.frame_seconds !== undefined ? settings.frame_seconds : 3
         if (seconds <= 0 || w < 1 || h < 1) return
         const scr = screenFor(x + w / 2, y + h / 2)
-        if (scr) win.screen = scr
+        if (scr && win.screen !== scr) {
+            win.visible = false // Recreate the layer surface on the new output.
+            win.screen = scr
+        }
         gx = x - (scr ? scr.virtualX : 0)
         gy = y - (scr ? scr.virtualY : 0)
         width = Math.max(Math.round(w), 2 * borderWidth)

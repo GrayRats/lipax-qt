@@ -114,6 +114,7 @@ impl PngSplitter {
 struct Frames {
     latest: StdMutex<Option<Arc<Vec<u8>>>>,
     notify: Notify,
+    closed: StdMutex<Option<String>>,
 }
 
 struct Session {
@@ -122,19 +123,29 @@ struct Session {
     child: Child,
     frames: Arc<Frames>,
     reader: tokio::task::JoinHandle<()>,
+    stderr_reader: tokio::task::JoinHandle<()>,
+    stderr: Arc<StdMutex<Vec<u8>>>,
 }
 
 impl Drop for Session {
     fn drop(&mut self) {
         self.reader.abort();
+        self.stderr_reader.abort();
         let _ = self.child.start_kill();
     }
 }
 
-impl Session {
-    fn alive(&mut self) -> bool {
-        matches!(self.child.try_wait(), Ok(None))
+fn checked_frame(child: &mut Child, frames: &Frames, stderr: &[u8]) -> Result<Option<Arc<Vec<u8>>>, CaptureError> {
+    let reason = match child.try_wait() {
+        Ok(Some(status)) => Some(format!("gst-launch-1.0 завершился ({status})")),
+        Err(e) => Some(format!("не удалось проверить gst-launch-1.0: {e}")),
+        Ok(None) => frames.closed.lock().unwrap().clone(),
+    };
+    if let Some(reason) = reason {
+        let detail = String::from_utf8_lossy(stderr);
+        return Err(err(format!("Portal-захват остановлен: {reason}. Выберите окно заново. Проверьте PipeWire и плагины GStreamer (pipewiresrc, pngenc). {}", detail.trim())));
     }
+    Ok(frames.latest.lock().unwrap().clone())
 }
 
 pub struct PortalCapture {
@@ -204,7 +215,7 @@ async fn start_portal(restore_token: &str) -> Result<Started, CaptureError> {
     let t = new_token("lipa_sel");
     let mut o: HashMap<&str, Value> = HashMap::new();
     o.insert("handle_token", Value::from(t.as_str()));
-    o.insert("types", Value::from(3u32)); // 1 — экран, 2 — окно
+    o.insert("types", Value::from(2u32)); // Только окно: рамки и overlay приложения не должны попадать в OCR.
     o.insert("multiple", Value::from(false));
     o.insert("cursor_mode", Value::from(1u32)); // курсор не рисовать
     o.insert("persist_mode", Value::from(2u32)); // помнить выбор до явного отзыва
@@ -277,7 +288,7 @@ async fn spawn_session(restore_token: &str) -> Result<(Session, Option<String>),
     let started = start_portal(restore_token).await?;
     let raw = started.fd.as_raw_fd();
     let mut cmd = Command::new("gst-launch-1.0");
-    cmd.args(gst_args(raw, started.node)).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::null()).kill_on_drop(true);
+    cmd.args(gst_args(raw, started.node)).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).kill_on_drop(true);
     inherit_fd(&mut cmd, raw);
     let mut child = cmd.spawn().map_err(|e| {
         err(format!("не удалось запустить gst-launch-1.0 (нужны gstreamer и gst-plugin-pipewire): {e}"))
@@ -285,26 +296,48 @@ async fn spawn_session(restore_token: &str) -> Result<(Session, Option<String>),
     drop(started.fd); // у дочернего процесса своя копия
     let mut stdout = child.stdout.take().ok_or_else(|| err("нет stdout у gst-launch-1.0"))?;
 
-    let frames = Arc::new(Frames { latest: StdMutex::new(None), notify: Notify::new() });
+    let mut stderr_pipe = child.stderr.take().ok_or_else(|| err("нет stderr у gst-launch-1.0"))?;
+    let stderr = Arc::new(StdMutex::new(Vec::new()));
+    let errors = stderr.clone();
+    let stderr_reader = tokio::spawn(async move {
+        let mut buf = [0u8; 2048];
+        while let Ok(n) = stderr_pipe.read(&mut buf).await {
+            if n == 0 { break; }
+            let mut tail = errors.lock().unwrap();
+            tail.extend_from_slice(&buf[..n]);
+            let excess = tail.len().saturating_sub(8192);
+            tail.drain(..excess);
+        }
+    });
+    let frames = Arc::new(Frames { latest: StdMutex::new(None), notify: Notify::new(), closed: StdMutex::new(None) });
     let sink = frames.clone();
     let reader = tokio::spawn(async move {
         let (mut splitter, mut chunk) = (PngSplitter::default(), vec![0u8; 64 * 1024]);
-        while let Ok(n) = stdout.read(&mut chunk).await {
-            if n == 0 {
-                break;
-            }
+        let reason = loop {
+            let n = match stdout.read(&mut chunk).await {
+                Ok(0) => break "поток кадров GStreamer закрыт".to_string(),
+                Ok(n) => n,
+                Err(e) => break format!("ошибка чтения кадров GStreamer: {e}"),
+            };
             if let Some(last) = splitter.push(&chunk[..n]).pop() {
                 *sink.latest.lock().unwrap() = Some(Arc::new(last));
                 sink.notify.notify_waiters();
             }
-        }
+        };
+        *sink.closed.lock().unwrap() = Some(reason);
+        sink.notify.notify_waiters();
     });
-    Ok((Session { _conn: started.conn, child, frames, reader }, started.token))
+    Ok((Session { _conn: started.conn, child, frames, reader, stderr_reader, stderr }, started.token))
 }
 
 impl PortalCapture {
     pub fn new(restore_token: String) -> Self {
         Self { session: Mutex::new(None), token: watch::channel(restore_token).0 }
+    }
+
+    /// Stop the reader and GStreamer when the UI exits.
+    pub async fn close(&self) {
+        *self.session.lock().await = None;
     }
 
     /// Изменения restore token (для сохранения в настройках).
@@ -328,30 +361,30 @@ impl PortalCapture {
         Ok(portal_window_key())
     }
 
-    /// Последний кадр PNG; при необходимости (повторный запуск, упавший процесс) сессия
-    /// восстанавливается по сохранённому токену.
+    /// Не переоткрываем портал в цикле после сбоя: ошибка сохраняется до нового выбора окна.
     async fn latest_png(&self) -> Result<Arc<Vec<u8>>, CaptureError> {
-        let frames = {
-            let mut slot = self.session.lock().await;
-            if !slot.as_mut().is_some_and(Session::alive) {
-                let saved = self.token.borrow().clone();
-                let (session, token) = spawn_session(&saved).await?;
-                *slot = Some(session);
-                self.remember(token);
-            }
-            slot.as_ref().expect("только что создана").frames.clone()
-        };
+        let mut slot = self.session.lock().await;
+        if slot.is_none() {
+            let saved = self.token.borrow().clone();
+            let (session, token) = spawn_session(&saved).await?;
+            *slot = Some(session);
+            self.remember(token);
+        }
+        let session = slot.as_mut().expect("session created");
+        let frames = session.frames.clone();
         let deadline = tokio::time::Instant::now() + FIRST_FRAME_TIMEOUT;
         loop {
-            // Сначала подписываемся, потом проверяем: иначе кадр между проверкой и ожиданием потеряется.
             let notified = frames.notify.notified();
             tokio::pin!(notified);
             notified.as_mut().enable();
-            if let Some(f) = frames.latest.lock().unwrap().clone() {
-                return Ok(f);
+            // Check the process before returning even a cached frame.
+            if let Some(f) = checked_frame(&mut session.child, &frames, &session.stderr.lock().unwrap())? { return Ok(f); }
+            if tokio::time::Instant::now() >= deadline {
+                return Err(err("PipeWire не передал первый кадр за 5 секунд. Проверьте, что выбранное окно открыто и не свёрнуто."));
             }
-            if tokio::time::timeout_at(deadline, notified).await.is_err() {
-                return Err(err("кадр от PipeWire не получен (окно не обновляется или поток не запущен)"));
+            tokio::select! {
+                _ = notified => {},
+                _ = tokio::time::sleep(Duration::from_millis(50)) => {},
             }
         }
     }
@@ -389,6 +422,36 @@ mod tests {
         let img = RgbaImage::from_fn(w, h, |x, y| Rgba([(x as u8).wrapping_mul(v), (y as u8) ^ v, v, 255]));
         DynamicImage::ImageRgba8(img).write_to(&mut Cursor::new(&mut out), ImageFormat::Png).unwrap();
         out
+    }
+
+    #[tokio::test]
+    async fn failed_process_is_reported_even_with_a_cached_frame() {
+        let child = Command::new("sh").args(["-c", "exit 7"]).spawn().unwrap();
+        let frames = Arc::new(Frames {
+            latest: StdMutex::new(Some(Arc::new(png(4, 4, 1)))),
+            notify: Notify::new(),
+            closed: StdMutex::new(None),
+        });
+        let mut child = child;
+        child.wait().await.unwrap();
+        let error = checked_frame(&mut child, &frames, b"missing pipewiresrc").unwrap_err().to_string();
+        assert!(error.contains("7"));
+        assert!(error.contains("missing pipewiresrc"));
+        assert!(error.contains("Выберите окно заново"));
+    }
+
+    #[tokio::test]
+    async fn closed_stream_invalidates_a_cached_frame_before_process_exit() {
+        let mut child = Command::new("sleep").arg("10").kill_on_drop(true).spawn().unwrap();
+        let frames = Frames {
+            latest: StdMutex::new(Some(Arc::new(png(4, 4, 1)))),
+            notify: Notify::new(),
+            closed: StdMutex::new(None),
+        };
+        assert!(checked_frame(&mut child, &frames, b"").unwrap().is_some());
+        *frames.closed.lock().unwrap() = Some("поток кадров закрыт".into());
+        assert!(checked_frame(&mut child, &frames, b"").unwrap_err().to_string().contains("поток кадров закрыт"));
+        child.kill().await.unwrap();
     }
 
     #[test]

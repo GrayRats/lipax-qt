@@ -1,1 +1,9 @@
 target/
+
+# Local package/build artifacts
+/dist/
+/src/
+/pkg/
+*.pkg.tar.*
+lipa-*.tar.gz
+**/__pycache__/

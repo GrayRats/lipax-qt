@@ -1,4 +1,5 @@
 mod bridge;
+mod icon;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 
@@ -20,6 +21,7 @@ fn apply_dark_style() {
 fn main() {
     apply_dark_style();
     let mut app = QGuiApplication::new();
+    icon::configure();
     let mut engine = QQmlApplicationEngine::new();
     if let Some(engine) = engine.as_mut() {
         engine.load(&QUrl::from("qrc:/qt/qml/io/lipa/qml/main.qml"));
@@ -27,4 +29,5 @@ fn main() {
     if let Some(app) = app.as_mut() {
         app.exec();
     }
+    bridge::shutdown();
 }

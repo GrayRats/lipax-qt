@@ -4,7 +4,7 @@
 
 ### Это чистый ВАЙБ КОД !!!! ,зарание извините.
 
-Легковесный инструмент для перевода текста с экрана под Wayland, написанный на Rust и Quickshell.
+Легковесный инструмент для перевода текста с экрана под Wayland, написанный на Rust и Qt 6 / QML.
 
 #### Установка (Arch Linux)
 
@@ -34,7 +34,7 @@ makepkg -si
 
 ### This is VIBE CODING!!
  
-A lightweight Wayland screen translation tool built with Rust and Quickshell.
+A lightweight Wayland screen translation tool built with Rust and Qt 6 / QML.
 
 #### Installation (Arch Linux)
 
@@ -59,3 +59,19 @@ makepkg -si
 2. Select the desired screen area containing the text you want to translate.
 
 3. View the translation result in the pop-up interface.
+
+
+### Сборка текущих исходников (Arch Linux)
+
+```bash
+./packaging/build-local.sh
+```
+
+Пакет появится в `dist/`. Установка от root:
+
+```bash
+pacman -U /полный/путь/к/lipa-0.3.0-2-x86_64.pkg.tar.zst
+```
+
+[Список доработок и предложения](docs/IMPROVEMENTS.md) ·
+[Подключение PaddleOCR](docs/PADDLEOCR.md)

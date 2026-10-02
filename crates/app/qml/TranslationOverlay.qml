@@ -8,6 +8,39 @@ Window {
     id: win
     property string translation: ""
     property var settings: ({})
+    property string gameGeometry: ""
+    property var targetScreen: null
+    property bool relocating: false
+
+    function updateScreen() {
+        const screens = Qt.application.screens
+        let chosen = screens.find(s => s.name === settings.overlay_screen)
+        if (!chosen && gameGeometry.length) {
+            try {
+                const g = JSON.parse(gameGeometry)
+                // Largest intersection also works for games spanning monitors.
+                let best = 0
+                for (const s of screens) {
+                    const area = Math.max(0, Math.min(g[0] + g[2], s.virtualX + s.width) - Math.max(g[0], s.virtualX))
+                               * Math.max(0, Math.min(g[1] + g[3], s.virtualY + s.height) - Math.max(g[1], s.virtualY))
+                    if (area > best) { best = area; chosen = s }
+                }
+            } catch (e) {}
+        }
+        if (!chosen) chosen = screens.length ? screens[0] : null
+        if (chosen && targetScreen !== chosen) {
+            // A layer surface is tied to an output at creation. Remap it on monitor changes.
+            relocating = true
+            targetScreen = chosen
+            win.screen = chosen
+            Qt.callLater(function() { win.relocating = false })
+        }
+    }
+    onGameGeometryChanged: updateScreen()
+    onSettingsChanged: updateScreen()
+    Component.onCompleted: updateScreen()
+    Connections { target: Qt.application; function onScreensChanged() { win.updateScreen() } }
+
     readonly property bool clickThrough: settings.click_through !== false
     // Текущее положение; во время перетаскивания меняется локально, на отпускании уходит в `moved`.
     property int posX: settings.overlay_pos ? settings.overlay_pos[0] : 100
@@ -21,12 +54,12 @@ Window {
     LayerShell.Window.scope: "lipa-overlay"
     LayerShell.Window.layer: LayerShell.Window.LayerOverlay
     LayerShell.Window.anchors: LayerShell.Window.AnchorTop | LayerShell.Window.AnchorLeft
-    LayerShell.Window.margins: ({ left: win.posX, top: win.posY, right: 0, bottom: 0 })
+    LayerShell.Window.margins: ({ left: Math.max(0, Math.min(win.posX, (win.targetScreen ? win.targetScreen.width : 1920) - win.width)), top: Math.max(0, Math.min(win.posY, (win.targetScreen ? win.targetScreen.height : 1080) - win.height)), right: 0, bottom: 0 })
     LayerShell.Window.exclusionZone: -1
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityNone
 
-    width: settings.overlay_size ? settings.overlay_size[0] : 700
-    height: settings.overlay_size ? settings.overlay_size[1] : 120
+    width: Math.min(settings.overlay_size ? settings.overlay_size[0] : 700, targetScreen ? targetScreen.width : 1920)
+    height: Math.min(settings.overlay_size ? settings.overlay_size[1] : 120, targetScreen ? targetScreen.height : 1080)
 
     Rectangle {
         anchors.fill: parent

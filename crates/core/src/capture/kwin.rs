@@ -16,6 +16,7 @@ use zbus::zvariant::{Fd, OwnedValue, Value};
 
 pub struct KwinCapture {
     conn: zbus::Connection,
+    geometry: tokio::sync::OnceCell<super::geometry::ClientGeometry>,
 }
 
 fn unavailable(e: impl std::fmt::Display) -> CaptureError {
@@ -47,24 +48,10 @@ impl WindowGeometry {
     }
 }
 
-fn number(m: &HashMap<String, OwnedValue>, k: &str) -> Option<f64> {
-    let v = &**m.get(k)?;
-    f64::try_from(v)
-        .ok()
-        .or_else(|| i32::try_from(v).ok().map(f64::from))
-        .or_else(|| u32::try_from(v).ok().map(f64::from))
-        .or_else(|| i64::try_from(v).ok().map(|x| x as f64))
-}
-
-fn geometry_from(m: &HashMap<String, OwnedValue>) -> Option<WindowGeometry> {
-    let g = WindowGeometry { x: number(m, "x")?, y: number(m, "y")?, w: number(m, "width")?, h: number(m, "height")? };
-    (g.w > 0.0 && g.h > 0.0).then_some(g)
-}
-
 impl KwinCapture {
     pub async fn connect() -> Result<Self, CaptureError> {
         let conn = zbus::Connection::session().await.map_err(unavailable)?;
-        Ok(Self { conn })
+        Ok(Self { conn, geometry: tokio::sync::OnceCell::new() })
     }
 
     /// Пользователь кликает по окну; возвращает его ключ. Отмена (Esc) даёт `None`.
@@ -109,12 +96,13 @@ impl KwinCapture {
 
     /// Положение и размер окна на рабочем столе (логические координаты KWin), если окно существует.
     pub async fn window_geometry(&self, uuid: &str) -> Option<WindowGeometry> {
-        let reply = self
-            .conn
-            .call_method(Some("org.kde.KWin"), "/KWin", Some("org.kde.KWin"), "getWindowInfo", &(uuid,))
-            .await
-            .ok()?;
-        geometry_from(&reply.body().deserialize::<HashMap<String, OwnedValue>>().ok()?)
+        match self.geometry.get_or_try_init(super::geometry::ClientGeometry::connect).await {
+            Ok(tracker) => tracker.get(uuid),
+            Err(e) => {
+                tracing::warn!("KWin client geometry unavailable: {e}");
+                None // Do not draw a misleading frame using decorated geometry.
+            }
+        }
     }
 
     /// Полный кадр окна.
@@ -217,18 +205,6 @@ mod tests {
         let g = WindowGeometry { x: 100.0, y: 50.0, w: 800.0, h: 600.0 };
         let r = g.region(NormRect { x: 0.5, y: 0.25, w: 0.25, h: 0.5 });
         assert_eq!(r, WindowGeometry { x: 500.0, y: 200.0, w: 200.0, h: 300.0 });
-    }
-
-    #[test]
-    fn geometry_parsing_accepts_int_and_double() {
-        let mut m: HashMap<String, OwnedValue> = HashMap::new();
-        m.insert("x".into(), Value::from(10i32).try_into().unwrap());
-        m.insert("y".into(), Value::from(20.5f64).try_into().unwrap());
-        m.insert("width".into(), Value::from(300u32).try_into().unwrap());
-        m.insert("height".into(), Value::from(200i32).try_into().unwrap());
-        assert_eq!(geometry_from(&m), Some(WindowGeometry { x: 10.0, y: 20.5, w: 300.0, h: 200.0 }));
-        m.insert("width".into(), Value::from(0i32).try_into().unwrap());
-        assert_eq!(geometry_from(&m), None);
     }
 
     #[test]

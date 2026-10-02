@@ -1,6 +1,8 @@
 //! OCR. Tesseract вызывается как процесс: PNG на stdin, текст из stdout —
 //! без временных файлов и гонок между запусками.
 
+pub mod paddle;
+
 use crate::settings::Settings;
 use crate::tesseract::TesseractManager;
 use image::{DynamicImage, ImageFormat, imageops::FilterType};
@@ -30,6 +32,21 @@ pub trait Ocr: Send + Sync {
         img: &DynamicImage,
         settings: &Settings,
     ) -> impl Future<Output = Result<String, OcrError>> + Send;
+}
+
+#[derive(Default)]
+pub struct AnyOcr {
+    paddle: paddle::PaddleOcr,
+}
+
+impl Ocr for AnyOcr {
+    async fn recognize(&self, img: &DynamicImage, settings: &Settings) -> Result<String, OcrError> {
+        match settings.ocr_engine.as_str() {
+            "tesseract" => Tesseract.recognize(img, settings).await,
+            "paddleocr" => self.paddle.recognize(img, settings).await,
+            _ => Err(OcrError::UnknownEngine(settings.ocr_engine.clone())),
+        }
+    }
 }
 
 pub struct Tesseract;

@@ -9,6 +9,8 @@ fn main() {
         "qml/HotkeyButton.qml",
         "qml/FrameOverlay.qml",
     ]))
-    .files(["src/bridge.rs"])
+    .files(["src/bridge.rs", "src/icon.rs"])
+    .include_dir("src")
+    .qrc("assets.qrc")
     .build();
 }

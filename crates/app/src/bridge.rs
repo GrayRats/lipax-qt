@@ -18,6 +18,7 @@ pub mod qobject {
         #[qproperty(QString, preview_source, cxx_name = "previewSource")]
         #[qproperty(QString, tesseract_json, cxx_name = "tesseractJson")]
         #[qproperty(bool, tesseract_busy, cxx_name = "tesseractBusy")]
+        #[qproperty(QString, game_geometry, cxx_name = "gameGeometry")]
         #[qproperty(bool, running)]
         #[qproperty(bool, has_region, cxx_name = "hasRegion")]
         type Controller = super::ControllerRust;
@@ -88,7 +89,7 @@ use lipa_core::capture::kwin::KwinCapture;
 use lipa_core::capture::portal::is_portal_window;
 use lipa_core::capture::AnyCapture;
 use lipa_core::hotkeys::{self, HotkeyAction, HotkeyEvent};
-use lipa_core::ocr::Tesseract;
+use lipa_core::ocr::AnyOcr;
 use lipa_core::pipeline::{Cmd, Event, Pipeline};
 use lipa_core::settings::{CaptureBackendKind, NormRect, Settings};
 use lipa_core::tesseract::{TesseractInfo, TesseractManager};
@@ -105,6 +106,27 @@ fn rt() -> &'static tokio::runtime::Runtime {
             .build()
             .expect("tokio runtime")
     })
+}
+
+#[derive(Default)]
+struct RuntimeServices {
+    tasks: Vec<tokio::task::JoinHandle<()>>,
+    capture: Option<Arc<AnyCapture>>,
+}
+
+fn services() -> &'static std::sync::Mutex<RuntimeServices> {
+    static SERVICES: OnceLock<std::sync::Mutex<RuntimeServices>> = OnceLock::new();
+    SERVICES.get_or_init(Default::default)
+}
+
+pub fn shutdown() {
+    let services = std::mem::take(&mut *services().lock().unwrap());
+    rt().block_on(async move {
+        for task in &services.tasks { task.abort(); }
+        for task in services.tasks { let _ = task.await; }
+        if let Some(capture) = services.capture { capture.portal.close().await; }
+        lipa_core::capture::shutdown_geometry().await;
+    });
 }
 
 struct Shared {
@@ -147,6 +169,7 @@ pub struct ControllerRust {
     tesseract_busy: bool,
     window_title: QString,
     preview_source: QString,
+    game_geometry: QString,
     running: bool,
     has_region: bool,
     shared: Arc<Shared>,
@@ -180,6 +203,7 @@ impl Default for ControllerRust {
                     .unwrap_or(""),
             ),
             preview_source: QString::default(),
+            game_geometry: QString::default(),
             running: false,
             has_region: settings.region.is_some(),
             shared: Arc::new(Shared {
@@ -212,9 +236,15 @@ impl cxx_qt::Initialize for qobject::Controller {
 
         // Pipeline: захват → OCR → перевод в фоне. Бэкенд захвата выбирается по ключу окна.
         let capture = shared.capture.clone();
-        rt().spawn(async move {
-            Pipeline::new(capture, Tesseract, HttpTranslate::new()).run(settings_rx, running_rx, cmd_rx, ev_tx).await
+        let pipeline = rt().spawn(async move {
+            Pipeline::new(capture, AnyOcr::default(), HttpTranslate::new()).run(settings_rx, running_rx, cmd_rx, ev_tx).await
         });
+
+        {
+            let mut services = services().lock().unwrap();
+            services.tasks.push(pipeline);
+            services.capture = Some(shared.capture.clone());
+        }
 
         // Токен восстановления portal сохраняется, чтобы окно выбиралось без диалога при следующем запуске.
         let sh = shared.clone();
@@ -261,6 +291,30 @@ impl cxx_qt::Initialize for qobject::Controller {
                 });
             }
         });
+
+        // Client geometry follows window moves and monitor changes, even while paused.
+        let sh = shared.clone();
+        let qt = self.qt_thread();
+        let geometry_task = rt().spawn(async move {
+            let mut ticker = tokio::time::interval(std::time::Duration::from_millis(500));
+            loop {
+                ticker.tick().await;
+                let window = sh.settings.borrow().window.clone();
+                let geometry = match window.as_ref().filter(|w| !is_portal_window(w)) {
+                    Some(w) => match sh.kwin().await {
+                        Ok(k) => k.window_geometry(&w.uuid).await,
+                        Err(_) => None,
+                    },
+                    None => None,
+                };
+                // Ignore a result for a window that was replaced during the await.
+                if sh.settings.borrow().window != window { continue; }
+                let json = geometry.map(|g| serde_json::json!([g.x, g.y, g.w, g.h]).to_string()).unwrap_or_default();
+                if qt.queue(move |mut o| o.as_mut().set_game_geometry(QString::from(json.as_str()))).is_err() { break; }
+            }
+        });
+
+        services().lock().unwrap().tasks.push(geometry_task);
 
         // Первичная проверка Tesseract в фоне, чтобы окно настроек открывалось сразу с данными.
         self.as_mut().refresh_tesseract();
