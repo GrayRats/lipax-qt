@@ -18,15 +18,15 @@ ApplicationWindow {
         id: ctl
         onFrameRequested: (x, y, w, h) => selectionFrame.flash(x, y, w, h)
         onSelectRegionRequested: if (ctl.windowTitle.length > 0) regionWin.begin()
-        onToggleOverlayRequested: overlayEnabled.checked = !overlayEnabled.checked
-        onTogglePinRequested: overlay.pinToggled(!overlay.pinned)
+        onTogglePinRequested: ctl.setOverlayPinned(!overlay.pinned, "hotkey")
     }
 
     SettingsWindow { id: settingsWin; controller: ctl; onSelectRegionRequested: regionWin.begin() }
 
-    // "Over the original": one window per active region with a known text block. Needs the game
-    // window geometry (KWin); with portal capture the translation window is used instead.
-    readonly property bool inplaceActive: settingsWin.current.translation_display === "inplace" && ctl.gameGeometry.length > 0
+    // The two renderers have separate state owned by the Controller: which one runs
+    // (effectiveDisplay, with a logged fallback for portal capture) and their own visibility.
+    readonly property bool inplaceActive: ctl.effectiveDisplay === "inplace"
+    readonly property bool windowActive: ctl.effectiveDisplay === "window"
     readonly property var inplaceEntries: { try { return JSON.parse(ctl.inplaceJson || "[]") } catch (e) { return [] } }
     // Keyed by "region:field": a stable field keeps its window; only its properties update.
     readonly property string inplaceKeys: JSON.stringify(inplaceEntries.map(e => e.key))
@@ -37,8 +37,9 @@ ApplicationWindow {
             settings: settingsWin.current
             entry: root.inplaceEntries.find(e => e.key === modelData) || null
             gameGeometry: ctl.gameGeometry
-            visible: root.inplaceActive && overlayEnabled.checked && !relocating && !!desktopRect && !!entry && entry.text.length > 0
-            onHideRequested: overlayEnabled.checked = false
+            visible: root.inplaceActive && ctl.inplaceVisible && !relocating && !!desktopRect && !!entry && entry.text.length > 0
+            // MMB hides only the in-place translation; the translation window is untouched.
+            onHideRequested: ctl.setInplaceVisibility(false, "mmb")
         }
     }
 
@@ -66,12 +67,12 @@ ApplicationWindow {
         translation: ctl.translation
         original: ctl.original
         gameGeometry: ctl.gameGeometry
-        visible: overlayEnabled.checked && ctl.translation.length > 0 && !relocating && !root.inplaceActive
+        shown: root.windowActive && ctl.windowOverlayVisible && ctl.translation.length > 0
         settings: settingsWin.current
-        onMoved: (x, y) => { settingsWin.set("overlay_pos", [x, y]); settingsWin.apply() }
-        onPinToggled: (p) => { settingsWin.set("overlay_pinned", p); settingsWin.apply() }
-        // Closing the floating window hides the translation; "Поверх игры" or Ctrl+Alt+H shows it again.
-        onCloseRequested: overlayEnabled.checked = false
+        // Pin state and the pinned placement are decided in Rust (pinned lands where floating was).
+        onPinToggled: (p) => ctl.setOverlayPinned(p, "mmb")
+        // Closing hides only the translation window; "Поверх игры" or Ctrl+Alt+H shows it again.
+        onCloseRequested: ctl.setWindowOverlayVisibility(false, "close_button")
         // Any change of the selected areas (KWin or portal) briefly reveals a hidden frame.
         readonly property string areasKey: JSON.stringify((settingsWin.current.regions || []).map(r => [r.enabled, r.rect]))
         onAreasKeyChanged: flashFrame()
@@ -129,12 +130,36 @@ ApplicationWindow {
                 enabled: ctl.hasRegion
                 onClicked: ctl.running ? ctl.stop() : ctl.start()
             }
-            CheckBox { id: overlayEnabled; text: "Поверх игры"; checked: true }
+            // Each renderer has its own switch; only the active one is shown.
+            CheckBox {
+                objectName: "windowOverlayToggle"
+                visible: root.windowActive
+                text: "Поверх игры"
+                checked: ctl.windowOverlayVisible
+                onToggled: ctl.setWindowOverlayVisibility(checked, "checkbox")
+            }
+            CheckBox {
+                objectName: "inplaceToggle"
+                visible: root.inplaceActive
+                text: "Перевод поверх оригинала"
+                checked: ctl.inplaceVisible
+                onToggled: ctl.setInplaceVisibility(checked, "checkbox")
+            }
             Item { Layout.fillWidth: true }
             Button { objectName: "historyButton"; text: "История"; onClicked: historyWin.openWindow() }
             Button { text: "Настройки"; onClicked: settingsWin.openWindow() }
         }
 
+        // Why the chosen display was replaced (e.g. portal capture has no window position).
+        Label {
+            objectName: "displayNote"
+            Layout.fillWidth: true
+            visible: ctl.displayNote.length > 0
+            text: "Перевод поверх оригинала недоступен: " + ctl.displayNote
+            wrapMode: Text.Wrap
+            color: "#ffc23d"
+            font.pixelSize: 12
+        }
         Label { text: "Оригинал"; font.bold: true }
         ScrollView {
             Layout.fillWidth: true

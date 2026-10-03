@@ -539,7 +539,11 @@ ApplicationWindow {
                 text: "В KWin перевод следует за окном игры. Для portal выберите монитор вручную: положение окна скрыто порталом. Координаты ниже считаются от угла этого экрана."
             }
             FieldLabel { text: "Закрепить перевод" }
-            Switch { checked: win.current.overlay_pinned === true; onToggled: win.set("overlay_pinned", checked) }
+            Switch {
+                checked: win.current.overlay_pinned === true
+                // Through the Controller: pinning places the pinned window where the floating one was.
+                onToggled: if (win.controller.setOverlayPinned) win.controller.setOverlayPinned(checked, "settings"); else win.set("overlay_pinned", checked)
+            }
             Label {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
                 text: "Средняя кнопка мыши по рамке перевода переключает закрепление. Незакреплённый перевод перетаскивается левой кнопкой, его рамка толще. "

@@ -28,7 +28,30 @@ pub mod qobject {
         #[qproperty(QString, game_geometry, cxx_name = "gameGeometry")]
         #[qproperty(bool, running)]
         #[qproperty(bool, has_region, cxx_name = "hasRegion")]
+        /// Видимость перевода поверх оригинала. Не связана с окном перевода.
+        #[qproperty(bool, inplace_visible, cxx_name = "inplaceVisible")]
+        /// Видимость окна перевода («Поверх игры»). Не связана с переводом поверх оригинала.
+        #[qproperty(bool, window_overlay_visible, cxx_name = "windowOverlayVisible")]
+        /// Какой рендер работает сейчас: "inplace" или "window" (с учётом отката, см. `displayNote`).
+        #[qproperty(QString, effective_display, cxx_name = "effectiveDisplay")]
+        /// Почему выбранный режим заменён другим (пусто, если не заменён).
+        #[qproperty(QString, display_note, cxx_name = "displayNote")]
         type Controller = super::ControllerRust;
+
+        /// Закрепить/открепить окно перевода; закреплённое встаёт туда, где было свободное.
+        #[qinvokable]
+        #[cxx_name = "setOverlayPinned"]
+        fn set_overlay_pinned(self: Pin<&mut Controller>, pinned: bool, source: &QString);
+        /// Геометрия свободного окна от QML (только X11: там Qt знает положение окна).
+        #[qinvokable]
+        #[cxx_name = "reportFloatingGeometry"]
+        fn report_floating_geometry(self: Pin<&mut Controller>, json: &QString, reason: &QString);
+        #[qinvokable]
+        #[cxx_name = "setInplaceVisibility"]
+        fn set_inplace_visibility(self: Pin<&mut Controller>, visible: bool, source: &QString);
+        #[qinvokable]
+        #[cxx_name = "setWindowOverlayVisibility"]
+        fn set_window_overlay_visibility(self: Pin<&mut Controller>, visible: bool, source: &QString);
 
         #[qinvokable]
         #[cxx_name = "defaultSettingsJson"]
@@ -101,10 +124,6 @@ pub mod qobject {
         #[qsignal]
         #[cxx_name = "selectRegionRequested"]
         fn select_region_requested(self: Pin<&mut Controller>);
-        /// Горячая клавиша «показать/скрыть overlay»: видимостью управляет QML.
-        #[qsignal]
-        #[cxx_name = "toggleOverlayRequested"]
-        fn toggle_overlay_requested(self: Pin<&mut Controller>);
         /// Горячая клавиша «закрепить / открепить перевод»: работает при любом режиме рамки.
         #[qsignal]
         #[cxx_name = "togglePinRequested"]
@@ -229,6 +248,10 @@ pub struct ControllerRust {
     )>,
     settings_rx: watch::Receiver<Settings>,
     running_rx: watch::Receiver<bool>,
+    inplace_visible: bool,
+    window_overlay_visible: bool,
+    effective_display: QString,
+    display_note: QString,
 }
 
 impl Default for ControllerRust {
@@ -265,6 +288,10 @@ impl Default for ControllerRust {
             ),
             preview_source: QString::default(),
             game_geometry: QString::default(),
+            inplace_visible: true,
+            window_overlay_visible: true,
+            effective_display: QString::from(effective_display(&settings).0),
+            display_note: QString::from(effective_display(&settings).1.as_str()),
             running: false,
             has_region: !settings.capture_regions().is_empty(),
             shared: Arc::new(Shared {
@@ -349,12 +376,65 @@ impl cxx_qt::Initialize for qobject::Controller {
                             .set_status(QString::from("Сначала выберите область")),
                         HotkeyAction::TranslateOnce => o.as_mut().translate_once(),
                         HotkeyAction::SelectRegion => o.as_mut().select_region_requested(),
-                        HotkeyAction::ToggleOverlay => o.as_mut().toggle_overlay_requested(),
-                        HotkeyAction::TogglePin => o.as_mut().toggle_pin_requested(),
+                        // Показывает/скрывает перевод активного режима — второй режим не трогается.
+                        HotkeyAction::ToggleOverlay => {
+                            let source = QString::from("hotkey");
+                            if o.effective_display().to_string() == "inplace" {
+                                let v = !*o.inplace_visible();
+                                o.as_mut().set_inplace_visibility(v, &source);
+                            } else {
+                                let v = !*o.window_overlay_visible();
+                                o.as_mut().set_window_overlay_visibility(v, &source);
+                            }
+                        }
+                        // Закрепление есть только у окна перевода.
+                        HotkeyAction::TogglePin => {
+                            if o.effective_display().to_string() == "window" { o.as_mut().toggle_pin_requested(); }
+                        }
                     },
                 });
             }
         });
+
+        // Свободное окно перевода — обычное окно: на Wayland его положение знает и задаёт только
+        // композитор. Скрипт KWin восстанавливает сохранённое место и сообщает новое после
+        // перемещения; без KWin место выбирает композитор.
+        let sh = shared.clone();
+        let qt = self.qt_thread();
+        let floating_task = rt().spawn(async move {
+            let kwin = match sh.kwin().await {
+                Ok(k) => k,
+                Err(e) => {
+                    tracing::info!(target: "overlay.geometry", error = %e, "KWin недоступен: положение свободного окна выбирает композитор");
+                    return;
+                }
+            };
+            let mut settings = sh.settings.subscribe();
+            let placement = floating_placement(&settings.borrow_and_update());
+            if !kwin.set_floating_placement(placement).await {
+                tracing::warn!(target: "overlay.geometry", "скрипт KWin недоступен: положение свободного окна не восстанавливается");
+                return;
+            }
+            let Some(mut moves) = kwin.floating_moves().await else { return };
+            loop {
+                tokio::select! {
+                    changed = settings.changed() => {
+                        if changed.is_err() { break; }
+                        let placement = floating_placement(&settings.borrow_and_update());
+                        kwin.set_floating_placement(placement).await;
+                    }
+                    changed = moves.changed() => {
+                        if changed.is_err() { break; }
+                        let moved = moves.borrow_and_update().clone();
+                        if let Some((g, reason)) = moved {
+                            store_floating_geometry(&sh, g, &reason);
+                            if qt.queue(|mut o| o.as_mut().publish_settings()).is_err() { break; }
+                        }
+                    }
+                }
+            }
+        });
+        services().lock().unwrap().tasks.push(floating_task);
 
         // Client geometry follows window moves and monitor changes, even while paused.
         let sh = shared.clone();
@@ -467,7 +547,59 @@ impl qobject::Controller {
         let rects: Vec<[i32; 4]> = serde_json::from_str(&rects.to_string()).unwrap_or_default();
         crate::icon::overlay_input(passthrough, &rects.concat());
     }
+    fn set_overlay_pinned(mut self: Pin<&mut Self>, pinned: bool, source: &QString) {
+        self.rust().shared.update(|s| {
+            if pinned {
+                // Закреплённое окно — на месте свободного, на том же выходе.
+                if let Some(g) = s.floating_geometry.clone() {
+                    s.overlay_screen = g.output.clone();
+                    s.overlay_pos = g.relative();
+                    tracing::debug!(target: "overlay.geometry", reason = "pin_transition", screen = %g.output,
+                        x = s.overlay_pos.0, y = s.overlay_pos.1, "pinned placement from floating geometry");
+                }
+            }
+            s.overlay_pinned = pinned;
+        });
+        tracing::debug!(target: "overlay.state", pinned, floating = !pinned,
+            window_role = if pinned { "layer_shell" } else { "xdg_toplevel" }, source = %source, "overlay pin state");
+        self.as_mut().publish_settings();
+    }
+    fn report_floating_geometry(mut self: Pin<&mut Self>, json: &QString, reason: &QString) {
+        match serde_json::from_str::<lipa_core::settings::FloatingGeometry>(&json.to_string()) {
+            Ok(g) if g.is_valid() => {
+                store_floating_geometry(&self.rust().shared, g, &reason.to_string());
+                self.as_mut().publish_settings();
+            }
+            _ => tracing::warn!(target: "overlay.geometry", json = %json, "invalid floating geometry from QML"),
+        }
+    }
+    fn set_inplace_visibility(mut self: Pin<&mut Self>, visible: bool, source: &QString) {
+        if *self.inplace_visible() != visible {
+            tracing::debug!(target: "inplace.state", visible, source = %source, "inplace visibility");
+            self.as_mut().set_inplace_visible(visible);
+        }
+    }
+    fn set_window_overlay_visibility(mut self: Pin<&mut Self>, visible: bool, source: &QString) {
+        if *self.window_overlay_visible() != visible {
+            tracing::debug!(target: "overlay.state", visible, source = %source, "window overlay visibility");
+            self.as_mut().set_window_overlay_visible(visible);
+        }
+    }
+    /// Активный рендер по настройкам и бэкенду захвата; меняется — пишется в журнал.
+    fn publish_display(mut self: Pin<&mut Self>) {
+        let (mode, note) = effective_display(&self.rust().shared.settings.borrow());
+        if self.effective_display().to_string() != mode || self.display_note().to_string() != note {
+            if note.is_empty() {
+                tracing::info!(target: "inplace.state", mode, "translation display");
+            } else {
+                tracing::warn!(target: "inplace.state", mode, reason = %note, "translation display fallback");
+            }
+            self.as_mut().set_effective_display(QString::from(mode));
+            self.as_mut().set_display_note(QString::from(note.as_str()));
+        }
+    }
     fn publish_settings(mut self: Pin<&mut Self>) {
+        self.as_mut().publish_display();
         let s = self.rust().shared.settings.borrow().clone();
         self.as_mut().set_settings_state(QString::from(serde_json::to_string(&s).unwrap().as_str()));
         self.as_mut().set_has_region(!s.capture_regions().is_empty());
@@ -842,6 +974,37 @@ fn inplace_placement(region: &lipa_core::settings::RegionProfile, frame: (u32, u
     })
 }
 
+/// Положение свободного окна сохраняется после перемещения — не во время него.
+fn store_floating_geometry(shared: &Shared, g: lipa_core::settings::FloatingGeometry, reason: &str) {
+    tracing::debug!(target: "overlay.geometry", reason, x = g.x, y = g.y, width = g.w, height = g.h, screen = %g.output, "floating geometry");
+    shared.update(|s| s.floating_geometry = Some(g));
+}
+
+/// JSON для скрипта KWin: где поставить свободное окно при появлении. Сначала — где его
+/// оставили, иначе — там, где стоит закреплённое; `null` — пусть место выберет KWin.
+fn floating_placement(s: &Settings) -> String {
+    match &s.floating_geometry {
+        Some(g) => {
+            let (rx, ry) = g.relative();
+            serde_json::json!({ "x": g.x, "y": g.y, "output": g.output, "rx": rx, "ry": ry }).to_string()
+        }
+        None if !s.overlay_screen.is_empty() => serde_json::json!({ "output": s.overlay_screen, "rx": s.overlay_pos.0, "ry": s.overlay_pos.1 }).to_string(),
+        None => "null".into(),
+    }
+}
+
+/// Какой рендер перевода работает: выбранный в настройках, кроме случая, когда для
+/// «поверх оригинала» нет положения окна на экране (захват через portal).
+fn effective_display(s: &Settings) -> (&'static str, String) {
+    use lipa_core::settings::TranslationDisplay;
+    match s.translation_display {
+        TranslationDisplay::Window => ("window", String::new()),
+        TranslationDisplay::Inplace if s.window.as_ref().is_some_and(is_portal_window) =>
+            ("window", "окно выбрано через portal: его положение на экране неизвестно, перевод показывается в окне перевода".into()),
+        TranslationDisplay::Inplace => ("inplace", String::new()),
+    }
+}
+
 /// Снимок Tesseract в JSON; тяжёлые вызовы (tesseract, pacman/dpkg) выполняются вне GUI-потока.
 fn tesseract_snapshot() -> TesseractInfo {
     TesseractManager::system().detect()
@@ -964,4 +1127,37 @@ fn show_frame(shared: Arc<Shared>, qt: cxx_qt::CxxQtThread<qobject::Controller>)
         let Some(g) = kwin.window_geometry(&uuid).await else { return };
         let _ = qt.queue(move |mut o| o.as_mut().frame_requested(g.x, g.y, g.w, g.h));
     });
+}
+
+#[cfg(test)]
+mod display_tests {
+    use super::*;
+    use lipa_core::settings::{FloatingGeometry, TranslationDisplay, WindowKey};
+
+    #[test]
+    fn inplace_does_not_depend_on_the_window_overlay() {
+        let mut s = Settings { translation_display: TranslationDisplay::Inplace, ..Settings::default() };
+        assert_eq!(effective_display(&s), ("inplace", String::new()));
+        // Portal capture has no window position: logged fallback to the translation window.
+        s.window = Some(WindowKey { uuid: "portal:window".into(), resource_class: String::new(), caption: String::new() });
+        let (mode, note) = effective_display(&s);
+        assert_eq!(mode, "window");
+        assert!(note.contains("portal"));
+        s.translation_display = TranslationDisplay::Window;
+        assert_eq!(effective_display(&s), ("window", String::new()));
+    }
+
+    #[test]
+    fn floating_placement_restores_where_the_user_left_it() {
+        let mut s = Settings::default();
+        assert_eq!(floating_placement(&s), "null", "first start: KWin chooses");
+        s.overlay_screen = "DP-1".into();
+        s.overlay_pos = (40, 50);
+        let p: serde_json::Value = serde_json::from_str(&floating_placement(&s)).unwrap();
+        assert_eq!((p["output"].as_str(), p["rx"].as_i64(), p["ry"].as_i64()), (Some("DP-1"), Some(40), Some(50)), "where the pinned one was");
+        s.floating_geometry = Some(FloatingGeometry { x: 2140.0, y: 382.0, w: 740.0, h: 240.0, output: "DP-2".into(), output_x: 2560.0, output_y: -200.0 });
+        let p: serde_json::Value = serde_json::from_str(&floating_placement(&s)).unwrap();
+        assert_eq!((p["x"].as_f64(), p["y"].as_f64(), p["output"].as_str()), (Some(2140.0), Some(382.0), Some("DP-2")));
+        assert_eq!((p["rx"].as_i64(), p["ry"].as_i64()), (Some(-420), Some(582)), "negative layout offsets are kept");
+    }
 }

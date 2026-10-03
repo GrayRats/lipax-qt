@@ -2,8 +2,9 @@
 //! exposes client, frame and buffer geometry in logical desktop coordinates.
 use super::kwin::{WindowFrames, WindowGeometry};
 use std::collections::HashMap;
+use crate::settings::FloatingGeometry;
 use std::sync::{Arc, Mutex, OnceLock};
-use tokio::sync::Notify;
+use tokio::sync::{Notify, watch};
 
 static SCRIPTS: OnceLock<Mutex<Vec<(zbus::Connection, String)>>> = OnceLock::new();
 
@@ -23,10 +24,19 @@ pub async fn shutdown() {
     }
 }
 
-#[derive(Default)]
 struct State {
     windows: Mutex<HashMap<String, WindowFrames>>,
     ready: Notify,
+    /// JSON the KWin script applies to the floating translation window when it appears.
+    placement: Mutex<String>,
+    /// Geometry of the floating window after the user moved it (with the reason).
+    floating: watch::Sender<Option<(FloatingGeometry, String)>>,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self { windows: Default::default(), ready: Notify::new(), placement: Mutex::new("null".into()), floating: watch::channel(None).0 }
+    }
 }
 
 struct GeometryService(Arc<State>);
@@ -52,6 +62,20 @@ impl GeometryService {
     fn ready(&self) {
         self.0.ready.notify_one();
     }
+
+    /// Where to put the floating translation window: `{x,y}` on the desktop, or
+    /// `{output,rx,ry}` relative to an output, or `null` to let KWin place it.
+    fn floating_placement(&self) -> String {
+        self.0.placement.lock().unwrap().clone()
+    }
+
+    /// The floating window's frame after a move/restore, in logical desktop coordinates.
+    fn floating_moved(&self, geometry: &str, reason: &str) {
+        match serde_json::from_str::<FloatingGeometry>(geometry) {
+            Ok(g) if g.is_valid() => { let _ = self.0.floating.send(Some((g, reason.to_string()))); }
+            _ => tracing::warn!(target: "overlay.geometry", geometry, reason, "KWin reported an invalid floating geometry"),
+        }
+    }
 }
 
 pub(super) struct ClientGeometry {
@@ -72,7 +96,9 @@ impl ClientGeometry {
             .ok_or("D-Bus connection has no name")?
             .as_str();
         let plugin = format!("lipa-geometry-{}", destination.replace([':', '.'], "_"));
-        let script = include_str!("geometry.js").replace("__DESTINATION__", destination);
+        let script = include_str!("geometry.js")
+            .replace("__DESTINATION__", destination)
+            .replace("__PID__", &std::process::id().to_string());
         let path = dirs::runtime_dir()
             .unwrap_or_else(std::env::temp_dir)
             .join(format!("{plugin}.js"));
@@ -130,6 +156,14 @@ impl ClientGeometry {
 
     pub fn get(&self, uuid: &str) -> Option<WindowFrames> {
         self.state.windows.lock().unwrap().get(uuid).copied()
+    }
+
+    pub fn set_floating_placement(&self, json: String) {
+        *self.state.placement.lock().unwrap() = json;
+    }
+
+    pub fn floating_moves(&self) -> watch::Receiver<Option<(FloatingGeometry, String)>> {
+        self.state.floating.subscribe()
     }
 }
 

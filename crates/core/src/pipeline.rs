@@ -1,6 +1,6 @@
 //! Independent region state, bounded retries and a 60-second operation deadline.
 use crate::{cache::TranslationCache, layout::engine::{InplaceEngine, InplaceFrame}, capture::Capture, detect::ChangeDetector, ocr::Ocr,
-    settings::{Settings, RegionProfile}, tesseract::primary_lang, text, translate::{Translate, TranslateError, tess_to_iso}};
+    settings::{Settings, RegionProfile, TranslationDisplay}, tesseract::primary_lang, text, translate::{Translate, TranslateError, tess_to_iso}};
 use std::{collections::HashMap, time::{Duration, Instant}};
 use tokio::{sync::{mpsc, watch}, time::MissedTickBehavior};
 const SAME_TEXT_RATIO: f32 = 0.92;
@@ -97,7 +97,7 @@ impl<C: Capture, O: Ocr, T: Translate> Pipeline<C, O, T> {
     }
 
     async fn tick_region(&mut self, s: &Settings, region: &RegionProfile, state: &mut RegionState, force: bool, now: Instant, out: &mpsc::UnboundedSender<Event>) {
-        let inplace = s.translation_display == "inplace";
+        let inplace = s.translation_display == TranslationDisplay::Inplace;
         if !inplace { state.inplace = None; }
         // Поменяли оформление «поверх оригинала»: перестроить без нового кадра и OCR.
         if let Some(frame) = state.inplace.as_mut().and_then(|e| e.restyle(s)) {
@@ -398,7 +398,7 @@ mod tests {
         let cap = Arc::new(MockCapture(Mutex::new(10)));
         let (ocr_n, tr_n) = (Arc::new(AtomicUsize::new(0)), Arc::new(AtomicUsize::new(0)));
         let mut p = Pipeline::new(cap.clone(), MockOcr(Mutex::new("Hello there".into()), ocr_n.clone()), MockTr(tr_n.clone()));
-        let s = Settings { translation_display: "inplace".into(), ..settings() };
+        let s = Settings { translation_display: TranslationDisplay::Inplace, ..settings() };
         let (tx, mut rx) = mpsc::unbounded_channel();
         let t0 = Instant::now();
         p.tick(&s, false, t0, &tx).await;
@@ -439,17 +439,17 @@ mod tests {
                 Err(TranslateError::RateLimited { retry_after: 120 })
             }
         }
-        for display in ["overlay", "inplace"] {
+        for display in [TranslationDisplay::Window, TranslationDisplay::Inplace] {
             let count = Arc::new(AtomicUsize::new(0));
             let mut p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))),
                 MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), Limited(count.clone()));
-            let s = Settings { translation_display: display.into(), ..settings() };
+            let s = Settings { translation_display: display, ..settings() };
             let (tx, mut rx) = mpsc::unbounded_channel();
             let now = Instant::now();
             p.tick(&s, true, now, &tx).await;
-            assert!(drain(&mut rx).iter().any(|e| matches!(e, Event::Error { terminal: true, message, .. } if message.contains("429"))), "{display}");
+            assert!(drain(&mut rx).iter().any(|e| matches!(e, Event::Error { terminal: true, message, .. } if message.contains("429"))), "{display:?}");
             p.tick(&s, false, now + Duration::from_secs(10), &tx).await;
-            assert_eq!(count.load(Ordering::SeqCst), 1, "{display}: no automatic retry");
+            assert_eq!(count.load(Ordering::SeqCst), 1, "{display:?}: no automatic retry");
         }
     }
 

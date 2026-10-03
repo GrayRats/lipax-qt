@@ -3,6 +3,50 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+/// Последнее положение свободного окна перевода (логические координаты рабочего стола)
+/// и выход, на котором оно было. Это состояние для восстановления, а не ограничение:
+/// во время перемещения позицию определяет композитор.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct FloatingGeometry {
+    pub x: f64,
+    pub y: f64,
+    pub w: f64,
+    pub h: f64,
+    pub output: String,
+    pub output_x: f64,
+    pub output_y: f64,
+}
+
+impl FloatingGeometry {
+    pub fn is_valid(&self) -> bool {
+        [self.x, self.y, self.w, self.h, self.output_x, self.output_y].iter().all(|v| v.is_finite()) && self.w > 0.0 && self.h > 0.0
+    }
+    /// Положение относительно своего выхода: для закреплённого окна на том же месте.
+    pub fn relative(&self) -> (i32, i32) {
+        ((self.x - self.output_x).round() as i32, (self.y - self.output_y).round() as i32)
+    }
+}
+
+/// Где показывается перевод. Два независимых рендера со своим состоянием видимости.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum TranslationDisplay {
+    /// Окно перевода (`TranslationOverlay.qml`): закреплённое или свободное.
+    #[default]
+    Window,
+    /// Перевод поверх найденных полей текста (`InplaceText.qml`).
+    Inplace,
+}
+
+impl<'de> Deserialize<'de> for TranslationDisplay {
+    /// Старое значение `"overlay"` и неизвестные строки — окно перевода: одна незнакомая
+    /// строка не должна сбрасывать весь конфиг.
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        Ok(if String::deserialize(d)? == "inplace" { Self::Inplace } else { Self::Window })
+    }
+}
+
 /// Свойство, которое оценивается автоматически или задано пользователем. Каждое свойство
 /// переключается отдельно: ручной шрифт не отключает автоматический размер и т. п.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -227,7 +271,7 @@ pub struct Settings {
     pub overlay_mode: OverlayMode,
     pub overlay_pinned: bool,
     /// "overlay": translation window; "inplace": translation drawn over the original text.
-    pub translation_display: String,
+    pub translation_display: TranslationDisplay,
     pub inplace: InplaceSettings,
     /// One of `OVERLAY_STYLES`.
     pub overlay_style: String,
@@ -275,7 +319,10 @@ pub struct Settings {
     pub font_size: u32,
     pub opacity: f64,
     pub click_through: bool,
+    /// Закреплённое окно: положение относительно экрана `overlay_screen`.
     pub overlay_pos: (i32, i32),
+    /// Свободное окно: где пользователь оставил его в последний раз.
+    pub floating_geometry: Option<FloatingGeometry>,
     pub overlay_size: (u32, u32),
     pub hotkeys: Hotkeys,
     /// Рамка вокруг выбранного окна и областей: цвет `#rrggbb` простой обводки, толщина в пикселях
@@ -334,7 +381,7 @@ impl Default for Settings {
             auto_translate: true,
             overlay_mode: OverlayMode::Overlay,
             overlay_pinned: false,
-            translation_display: "overlay".into(),
+            translation_display: TranslationDisplay::Window,
             inplace: InplaceSettings::default(),
             overlay_style: "solid".into(),
             blur_enabled: true,
@@ -374,6 +421,7 @@ impl Default for Settings {
             opacity: 0.85,
             click_through: true,
             overlay_pos: (100, 100),
+            floating_geometry: None,
             overlay_size: (700, 120),
             hotkeys: Hotkeys::default(),
             frame_color: "#ff0000".into(),
@@ -436,8 +484,8 @@ impl Settings {
         self.border_opacity = self.border_opacity.clamp(0.0, 1.0);
         self.border_seconds = self.border_seconds.clamp(1, 120);
         self.frame_seconds = self.frame_seconds.clamp(1, 60);
-        if !["overlay", "inplace"].contains(&self.translation_display.as_str()) { self.translation_display = "overlay".into(); }
         self.inplace.sanitize();
+        if self.floating_geometry.as_ref().is_some_and(|g| !g.is_valid()) { self.floating_geometry = None; }
         if !OVERLAY_STYLES.contains(&self.overlay_style.as_str()) { self.overlay_style = "solid".into(); }
         self.overlay_corner_radius = self.overlay_corner_radius.min(32);
         self.blur_tint = if self.blur_tint.is_finite() { self.blur_tint.clamp(0.0, 0.8) } else { 0.3 };
@@ -594,6 +642,15 @@ mod tests {
         bad.sanitize();
         assert_eq!(bad.inplace.text_color, PropertyMode::Auto);
         assert!(bad.inplace.maximum_font_size >= bad.inplace.minimum_font_size);
+    }
+
+    #[test]
+    fn translation_display_reads_old_and_unknown_values() {
+        assert_eq!(Settings::from_toml("translation_display = \"overlay\"").translation_display, TranslationDisplay::Window);
+        assert_eq!(Settings::from_toml("translation_display = \"inplace\"").translation_display, TranslationDisplay::Inplace);
+        let odd = Settings::from_toml("translation_display = \"hologram\"\ntarget_lang = \"de\"");
+        assert_eq!((odd.translation_display, odd.target_lang.as_str()), (TranslationDisplay::Window, "de"), "the rest of the config survives");
+        assert_eq!(serde_json::to_value(TranslationDisplay::Inplace).unwrap(), "inplace");
     }
 
     #[test]

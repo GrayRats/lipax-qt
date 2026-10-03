@@ -324,7 +324,7 @@ mod tests {
     }
 
     fn settings() -> Settings {
-        Settings { target_lang: "ru".into(), translation_display: "inplace".into(), ..Settings::default() }
+        Settings { target_lang: "ru".into(), translation_display: crate::settings::TranslationDisplay::Inplace, ..Settings::default() }
     }
 
     fn run(e: &mut InplaceEngine, frame: &DynamicImage, s: &Settings, now: Instant) -> (usize, Option<InplaceFrame>) {

@@ -148,22 +148,42 @@ impl KwinCapture {
         }
     }
 
-    /// Прямоугольники окна (логические координаты KWin), если окно существует.
-    pub async fn window_frames(&self, uuid: &str) -> Option<WindowFrames> {
+    /// Скрипт KWin (геометрия окон и свободное окно перевода); загружается один раз.
+    async fn tracker(&self) -> Option<&super::geometry::ClientGeometry> {
         if let Some(tracker) = self.geometry.get() {
-            return tracker.get(uuid);
+            return Some(tracker);
         }
         if self.geometry_failed.lock().unwrap().is_some_and(|t| t.elapsed() < GEOMETRY_RETRY) {
             return None;
         }
         match self.geometry.get_or_try_init(super::geometry::ClientGeometry::connect).await {
-            Ok(tracker) => tracker.get(uuid),
+            Ok(tracker) => Some(tracker),
             Err(e) => {
                 tracing::warn!("KWin client geometry unavailable: {e}");
                 *self.geometry_failed.lock().unwrap() = Some(std::time::Instant::now());
-                None // Do not draw a misleading frame using decorated geometry.
+                None
             }
         }
+    }
+
+    /// Прямоугольники окна (логические координаты KWin), если окно существует.
+    pub async fn window_frames(&self, uuid: &str) -> Option<WindowFrames> {
+        // Без скрипта рамку по геометрии с декорацией не рисуем: она была бы неверной.
+        self.tracker().await?.get(uuid)
+    }
+
+    /// Свободное окно перевода: куда его поставить при появлении (JSON для скрипта KWin).
+    /// `false` — скрипт KWin недоступен (не KDE), позицию выбирает композитор.
+    pub async fn set_floating_placement(&self, json: String) -> bool {
+        match self.tracker().await {
+            Some(t) => { t.set_floating_placement(json); true }
+            None => false,
+        }
+    }
+
+    /// Геометрия свободного окна перевода после перемещения пользователем (от KWin).
+    pub async fn floating_moves(&self) -> Option<tokio::sync::watch::Receiver<Option<(crate::settings::FloatingGeometry, String)>>> {
+        Some(self.tracker().await?.floating_moves())
     }
 
     /// Клиентская область окна на рабочем столе (без рамки и заголовка KWin).

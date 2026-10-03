@@ -1,0 +1,188 @@
+import QtQuick
+
+// Content of the translation window, shared by the pinned (layer-shell) and the floating
+// (xdg_toplevel) surface. It never positions the window: it only draws and reports input.
+//   LMB (floating) → moveRequested()   — the surface starts a native compositor move
+//   MMB            → pinToggleRequested()
+//   ✕ (floating)   → closeRequested()
+Item {
+    id: content
+    property var settings: ({})
+    property string translation: ""
+    property string original: ""
+    property bool pinned: false
+    signal moveRequested()
+    signal pinToggleRequested()
+    signal closeRequested()
+
+    readonly property bool floating: !pinned
+    // An unpinned overlay always shows its frame so it is clear that it can be dragged.
+    readonly property bool frameVisible: floating || settings.border_always !== false || frameTimer.running
+    function flashFrame() { frameTimer.interval = Math.max(1, settings.border_seconds || 5) * 1000; frameTimer.restart() }
+    Timer { id: frameTimer }
+
+    readonly property int frameWidth: Math.max(1, settings.border_width || 2) + (pinned ? 0 : 2)
+    readonly property int padding: (settings.overlay_padding !== undefined ? settings.overlay_padding : 16) + frameWidth
+    readonly property int cornerRadius: floating ? (settings.overlay_corner_radius !== undefined ? settings.overlay_corner_radius : 12) : 0
+
+    // ── Display style: blur / transparent / dim (or its light inverse) / solid ──
+    readonly property string style: settings.overlay_style || "solid"
+    readonly property bool inverse: style === "dim" && settings.dim_inverse === true
+    // The dim style relies on the same compositor blur, under a denser tint so it reads as faint.
+    readonly property bool blurBehind: (style === "blur" && settings.blur_enabled !== false) || style === "dim"
+    readonly property color backgroundColor: style === "solid" ? (settings.background_color || "#181818")
+        : inverse ? "#f2f2f2" : "#000000"
+    readonly property real backgroundOpacity: style === "solid" ? (settings.opacity !== undefined ? settings.opacity : 0.85)
+        : style === "blur" ? (settings.blur_tint !== undefined ? settings.blur_tint : 0.3)
+        : style === "dim" ? (inverse ? 0.72 : 0.55)
+        : 0
+    readonly property color textColor: style === "solid" ? (settings.text_color || "#ffffff") : inverse ? "#141414" : "#ffffff"
+    readonly property color originalColor: style === "solid" ? (settings.original_color || "#b0b0b0") : inverse ? "#4a4a4a" : "#d0d0d0"
+    readonly property bool outlined: (style === "solid" || style === "blur") && settings.text_outline !== false
+
+    // ── Input: the pin handle always receives input; the frame band only while visible ──
+    readonly property int handleSize: 26
+    readonly property int handleInset: 2 + Math.round(cornerRadius / 3)
+    readonly property var handleRect: [width - handleSize - handleInset, handleInset, handleSize, handleSize]
+    function inputRects() {
+        const rects = [handleRect]
+        if (frameVisible) {
+            const band = Math.max(frameWidth, 10)
+            rects.push([0, 0, width, band], [0, height - band, width, band],
+                       [0, band, band, height - 2 * band], [width - band, band, band, height - 2 * band])
+        }
+        return rects
+    }
+
+    Rectangle {
+        objectName: "overlayBackground"
+        anchors.fill: parent
+        radius: content.cornerRadius
+        color: content.backgroundColor
+        opacity: content.backgroundOpacity
+    }
+    Rectangle {
+        objectName: "overlayBorder"
+        anchors.fill: parent
+        color: "transparent"
+        visible: content.frameVisible && content.settings.border_pattern !== true
+        radius: content.cornerRadius
+        border.width: content.frameWidth
+        border.color: content.settings.border_color || "#ff00ff"
+        opacity: content.settings.border_opacity !== undefined ? content.settings.border_opacity : 0.65
+    }
+    ErrorPattern {
+        anchors.fill: parent
+        visible: content.frameVisible && content.settings.border_pattern === true
+        band: content.frameWidth
+        radius: content.cornerRadius
+        color: content.settings.border_color || "#ff00ff"
+        opacity: content.settings.border_opacity !== undefined ? content.settings.border_opacity : 0.65
+    }
+    Flickable {
+        id: textScroll
+        anchors.fill: parent
+        anchors.margins: content.padding
+        clip: true
+        contentWidth: width
+        contentHeight: Math.max(height, textColumn.implicitHeight)
+        interactive: false
+        Column {
+            id: textColumn
+            width: parent.width
+            y: Math.max(0, (textScroll.height - implicitHeight) / 2)
+            spacing: 4
+            Text {
+                id: originalText
+                width: parent.width
+                visible: content.settings.show_original === true && text.length > 0
+                text: content.original
+                textFormat: Text.PlainText
+                color: content.originalColor
+                wrapMode: translatedText.wrapMode
+                elide: translatedText.elide
+                maximumLineCount: content.settings.text_wrap === false ? 1 : 1000
+                horizontalAlignment: translatedText.horizontalAlignment
+                font.family: content.settings.original_font_family || translatedText.font.family
+                font.pixelSize: content.settings.original_font_size || 14
+                style: translatedText.style
+                styleColor: translatedText.styleColor
+            }
+            Text {
+                id: translatedText
+                objectName: "translatedText"
+                width: parent.width
+                text: content.translation
+                textFormat: Text.PlainText
+                color: content.textColor
+                wrapMode: content.settings.text_wrap !== false ? Text.Wrap : Text.NoWrap
+                elide: content.settings.text_wrap === false ? Text.ElideRight : Text.ElideNone
+                lineHeight: content.settings.line_spacing || 1.0
+                horizontalAlignment: content.settings.text_alignment === "left" ? Text.AlignLeft : content.settings.text_alignment === "right" ? Text.AlignRight : Text.AlignHCenter
+                font.family: content.settings.font_family || Qt.application.font.family
+                font.pixelSize: content.settings.font_size || 20
+                font.bold: content.settings.font_bold === true
+                font.italic: content.settings.font_italic === true
+                // Transparent style: a light shadow (no shaders, so it also renders without GPU).
+                style: content.outlined ? Text.Outline : content.style === "transparent" ? Text.Raised : Text.Normal
+                styleColor: content.style === "transparent" ? "#b0000000" : (content.settings.outline_color || "#000000")
+            }
+        }
+    }
+    // Pin handle: stays visible in every frame mode, so there is always a target for MMB.
+    Rectangle {
+        id: pinHandle
+        objectName: "pinHandle"
+        x: content.handleRect[0]; y: content.handleRect[1]
+        width: content.handleSize; height: content.handleSize; radius: width / 2
+        color: "#80000000"
+        border.width: 1
+        border.color: content.settings.border_color || "#ff00ff"
+        opacity: content.pinned && !content.frameVisible ? 0.55 : 1
+        Text {
+            anchors.centerIn: parent
+            text: content.pinned ? "●" : "✥"
+            color: content.settings.border_color || "#ff00ff"
+            font.pixelSize: 14
+        }
+    }
+    Text {
+        anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
+        text: "⌄"; color: content.settings.text_color || "white"
+        visible: textScroll.contentHeight > textScroll.height + 1
+    }
+    MouseArea {
+        id: dragArea
+        objectName: "overlayDragArea"
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+        cursorShape: content.pinned ? Qt.ArrowCursor : Qt.SizeAllCursor
+        onPressed: (m) => {
+            if (m.button === Qt.MiddleButton) content.pinToggleRequested()
+            // Pinned: no LMB dragging. Floating: the compositor moves the window.
+            else if (content.floating) content.moveRequested()
+        }
+        onWheel: (wheel) => {
+            if (content.floating) textScroll.contentY = Math.max(0, Math.min(textScroll.contentY - wheel.angleDelta.y, textScroll.contentHeight - textScroll.height))
+        }
+    }
+    // Close button of the floating window; above the drag area so it gets the click.
+    Rectangle {
+        id: closeButton
+        objectName: "closeButton"
+        visible: content.floating
+        x: content.handleRect[0] - width - 4; y: content.handleRect[1]
+        width: content.handleSize; height: content.handleSize; radius: width / 2
+        color: closeArea.containsMouse ? "#c0d03030" : "#80000000"
+        border.width: 1
+        border.color: content.settings.border_color || "#ff00ff"
+        Text { anchors.centerIn: parent; text: "✕"; color: "#ffffff"; font.pixelSize: 13 }
+        MouseArea {
+            id: closeArea
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton
+            onClicked: content.closeRequested()
+        }
+    }
+}
