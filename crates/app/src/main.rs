@@ -1,5 +1,6 @@
 mod bridge;
 mod icon;
+mod logging;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 
@@ -19,6 +20,8 @@ fn apply_dark_style() {
 }
 
 fn main() {
+    logging::init();
+    tracing::info!(version = env!("CARGO_PKG_VERSION"), "Запуск LipaX");
     apply_dark_style();
     let mut app = QGuiApplication::new();
     icon::configure();
@@ -30,4 +33,5 @@ fn main() {
         app.exec();
     }
     bridge::shutdown();
+    tracing::info!("LipaX завершён");
 }

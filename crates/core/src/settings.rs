@@ -393,7 +393,18 @@ impl Settings {
     }
 
     pub fn load() -> Self {
-        let text = std::fs::read_to_string(Self::path()).unwrap_or_default();
+        let path = Self::path();
+        let text = match std::fs::read_to_string(&path) {
+            Ok(text) => { tracing::debug!(path = %path.display(), "Настройки прочитаны"); text },
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                tracing::debug!("Файл настроек отсутствует, используются значения по умолчанию");
+                String::new()
+            },
+            Err(e) => {
+                tracing::error!(path = %path.display(), error = %e, "Не удалось прочитать настройки");
+                String::new()
+            },
+        };
         let mut settings = Self::from_toml(&text);
         // Migrate the old single rectangle into the first named region.
         if settings.regions.iter().all(|r| r.rect.is_none())
@@ -404,7 +415,11 @@ impl Settings {
 
     /// Parse a saved config, migrating older formats.
     pub fn from_toml(text: &str) -> Self {
-        let mut settings: Self = toml::from_str(text).unwrap_or_default();
+        let mut settings: Self = toml::from_str(text).unwrap_or_else(|e: toml::de::Error| {
+            // Do not print the TOML excerpt: configuration may contain API keys.
+            tracing::error!(reason = e.message(), "Некорректный TOML настроек; используются значения по умолчанию");
+            Self::default()
+        });
         // Before frame modes, `frame_seconds = 0` meant "never show the frame".
         if settings.frame_seconds == 0 && !text.contains("region_frame_mode") {
             settings.region_frame_mode = "off".into();

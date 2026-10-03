@@ -103,6 +103,7 @@ pub fn client_crop(width: u32, height: u32, f: &WindowFrames) -> Option<(u32, u3
 
 impl KwinCapture {
     pub async fn connect() -> Result<Self, CaptureError> {
+        tracing::debug!("Подключение к KWin через сессионную D-Bus");
         let conn = zbus::Connection::session().await.map_err(unavailable)?;
         Ok(Self { conn, geometry: tokio::sync::OnceCell::new(), geometry_failed: Default::default() })
     }
@@ -173,6 +174,7 @@ impl KwinCapture {
     /// Кадр клиентской области окна: без рамки, заголовка, кнопок и теней.
     pub async fn grab_window(&self, uuid: &str) -> Result<DynamicImage, CaptureError> {
         let img = self.capture_window(uuid).await?;
+        tracing::trace!(width = img.width(), height = img.height(), "Получен кадр KWin ScreenShot2");
         Ok(match self.window_frames(uuid).await.and_then(|f| client_crop(img.width(), img.height(), &f)) {
             Some((x, y, w, h)) => img.crop_imm(x, y, w, h),
             None => img,

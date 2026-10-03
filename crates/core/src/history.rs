@@ -15,7 +15,15 @@ pub struct History { pub entries: Vec<Entry> }
 impl History {
     pub fn path() -> PathBuf { dirs::data_local_dir().unwrap_or_default().join("lipa/history.json") }
     pub fn load(path: &Path, limit: usize) -> Self {
-        let mut history: Self = Self { entries: std::fs::read(path).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default() };
+        let entries = match std::fs::read(path) {
+            Ok(bytes) => serde_json::from_slice(&bytes).unwrap_or_else(|e| {
+                tracing::error!(error = %e, "Не удалось разобрать файл истории");
+                Vec::new()
+            }),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Vec::new(),
+            Err(e) => { tracing::error!(error = %e, "Не удалось прочитать историю"); Vec::new() },
+        };
+        let mut history: Self = Self { entries };
         history.trim(limit);
         history
     }

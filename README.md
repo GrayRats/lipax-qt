@@ -70,8 +70,19 @@ makepkg -si
 Пакет появится в `dist/`. Установка от root:
 
 ```bash
-pacman -U /полный/путь/к/LipaXQT-0.3.0-3-x86_64.pkg.tar.zst
+pacman -U /полный/путь/к/LipaXQT-0.3.0-6-x86_64.pkg.tar.zst
 ```
 
 [Список доработок и предложения](docs/IMPROVEMENTS.md) ·
 [Подключение PaddleOCR](docs/PaddleOCR.md)
+
+### Диагностика в терминале
+
+```bash
+RUST_LOG=debug lipax
+# сохранить оба потока:
+RUST_LOG=debug lipax 2>&1 | tee lipax.log
+```
+
+ERROR выводится в stderr, остальные уровни — в stdout. По умолчанию — INFO.
+[Подробности журналирования Rust и Qt/QML](docs/LOGGING.md).

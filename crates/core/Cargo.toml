@@ -17,3 +17,4 @@ tracing.workspace = true
 zbus = { version = "5", default-features = false, features = ["tokio"] }
 futures-util = { version = "0.3", default-features = false }
 libc = "0.2"
+httpdate = "1"

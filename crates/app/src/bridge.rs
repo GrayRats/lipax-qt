@@ -182,7 +182,7 @@ impl Shared {
         let before = self.settings.borrow().processing_key();
         self.settings.send_modify(|s| { f(s); s.sanitize(); });
         if let Err(e) = self.settings.borrow().save() {
-            eprintln!("не удалось сохранить настройки: {e}");
+            tracing::error!(component = "settings", error = %e, "Не удалось сохранить настройки");
         }
         if self.settings.borrow().processing_key() != before { let _ = self.cmds.send(Cmd::Reset); }
         // Смена горячих клавиш применяется сразу, без перезапуска.
@@ -315,7 +315,7 @@ impl cxx_qt::Initialize for qobject::Controller {
                 let token = rx.borrow_and_update().clone();
                 sh.settings.send_modify(|s| s.portal_token = token);
                 if let Err(e) = sh.settings.borrow().save() {
-                    eprintln!("не удалось сохранить настройки: {e}");
+                    tracing::error!(component = "portal", error = %e, "Не удалось сохранить настройки с токеном Portal");
                 }
             }
         });
@@ -326,6 +326,7 @@ impl cxx_qt::Initialize for qobject::Controller {
         let qt = self.qt_thread();
         rt().spawn(async move {
             if let Err(e) = hotkeys::listen(hk, hk_tx).await {
+                tracing::error!(component = "KGlobalAccel/D-Bus", error = %e, "Глобальные клавиши недоступны");
                 let _ = qt.queue(move |mut o| {
                     o.as_mut()
                         .set_status(QString::from(format!("{e}").as_str()))
@@ -336,9 +337,10 @@ impl cxx_qt::Initialize for qobject::Controller {
         rt().spawn(async move {
             while let Some(ev) = hk_rx.recv().await {
                 let _ = qt.queue(move |mut o| match ev {
-                    HotkeyEvent::Conflict(a) => o.as_mut().set_status(QString::from(
-                        format!("Сочетание для «{}» занято или недопустимо", a.title()).as_str(),
-                    )),
+                    HotkeyEvent::Conflict(a) => {
+                        tracing::warn!(component = "KGlobalAccel", action = a.title(), "Сочетание занято или недопустимо");
+                        o.as_mut().set_status(QString::from(format!("Сочетание для «{}» занято или недопустимо", a.title()).as_str()));
+                    },
                     HotkeyEvent::Pressed(action) => match action {
                         HotkeyAction::Toggle if *o.running() => o.as_mut().stop(),
                         HotkeyAction::Toggle if *o.has_region() => o.as_mut().start(),
@@ -367,7 +369,7 @@ impl cxx_qt::Initialize for qobject::Controller {
                 let geometry = match window.as_ref().filter(|w| !is_portal_window(w)) {
                     Some(w) => match sh.kwin().await {
                         Ok(k) => k.window_geometry(&w.uuid).await,
-                        Err(_) => None,
+                        Err(e) => { tracing::debug!(component = "KWin/D-Bus", error = %e, "Геометрия окна недоступна"); None },
                     },
                     None => None,
                 };
@@ -537,7 +539,10 @@ impl qobject::Controller {
         let result = self.rust().history.save(&History::path(), s.history_persist);
         let json = serde_json::to_string(&self.rust().history.entries).unwrap();
         self.as_mut().set_history_json(QString::from(json.as_str()));
-        if let Err(e) = result { self.as_mut().set_status(QString::from(format!("История не сохранена: {e}").as_str())); }
+        if let Err(e) = result {
+            tracing::error!(component = "history", error = %e, "История не сохранена");
+            self.as_mut().set_status(QString::from(format!("История не сохранена: {e}").as_str()));
+        }
     }
     fn clear_history(mut self: Pin<&mut Self>) {
         self.as_mut().rust_mut().history.entries.clear();
@@ -586,6 +591,7 @@ impl qobject::Controller {
                 self.as_mut().publish_history();
             }
             Err(e) => {
+                tracing::error!(component = "settings", error = %e, "Настройки из QML не приняты");
                 self.as_mut().set_status(QString::from(format!("Настройки не сохранены: {e}").as_str()));
                 self.as_mut().set_status_kind(QString::from("error"));
             },
@@ -614,7 +620,8 @@ impl qobject::Controller {
                 // KWin недоступен (другой композитор, нет прав на ScreenShot2) — запасной путь через portal.
                 CaptureBackendKind::Auto => match by_kwin.await {
                     Ok(r) => Ok(r),
-                    Err(_) => {
+                    Err(e) => {
+                        tracing::warn!(component = "KWin", error = %e, "Переключение на Portal-захват");
                         let _ = qt.queue(|mut o| {
                             o.as_mut().set_status(QString::from("KWin недоступен, выберите окно в системном диалоге (portal)"))
                         });
@@ -649,6 +656,7 @@ impl qobject::Controller {
                         .queue(|mut o| o.as_mut().set_status(QString::from("Выбор окна отменён")));
                 }
                 Err(e) => {
+                    tracing::error!(component = "capture", error = %e, "Не удалось выбрать окно");
                     let _ = qt.queue(move |mut o| {
                         o.as_mut()
                             .set_status(QString::from(format!("Ошибка: {e}").as_str()))
@@ -682,6 +690,9 @@ impl qobject::Controller {
                 Ok::<_, String>(path)
             }
             .await;
+            if let Err(e) = &res {
+                tracing::error!(component = "capture", error = %e, "Не удалось получить кадр для выбора области");
+            }
             let _ = qt.queue(move |mut o| match res {
                 Ok(path) => {
                     // Меняющийся параметр отключает кэш изображения в QML.
@@ -693,9 +704,9 @@ impl qobject::Controller {
                     o.as_mut().set_preview_source(QString::from(url.as_str()));
                     o.as_mut().preview_ready();
                 }
-                Err(e) => o
-                    .as_mut()
-                    .set_status(QString::from(format!("Ошибка: {e}").as_str())),
+                Err(e) => {
+                    o.as_mut().set_status(QString::from(format!("Ошибка: {e}").as_str()));
+                },
             });
         });
     }
@@ -726,6 +737,7 @@ impl qobject::Controller {
     }
 
     fn start(mut self: Pin<&mut Self>) {
+        tracing::info!("Слежение за областями запущено");
         let _ = self.rust().shared.running.send(true);
         self.as_mut().set_running(true);
         self.as_mut().set_status(QString::from("Ожидание текста"));
@@ -733,12 +745,14 @@ impl qobject::Controller {
     }
 
     fn stop(mut self: Pin<&mut Self>) {
+        tracing::info!("Слежение за областями остановлено");
         let _ = self.rust().shared.running.send(false);
         self.as_mut().set_running(false);
         self.as_mut().set_status(QString::from("Остановлено"));
     }
 
     fn translate_once(mut self: Pin<&mut Self>) {
+        tracing::info!("Запрошен ручной перевод / повтор");
         self.as_mut().rust_mut().faults.clear();
         self.as_mut().set_status_kind(QString::from("info"));
         self.as_mut().set_status(QString::from("Распознавание окна…"));
@@ -746,6 +760,7 @@ impl qobject::Controller {
     }
 
     fn reanalyze_fonts(mut self: Pin<&mut Self>) {
+        tracing::info!(component = "fonts", "Запрошено повторное определение шрифтов");
         lipa_core::layout::font_database::InstalledFontDatabase::reload();
         let _ = self.rust().shared.cmds.send(Cmd::ReanalyzeFonts);
         self.as_mut().set_status(QString::from("Шрифты полей будут определены заново"));
@@ -760,8 +775,8 @@ fn backdrop_path(region_id: &str, block: u64) -> std::path::PathBuf {
 /// Размытая подложка поля рядом с превью окна; ревизия в URL заставляет QML перечитать файл.
 fn save_backdrop(region_id: &str, block: u64, revision: u64, img: &image::RgbaImage) -> Option<String> {
     let path = backdrop_path(region_id, block);
-    std::fs::create_dir_all(path.parent()?).ok()?;
-    img.save(&path).ok()?;
+    std::fs::create_dir_all(path.parent()?).inspect_err(|e| tracing::error!(component = "inplace", error = %e, "Не удалось создать каталог подложек")).ok()?;
+    img.save(&path).inspect_err(|e| tracing::error!(component = "inplace", error = %e, "Не удалось сохранить подложку")).ok()?;
     Some(format!("file://{}?r={revision}", path.display()))
 }
 
@@ -898,6 +913,9 @@ impl qobject::Controller {
             })
             .await
             .unwrap_or_else(|e| Err(e.to_string()));
+            if let Err(e) = &res {
+                tracing::error!(component = "packages", %package, error = %e, "Установка языкового пакета не удалась");
+            }
             let info = if res.is_ok() {
                 tokio::task::spawn_blocking(tesseract_snapshot).await.ok()
             } else {
@@ -908,9 +926,9 @@ impl qobject::Controller {
                     Ok(()) => o.as_mut().set_status(QString::from(
                         format!("Пакет {package} установлен").as_str(),
                     )),
-                    Err(e) => o.as_mut().set_status(QString::from(
-                        format!("Не удалось установить {package}: {e}").as_str(),
-                    )),
+                    Err(e) => {
+                        o.as_mut().set_status(QString::from(format!("Не удалось установить {package}: {e}").as_str()));
+                    },
                 }
                 // Список языков обновляется автоматически после успешной установки.
                 if let Some(info) = info {

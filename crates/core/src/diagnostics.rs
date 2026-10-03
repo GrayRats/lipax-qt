@@ -7,7 +7,13 @@ use tokio::process::Command;
 #[derive(Serialize)]
 pub struct Check { pub name: String, pub state: String, pub detail: String, pub instruction: String }
 fn row(name: &str, state: &str, detail: impl Into<String>, instruction: &str) -> Check {
-    Check { name: name.into(), state: state.into(), detail: detail.into(), instruction: instruction.into() }
+    let detail = detail.into();
+    match state {
+        "error" => tracing::error!(component = name, "{detail}"),
+        "warning" => tracing::warn!(component = name, "{detail}"),
+        _ => tracing::debug!(component = name, "{detail}"),
+    }
+    Check { name: name.into(), state: state.into(), detail, instruction: instruction.into() }
 }
 async fn output(program: &str, args: &[&str]) -> Result<String, String> {
     let mut cmd = Command::new(program);

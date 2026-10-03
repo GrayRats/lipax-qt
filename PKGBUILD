@@ -1,6 +1,6 @@
 pkgname=LipaXQT
 pkgver=0.3.0
-pkgrel=3
+pkgrel=6
 pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')
 url="https://github.com/GrayRats/lipax-qt"
@@ -59,7 +59,7 @@ build() {
 
 check() {
     _project_dir
-    cargo test --frozen -p lipa-core
+    cargo test --frozen --workspace
     QT_QPA_PLATFORM=offscreen QT_QUICK_CONTROLS_STYLE=Universal QT_QUICK_CONTROLS_UNIVERSAL_THEME=Dark \
         /usr/lib/qt6/bin/qmltestrunner -input crates/app/tests
 }
@@ -68,10 +68,11 @@ package() {
     _project_dir
     # Keep the existing executable and desktop ID for settings and KWin integration.
     install -Dm755 "$CARGO_TARGET_DIR/release/lipa" "$pkgdir/usr/bin/lipa"
+    ln -s lipa "$pkgdir/usr/bin/lipax"
     install -Dm644 packaging/io.lipa.Translator.desktop "$pkgdir/usr/share/applications/io.lipa.Translator.desktop"
     sed -i 's|^Exec=lipa$|Exec=/usr/bin/lipa|' "$pkgdir/usr/share/applications/io.lipa.Translator.desktop"
     install -Dm644 crates/app/assets/lipa.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/io.lipa.Translator.svg"
-    for doc in PaddleOCR ARCHITECTURE IMPROVEMENTS; do
+    for doc in PaddleOCR ARCHITECTURE IMPROVEMENTS LOGGING; do
         install -Dm644 "docs/$doc.md" "$pkgdir/usr/share/doc/$pkgname/$doc.md"
     done
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"

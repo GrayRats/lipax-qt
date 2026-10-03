@@ -12,8 +12,13 @@ tokio.workspace = true
 serde_json.workspace = true
 dirs.workspace = true
 image.workspace = true
+tracing.workspace = true
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 cxx-qt = "0.10"
 cxx-qt-lib = { version = "0.10", features = ["qt_qml", "qt_gui"] }
 
 [build-dependencies]
 cxx-qt-build = { version = "0.10", features = ["link_qt_object_files"] }
+
+[dev-dependencies]
+libc = "0.2"

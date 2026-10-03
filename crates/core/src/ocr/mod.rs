@@ -71,6 +71,7 @@ impl Ocr for Tesseract {
         if settings.ocr_engine != "tesseract" {
             return Err(OcrError::UnknownEngine(settings.ocr_engine.clone()));
         }
+        tracing::debug!(engine = "tesseract", width = img.width(), height = img.height(), language = %settings.source_lang, "Начало OCR");
         let mut png = Vec::new();
         preprocess(img).write_to(&mut Cursor::new(&mut png), ImageFormat::Png)?;
 
@@ -90,20 +91,28 @@ impl Ocr for Tesseract {
         let mut stderr = child.stderr.take().expect("piped");
         // Запись и чтение параллельно, иначе возможен deadlock на больших кадрах.
         let write = async move {
-            let _ = stdin.write_all(&png).await;
+            if let Err(e) = stdin.write_all(&png).await {
+                tracing::error!(component = "tesseract", error = %e, "Не удалось передать кадр OCR");
+            }
             drop(stdin);
         };
         let read = async {
             let (mut out, mut err) = (Vec::new(), Vec::new());
-            let _ = tokio::join!(stdout.read_to_end(&mut out), stderr.read_to_end(&mut err));
+            let (output, diagnostic) = tokio::join!(stdout.read_to_end(&mut out), stderr.read_to_end(&mut err));
+            if let Err(e) = output { tracing::error!(component = "tesseract", error = %e, "Ошибка чтения stdout OCR"); }
+            if let Err(e) = diagnostic { tracing::error!(component = "tesseract", error = %e, "Ошибка чтения stderr OCR"); }
             (out, err)
         };
         let ((out, err), ()) = tokio::join!(read, write);
         let status = child.wait().await.map_err(OcrError::Spawn)?;
+        if !err.is_empty() {
+            tracing::debug!(component = "tesseract", stderr = %String::from_utf8_lossy(&err), "Диагностика процесса OCR");
+        }
         if !status.success() {
             let msg = String::from_utf8_lossy(&err).trim().to_string();
             return Err(explain(msg.clone(), &lang, false).unwrap_or(OcrError::Failed(msg)));
         }
+        tracing::debug!(engine = "tesseract", bytes = out.len(), "OCR завершён");
         Ok(String::from_utf8_lossy(&out).into_owned())
     }
 }

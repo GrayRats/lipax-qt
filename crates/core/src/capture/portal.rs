@@ -167,6 +167,7 @@ async fn request<B>(conn: &zbus::Connection, iface: &str, method: &str, body: &B
 where
     B: serde::Serialize + zbus::zvariant::DynamicType,
 {
+    tracing::debug!(interface = iface, method, "Вызов D-Bus Portal");
     let sender = conn.unique_name().ok_or_else(|| err("нет имени соединения"))?.as_str().trim_start_matches(':').replace('.', "_");
     let path = format!("/org/freedesktop/portal/desktop/request/{sender}/{token}");
     let proxy = zbus::Proxy::new(conn, DEST, path, "org.freedesktop.portal.Request").await.map_err(err)?;
@@ -177,6 +178,7 @@ where
         .map_err(|_| err("портал не ответил вовремя"))?
         .ok_or_else(|| err("портал закрыл соединение"))?;
     let (code, results): (u32, Dict) = msg.body().deserialize().map_err(err)?;
+    tracing::debug!(method, response_code = code, "Ответ D-Bus Portal");
     match code {
         0 => Ok(results),
         1 => Err(err("выбор отменён")),
@@ -285,6 +287,7 @@ fn inherit_fd(cmd: &mut Command, raw: i32) {
 }
 
 async fn spawn_session(restore_token: &str) -> Result<(Session, Option<String>), CaptureError> {
+    tracing::info!(restoring = !restore_token.is_empty(), "Запуск захвата через Portal / PipeWire");
     let started = start_portal(restore_token).await?;
     let raw = started.fd.as_raw_fd();
     let mut cmd = Command::new("gst-launch-1.0");
@@ -293,6 +296,7 @@ async fn spawn_session(restore_token: &str) -> Result<(Session, Option<String>),
     let mut child = cmd.spawn().map_err(|e| {
         err(format!("не удалось запустить gst-launch-1.0 (нужны gstreamer и gst-plugin-pipewire): {e}"))
     })?;
+    tracing::debug!(pid = ?child.id(), "Запущен GStreamer для чтения PipeWire");
     drop(started.fd); // у дочернего процесса своя копия
     let mut stdout = child.stdout.take().ok_or_else(|| err("нет stdout у gst-launch-1.0"))?;
 
@@ -303,6 +307,7 @@ async fn spawn_session(restore_token: &str) -> Result<(Session, Option<String>),
         let mut buf = [0u8; 2048];
         while let Ok(n) = stderr_pipe.read(&mut buf).await {
             if n == 0 { break; }
+            tracing::debug!(component = "gstreamer", stderr = %String::from_utf8_lossy(&buf[..n]), "Диагностика процесса захвата");
             let mut tail = errors.lock().unwrap();
             tail.extend_from_slice(&buf[..n]);
             let excess = tail.len().saturating_sub(8192);
@@ -324,6 +329,7 @@ async fn spawn_session(restore_token: &str) -> Result<(Session, Option<String>),
                 sink.notify.notify_waiters();
             }
         };
+        tracing::warn!("{reason}");
         *sink.closed.lock().unwrap() = Some(reason);
         sink.notify.notify_waiters();
     });

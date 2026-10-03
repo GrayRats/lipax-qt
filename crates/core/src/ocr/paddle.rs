@@ -83,6 +83,7 @@ impl Worker {
                 if n == 0 {
                     break;
                 }
+                tracing::debug!(component = "paddleocr", stderr = %String::from_utf8_lossy(&buffer[..n]), "Диагностика Python worker");
                 let mut bytes = tail.lock().unwrap();
                 bytes.extend_from_slice(&buffer[..n]);
                 let excess = bytes.len().saturating_sub(8192);
@@ -128,6 +129,7 @@ impl Worker {
 
 impl Ocr for PaddleOcr {
     async fn recognize(&self, img: &DynamicImage, settings: &Settings) -> Result<String, OcrError> {
+        tracing::debug!(engine = "paddleocr", width = img.width(), height = img.height(), language = %settings.source_lang, "Начало OCR");
         let language = language(&settings.source_lang)?;
         let mut png = Vec::new();
         // Paddle's detector handles resizing; retain colour and original resolution.

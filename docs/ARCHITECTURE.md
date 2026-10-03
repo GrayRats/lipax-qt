@@ -166,7 +166,7 @@ MMB по наложению **скрывает перевод**. Вернуть 
 ## Сборка и проверки
 
 `./packaging/build-local.sh` собирает снимок рабочего дерева, выполняет Rust- и
-QML-тесты и создаёт `dist/LipaXQT-0.3.0-3-x86_64.pkg.tar.zst`. Пакет содержит бинарник,
+QML-тесты и создаёт `dist/LipaXQT-0.3.0-6-x86_64.pkg.tar.zst`. Пакет содержит бинарник,
 desktop-файл с именем LipaX, SVG, лицензию и документацию.
 
 Проверки выполнены на Qt 6.11.2 и текущей KDE/Wayland-сессии. Отдельной проверки
@@ -174,3 +174,12 @@ desktop-файл с именем LipaX, SVG, лицензию и докумен�
 все виды обычного overlay, MMB, перемещение, наложение, вкладки и историю.
 `examples/geometry.rs` позволяет сохранить клиентский кадр по UUID KWin.
 Результаты и оставшиеся сценарии перечислены в [IMPROVEMENTS.md](IMPROVEMENTS.md).
+
+## Централизованный журнал
+
+`crates/app/src/logging.rs` подключает `tracing-subscriber` до создания Qt/Tokio.
+`logging.cpp` регистрирует `qInstallMessageHandler` и передаёт категории Qt,
+текст и расположение сообщений через CXX в тот же backend. ERROR идёт в stderr,
+другие уровни — в stdout; `RUST_LOG` задаёт фильтры. Panic использует
+`Backtrace::force_capture`, qFatal сохраняет штатную семантику Qt. Ошибки ядра
+логируются до канала GUI. Детали: [LOGGING.md](LOGGING.md).

@@ -134,9 +134,13 @@ impl InstalledFontDatabase {
     /// Шрифты системы; `fc-list` вызывается при первом обращении и после `reload`.
     pub fn system() -> Arc<InstalledFontDatabase> {
         if let Some(db) = SYSTEM.read().unwrap().as_ref() { return db.clone(); }
-        let text = std::process::Command::new("fc-list").args(["-f", FC_FORMAT]).output()
-            .map(|o| String::from_utf8_lossy(&o.stdout).into_owned()).unwrap_or_default();
+        let text = match std::process::Command::new("fc-list").args(["-f", FC_FORMAT]).output() {
+            Ok(output) if output.status.success() => String::from_utf8_lossy(&output.stdout).into_owned(),
+            Ok(output) => { tracing::warn!(status = %output.status, "fontconfig: список шрифтов недоступен, используется семейство Qt"); String::new() },
+            Err(e) => { tracing::warn!(error = %e, "Не удалось запустить fc-list, используется семейство Qt"); String::new() },
+        };
         let db = Arc::new(Self::parse(&text));
+        tracing::debug!(families = db.fonts.len(), "База установленных шрифтов обновлена");
         *SYSTEM.write().unwrap() = Some(db.clone());
         db
     }

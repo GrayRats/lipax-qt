@@ -1,6 +1,6 @@
 //! Independent region state, bounded retries and a 60-second operation deadline.
 use crate::{cache::TranslationCache, layout::engine::{InplaceEngine, InplaceFrame}, capture::Capture, detect::ChangeDetector, ocr::Ocr,
-    settings::{Settings, RegionProfile}, tesseract::primary_lang, text, translate::{Translate, tess_to_iso}};
+    settings::{Settings, RegionProfile}, tesseract::primary_lang, text, translate::{Translate, TranslateError, tess_to_iso}};
 use std::{collections::HashMap, time::{Duration, Instant}};
 use tokio::{sync::{mpsc, watch}, time::MissedTickBehavior};
 const SAME_TEXT_RATIO: f32 = 0.92;
@@ -46,6 +46,8 @@ impl RegionState {
         let message = if self.halted {
             format!("{} ({}). Автоповтор остановлен — нажмите «Повторить»", self.reason, region.name)
         } else { format!("{} ({}). Повтор через {} с", self.reason, region.name, delay.as_secs()) };
+        // Log before the channel/Qt queue: the error survives a closed or unavailable GUI.
+        tracing::error!(region = %region.id, terminal = self.halted, "{message}");
         let _ = out.send(Event::Error { region_id: region.id.clone(), message, terminal: self.halted });
     }
     fn settle(&mut self, region: &RegionProfile, out: &mpsc::UnboundedSender<Event>) {
@@ -70,6 +72,7 @@ impl<C: Capture, O: Ocr, T: Translate> Pipeline<C, O, T> {
 
     fn status(&mut self, text: &str, out: &mpsc::UnboundedSender<Event>) {
         if self.last_status != text {
+            tracing::debug!(stage = text, "Состояние обработки");
             self.last_status = text.to_string();
             let _ = out.send(Event::Status(text.to_string()));
         }
@@ -158,7 +161,15 @@ impl<C: Capture, O: Ocr, T: Translate> Pipeline<C, O, T> {
             Some(t) => t,
             None => {
                 self.status("Перевод…", out);
-                let t = stage!(self.translator.translate(s, &original, src, &s.target_lang), "Ошибка перевода");
+                let t = match tokio::time::timeout_at(deadline, self.translator.translate(s, &original, src, &s.target_lang)).await {
+                    Ok(Ok(t)) => t,
+                    Ok(Err(e)) => {
+                        let stop = matches!(e, TranslateError::RateLimited { .. });
+                        state.fail(region, format!("Ошибка перевода: {e}"), now + started.elapsed(), stop, out);
+                        return;
+                    }
+                    Err(_) => { state.fail(region, "Ошибка перевода: нет ответа за 60 с".into(), now + started.elapsed(), true, out); return; }
+                };
                 self.cache.put(src, &s.target_lang, &original, t.clone()); t
             }
         };
@@ -194,7 +205,10 @@ impl<C: Capture, O: Ocr, T: Translate> Pipeline<C, O, T> {
                     self.status("Перевод…", out);
                     match tokio::time::timeout_at(deadline, self.translator.translate(s, &original, &src, &s.target_lang)).await {
                         Ok(Ok(t)) => { self.cache.put(&src, &s.target_lang, &original, t.clone()); t }
-                        Ok(Err(e)) => { failure = Some((format!("Ошибка перевода: {e}"), false)); break; }
+                        Ok(Err(e)) => {
+                            let stop = matches!(e, TranslateError::RateLimited { .. });
+                            failure = Some((format!("Ошибка перевода: {e}"), stop)); break;
+                        }
                         Err(_) => { failure = Some(("Ошибка перевода: нет ответа за 60 с".into(), true)); break; }
                     }
                 }
@@ -414,6 +428,29 @@ mod tests {
         *cap.0.lock().unwrap() = 120;
         p.tick(&s, true, t0 + Duration::from_millis(800), &tx).await;
         assert!(drain(&mut rx).iter().all(|e| !matches!(e, Event::Inplace { frame, .. } if frame.blocks.is_empty())));
+    }
+
+    #[tokio::test]
+    async fn rate_limit_stops_automatic_retries_in_both_display_modes() {
+        struct Limited(Arc<AtomicUsize>);
+        impl Translate for Limited {
+            async fn translate(&self, _: &Settings, _: &str, _: &str, _: &str) -> Result<String, TranslateError> {
+                self.0.fetch_add(1, Ordering::SeqCst);
+                Err(TranslateError::RateLimited { retry_after: 120 })
+            }
+        }
+        for display in ["overlay", "inplace"] {
+            let count = Arc::new(AtomicUsize::new(0));
+            let mut p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))),
+                MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), Limited(count.clone()));
+            let s = Settings { translation_display: display.into(), ..settings() };
+            let (tx, mut rx) = mpsc::unbounded_channel();
+            let now = Instant::now();
+            p.tick(&s, true, now, &tx).await;
+            assert!(drain(&mut rx).iter().any(|e| matches!(e, Event::Error { terminal: true, message, .. } if message.contains("429"))), "{display}");
+            p.tick(&s, false, now + Duration::from_secs(10), &tx).await;
+            assert_eq!(count.load(Ordering::SeqCst), 1, "{display}: no automatic retry");
+        }
     }
 
     #[tokio::test]
