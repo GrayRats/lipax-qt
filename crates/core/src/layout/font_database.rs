@@ -95,7 +95,8 @@ pub struct BundledFont {
     pub weights: &'static [FontWeight],
     pub monospace: bool,
     pub condensed: bool,
-    /// Средняя ширина глифа в долях кегля (оценка; точные метрики — у Qt при подгонке).
+    /// Ширина букв к высоте прописных — тот же признак, что `FontFeatures::width_ratio`, измеренный
+    /// на собственном рендере шрифта (`font_fixtures.rs`): значения сравнимы напрямую.
     pub glyph_width: f32,
 }
 
@@ -123,24 +124,24 @@ macro_rules! font {
 
 /// Набор независим от шрифтов системы: одинаковый выбор на любом дистрибутиве.
 pub const BUNDLED: &[BundledFont] = &[
-    font!("Inter", ["Inter.ttf"], NeoGrotesqueSans, W_ALL, 0.55),
-    font!("Roboto", ["Roboto.ttf"], NeoGrotesqueSans, W_ALL, 0.53),
-    font!("Noto Sans", ["NotoSans.ttf"], HumanistSans, W_ALL, 0.54),
-    font!("Open Sans", ["OpenSans.ttf"], HumanistSans, W_300_800, 0.55),
-    font!("Fira Sans", ["FiraSans-Regular.ttf", "FiraSans-Bold.ttf"], HumanistSans, W_REG_BOLD, 0.52),
-    font!("Montserrat", ["Montserrat.ttf"], GeometricSans, W_ALL, 0.63),
-    font!("Roboto Condensed", ["RobotoCondensed.ttf"], Condensed, W_ALL, 0.44, condensed),
-    font!("Noto Serif", ["NotoSerif.ttf"], TransitionalSerif, W_ALL, 0.56),
-    font!("PT Serif", ["PTSerif-Regular.ttf", "PTSerif-Bold.ttf"], TransitionalSerif, W_REG_BOLD, 0.51),
-    font!("Source Serif 4", ["SourceSerif4.ttf"], Serif, W_200_900, 0.50),
-    font!("Literata", ["Literata.ttf"], Serif, W_200_900, 0.55),
-    font!("Lora", ["Lora.ttf"], Serif, W_400_700, 0.52),
-    font!("EB Garamond", ["EBGaramond.ttf"], OldStyleSerif, W_400_800, 0.45),
-    font!("Roboto Slab", ["RobotoSlab.ttf"], SlabSerif, W_ALL, 0.57),
-    font!("Bitter", ["Bitter.ttf"], SlabSerif, W_ALL, 0.56),
-    font!("JetBrains Mono", ["JetBrainsMono.ttf"], Monospace, W_100_800, 0.60, mono),
-    font!("Fira Code", ["FiraCode.ttf"], Monospace, W_300_700, 0.60, mono),
-    font!("Source Code Pro", ["SourceCodePro.ttf"], Monospace, W_200_900, 0.60, mono),
+    font!("Inter", ["Inter.ttf"], NeoGrotesqueSans, W_ALL, 0.68),
+    font!("Roboto", ["Roboto.ttf"], NeoGrotesqueSans, W_ALL, 0.65),
+    font!("Noto Sans", ["NotoSans.ttf"], HumanistSans, W_ALL, 0.65),
+    font!("Open Sans", ["OpenSans.ttf"], HumanistSans, W_300_800, 0.61),
+    font!("Fira Sans", ["FiraSans-Regular.ttf", "FiraSans-Bold.ttf"], HumanistSans, W_REG_BOLD, 0.64),
+    font!("Montserrat", ["Montserrat.ttf"], GeometricSans, W_ALL, 0.73),
+    font!("Roboto Condensed", ["RobotoCondensed.ttf"], Condensed, W_ALL, 0.56, condensed),
+    font!("Noto Serif", ["NotoSerif.ttf"], TransitionalSerif, W_ALL, 0.75),
+    font!("PT Serif", ["PTSerif-Regular.ttf", "PTSerif-Bold.ttf"], TransitionalSerif, W_REG_BOLD, 0.65),
+    font!("Source Serif 4", ["SourceSerif4.ttf"], Serif, W_200_900, 0.65),
+    font!("Literata", ["Literata.ttf"], Serif, W_200_900, 0.74),
+    font!("Lora", ["Lora.ttf"], Serif, W_400_700, 0.67),
+    font!("EB Garamond", ["EBGaramond.ttf"], OldStyleSerif, W_400_800, 0.64),
+    font!("Roboto Slab", ["RobotoSlab.ttf"], SlabSerif, W_ALL, 0.74),
+    font!("Bitter", ["Bitter.ttf"], SlabSerif, W_ALL, 0.74),
+    font!("JetBrains Mono", ["JetBrainsMono.ttf"], Monospace, W_100_800, 0.59, mono),
+    font!("Fira Code", ["FiraCode.ttf"], Monospace, W_300_700, 0.64, mono),
+    font!("Source Code Pro", ["SourceCodePro.ttf"], Monospace, W_200_900, 0.71, mono),
     BundledFont { family: "Noto Sans CJK SC", files: &["NotoSansCJK-VF.otf"], category: CjkSans, langs: CJK, weights: W_ALL,
         monospace: false, condensed: false, glyph_width: 1.0 },
 ];

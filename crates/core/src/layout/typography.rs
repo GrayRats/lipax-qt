@@ -168,7 +168,7 @@ mod tests {
         let mask = BlockDetector::ink_mask(img);
         let blocks = BlockDetector::default().detect_text_blocks(img, &mask);
         let b = blocks.into_iter().max_by(|a, b| a.rect.area().total_cmp(&b.rect.area())).unwrap();
-        let a = FontClassifier.classify(&mask, &b);
+        let a = FontClassifier.classify(img, &mask, &b);
         (TypographyEstimator.estimate(&b, &a, [20, 20, 30], img.width() as f32), b)
     }
 

@@ -150,6 +150,13 @@ impl FontMatcher {
     pub fn select_font(&self, analysis: &FontAnalysis, script: Script, block_type: TextBlockType,
                        db: &InstalledFontDatabase, prefs: &FontPreferences) -> FontSelection {
         let lang = script.fontconfig_lang();
+        // Оригинал на CJK, перевод на кириллицу или латиницу: нужен обычный шрифт того же склада
+        // (готика → без засечек, минтё → с засечками), а не CJK-шрифт для текста без иероглифов.
+        let normalized;
+        let analysis = if analysis.category.is_cjk() && !script.is_cjk() {
+            normalized = FontAnalysis { category: if analysis.category == FontCategory::CjkSerif { FontCategory::Serif } else { FontCategory::SansSerif }, ..analysis.clone() };
+            &normalized
+        } else { analysis };
         // Никогда не выбирать шрифт, в котором нет глифов перевода.
         let covering: Vec<&FontInfo> = db.fonts().iter().filter(|f| f.covers(lang)).collect();
         let pick = |f: &FontInfo, confidence: f32| FontSelection {
@@ -194,6 +201,18 @@ mod tests {
     }
 
     #[test]
+    fn cjk_originals_get_ordinary_fonts_for_latin_and_cyrillic_translations() {
+        let db = InstalledFontDatabase::bundled();
+        for (category, expect_serif) in [(FontCategory::CjkSans, false), (FontCategory::CjkSerif, true)] {
+            for script in [Script::Cyrillic, Script::Latin] {
+                let picked = FontMatcher.select_font(&analysis(category), script, TextBlockType::Dialogue, &db, &Default::default());
+                assert_ne!(picked.family, "Noto Sans CJK SC", "no CJK font for text without ideographs ({category:?}, {script:?})");
+                assert_eq!(picked.category.is_serif(), expect_serif, "{category:?} → {}", picked.family);
+            }
+        }
+    }
+
+    #[test]
     fn lists_only_name_bundled_families() {
         let db = InstalledFontDatabase::bundled();
         for list in [SANS, SERIF, SLAB, MONO, CONDENSED, CJK_SANS, CJK_SERIF, GENERAL, UI_SANS, DIALOGUE_SERIF, SUBTITLE_SANS] {
@@ -219,7 +238,7 @@ mod tests {
 
     fn analysis(category: FontCategory) -> FontAnalysis {
         FontAnalysis { category, weight: FontWeight::Normal, italic: false, stroke_px: 2.0, cap_height_px: 20.0,
-            width_ratio: 0.55, slant: 0.0, monospace: false, condensed: false, confidence: 0.9 }
+            width_ratio: 0.55, slant: 0.0, monospace: false, condensed: false, confidence: 0.9, features: Default::default() }
     }
 
     fn select(category: FontCategory, script: Script, block: TextBlockType) -> String {

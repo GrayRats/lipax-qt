@@ -13,7 +13,7 @@
 
 use super::background::{BackgroundAnalyzer, BackgroundInpainter};
 use super::block_detector::{BlockDetector, DetectedTextBlock};
-use super::font_classifier::FontClassifier;
+use super::font_classifier::{FontAnalysis, FontClassifier};
 use super::font_database::InstalledFontDatabase;
 use super::font_matcher::{FontMatcher, FontPreferences, FontSelection};
 use super::tracker::TextBlockTracker;
@@ -119,6 +119,18 @@ fn color_distance(a: [u8; 3], b: [u8; 3]) -> f32 {
     a.iter().zip(b).map(|(x, y)| (*x as f32 - y as f32).powi(2)).sum::<f32>().sqrt()
 }
 
+/// Признаки поля для выбора шрифта. Пиксели CJK-текста не отличить от моноширинного (ровный шаг)
+/// и не классифицировать по засечкам, поэтому, если OCR прочитал CJK, категория берётся
+/// по языку оригинала: с засечками (минтё) при высоком контрасте штрихов, иначе — готика.
+fn analysis_for(t: &super::tracker::TrackedTextBlock) -> Option<FontAnalysis> {
+    let mut a = t.font_analysis.clone()?;
+    if t.detected_language.is_cjk() {
+        a.category = if a.features.contrast >= 1.8 { FontCategory::CjkSerif } else { FontCategory::CjkSans };
+        a.monospace = false;
+    }
+    Some(a)
+}
+
 fn preferences(s: &Settings) -> FontPreferences {
     let category_overrides = s.inplace.font_overrides.iter()
         .filter_map(|(k, v)| serde_json::from_value::<FontCategory>(serde_json::Value::String(k.clone())).ok().map(|c| (c, v.clone())))
@@ -188,7 +200,7 @@ impl InplaceEngine {
             }
             // Признаки шрифта — один раз за жизнь поля (до сброса идентичности или явного запроса).
             if t.font_analysis.is_none() {
-                t.font_analysis = Some(FontClassifier.classify(&mask, d));
+                t.font_analysis = Some(FontClassifier.classify(&image, &mask, d));
             }
             // Фон — только если он заметно изменился (подвижная сцена) или сменили режим.
             let margin = BackgroundAnalyzer::margin(lh);
@@ -226,8 +238,13 @@ impl InplaceEngine {
         if self.tracker.get(id).is_none_or(|t| t.font_selection_locked()) { return; }
         let db = self.font_db();
         let Some(t) = self.tracker.get_mut(id) else { return };
-        let Some(analysis) = t.font_analysis.as_ref() else { return };
-        let selected = FontMatcher.select_font(analysis, Script::from_lang(&s.target_lang), t.block_type, &db, &preferences(s));
+        let Some(analysis) = analysis_for(t) else { return };
+        let selected = FontMatcher.select_font(&analysis, Script::from_lang(&s.target_lang), t.block_type, &db, &preferences(s));
+        if analysis.category == FontCategory::Unknown {
+            tracing::warn!(target: "inplace.font", block_id = id, fallback = %selected.family, "font category could not be determined");
+        }
+        tracing::debug!(target: "inplace.font", block_id = id, block_type = ?t.block_type, script = ?t.detected_language,
+            category = ?analysis.category, confidence = analysis.confidence, selected_fallback = %selected.family, "font analysis");
         if selected.generic {
             if self.missing_font_warned.insert(id) {
                 tracing::warn!(target: "inplace.font", block_id = id, script = ?Script::from_lang(&s.target_lang), "no bundled font has full glyph coverage");
@@ -324,8 +341,8 @@ impl InplaceEngine {
             let target = Script::from_lang(&s.target_lang);
             for id in &ids {
                 if let Some(t) = self.tracker.get_mut(*id)
-                    && let (Some(a), true) = (t.font_analysis.as_ref(), t.font.is_some()) {
-                        let selected = FontMatcher.select_font(a, target, t.block_type, &db, &preferences(s));
+                    && let (Some(a), true) = (analysis_for(t), t.font.is_some()) {
+                        let selected = FontMatcher.select_font(&a, target, t.block_type, &db, &preferences(s));
                         t.font = if selected.generic { None } else { Some(selected) };
                         t.revision += 1;
                     }
