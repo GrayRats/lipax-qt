@@ -1,6 +1,6 @@
 # LipaX
 
-LipaX помогает читать текст в играх: захватывает выбранное окно, распознаёт надписи и показывает перевод. Приложение рассчитано на KDE Plasma 6 с KWin и Wayland; интерфейс написан на Qt 6/QML, обработка кадров — на Rust.
+LipaX помогает читать текст в играх: захватывает выбранное окно, распознаёт надписи и показывает перевод. Приложение рассчитано на KDE Plasma 6 с KWin и Wayland; интерфейс написан на Qt 6/QML, обработка кадров - на Rust.
 
 [English](#english)
 
@@ -36,7 +36,8 @@ sudo pacman -U dist/lipax-1.0.1-1-x86_64.pkg.tar.zst
 
 В режиме окна средняя кнопка мыши на Overlay переключает закрепление. В режиме наложения поверх оригинала средняя кнопка скрывает перевод; вернуть его можно переключателем в главном окне.
 
-**Известные ограничения.** Иногда изменение настройки сохраняется, но не применяется к уже открытому окну или захвату. Если это произошло, полностью закройте LipaX и запустите его снова. Наложение поверх оригинала недоступно при Portal-захвате, поскольку Portal не сообщает положение выбранного окна. Отображение поверх конкретной полноэкранной игры и перенос между мониторами с разным масштабом стоит проверять в своей конфигурации.
+**Известные ограничения.** Иногда изменение настройки сохраняется, но не применяется к уже открытому окну или захвату, по этой причине может и быть ошибка перевода 429 (timeout). Если это произошло, полностью закройте LipaX и запустите его снова. Наложение поверх оригинала недоступно при Portal-захвате, поскольку Portal не сообщает положение выбранного окна. 
+Отображение поверх конкретной полноэкранной игры и перенос между мониторами с разным масштабом стоит проверять в своей конфигурации.
 
 ## Диагностика и документация
 
@@ -64,6 +65,7 @@ sudo pacman -U dist/lipax-1.0.1-1-x86_64.pkg.tar.zst
 
 Start `lipax`, choose a game window and text region, configure OCR languages and a translation service, then press “Запустить” (Start). The settings include appearance, regions, shortcuts, and dependency status. The translation window can be pinned or moved; a long translation can be scrolled with the mouse wheel. History storage can be disabled.
 
-**Known limitation:** a changed setting may be saved without taking effect immediately. If that happens, close LipaX completely and start it again. Check overlay placement with your particular fullscreen game or mixed-scale monitor setup.
+**Known limitation:** a changed setting may be saved without taking effect immediately, for this reason, there may be a translation error 429 (timeout). If that happens, close LipaX completely and start it again. 
+Check overlay placement with your particular fullscreen game or mixed-scale monitor setup.
 
 Run `RUST_LOG=debug lipax` to see more diagnostic output, or use `2>&1 | tee lipax.log` to save it. See [logging](docs/LOGGING.md), [architecture](docs/ARCHITECTURE.md), and [PaddleOCR setup](docs/PaddleOCR.md).
