@@ -73,13 +73,14 @@ impl<T: Clone> PropertyMode<T> {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum InplaceBackgroundMode {
-    /// По фону вокруг текста: однородный — заливка, сложный — восстановление с размытием.
     #[default]
     Auto,
-    InpaintBlur,
-    SolidFill,
-    AdaptivePaddingFill,
-    Transparent,
+    #[serde(alias = "inpaint_blur", alias = "solid_fill")]
+    TextReplacement,
+    #[serde(alias = "transparent")]
+    TransparentOutline,
+    #[serde(alias = "adaptive_padding_fill")]
+    PaddedFill,
 }
 
 /// Настройки режима «перевод поверх оригинала».
@@ -100,6 +101,16 @@ pub struct InplaceSettings {
     pub wrap_mode: PropertyMode<WrapMode>,
     /// `#rrggbb`.
     pub text_color: PropertyMode<String>,
+    pub outline_color: PropertyMode<String>,
+    pub outline_width: f32,
+    pub shadow: bool,
+    pub text_opacity: f32,
+    pub fill_color: PropertyMode<String>,
+    pub fill_opacity: f32,
+    pub padding_x: f32,
+    pub padding_y: f32,
+    pub extra_margin: f32,
+    pub corner_radius: f32,
     /// Поля, px экрана.
     pub padding: PropertyMode<Padding>,
     pub minimum_font_size: f32,
@@ -125,6 +136,16 @@ impl Default for InplaceSettings {
             alignment: PropertyMode::Auto,
             wrap_mode: PropertyMode::Auto,
             text_color: PropertyMode::Auto,
+            outline_color: PropertyMode::Auto,
+            outline_width: 1.0,
+            shadow: false,
+            text_opacity: 1.0,
+            fill_color: PropertyMode::Auto,
+            fill_opacity: 1.0,
+            padding_x: 0.0,
+            padding_y: 0.0,
+            extra_margin: 0.0,
+            corner_radius: 4.0,
             padding: PropertyMode::Auto,
             minimum_font_size: 8.0,
             maximum_font_size: 96.0,
@@ -149,6 +170,16 @@ impl InplaceSettings {
         if let PropertyMode::Manual(c) = &self.text_color
             && (c.len() != 7 || !c.starts_with('#') || !c[1..].bytes().all(|b| b.is_ascii_hexdigit())) { self.text_color = PropertyMode::Auto; }
         if let PropertyMode::Manual(f) = &self.font_family && f.trim().is_empty() { self.font_family = PropertyMode::Auto; }
+        self.outline_width = finite(self.outline_width, 1.0).clamp(0.0, 8.0);
+        self.text_opacity = finite(self.text_opacity, 1.0).clamp(0.0, 1.0);
+        self.fill_opacity = finite(self.fill_opacity, 1.0).clamp(0.0, 1.0);
+        self.padding_x = finite(self.padding_x, 0.0).clamp(0.0, 64.0);
+        self.padding_y = finite(self.padding_y, 0.0).clamp(0.0, 64.0);
+        self.extra_margin = finite(self.extra_margin, 0.0).clamp(0.0, 64.0);
+        self.corner_radius = finite(self.corner_radius, 4.0).clamp(0.0, 64.0);
+        for color in [&mut self.outline_color, &mut self.fill_color] {
+            if let PropertyMode::Manual(c) = color && (c.len() != 7 || !c.starts_with('#') || !c[1..].bytes().all(|b| b.is_ascii_hexdigit())) { *color = PropertyMode::Auto; }
+        }
         self.preferred_fonts.retain(|f| !f.trim().is_empty());
         self.font_overrides.retain(|_, f| !f.trim().is_empty());
     }
@@ -567,10 +598,20 @@ mod tests {
 
     #[test]
     fn roundtrip() {
-        let mut s = Settings::default();
-        s.region = Some(NormRect { x: 0.1, y: 0.6, w: 0.8, h: 0.3 });
+        let s = Settings { region: Some(NormRect { x: 0.1, y: 0.6, w: 0.8, h: 0.3 }), ..Settings::default() };
         let t = toml::to_string_pretty(&s).unwrap();
         assert_eq!(toml::from_str::<Settings>(&t).unwrap(), s);
+    }
+
+    #[test]
+    fn legacy_background_modes_migrate_to_four_public_choices() {
+        for (old, expected) in [("inpaint_blur", InplaceBackgroundMode::TextReplacement),
+            ("solid_fill", InplaceBackgroundMode::TextReplacement),
+            ("adaptive_padding_fill", InplaceBackgroundMode::PaddedFill),
+            ("transparent", InplaceBackgroundMode::TransparentOutline)] {
+            let value: InplaceBackgroundMode = serde_json::from_value(serde_json::json!(old)).unwrap();
+            assert_eq!(value, expected);
+        }
     }
 
     fn region(id: &str, enabled: bool) -> RegionProfile {
@@ -625,7 +666,7 @@ mod tests {
         s.inplace.font_family = PropertyMode::Manual("PT Serif".into());
         s.inplace.letter_spacing = PropertyMode::Manual(1.5);
         s.inplace.padding = PropertyMode::Manual(crate::layout::Padding::uniform(4.0));
-        s.inplace.background_mode = InplaceBackgroundMode::InpaintBlur;
+        s.inplace.background_mode = InplaceBackgroundMode::TextReplacement;
         s.inplace.font_overrides.insert("serif".into(), "Noto Serif".into());
         let t = toml::to_string_pretty(&s).unwrap();
         let back: Settings = toml::from_str(&t).unwrap();

@@ -1,4 +1,5 @@
 target/
+/crates/app/assets/fonts/
 
 # Local package/build artifacts
 /dist/

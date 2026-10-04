@@ -5,6 +5,10 @@ edition.workspace = true
 license.workspace = true
 build = "build.rs"
 
+[[bin]]
+name = "lipax"
+path = "src/main.rs"
+
 [dependencies]
 lipa-core = { path = "../core" }
 cxx = "1"

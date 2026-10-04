@@ -12,6 +12,7 @@
 //! Оркестратор — [`engine::InplaceEngine`]; он пересчитывает только изменившиеся стадии.
 
 pub mod background;
+pub mod collision;
 pub mod block_detector;
 pub mod engine;
 pub mod fit;

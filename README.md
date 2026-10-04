@@ -22,7 +22,7 @@ makepkg -si
 1. Запустите приложение из терминала или через меню вашего окружения:
 
    ```
-   lipa
+   lipax
    
    ```
 
@@ -52,7 +52,7 @@ makepkg -si
 1. Launch the application from your terminal or desktop environment:
 
    ```
-   lipa
+   lipax
    
    ```
 
@@ -70,7 +70,7 @@ makepkg -si
 Пакет появится в `dist/`. Установка от root:
 
 ```bash
-pacman -U /полный/путь/к/LipaXQT-0.3.0-6-x86_64.pkg.tar.zst
+pacman -U /полный/путь/к/lipax-0.3.0-1-x86_64.pkg.tar.zst
 ```
 
 [Список доработок и предложения](docs/IMPROVEMENTS.md) ·

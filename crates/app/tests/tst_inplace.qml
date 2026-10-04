@@ -85,6 +85,14 @@ TestCase {
         compare(hides, 1)
     }
 
+    function test_transparentOutlineAndShadowSettings() {
+        inplace.entry = Object.assign({}, baseEntry, { outline: true, outline_width: 3,
+            shadow: true, text_opacity: 0.7, background: { mode: "transparent", color: "#203040", image: "" } })
+        compare(child("inplaceBackground").visible, false)
+        compare(child("inplaceText").style, Text.Normal, "wide outline uses explicit surrounding glyphs")
+        fuzzyCompare(child("inplaceText").opacity, 0.7, 0.001)
+    }
+
     function test_noGeometryNoPlacement() {
         inplace.gameGeometry = ""
         compare(inplace.desktopRect, null)

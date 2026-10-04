@@ -62,10 +62,9 @@ ApplicationWindow {
     function setProp(key, manual, value) { setInplace(key, manual ? { mode: "manual", value: value } : { mode: "auto" }) }
     readonly property var inplaceBackgrounds: [
         { value: "auto", label: "Авто (по фону вокруг текста)" },
-        { value: "inpaint_blur", label: "Восстановить и размыть" },
-        { value: "solid_fill", label: "Заливка цветом фона" },
-        { value: "adaptive_padding_fill", label: "Заливка с расширенными полями" },
-        { value: "transparent", label: "Прозрачный (обводка текста)" }
+        { value: "text_replacement", label: "Подмена текста" },
+        { value: "transparent_outline", label: "Прозрачный фон + обводка" },
+        { value: "padded_fill", label: "Заливка с дополнительными полями" }
     ]
     readonly property var weightNames: [
         { value: "thin", label: "Тонкий" }, { value: "extra_light", label: "Сверхсветлый" }, { value: "light", label: "Светлый" },
@@ -81,6 +80,9 @@ ApplicationWindow {
         { value: "slab_serif", label: "Брусковые засечки" }, { value: "monospace", label: "Моноширинный" },
         { value: "cjk_sans", label: "CJK без засечек" }, { value: "cjk_serif", label: "CJK с засечками" }
     ]
+    readonly property var bundledFonts: ["Inter", "Noto Sans", "Noto Serif", "JetBrains Mono",
+        "Noto Sans CJK JP", "Noto Sans CJK KR", "Noto Sans CJK SC", "Noto Sans CJK TC",
+        "Noto Serif CJK JP", "Noto Serif CJK KR", "Noto Serif CJK SC", "Noto Serif CJK TC"]
     // Строка свойства: «Авто / Вручную» и редактор значения (дочерние элементы экземпляра).
     component PropRow: RowLayout {
         id: propRow
@@ -646,14 +648,14 @@ ApplicationWindow {
                 Layout.fillWidth: true; Layout.minimumWidth: 0
                 model: ["В окне перевода", "Поверх оригинала"]
                 currentIndex: win.current.translation_display === "inplace" ? 1 : 0
-                onActivated: win.set("translation_display", currentIndex === 1 ? "inplace" : "overlay")
+                onActivated: win.set("translation_display", currentIndex === 1 ? "inplace" : "window")
             }
             Label {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
                 visible: win.current.translation_display === "inplace"
                 text: "Перевод закрывает исходный текст в каждой активной области: размытая заливка цвета фона, "
                       + "цвет, размер и начертание оцениваются по кадру; длинный перевод уменьшается. "
-                      + "Можно выбрать свой шрифт ниже. Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Поверх игры». "
+                      + "Можно выбрать свой шрифт ниже. Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Перевод поверх оригинала». "
                       + "Нужен захват через KWin: при захвате через portal используется окно перевода."
             }
             GridLayout {
@@ -666,7 +668,7 @@ ApplicationWindow {
                 Label {
                     Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
                     text: "Каждое поле текста находится и отслеживается отдельно. Шрифт для поля выбирается один раз — "
-                          + "по признакам начертания оригинала и среди установленных шрифтов с глифами языка перевода — и дальше не меняется. "
+                          + "по признакам начертания оригинала и среди шрифтов приложения с глифами языка перевода — и дальше не меняется. "
                           + "Каждое свойство ниже можно оставить автоматическим или задать вручную независимо от остальных."
                 }
                 FieldLabel { text: "Фон под переводом" }
@@ -677,14 +679,44 @@ ApplicationWindow {
                     currentIndex: Math.max(0, win.inplaceBackgrounds.findIndex(m => m.value === (win.inplace().background_mode || "auto")))
                     onActivated: win.setInplace("background_mode", win.inplaceBackgrounds[currentIndex].value)
                 }
+                FieldLabel { text: "Цвет обводки"; visible: win.inplace().background_mode === "transparent_outline" }
+                PropRow {
+                    id: outlineColorRow
+                    visible: win.inplace().background_mode === "transparent_outline"
+                    key: "outline_color"; defaultValue: "#000000"
+                    TextField { visible: outlineColorRow.manual; Layout.fillWidth: true; text: win.propValue("outline_color", "#000000"); onEditingFinished: win.setProp("outline_color", true, text) }
+                }
+                FieldLabel { text: "Толщина обводки, px"; visible: win.inplace().background_mode === "transparent_outline" }
+                SpinBox { visible: win.inplace().background_mode === "transparent_outline"; from: 0; to: 8; value: win.inplace().outline_width === undefined ? 1 : win.inplace().outline_width; onValueModified: win.setInplace("outline_width", value) }
+                FieldLabel { text: "Тень текста"; visible: win.inplace().background_mode === "transparent_outline" }
+                CheckBox { visible: win.inplace().background_mode === "transparent_outline"; checked: win.inplace().shadow === true; onToggled: win.setInplace("shadow", checked) }
+                FieldLabel { text: "Прозрачность текста, %"; visible: win.inplace().background_mode === "transparent_outline" }
+                SpinBox { visible: win.inplace().background_mode === "transparent_outline"; from: 0; to: 100; value: Math.round((win.inplace().text_opacity === undefined ? 1 : win.inplace().text_opacity) * 100); onValueModified: win.setInplace("text_opacity", value / 100) }
+                FieldLabel { text: "Цвет заливки"; visible: win.inplace().background_mode === "padded_fill" }
+                PropRow {
+                    id: fillColorRow
+                    visible: win.inplace().background_mode === "padded_fill"
+                    key: "fill_color"; defaultValue: "#202020"
+                    TextField { visible: fillColorRow.manual; Layout.fillWidth: true; text: win.propValue("fill_color", "#202020"); onEditingFinished: win.setProp("fill_color", true, text) }
+                }
+                FieldLabel { text: "Прозрачность заливки, %"; visible: win.inplace().background_mode === "padded_fill" }
+                SpinBox { visible: win.inplace().background_mode === "padded_fill"; from: 0; to: 100; value: Math.round((win.inplace().fill_opacity === undefined ? 1 : win.inplace().fill_opacity) * 100); onValueModified: win.setInplace("fill_opacity", value / 100) }
+                FieldLabel { text: "Поля по горизонтали, px"; visible: win.inplace().background_mode === "padded_fill" }
+                SpinBox { visible: win.inplace().background_mode === "padded_fill"; from: 0; to: 64; value: win.inplace().padding_x || 0; onValueModified: win.setInplace("padding_x", value) }
+                FieldLabel { text: "Поля по вертикали, px"; visible: win.inplace().background_mode === "padded_fill" }
+                SpinBox { visible: win.inplace().background_mode === "padded_fill"; from: 0; to: 64; value: win.inplace().padding_y || 0; onValueModified: win.setInplace("padding_y", value) }
+                FieldLabel { text: "Дополнительное поле, px"; visible: win.inplace().background_mode === "padded_fill" }
+                SpinBox { visible: win.inplace().background_mode === "padded_fill"; from: 0; to: 64; value: win.inplace().extra_margin || 0; onValueModified: win.setInplace("extra_margin", value) }
+                FieldLabel { text: "Скругление, px"; visible: win.inplace().background_mode === "padded_fill" }
+                SpinBox { visible: win.inplace().background_mode === "padded_fill"; from: 0; to: 64; value: win.inplace().corner_radius === undefined ? 4 : win.inplace().corner_radius; onValueModified: win.setInplace("corner_radius", value) }
                 FieldLabel { text: "Шрифт" }
                 PropRow {
                     id: fontRow
-                    key: "font_family"; defaultValue: Qt.application.font.family
+                    key: "font_family"; defaultValue: "Inter"
                     ComboBox {
                         visible: fontRow.manual
                         Layout.fillWidth: true; Layout.minimumWidth: 0
-                        model: Qt.fontFamilies()
+                        model: win.bundledFonts
                         currentIndex: Math.max(0, model.indexOf(win.propValue("font_family", "")))
                         onActivated: win.setProp("font_family", true, currentText)
                     }
@@ -817,7 +849,7 @@ ApplicationWindow {
                 FieldLabel { text: "Предпочтительные шрифты (через запятую)" }
                 TextField {
                     Layout.fillWidth: true; Layout.minimumWidth: 0
-                    placeholderText: "PT Serif, Inter"
+                    placeholderText: "Noto Serif, Inter"
                     text: (win.inplace().preferred_fonts || []).join(", ")
                     onEditingFinished: win.setInplace("preferred_fonts", text.split(",").map(f => f.trim()).filter(f => f.length > 0))
                 }
@@ -830,7 +862,7 @@ ApplicationWindow {
                         FieldLabel { text: modelData.label }
                         ComboBox {
                             Layout.fillWidth: true; Layout.minimumWidth: 0
-                            model: ["Авто"].concat(Qt.fontFamilies())
+                            model: ["Авто"].concat(win.bundledFonts)
                             currentIndex: Math.max(0, model.indexOf((win.inplace().font_overrides || {})[modelData.value] || ""))
                             onActivated: {
                                 const o = Object.assign({}, win.inplace().font_overrides || {})
@@ -849,7 +881,16 @@ ApplicationWindow {
                     Item { Layout.fillWidth: true }
                     Button { text: "Сбросить «Поверх оригинала»"; onClicked: win.resetKeys(["inplace"]) }
                 }
+                Label {
+                    Layout.columnSpan: 2; Layout.fillWidth: true; wrapMode: Text.Wrap
+                    text: "Защита соседних полей от наложения всегда включена. Если перевод не помещается, поле пропускается и причина выводится в журнал."
+                    opacity: 0.7
+                }
             }
+            GridLayout {
+                visible: win.current.translation_display !== "inplace"
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                columns: 2; columnSpacing: 24; rowSpacing: 12
             FieldLabel { text: "Фон перевода" }
             ComboBox {
                 objectName: "overlayStyle"
@@ -1049,6 +1090,7 @@ ApplicationWindow {
                 from: 200; to: win.screenMaxWidth; stepSize: 50; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
                 value: win.current.overlay_max_width || 900
                 onValueModified: win.set("overlay_max_width", value)
+            }
             }
             ResetButton { keys: win.appearanceKeys }
             }

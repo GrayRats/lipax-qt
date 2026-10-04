@@ -3,6 +3,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("app_icon.h");
         fn configureLipaApplication();
+        fn loadLipaFonts(directory: &QString) -> QString;
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
         fn configureOverlayInput(passthrough: bool, rects: &[i32]);
@@ -16,6 +17,7 @@ mod ffi {
 
 use lipa_core::layout::WrapMode;
 use lipa_core::layout::fit::{FontSpec, Measured, TextMeasure};
+use cxx_qt_lib::QString;
 
 /// Метрики Qt (`QFontMetricsF`) выбранного шрифта для подгонки перевода. Только в GUI-потоке.
 pub struct QtMeasure;
@@ -34,6 +36,15 @@ impl TextMeasure for QtMeasure {
 
 pub fn configure() {
     ffi::configureLipaApplication();
+    let directory = std::env::var_os("LIPAX_FONT_DIR").map(std::path::PathBuf::from).unwrap_or_else(|| {
+        let installed = std::path::PathBuf::from("/usr/share/lipax/fonts");
+        if installed.is_dir() { return installed; }
+        std::env::current_exe().ok().into_iter().flat_map(|path| path.ancestors().map(std::path::Path::to_path_buf).collect::<Vec<_>>())
+            .map(|root| root.join("crates/app/assets/fonts"))
+            .find(|fonts| fonts.is_dir()).unwrap_or(installed)
+    });
+    let names = ffi::loadLipaFonts(&QString::from(directory.to_string_lossy().as_ref())).to_string();
+    lipa_core::layout::font_database::set_bundled_available(names.lines().map(str::to_owned));
 }
 
 pub fn overlay_blur(enable: bool, radius: i32) { ffi::configureOverlayBlur(enable, radius); }

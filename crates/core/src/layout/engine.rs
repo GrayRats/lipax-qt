@@ -21,7 +21,7 @@ use super::typography::{TranslationTextStyle, TypographyEstimator};
 use super::{FontCategory, InkMask, Rect, Script, TextBlockType, luma};
 use crate::settings::Settings;
 use image::{DynamicImage, RgbaImage, imageops::FilterType};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -76,7 +76,7 @@ impl Fingerprints {
             i.alignment, i.wrap_mode, i.text_color, i.padding, i.minimum_font_size, i.maximum_font_size, i.allow_condensed_fallback]).to_string();
         Self {
             style,
-            background: serde_json::to_string(&i.background_mode).unwrap(),
+            background: serde_json::json!([i.background_mode, i.fill_color, i.fill_opacity, i.padding_x, i.padding_y, i.extra_margin, i.corner_radius, i.outline_color, i.outline_width, i.shadow, i.text_opacity]).to_string(),
             fonts: serde_json::json!([i.font_overrides, i.preferred_fonts, s.target_lang]).to_string(),
         }
     }
@@ -90,6 +90,7 @@ pub struct InplaceEngine {
     applied: Fingerprints,
     published: Vec<(u64, u64)>,
     new_translations: Vec<(String, String)>,
+    missing_font_warned: HashSet<u64>,
 }
 
 impl Default for InplaceEngine {
@@ -124,10 +125,10 @@ fn preferences(s: &Settings) -> FontPreferences {
 }
 
 impl InplaceEngine {
-    /// Шрифты системы опрашиваются при первом выборе шрифта и кешируются на сеанс.
+    /// Встроенный реестр создаётся при первом выборе шрифта и кешируется на сеанс.
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
-            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new() }
+            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new() }
     }
 
     pub fn with_fonts(db: InstalledFontDatabase) -> Self {
@@ -135,7 +136,7 @@ impl InplaceEngine {
     }
 
     fn font_db(&mut self) -> Arc<InstalledFontDatabase> {
-        self.fonts.get_or_insert_with(InstalledFontDatabase::system).clone()
+        self.fonts.get_or_insert_with(InstalledFontDatabase::bundled).clone()
     }
 
     /// Новый сеанс: поля и их шрифты забываются.
@@ -143,11 +144,13 @@ impl InplaceEngine {
         self.tracker.reset();
         self.snapshot = None;
         self.published.clear();
+        self.missing_font_warned.clear();
     }
 
     /// Пользователь попросил определить шрифты заново: анализ повторится на следующем кадре.
     pub fn reanalyze_fonts(&mut self) {
         self.tracker.reset_fonts();
+        self.missing_font_warned.clear();
     }
 
     pub fn tracker(&self) -> &TextBlockTracker {
@@ -161,6 +164,7 @@ impl InplaceEngine {
         let mask = BlockDetector::ink_mask(&image);
         let detected = self.detector.detect_text_blocks(&image, &mask);
         let assignments = self.tracker.update(&detected, now);
+        self.missing_font_warned.retain(|id| self.tracker.get(*id).is_some());
         let (fw, fh) = (image.width() as f32, image.height() as f32);
         let bg_changed = self.applied.background != Fingerprints::of(s).background;
         let mut jobs = Vec::new();
@@ -186,7 +190,7 @@ impl InplaceEngine {
             let moved = (t.previous_rect.x - t.current_rect.x).abs() > 3.0 || (t.previous_rect.y - t.current_rect.y).abs() > 3.0;
             if t.background.is_none() || bg_changed || moved || t.background_signature.is_none_or(|old| color_distance(old, bg_sig) > 18.0) {
                 let analysis = BackgroundAnalyzer.analyze(&image, &mask, &d.rect, margin);
-                t.background = Some(BackgroundInpainter.render(&image, &mask, &d.rect, lh, analysis, s.inplace.background_mode));
+                t.background = Some(BackgroundInpainter.render(&image, &mask, &d.rect, lh, analysis, &s.inplace, d.block_type));
                 t.background_signature = Some(bg_sig);
                 t.revision += 1;
             }
@@ -217,7 +221,15 @@ impl InplaceEngine {
         let db = self.font_db();
         let Some(t) = self.tracker.get_mut(id) else { return };
         let Some(analysis) = t.font_analysis.as_ref() else { return };
-        t.font = Some(FontMatcher.select_font(analysis, Script::from_lang(&s.target_lang), t.block_type, &db, &preferences(s)));
+        let selected = FontMatcher.select_font(analysis, Script::from_lang(&s.target_lang), t.block_type, &db, &preferences(s));
+        if selected.generic {
+            if self.missing_font_warned.insert(id) {
+                tracing::warn!(target: "inplace.font", block_id = id, script = ?Script::from_lang(&s.target_lang), "no bundled font has full glyph coverage");
+            }
+            return;
+        }
+        tracing::debug!(target: "inplace.font", block_id = id, family = %selected.family, category = ?selected.category, confidence = selected.confidence, "font selected");
+        t.font = Some(selected);
         t.revision += 1;
     }
 
@@ -246,13 +258,19 @@ impl InplaceEngine {
     /// Поля для отрисовки. `None`, если с прошлой отправки ничего видимого не изменилось.
     pub fn finish(&mut self, s: &Settings) -> Option<InplaceFrame> {
         self.apply_settings(s);
+        let font_db = self.font_db();
         let snap = self.snapshot.as_ref()?;
         let mut blocks = Vec::new();
         for t in self.tracker.blocks() {
             // Пропуск одного кадра не гасит поле: короткие сбои распознавания не мигают.
             if t.misses > 1 || t.translated_text.is_empty() { continue; }
             let (Some(font), Some(est), Some(bg)) = (t.font.as_ref(), t.typography.as_ref(), t.background.as_ref()) else { continue };
-            let style = TypographyEstimator.resolve(est, font, &s.inplace);
+            let mut style = TypographyEstimator.resolve(est, font, &s.inplace);
+            // Старый ручной шрифт из системного списка не должен попасть в inplace.
+            if style.font_family != font.family && !font_db.find(&style.font_family).is_some_and(|f| f.covers(Script::from_lang(&s.target_lang).fontconfig_lang())) {
+                tracing::warn!(target: "inplace.font", block_id = t.id, family = %style.font_family, "manual font lacks bundled glyph coverage; using selected font");
+                style.font_family = font.family.clone();
+            }
             blocks.push(InplaceBlock {
                 id: t.id, block_type: t.block_type, text_rect: t.current_rect,
                 original: t.original_text.clone(), translation: t.translated_text.clone(),
@@ -286,19 +304,21 @@ impl InplaceEngine {
                     if let Some(t) = self.tracker.get_mut(*id) {
                         let margin = BackgroundAnalyzer::margin(d.line_height());
                         let analysis = BackgroundAnalyzer.analyze(&snap.image, &snap.mask, &d.rect, margin);
-                        t.background = Some(BackgroundInpainter.render(&snap.image, &snap.mask, &d.rect, d.line_height(), analysis, s.inplace.background_mode));
+                        t.background = Some(BackgroundInpainter.render(&snap.image, &snap.mask, &d.rect, d.line_height(), analysis, &s.inplace, d.block_type));
                         t.revision += 1;
                     }
                 }
             }
         // Замены и предпочтения шрифтов или язык перевода — явный запрос нового выбора.
         if now.fonts != self.applied.fonts && !self.applied.fonts.is_empty() {
+            self.missing_font_warned.clear();
             let db = self.font_db();
             let target = Script::from_lang(&s.target_lang);
             for id in &ids {
                 if let Some(t) = self.tracker.get_mut(*id)
                     && let (Some(a), true) = (t.font_analysis.as_ref(), t.font.is_some()) {
-                        t.font = Some(FontMatcher.select_font(a, target, t.block_type, &db, &preferences(s)));
+                        let selected = FontMatcher.select_font(a, target, t.block_type, &db, &preferences(s));
+                        t.font = if selected.generic { None } else { Some(selected) };
                         t.revision += 1;
                     }
             }
@@ -380,11 +400,11 @@ mod tests {
         let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::parse(SAMPLE));
         let mut s = settings();
         let first = run(&mut e, &scene(0, [255, 200, 60]), &s, Instant::now()).1.unwrap();
-        s.inplace.background_mode = InplaceBackgroundMode::Transparent;
+        s.inplace.background_mode = InplaceBackgroundMode::TransparentOutline;
         let restyled = e.restyle(&s).unwrap();
         for (a, b) in first.blocks.iter().zip(&restyled.blocks) {
             assert_eq!((a.id, &a.font, &a.style), (b.id, &b.font, &b.style));
-            assert_eq!(b.background.mode, InplaceBackgroundMode::Transparent);
+            assert_eq!(b.background.mode, super::super::background::BackgroundRenderMode::Transparent);
         }
         // Ручной трекинг меняет только его.
         s.inplace.letter_spacing = PropertyMode::Manual(2.0);

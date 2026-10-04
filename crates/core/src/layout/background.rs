@@ -10,8 +10,8 @@
 //! - `AdaptivePaddingFill`: то же, с расширенными полями;
 //! - `Transparent`: оригинал не стирается, перевод читается за счёт обводки и контраста.
 
-use super::{InkMask, Rect, luma};
-use crate::settings::InplaceBackgroundMode;
+use super::{InkMask, Rect, TextBlockType, luma};
+use crate::settings::{InplaceBackgroundMode, InplaceSettings};
 use image::{DynamicImage, RgbaImage, imageops::FilterType};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -32,7 +32,7 @@ pub struct BackgroundAnalysis {
 #[derive(Debug, Clone, PartialEq)]
 pub struct BackgroundResult {
     /// Режим, которым фон построен (`Auto` уже разрешён).
-    pub mode: InplaceBackgroundMode,
+    pub mode: BackgroundRenderMode,
     pub color: [u8; 3],
     /// Уменьшенная размытая заливка для `InpaintBlur`; область — `rect`.
     pub image: Option<RgbaImage>,
@@ -46,6 +46,11 @@ pub struct BackgroundAnalyzer;
 
 #[derive(Default)]
 pub struct BackgroundInpainter;
+
+/// Алгоритм рендеринга — не значение пользовательской настройки.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum BackgroundRenderMode { InpaintBlur, SolidFill, AdaptivePaddingFill, Transparent }
 
 fn median_u8(mut v: Vec<u8>) -> u8 {
     if v.is_empty() { return 0; }
@@ -124,23 +129,39 @@ fn near_ink(mask: &InkMask, x: usize, y: usize) -> bool {
 }
 
 impl BackgroundInpainter {
-    /// Режим `Auto`: однородный фон — заливка, сложный — восстановление с размытием.
-    pub fn resolve_mode(mode: InplaceBackgroundMode, a: &BackgroundAnalysis) -> InplaceBackgroundMode {
+    /// Баллы считаются отдельно для поля: тип и фактура фона участвуют в выборе.
+    pub fn resolve_mode(mode: InplaceBackgroundMode, block: TextBlockType, a: &BackgroundAnalysis) -> BackgroundRenderMode {
+        use BackgroundRenderMode as R;
         match mode {
-            InplaceBackgroundMode::Auto if !a.reliable => InplaceBackgroundMode::SolidFill,
-            InplaceBackgroundMode::Auto if a.texture < 12.0 && a.edge_density < 0.08 && a.gradient.abs() < 20.0 => InplaceBackgroundMode::SolidFill,
-            InplaceBackgroundMode::Auto => InplaceBackgroundMode::InpaintBlur,
-            m => m,
+            InplaceBackgroundMode::TransparentOutline => R::Transparent,
+            InplaceBackgroundMode::PaddedFill => R::AdaptivePaddingFill,
+            InplaceBackgroundMode::TextReplacement => if a.reliable && a.texture >= 12.0 { R::InpaintBlur } else { R::SolidFill },
+            InplaceBackgroundMode::Auto => {
+                let flat = (1.0 - a.texture / 40.0).clamp(0.0, 1.0);
+                let complex = (a.texture / 40.0).clamp(0.0, 1.0) + a.edge_density.min(1.0);
+                let subtitle = if block == TextBlockType::Subtitle { 1.5 } else { 0.0 };
+                let control = if matches!(block, TextBlockType::Button | TextBlockType::MenuItem) { 1.5 } else { 0.0 };
+                let scores = [(R::SolidFill, flat + if a.reliable { 0.5 } else { 0.0 }),
+                              (R::InpaintBlur, complex + if a.reliable { 0.3 } else { 0.0 }),
+                              (R::Transparent, subtitle + complex * 0.2),
+                              (R::AdaptivePaddingFill, control + flat * 0.2)];
+                scores.into_iter().max_by(|x, y| x.1.total_cmp(&y.1)).unwrap().0
+            }
         }
     }
 
-    pub fn render(&self, img: &RgbaImage, mask: &InkMask, rect: &Rect, line_height: f32, analysis: BackgroundAnalysis, mode: InplaceBackgroundMode) -> BackgroundResult {
-        let mode = Self::resolve_mode(mode, &analysis);
+    #[allow(clippy::too_many_arguments)] // One field's immutable frame/analysis/configuration inputs.
+    pub fn render(&self, img: &RgbaImage, mask: &InkMask, rect: &Rect, line_height: f32, analysis: BackgroundAnalysis, settings: &InplaceSettings, block: TextBlockType) -> BackgroundResult {
+        let mode = Self::resolve_mode(settings.background_mode, block, &analysis);
         let (fw, fh) = (img.width() as f32, img.height() as f32);
         let base_pad = (0.3 * line_height).clamp(2.0, 16.0);
-        let pad = if mode == InplaceBackgroundMode::AdaptivePaddingFill { (0.6 * line_height).clamp(4.0, 28.0) } else { base_pad };
-        let area = rect.expand(pad, fw, fh);
-        let image = (mode == InplaceBackgroundMode::InpaintBlur).then(|| inpaint_blur(img, mask, &area, analysis.median));
+        let pad = if mode == BackgroundRenderMode::AdaptivePaddingFill { (0.6 * line_height).clamp(4.0, 28.0) + settings.extra_margin } else { base_pad };
+        let px = if mode == BackgroundRenderMode::AdaptivePaddingFill { pad + settings.padding_x } else { pad };
+        let py = if mode == BackgroundRenderMode::AdaptivePaddingFill { pad + settings.padding_y } else { pad };
+        let x0 = (rect.x - px).max(0.0);
+        let y0 = (rect.y - py).max(0.0);
+        let area = Rect::new(x0, y0, (rect.right() + px).min(fw) - x0, (rect.bottom() + py).min(fh) - y0);
+        let image = (mode == BackgroundRenderMode::InpaintBlur).then(|| inpaint_blur(img, mask, &area, analysis.median));
         BackgroundResult { mode, color: analysis.median, image, rect: area, analysis }
     }
 }
@@ -215,9 +236,18 @@ mod tests {
         let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, BackgroundAnalyzer::margin(lh));
         assert!(a.reliable && a.texture < 5.0, "{a:?}");
         assert_eq!(a.median, [40, 60, 120], "glyph pixels are excluded");
-        let r = BackgroundInpainter.render(&img, &mask, &rect, lh, a, InplaceBackgroundMode::Auto);
-        assert_eq!(r.mode, InplaceBackgroundMode::SolidFill);
+        let r = BackgroundInpainter.render(&img, &mask, &rect, lh, a, &InplaceSettings::default(), TextBlockType::Unknown);
+        assert_eq!(r.mode, BackgroundRenderMode::SolidFill);
         assert!(r.image.is_none() && r.rect.w > rect.w);
+    }
+
+    #[test]
+    fn automatic_strategy_depends_on_the_field_type() {
+        let a = BackgroundAnalysis { median: [32, 40, 50], mean: [32, 40, 50], luminance: 0.16,
+            texture: 3.0, edge_density: 0.01, gradient: 0.0, reliable: true };
+        assert_eq!(BackgroundInpainter::resolve_mode(InplaceBackgroundMode::Auto, TextBlockType::Dialogue, &a), BackgroundRenderMode::SolidFill);
+        assert_eq!(BackgroundInpainter::resolve_mode(InplaceBackgroundMode::Auto, TextBlockType::Subtitle, &a), BackgroundRenderMode::Transparent);
+        assert_eq!(BackgroundInpainter::resolve_mode(InplaceBackgroundMode::Auto, TextBlockType::Button, &a), BackgroundRenderMode::AdaptivePaddingFill);
     }
 
     #[test]
@@ -227,8 +257,8 @@ mod tests {
         draw_line(&mut img, 100, 80, 30, 14, 4, 22, 3, [255, 255, 255], false);
         let (mask, rect, lh) = setup(&img);
         let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, BackgroundAnalyzer::margin(lh));
-        let r = BackgroundInpainter.render(&img, &mask, &rect, lh, a, InplaceBackgroundMode::Auto);
-        assert_eq!(r.mode, InplaceBackgroundMode::InpaintBlur);
+        let r = BackgroundInpainter.render(&img, &mask, &rect, lh, a, &InplaceSettings::default(), TextBlockType::Unknown);
+        assert_eq!(r.mode, BackgroundRenderMode::InpaintBlur);
         let small = r.image.unwrap();
         assert!(small.width() <= 64);
         // Белые буквы не просвечивают: самый яркий пиксель заливки далёк от белого.
@@ -242,11 +272,11 @@ mod tests {
         draw_line(&mut img, 100, 80, 30, 14, 4, 22, 3, [10, 10, 10], false);
         let (mask, rect, lh) = setup(&img);
         let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, 5.0);
-        let solid = BackgroundInpainter.render(&img, &mask, &rect, lh, a.clone(), InplaceBackgroundMode::SolidFill);
-        let adaptive = BackgroundInpainter.render(&img, &mask, &rect, lh, a.clone(), InplaceBackgroundMode::AdaptivePaddingFill);
-        let transparent = BackgroundInpainter.render(&img, &mask, &rect, lh, a, InplaceBackgroundMode::Transparent);
+        let solid = BackgroundInpainter.render(&img, &mask, &rect, lh, a.clone(), &InplaceSettings { background_mode: InplaceBackgroundMode::TextReplacement, ..Default::default() }, TextBlockType::Unknown);
+        let adaptive = BackgroundInpainter.render(&img, &mask, &rect, lh, a.clone(), &InplaceSettings { background_mode: InplaceBackgroundMode::PaddedFill, ..Default::default() }, TextBlockType::Unknown);
+        let transparent = BackgroundInpainter.render(&img, &mask, &rect, lh, a, &InplaceSettings { background_mode: InplaceBackgroundMode::TransparentOutline, ..Default::default() }, TextBlockType::Unknown);
         assert!(adaptive.rect.w > solid.rect.w);
-        assert_eq!(transparent.mode, InplaceBackgroundMode::Transparent);
+        assert_eq!(transparent.mode, BackgroundRenderMode::Transparent);
         assert!(transparent.image.is_none());
     }
 }

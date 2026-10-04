@@ -70,14 +70,55 @@ Window {
             fillMode: Image.Stretch
             smooth: true
             cache: false
+            opacity: win.bg.opacity === undefined ? 1 : win.bg.opacity
         }
         // Solid / adaptive padding fill: the colour sampled around the original glyphs.
         Rectangle {
             objectName: "inplaceFill"
             anchors.fill: parent
             visible: win.bg.mode === "solid_fill" || win.bg.mode === "adaptive_padding_fill"
-            radius: Math.min(4, height / 6)
+            radius: Math.min(win.bg.radius === undefined ? 4 : win.bg.radius, height / 2)
             color: win.bg.color
+            opacity: win.bg.opacity === undefined ? 1 : win.bg.opacity
+        }
+    }
+
+    Text {
+        anchors.fill: textItem
+        anchors.leftMargin: 2
+        anchors.topMargin: 2
+        visible: !!(win.entry && win.entry.shadow)
+        text: textItem.text
+        font: textItem.font
+        lineHeight: textItem.lineHeight
+        wrapMode: textItem.wrapMode
+        horizontalAlignment: textItem.horizontalAlignment
+        verticalAlignment: textItem.verticalAlignment
+        color: win.entry ? win.entry.outline_color : "#000000"
+        opacity: 0.65
+        clip: true
+    }
+
+    Repeater {
+        model: 8
+        delegate: Text {
+            readonly property real distance: Math.max(1, Math.min(8, win.entry ? win.entry.outline_width || 1 : 1))
+            readonly property var dx: [-1, 0, 1, -1, 1, -1, 0, 1]
+            readonly property var dy: [-1, -1, -1, 0, 0, 1, 1, 1]
+            x: textItem.x + dx[index] * distance
+            y: textItem.y + dy[index] * distance
+            width: textItem.width
+            height: textItem.height
+            visible: !!(win.entry && win.entry.outline && win.entry.outline_width > 1)
+            text: textItem.text
+            font: textItem.font
+            lineHeight: textItem.lineHeight
+            wrapMode: textItem.wrapMode
+            horizontalAlignment: textItem.horizontalAlignment
+            verticalAlignment: textItem.verticalAlignment
+            color: win.entry ? win.entry.outline_color : "#000000"
+            opacity: win.entry && win.entry.text_opacity !== undefined ? win.entry.text_opacity : 1
+            clip: true
         }
     }
 
@@ -92,6 +133,7 @@ Window {
         text: win.entry ? win.entry.text : ""
         textFormat: Text.PlainText
         color: win.entry ? win.entry.text_color : "#ffffff"
+        opacity: win.entry && win.entry.text_opacity !== undefined ? win.entry.text_opacity : 1
         font.family: win.entry ? win.entry.font_family : Qt.application.font.family
         font.pixelSize: win.entry ? win.entry.font_px : 16
         font.weight: win.entry ? win.entry.font_weight : Font.Normal
@@ -110,7 +152,7 @@ Window {
             : win.entry.alignment === "left" ? Text.AlignLeft
             : win.entry.alignment === "right" ? Text.AlignRight : Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        style: win.entry && win.entry.outline ? Text.Outline : Text.Normal
+        style: win.entry && win.entry.outline && (win.entry.outline_width === undefined || win.entry.outline_width <= 1) ? Text.Outline : Text.Normal
         styleColor: win.entry ? win.entry.outline_color : "#000000"
     }
 

@@ -1,16 +1,16 @@
-pkgname=LipaXQT
+pkgname=lipax
 pkgver=0.3.0
-pkgrel=6
+pkgrel=1
 pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')
 url="https://github.com/GrayRats/lipax-qt"
-license=('MIT')
+license=('MIT' 'OFL-1.1')
 depends=('qt6-base' 'qt6-declarative' 'qt6-svg' 'layer-shell-qt' 'kwindowsystem' 'tesseract' 'tesseract-data-eng')
 makedepends=('cargo' 'rust')
-provides=('lipa')
-conflicts=('lipa')
+provides=('LipaXQT' 'lipa')
+conflicts=('LipaXQT' 'lipa')
 optdepends=(
-    'python: PaddleOCR in a separate venv (see /usr/share/doc/LipaXQT/PaddleOCR.md)'
+    'python: PaddleOCR in a separate venv (see /usr/share/doc/lipax/PaddleOCR.md)'
     'tesseract-data-rus: Russian OCR'
     'tesseract-data-jpn: Japanese OCR'
     'kwin: window capture with ScreenShot2 and client geometry'
@@ -31,6 +31,13 @@ else
     source=()
     sha256sums=()
 fi
+_font_manifest="$startdir/fonts.sources"
+if [[ ! -f $_font_manifest ]]; then _font_manifest="$startdir/packaging/fonts.sources"; fi
+while read -r _font_name _font_sha _font_url; do
+    [[ -z ${_font_name:-} || $_font_name == \#* ]] && continue
+    source+=("$_font_name::$_font_url")
+    sha256sums+=("$_font_sha")
+done < "$_font_manifest"
 options=('!lto' '!debug')
 
 _project_dir() {
@@ -66,14 +73,21 @@ check() {
 
 package() {
     _project_dir
-    # Keep the existing executable and desktop ID for settings and KWin integration.
-    install -Dm755 "$CARGO_TARGET_DIR/release/lipa" "$pkgdir/usr/bin/lipa"
-    ln -s lipa "$pkgdir/usr/bin/lipax"
+    # Preserve the desktop ID and old executable alias for settings and KWin integration.
+    install -Dm755 "$CARGO_TARGET_DIR/release/lipax" "$pkgdir/usr/bin/lipax"
+    ln -s lipax "$pkgdir/usr/bin/lipa"
     install -Dm644 packaging/io.lipa.Translator.desktop "$pkgdir/usr/share/applications/io.lipa.Translator.desktop"
-    sed -i 's|^Exec=lipa$|Exec=/usr/bin/lipa|' "$pkgdir/usr/share/applications/io.lipa.Translator.desktop"
     install -Dm644 crates/app/assets/lipa.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/io.lipa.Translator.svg"
     for doc in PaddleOCR ARCHITECTURE IMPROVEMENTS LOGGING; do
         install -Dm644 "docs/$doc.md" "$pkgdir/usr/share/doc/$pkgname/$doc.md"
     done
+    while read -r _font_name _font_sha _font_url; do
+        [[ -z ${_font_name:-} || $_font_name == \#* ]] && continue
+        if [[ $_font_name == *.ttf || $_font_name == *.ttc ]]; then
+            install -Dm644 "$srcdir/$_font_name" "$pkgdir/usr/share/lipax/fonts/$_font_name"
+        else
+            install -Dm644 "$srcdir/$_font_name" "$pkgdir/usr/share/licenses/lipax/$_font_name"
+        fi
+    done < "$_font_manifest"
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

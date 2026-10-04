@@ -249,14 +249,14 @@ mod tests {
 
     #[tokio::test]
     async fn rate_limit_blocks_requests_across_texts_until_expiry() {
-        use std::io::{Read, Write};
+        use std::io::{BufRead, BufReader, Write};
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         let url = format!("http://{}/translate", listener.local_addr().unwrap());
         let server = std::thread::spawn(move || {
             let (mut stream, _) = listener.accept().unwrap();
             stream.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
-            let mut request = [0; 4096];
-            stream.read(&mut request).unwrap();
+            let mut request = String::new();
+            BufReader::new(&stream).read_line(&mut request).unwrap();
             stream.write_all(b"HTTP/1.1 429 Too Many Requests\r\nRetry-After: 120\r\nContent-Length: 19\r\nConnection: close\r\n\r\n<html>Sorry!</html> ").unwrap();
         });
         let translator = HttpTranslate { http: reqwest::Client::builder().no_proxy().build().unwrap(), cooldowns: Mutex::new(HashMap::new()) };

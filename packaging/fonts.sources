@@ -1,0 +1,19 @@
+# filename sha256 pinned-upstream-url
+inter-Inter[opsz,wght].ttf 29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031 https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf
+inter-Inter-Italic[opsz,wght].ttf acd98e64795781b2058f07b18475e0ecee2a0fe2b42a49e2f9e37d0d6bf66ce6 https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/inter/Inter-Italic%5Bopsz%2Cwght%5D.ttf
+inter-OFL.txt 5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57 https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/inter/OFL.txt
+notosans-NotoSans[wdth,wght].ttf bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf
+notosans-NotoSans-Italic[wdth,wght].ttf 58e6e0ebd1931b29a365aa2d3e2ee9a9e831a3af7cf3ad1462d4e72154f0b291 https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/notosans/NotoSans-Italic%5Bwdth%2Cwght%5D.ttf
+notosans-OFL.txt cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/notosans/OFL.txt
+notoserif-NotoSerif[wdth,wght].ttf 4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713 https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/notoserif/NotoSerif%5Bwdth%2Cwght%5D.ttf
+notoserif-NotoSerif-Italic[wdth,wght].ttf e87acbc6c0efd0d9a20d6a8cbbda2b266c14be3a3a6f5af8ec9d7b2460570ad1 https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/notoserif/NotoSerif-Italic%5Bwdth%2Cwght%5D.ttf
+notoserif-OFL.txt cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/notoserif/OFL.txt
+jetbrainsmono-JetBrainsMono[wght].ttf 48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf
+jetbrainsmono-JetBrainsMono-Italic[wght].ttf 85ae2a5cd3f56baf1ce1c21a851322c58e3d8fbe8e8ad4a4d090a820dd7fe558 https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/jetbrainsmono/JetBrainsMono-Italic%5Bwght%5D.ttf
+jetbrainsmono-OFL.txt b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/jetbrainsmono/OFL.txt
+NotoSansCJK-Regular.ttc b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTC/NotoSansCJK-Regular.ttc
+NotoSansCJK-Bold.ttc faa5f3656a78b2e2d450d27fe8382c778bc2b6bb5ea29c986664a6a435056ceb https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTC/NotoSansCJK-Bold.ttc
+NotoSansCJK-LICENSE 6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2 https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/LICENSE
+NotoSerifCJK-Regular.ttc 5d9c31a059600193c9d7968a998bde886ccdc77e934006ad243b41794c496a7d https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Serif/OTC/NotoSerifCJK-Regular.ttc
+NotoSerifCJK-Bold.ttc 1505ee3b9c0890fae6302ee0e9c6fd74d690f4a55a6ace1d9944f3f6352d622d https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Serif/OTC/NotoSerifCJK-Bold.ttc
+NotoSerifCJK-LICENSE 6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2 https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Serif/LICENSE

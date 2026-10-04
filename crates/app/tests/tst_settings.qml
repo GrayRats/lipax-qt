@@ -110,4 +110,19 @@ TestCase {
         wait(150)
         settings.close()
     }
+
+    function test_inplaceSettingsDoNotShowWindowControls() {
+        settings.reload()
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 3
+        compare(settings.inplaceBackgrounds.length, 4)
+        settings.set("translation_display", "inplace")
+        wait(50)
+        verify(findChild(settings, "inplaceSettings").visible)
+        verify(!findChild(settings, "overlayStyle").visible)
+        settings.set("translation_display", "window")
+        wait(50)
+        verify(!findChild(settings, "inplaceSettings").visible)
+        verify(findChild(settings, "overlayStyle").visible)
+    }
 }

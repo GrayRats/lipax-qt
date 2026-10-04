@@ -1,9 +1,6 @@
-//! Установленные шрифты системы.
-//!
-//! Список берётся у fontconfig (`fc-list`) — того же источника, через который их видит Qt
-//! на Linux. Опрос выполняется один раз за сеанс (или после явного `reload`), не на каждом кадре.
-//! Для каждого семейства: покрытие письменностей, насыщенности, курсив, моноширинность,
-//! узость и категория по имени.
+//! Шрифты для режима поверх оригинала берутся из фиксированного реестра приложения.
+//! Старый парсер fontconfig сохранён только для совместимости с тестовыми фикстурами;
+//! `InplaceEngine` не опрашивает шрифты системы.
 
 use super::{FontCategory, FontWeight};
 use std::collections::{BTreeMap, BTreeSet};
@@ -80,6 +77,45 @@ pub struct InstalledFontDatabase {
 }
 
 static SYSTEM: RwLock<Option<Arc<InstalledFontDatabase>>> = RwLock::new(None);
+static BUNDLED_AVAILABLE: RwLock<Option<BTreeSet<String>>> = RwLock::new(None);
+
+/// Семейства, реально загруженные Qt из комплекта приложения. До инициализации GUI
+/// используется полная таблица (для тестов ядра и проверки выбора).
+pub fn set_bundled_available(families: impl IntoIterator<Item = String>) {
+    *BUNDLED_AVAILABLE.write().unwrap() = Some(families.into_iter().collect());
+}
+
+/// Минимальный набор, независимый от шрифтов системы и порядка fontconfig.
+pub const BUNDLED_FAMILIES: &[&str] = &[
+    "Inter", "Noto Sans", "Noto Serif", "JetBrains Mono",
+    "Noto Sans CJK JP", "Noto Sans CJK KR", "Noto Sans CJK SC", "Noto Sans CJK TC",
+    "Noto Serif CJK JP", "Noto Serif CJK KR", "Noto Serif CJK SC", "Noto Serif CJK TC",
+];
+
+fn bundled_info(family: &str) -> FontInfo {
+    let cjk = family.contains("CJK");
+    let serif = family.contains("Serif");
+    let mono = family == "JetBrains Mono";
+    let category = if cjk && serif { FontCategory::CjkSerif } else if cjk { FontCategory::CjkSans }
+        else if serif { FontCategory::Serif } else if mono { FontCategory::Monospace }
+        else if family == "Inter" { FontCategory::NeoGrotesqueSans } else { FontCategory::HumanistSans };
+    let langs = if cjk { ["en", "ru", "ja", "ko", "zh-cn", "zh-tw"].into_iter().map(str::to_owned).collect() }
+        else if mono { ["en", "ru", "el"].into_iter().map(str::to_owned).collect() }
+        else { ["en", "ru", "uk", "el"].into_iter().map(str::to_owned).collect() };
+    FontInfo { family: family.into(), supports_latin: true, supports_cyrillic: true, supports_cjk: cjk,
+        langs, category, available_weights: if cjk { vec![FontWeight::Normal, FontWeight::Bold] } else { FontWeight::ALL.to_vec() }, italic_available: !cjk,
+        is_condensed: false, is_monospace: mono, average_glyph_width: if cjk { 1.0 } else if mono { 0.6 } else { 0.52 }, x_height: None }
+}
+
+impl InstalledFontDatabase {
+    pub fn bundled() -> Arc<Self> {
+        let loaded = BUNDLED_AVAILABLE.read().unwrap();
+        let fonts = BUNDLED_FAMILIES.iter()
+            .filter(|name| loaded.as_ref().is_none_or(|set| set.contains::<str>(**name)))
+            .map(|name| bundled_info(name)).collect();
+        Arc::new(Self { fonts })
+    }
+}
 
 impl InstalledFontDatabase {
     /// Разбор вывода `fc-list -f FC_FORMAT`: строки одного семейства объединяются.
@@ -165,6 +201,7 @@ pub(crate) mod tests {
 
     pub const SAMPLE: &str = "PT Serif\ten|ru|uk|de\t0\t80\t100\t0\n\
 PT Serif\ten|ru|uk|de\t0\t200\t100\t100\n\
+Noto Serif\ten|ru|uk|de\t0\t80\t100\t0\n\
 Inter\ten|ru|de|el\t0\t80\t100\t0\n\
 Inter\ten|ru|de|el\t0\t[100 900]\t100\t0\n\
 Noto Sans CJK JP\tja|zh-cn|ko|en|ru\t0\t80\t100\t0\n\
@@ -188,5 +225,14 @@ Fancy Latin Only\ten|de|fr\t0\t80\t100\t0\n";
         assert_eq!(db.find("JetBrains Mono").unwrap().category, FontCategory::Monospace);
         assert!(db.find("Roboto Condensed").unwrap().is_condensed);
         assert!(!db.find("Fancy Latin Only").unwrap().supports_cyrillic);
+    }
+
+    #[test]
+    fn bundled_registry_has_fixed_families_and_cjk_coverage() {
+        let db = InstalledFontDatabase::bundled();
+        assert_eq!(db.fonts().len(), BUNDLED_FAMILIES.len());
+        assert!(db.find("Noto Sans CJK JP").unwrap().covers("ja"));
+        assert!(db.find("Noto Serif CJK SC").unwrap().covers("zh-cn"));
+        assert!(!db.find("Inter").unwrap().covers("ja"));
     }
 }

@@ -1,10 +1,10 @@
-//! Подбор установленного шрифта для поля.
+//! Подбор шрифта из ограниченного реестра приложения для поля.
 //!
 //! Порядок: фильтр покрытия глифов (язык перевода) → кураторский список для категории (или,
 //! если категория `Unknown`, — для типа блока и письменности) → оценка кандидатов по
 //! категории, ширине, насыщенности, моноширинности, стилю → бонус за место в списке. Если
-//! ни один установленный шрифт не покрывает перевод, — общее семейство (`serif`/`sans-serif`/
-//! `monospace`), которое Qt разрешит через fontconfig.
+//! ни один доступный шрифт не покрывает перевод, выбор помечается как недоступный,
+//! а движок пропускает поле с предупреждением.
 //!
 //! Выбор зависит от поля и языка перевода, но не от длины перевода: подбор выполняется
 //! один раз, и результат блокируется за полем (см. `tracker`).
@@ -14,27 +14,17 @@ use super::font_database::{FontInfo, InstalledFontDatabase};
 use super::{FontCategory, Script, TextBlockType};
 use std::collections::BTreeMap;
 
-pub const SANS: &[&str] = &["Inter", "Roboto", "Noto Sans", "Source Sans 3", "IBM Plex Sans", "Open Sans", "Fira Sans",
-    "Ubuntu", "Lato", "Montserrat", "Poppins", "Nunito Sans", "Liberation Sans", "DejaVu Sans"];
-pub const SERIF: &[&str] = &["PT Serif", "Noto Serif", "Source Serif 4", "Roboto Serif", "Merriweather", "Georgia",
-    "Liberation Serif", "DejaVu Serif", "IBM Plex Serif", "Literata", "Lora", "EB Garamond"];
-pub const SLAB: &[&str] = &["Iosevka Slab", "Roboto Slab", "Zilla Slab", "Arvo", "Bitter", "Rockwell"];
-pub const MONO: &[&str] = &["Iosevka", "JetBrains Mono", "Cascadia Mono", "Fira Code", "Source Code Pro", "IBM Plex Mono",
-    "Roboto Mono", "Noto Sans Mono", "Ubuntu Mono", "DejaVu Sans Mono", "Liberation Mono"];
-pub const CJK_SANS: &[&str] = &["Source Han Sans", "Noto Sans CJK SC", "Noto Sans CJK TC", "Noto Sans CJK JP",
-    "Noto Sans CJK KR", "Noto Sans SC", "Noto Sans TC", "Noto Sans JP", "Noto Sans KR"];
-pub const CJK_SERIF: &[&str] = &["Source Han Serif", "Noto Serif CJK SC", "Noto Serif CJK TC", "Noto Serif CJK JP",
-    "Noto Serif CJK KR", "Noto Serif SC", "Noto Serif TC", "Noto Serif JP", "Noto Serif KR"];
+pub const SANS: &[&str] = &["Inter", "Noto Sans"];
+pub const SERIF: &[&str] = &["Noto Serif"];
+pub const SLAB: &[&str] = &["Noto Serif"];
+pub const MONO: &[&str] = &["JetBrains Mono"];
+pub const CJK_SANS: &[&str] = &["Noto Sans CJK SC", "Noto Sans CJK TC", "Noto Sans CJK JP", "Noto Sans CJK KR"];
+pub const CJK_SERIF: &[&str] = &["Noto Serif CJK SC", "Noto Serif CJK TC", "Noto Serif CJK JP", "Noto Serif CJK KR"];
 /// Общий список для категории `Unknown`, если тип блока тоже неизвестен.
-pub const GENERAL: &[&str] = &["PT Serif", "Iosevka Slab", "Source Han Sans", "Noto Serif CJK SC", "Noto Serif CJK TC",
-    "Noto Serif CJK JP", "Noto Serif CJK KR", "Inter", "Roboto Slab", "Noto Sans", "Noto Serif", "Source Sans 3",
-    "Source Serif 4", "Roboto", "Open Sans", "IBM Plex Sans", "IBM Plex Serif", "Fira Sans", "Ubuntu", "Montserrat",
-    "Poppins", "Nunito Sans", "Roboto Condensed", "Noto Sans Condensed", "JetBrains Mono", "Source Code Pro",
-    "Noto Sans Mono", "Liberation Sans", "Liberation Serif", "Liberation Mono", "DejaVu Sans", "DejaVu Serif",
-    "DejaVu Sans Mono"];
-const UI_SANS: &[&str] = &["Inter", "Noto Sans", "Source Sans 3", "Roboto", "Open Sans", "IBM Plex Sans", "Liberation Sans", "DejaVu Sans"];
-const DIALOGUE_SERIF: &[&str] = &["PT Serif", "Noto Serif", "Source Serif 4", "Roboto Serif", "Merriweather", "Inter"];
-const SUBTITLE_SANS: &[&str] = &["Inter", "Noto Sans", "Roboto", "Source Sans 3", "Open Sans"];
+pub const GENERAL: &[&str] = &["Noto Serif", "Inter", "Noto Sans", "JetBrains Mono"];
+const UI_SANS: &[&str] = &["Inter", "Noto Sans"];
+const DIALOGUE_SERIF: &[&str] = &["Noto Serif", "Inter"];
+const SUBTITLE_SANS: &[&str] = &["Inter", "Noto Sans"];
 
 /// Пользовательские предпочтения: замена для категории и семейства, проверяемые первыми.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -70,7 +60,7 @@ pub struct FontSelection {
     pub category: FontCategory,
     pub italic_available: bool,
     pub available_weights: Vec<super::FontWeight>,
-    /// Не нашлось установленного шрифта: выбрано общее семейство для Qt/fontconfig.
+    /// Не нашлось подходящего шрифта: движок не должен рисовать такое поле.
     pub generic: bool,
     /// Узкий вариант того же склада для слишком длинного перевода (если установлен).
     pub condensed_family: Option<String>,
@@ -116,6 +106,11 @@ impl FontMatcher {
         } else if !script.is_cjk() {
             // Для латиницы и кириллицы CJK-семейства из общего списка не предпочитаются.
             list.retain(|f| !is_cjk_family(f));
+        }
+        if script.is_cjk() {
+            let suffix = match script { Script::Japanese => " JP", Script::Korean => " KR",
+                Script::ChineseSimplified => " SC", Script::ChineseTraditional => " TC", _ => "" };
+            list.sort_by_key(|f| !f.ends_with(suffix));
         }
         list
     }
@@ -186,6 +181,14 @@ mod tests {
     use crate::layout::FontWeight;
     use crate::layout::font_database::tests::SAMPLE;
 
+    #[test]
+    fn bundled_cjk_prioritizes_target_variant() {
+        let db = InstalledFontDatabase::bundled();
+        let a = analysis(FontCategory::CjkSans);
+        let picked = FontMatcher.select_font(&a, Script::Japanese, TextBlockType::Subtitle, &db, &Default::default());
+        assert_eq!(picked.family, "Noto Sans CJK JP");
+    }
+
     fn analysis(category: FontCategory) -> FontAnalysis {
         FontAnalysis { category, weight: FontWeight::Normal, italic: false, stroke_px: 2.0, cap_height_px: 20.0,
             width_ratio: 0.55, slant: 0.0, monospace: false, condensed: false, confidence: 0.9 }
@@ -198,17 +201,17 @@ mod tests {
 
     #[test]
     fn unknown_dialogue_prefers_serif_and_ui_prefers_sans() {
-        assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Dialogue), "PT Serif");
+        assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Dialogue), "Noto Serif");
         assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Button), "Inter");
         let db = InstalledFontDatabase::parse(SAMPLE);
         let inter = FontMatcher.select_font(&analysis(FontCategory::Unknown), Script::Cyrillic, TextBlockType::Button, &db, &Default::default());
         assert_eq!(inter.condensed_family.as_deref(), Some("Roboto Condensed"), "narrow sans for overlong translations");
-        assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Unknown), "PT Serif", "general list starts with PT Serif");
+        assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Unknown), "Noto Serif", "general list starts with Noto Serif");
     }
 
     #[test]
     fn categories_map_to_matching_families() {
-        assert_eq!(select(FontCategory::SlabSerif, Script::Cyrillic, TextBlockType::Unknown), "Iosevka Slab");
+        assert_eq!(select(FontCategory::SlabSerif, Script::Cyrillic, TextBlockType::Unknown), "Noto Serif");
         let mut mono = analysis(FontCategory::Monospace);
         mono.monospace = true;
         let db = InstalledFontDatabase::parse(SAMPLE);

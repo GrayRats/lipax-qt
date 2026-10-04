@@ -625,6 +625,7 @@ impl qobject::Controller {
         self.as_mut().rust_mut().region_inplace.retain(|id, _| regions.iter().any(|r| &r.id == id));
         let geometry: Option<[f64; 4]> = serde_json::from_str(&self.game_geometry().to_string()).ok();
         let mut entries = Vec::new();
+        let mut candidates = Vec::new();
         let mut live = std::collections::HashSet::new();
         for r in &regions {
             let (Some(rect), Some(g)) = (r.rect, geometry) else { continue };
@@ -644,8 +645,53 @@ impl qobject::Controller {
                         }
                     }
                 });
-                entries.push(inplace_placement(r, frame, b, scale as f32, image.as_deref()));
+                let entry = inplace_placement(r, frame, b, scale as f32, image.as_deref(), &settings.inplace);
+                let sx = rect.w * g[2] / frame.0.max(1) as f64;
+                let sy = rect.h * g[3] / frame.1.max(1) as f64;
+                let origin_x = g[0] + rect.x * g[2];
+                let origin_y = g[1] + rect.y * g[3];
+                let effect_px = settings.inplace.outline_width.max(1.0) + if settings.inplace.shadow { 2.0 } else { 0.0 };
+                let transparent_area = b.text_rect.expand(effect_px / (scale as f32).max(0.01), frame.0 as f32, frame.1 as f32);
+                let area = if b.background.mode == lipa_core::layout::background::BackgroundRenderMode::Transparent { &transparent_area } else { &b.background.rect };
+                let box_rect = lipa_core::layout::Rect::new((origin_x + area.x as f64 * sx) as f32,
+                    (origin_y + area.y as f64 * sy) as f32, (area.w as f64 * sx) as f32, (area.h as f64 * sy) as f32);
+                let inner = entry["inner"].as_array().unwrap();
+                let pad = |index: usize| inner[index].as_f64().unwrap_or(0.0) as f32;
+                let text_rect = lipa_core::layout::Rect::new(box_rect.x + pad(0), box_rect.y + pad(1),
+                    (box_rect.w - pad(0) - pad(2)).max(1.0), (box_rect.h - pad(1) - pad(3)).max(1.0));
+                let source = &b.text_rect;
+                candidates.push(lipa_core::layout::collision::Candidate {
+                    id: format!("{}:{}", r.id, b.id),
+                    source_rect: lipa_core::layout::Rect::new((origin_x + source.x as f64 * sx) as f32,
+                        (origin_y + source.y as f64 * sy) as f32, (source.w as f64 * sx) as f32, (source.h as f64 * sy) as f32),
+                    text_rect, background_rect: box_rect,
+                    effect_margin: if entry["outline"].as_bool().unwrap_or(false) { settings.inplace.outline_width.max(1.0) + if settings.inplace.shadow { 2.0 } else { 0.0 } } else { 0.0 },
+                    image_background: b.background.image.is_some(),
+                    allow_text_shift: b.background.mode != lipa_core::layout::background::BackgroundRenderMode::Transparent,
+                });
+                entries.push(entry);
             }
+        }
+        if let Some(g) = geometry {
+            let bounds = lipa_core::layout::Rect::new(g[0] as f32, g[1] as f32, g[2] as f32, g[3] as f32);
+            let resolved = lipa_core::layout::collision::resolve(&candidates, bounds);
+            let mut visible = Vec::new();
+            for ((mut entry, candidate), placement) in entries.into_iter().zip(candidates).zip(resolved) {
+                let Some(place) = placement else { continue };
+                if place.background_rect != candidate.background_rect || place.text_rect != candidate.text_rect {
+                    let region = entry["rect"].as_object().unwrap();
+                    let rx = g[0] + region["x"].as_f64().unwrap_or(0.0) * g[2];
+                    let ry = g[1] + region["y"].as_f64().unwrap_or(0.0) * g[3];
+                    let rw = region["w"].as_f64().unwrap_or(1.0) * g[2];
+                    let rh = region["h"].as_f64().unwrap_or(1.0) * g[3];
+                    let bg = place.background_rect;
+                    entry["box"] = serde_json::json!([(bg.x as f64 - rx) / rw, (bg.y as f64 - ry) / rh, bg.w as f64 / rw, bg.h as f64 / rh]);
+                    entry["inner"] = serde_json::json!([place.text_rect.x - bg.x, place.text_rect.y - bg.y,
+                        bg.right() - place.text_rect.right(), bg.bottom() - place.text_rect.bottom()]);
+                }
+                visible.push(entry);
+            }
+            entries = visible;
         }
         // Подложки исчезнувших полей больше не нужны.
         let gone: Vec<_> = self.rust().inplace_images.keys().filter(|k| !live.contains(*k)).cloned().collect();
@@ -913,15 +959,16 @@ fn save_backdrop(region_id: &str, block: u64, revision: u64, img: &image::RgbaIm
 }
 
 /// Размещение поля для QML: подгонка перевода метриками Qt и все решённые свойства.
-fn inplace_placement(region: &lipa_core::settings::RegionProfile, frame: (u32, u32), b: &InplaceBlock, scale: f32, image: Option<&str>) -> serde_json::Value {
+fn inplace_placement(region: &lipa_core::settings::RegionProfile, frame: (u32, u32), b: &InplaceBlock, scale: f32, image: Option<&str>, settings: &lipa_core::settings::InplaceSettings) -> serde_json::Value {
     use lipa_core::layout::fit::{FitInput, FontSpec, fit_translation_to_box};
     use lipa_core::layout::{TextAlignment, WrapMode, contrast_ratio, hex};
-    use lipa_core::settings::InplaceBackgroundMode;
+    use lipa_core::layout::background::BackgroundRenderMode;
     let st = &b.style;
     let (fw, fh) = (frame.0.max(1) as f32, frame.1.max(1) as f32);
-    let transparent = b.background.mode == InplaceBackgroundMode::Transparent;
+    let transparent = b.background.mode == BackgroundRenderMode::Transparent;
     // Заливка закрывает поле с полями; в прозрачном режиме — только сам текст.
-    let area = if transparent { b.text_rect } else { b.background.rect };
+    let effect_px = settings.outline_width.max(1.0) + if settings.shadow { 2.0 } else { 0.0 };
+    let area = if transparent { b.text_rect.expand(effect_px / scale.max(0.01), fw, fh) } else { b.background.rect };
     // Отступы текста внутри заливки, px экрана: ручные — как заданы, иначе — где был оригинал.
     let inner = if st.padding_manual {
         [st.padding.left, st.padding.top, st.padding.right, st.padding.bottom]
@@ -941,7 +988,12 @@ fn inplace_placement(region: &lipa_core::settings::RegionProfile, frame: (u32, u
         letter_spacing_manual: st.letter_spacing_manual, manual_wrap: st.wrap_mode, script: b.script,
         condensed_family: if st.allow_condensed && st.font_size.is_none() { b.font.condensed_family.clone() } else { None },
     }, &crate::icon::QtMeasure);
-    let outline = if contrast_ratio(st.text_color, [0; 3]) >= contrast_ratio(st.text_color, [255; 3]) { [0, 0, 0] } else { [255, 255, 255] };
+    let bg = b.background.color;
+    let darker = bg.map(|v| v.saturating_sub(96));
+    let lighter = bg.map(|v| v.saturating_add(96));
+    let outline = if contrast_ratio(st.text_color, darker) >= contrast_ratio(st.text_color, lighter) { darker } else { lighter };
+    let selected_outline = settings.outline_color.manual().and_then(|v| parse_hex_color(v)).unwrap_or(outline);
+    let selected_fill = settings.fill_color.manual().and_then(|v| parse_hex_color(v)).unwrap_or(bg);
     serde_json::json!({
         "key": format!("{}:{}", region.id, b.id),
         "region_id": region.id,
@@ -964,14 +1016,25 @@ fn inplace_placement(region: &lipa_core::settings::RegionProfile, frame: (u32, u
         "text_color": hex(st.text_color),
         // Без заливки текст читается за счёт контрастной обводки.
         "outline": transparent,
-        "outline_color": hex(outline),
+        "outline_color": hex(selected_outline),
+        "outline_width": settings.outline_width,
+        "shadow": settings.shadow,
+        "text_opacity": settings.text_opacity,
         "background": {
             "mode": b.background.mode,
-            "color": hex(b.background.color),
+            "color": hex(selected_fill),
+            "opacity": settings.fill_opacity,
+            "radius": settings.corner_radius,
             "image": image.unwrap_or(""),
         },
         "font_selection": { "category": b.font.category, "generic": b.font.generic, "confidence": b.font.confidence },
     })
+}
+
+fn parse_hex_color(value: &str) -> Option<[u8; 3]> {
+    let v = value.strip_prefix('#')?;
+    if v.len() != 6 { return None; }
+    Some([u8::from_str_radix(&v[0..2], 16).ok()?, u8::from_str_radix(&v[2..4], 16).ok()?, u8::from_str_radix(&v[4..6], 16).ok()?])
 }
 
 /// Положение свободного окна сохраняется после перемещения — не во время него.
@@ -1001,6 +1064,14 @@ fn effective_display(s: &Settings) -> (&'static str, String) {
         TranslationDisplay::Window => ("window", String::new()),
         TranslationDisplay::Inplace if s.window.as_ref().is_some_and(is_portal_window) =>
             ("window", "окно выбрано через portal: его положение на экране неизвестно, перевод показывается в окне перевода".into()),
+        TranslationDisplay::Inplace if {
+            let db = lipa_core::layout::font_database::InstalledFontDatabase::bundled();
+            let regions = s.capture_regions();
+            let langs: Vec<&str> = if regions.is_empty() { vec![s.target_lang.as_str()] }
+                else { regions.iter().map(|r| if r.target_lang.is_empty() { s.target_lang.as_str() } else { r.target_lang.as_str() }).collect() };
+            langs.into_iter().any(|lang| !db.fonts().iter().any(|font| font.covers(lipa_core::layout::Script::from_lang(lang).fontconfig_lang())))
+        } =>
+            ("window", "нет встроенного шрифта для языка перевода: используется окно перевода".into()),
         TranslationDisplay::Inplace => ("inplace", String::new()),
     }
 }

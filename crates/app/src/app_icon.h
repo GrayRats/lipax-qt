@@ -1,9 +1,37 @@
 #pragma once
 #include <QGuiApplication>
 #include <QIcon>
+#include <QFontDatabase>
+#include <QDir>
+#include <QDebug>
 inline void configureLipaApplication() {
     QGuiApplication::setDesktopFileName(QStringLiteral("io.lipa.Translator"));
     QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/lipa/icon.svg")));
+}
+
+inline QString loadLipaFonts(const QString &directory) {
+    const char *names[] = {
+        "inter-Inter[opsz,wght].ttf", "inter-Inter-Italic[opsz,wght].ttf",
+        "notosans-NotoSans[wdth,wght].ttf", "notosans-NotoSans-Italic[wdth,wght].ttf",
+        "notoserif-NotoSerif[wdth,wght].ttf", "notoserif-NotoSerif-Italic[wdth,wght].ttf",
+        "jetbrainsmono-JetBrainsMono[wght].ttf", "jetbrainsmono-JetBrainsMono-Italic[wght].ttf",
+        "NotoSansCJK-Regular.ttc", "NotoSansCJK-Bold.ttc",
+        "NotoSerifCJK-Regular.ttc", "NotoSerifCJK-Bold.ttc",
+    };
+    QStringList families;
+    for (const char *name : names) {
+        const QString path = QDir(directory).filePath(QString::fromUtf8(name));
+        const int id = QFontDatabase::addApplicationFont(path);
+        if (id < 0) {
+            qCritical().noquote() << "inplace.font: failed to load bundled font path=" << path;
+            continue;
+        }
+        for (const QString &family : QFontDatabase::applicationFontFamilies(id)) {
+            if (!families.contains(family)) families.append(family);
+        }
+    }
+    qInfo().noquote() << "inplace.font: bundled families=" << families.join(", ");
+    return families.join("\n");
 }
 
 #include <QClipboard>
@@ -52,6 +80,7 @@ inline void copyLipaText(const QString &text) { QGuiApplication::clipboard()->se
 #include <cmath>
 inline QFont lipaFont(rust::Str family, int weight, bool italic, double px, double letterSpacing) {
     QFont f(QString::fromUtf8(family.data(), int(family.size())));
+    f.setStyleStrategy(QFont::NoFontMerging);
     f.setPixelSize(qMax(1, int(std::floor(px))));
     f.setWeight(QFont::Weight(weight));
     f.setItalic(italic);
