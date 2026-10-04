@@ -51,6 +51,21 @@ RUST_LOG=debug lipax 2>&1 | tee lipax.log
 
 По умолчанию включён уровень `INFO`; `ERROR` идёт в stderr, остальные сообщения — в stdout. Подробнее: [журналирование и уровни](docs/LOGGING.md), [архитектура проекта](docs/ARCHITECTURE.md), [доработки и ограничения](docs/IMPROVEMENTS.md).
 
+## Инфо
+Автор: GrayRat
+
+Другие исходники и зависимости проекта:
+• Изначальный проект / форк:
+https://github.com/satix-one/lipa.git
+• Зависимость:
+https://github.com/rtr46/meikipop
+• Tesseract OCR:
+https://github.com/tesseract-ocr/tesseract
+• Языковые данные Tesseract:
+https://github.com/tesseract-ocr/tessdata
+• PaddleOCR:
+https://github.com/PaddlePaddle/PaddleOCR
+
 ## English
 
 LipaX translates text captured from a game window on KDE Plasma 6 / KWin / Wayland. It uses Tesseract OCR, or optional PaddleOCR, and can translate through Google, Yandex, or a configured compatible service. You can define up to three independent capture regions and display translations in a movable window or over the original text. The latter mode needs KWin window geometry; Portal capture falls back to the translation window.
@@ -70,3 +85,5 @@ Start `lipax`, choose a game window and text region, configure OCR languages and
 Check overlay placement with your particular fullscreen game or mixed-scale monitor setup.
 
 Run `RUST_LOG=debug lipax` to see more diagnostic output, or use `2>&1 | tee lipax.log` to save it. See [logging](docs/LOGGING.md), [architecture](docs/ARCHITECTURE.md), and [PaddleOCR setup](docs/PaddleOCR.md).
+
+
