@@ -5,6 +5,7 @@ import QtQuick.Dialogs
 
 ApplicationWindow {
     id: win
+    objectName: "settingsWindow"
     property var controller
     property var current: ({})
     readonly property var translators: ["google", "yandex", "custom"]
@@ -529,6 +530,17 @@ ApplicationWindow {
             Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Автоматический перевод" }
             Switch { checked: win.current.auto_translate !== false; onToggled: win.set("auto_translate", checked) }
             ResetButton { keys: ["target_lang", "capture_backend", "translator", "interval_ms", "sensitivity", "debounce_ms", "auto_translate"] }
+            Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Сворачивать приложение в системный трей" }
+            Switch {
+                objectName: "closeToTraySwitch"
+                checked: win.current.close_to_tray === true
+                onToggled: win.set("close_to_tray", checked)
+            }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
+                text: "Включено: закрытие главного окна скрывает его в трей, захват и перевод продолжают работать. "
+                      + "Выключено: закрытие главного окна завершает LipaX. Полностью выйти можно из меню значка в трее."
+            }
 
             }
         }

@@ -1,12 +1,41 @@
 #pragma once
+#include <QApplication>
 #include <QGuiApplication>
+#include <memory>
+#include <vector>
+#include "rust/cxx.h"
 #include <QTimer>
 #include <QIcon>
 #include <QFontDatabase>
 #include <QDir>
 #include <QDebug>
+// QApplication, not QGuiApplication: under the KDE platform theme the tray icon and its menu are
+// built from widgets, and without QApplication creating them aborts ("Cannot create a QWidget
+// without QApplication"). The application owns no widget windows itself.
+// argc/argv must outlive the application object; Qt options (-platform, ...) are passed through.
+struct LipaApplication {
+    std::vector<QByteArray> storage;
+    std::vector<char *> argv;
+    int argc = 0;
+    std::unique_ptr<QApplication> app;
+};
+inline LipaApplication &lipaApplication() { static LipaApplication instance; return instance; }
+inline void createLipaApplication(const rust::Vec<rust::String> &args) {
+    LipaApplication &a = lipaApplication();
+    for (const rust::String &arg : args) a.storage.push_back(QByteArray(arg.data(), int(arg.size())));
+    for (QByteArray &arg : a.storage) a.argv.push_back(arg.data());
+    a.argv.push_back(nullptr);
+    a.argc = int(a.storage.size());
+    a.app = std::make_unique<QApplication>(a.argc, a.argv.data());
+}
+inline int execLipaApplication() { return QApplication::exec(); }
+inline void destroyLipaApplication() { lipaApplication().app.reset(); }
+
 inline void configureLipaApplication() {
     QGuiApplication::setDesktopFileName(QStringLiteral("io.lipa.Translator"));
+    // The application ends only through an explicit quit (QML `quitApp()`): hiding the main
+    // window to the tray, or closing the last visible window, must not stop capture and overlays.
+    QGuiApplication::setQuitOnLastWindowClosed(false);
     QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/lipa/icon.svg")));
 }
 
@@ -37,6 +66,7 @@ inline QString loadLipaFonts(const QString &directory) {
 #include <QString>
 #include <QPainterPath>
 #include <KWindowEffects>
+#include <KWindowSystem>
 #include "rust/cxx.h"
 
 // Blur behind the translation overlay, done by KWin (org_kde_kwin_blur). The strength is
@@ -70,6 +100,17 @@ inline void configureOverlayInput(bool passthrough, rust::Slice<const int32_t> r
     }
 }
 inline void copyLipaText(const QString &text) { QGuiApplication::clipboard()->setText(text); }
+
+// Bring a window (by objectName) to the front. On Wayland the compositor only allows this with an
+// xdg-activation token, which a second `lipax --show` / the shell passes over D-Bus.
+inline void activateLipaWindow(const QString &objectName, const QString &token) {
+    for (QWindow *window : QGuiApplication::allWindows()) {
+        if (window->objectName() != objectName) continue;
+        if (!token.isEmpty()) KWindowSystem::setCurrentXdgActivationToken(token);
+        KWindowSystem::activateWindow(window);
+        return;
+    }
+}
 
 // Debug-build lifecycle test: deliver the same QWindow::close() event as the title-bar button.
 inline void scheduleLipaTestClose(int delayMs) {

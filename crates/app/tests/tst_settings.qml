@@ -177,6 +177,22 @@ TestCase {
         settings.apply()
     }
 
+    function test_closeToTraySwitchSavesTheSetting() {
+        settings.show()
+        settings.reload()
+        findChild(settings, "settingsTabs").currentIndex = 1
+        const toggle = findChild(settings, "closeToTraySwitch")
+        verify(toggle !== null)
+        compare(toggle.checked, false, "off by default: closing the window quits")
+        toggle.toggle()
+        toggle.toggled()
+        compare(settings.current.close_to_tray, true)
+        settings.apply()
+        compare(JSON.parse(controller.saved).close_to_tray, true)
+        settings.set("close_to_tray", false)
+        settings.apply()
+    }
+
     function test_appearanceOffersOnlyBundledFontsAndSavesAutoShrink() {
         settings.show()
         settings.reload()

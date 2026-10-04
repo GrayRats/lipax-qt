@@ -44,6 +44,8 @@ fn main() {
         "qml/InplaceText.qml",
         "qml/HistoryWindow.qml",
     ]))
+    // Widgets: the KDE platform theme builds the tray icon from QWidgets, so the app is a QApplication.
+    .qt_module("Widgets")
     .files(["src/bridge.rs", "src/icon.rs", "src/logging.rs"])
     .include_dir("src")
     .qrc("assets.qrc");

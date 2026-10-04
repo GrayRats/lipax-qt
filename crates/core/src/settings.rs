@@ -344,6 +344,9 @@ pub struct Settings {
     pub history_enabled: bool,
     pub history_persist: bool,
     pub history_limit: usize,
+    /// Closing the main window hides it to the system tray instead of quitting; the capture
+    /// and translation keep running. Off: closing the main window quits the application.
+    pub close_to_tray: bool,
     pub regions: Vec<RegionProfile>,
     /// Region that "select area" targets; without `allow_multiple_regions` it is the only active one.
     pub active_region: String,
@@ -450,6 +453,7 @@ impl Default for Settings {
             history_enabled: true,
             history_persist: false,
             history_limit: 200,
+            close_to_tray: false,
             regions: default_regions(),
             active_region: "subtitles".into(),
             allow_multiple_regions: false,

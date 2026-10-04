@@ -208,10 +208,40 @@ backend объединяет их с актуальными настройкам
 «Статус» проверяет Tesseract, PaddleOCR/Python, модели, PipeWire и GStreamer и
 показывает команды установки. Подключение PaddleOCR описано в [PaddleOCR.md](PaddleOCR.md).
 
+## Системный трей, единственный экземпляр, Desktop Actions
+
+Жизненный цикл разделён на два действия в `main.qml`: `hideToTray()` скрывает главное окно
+(и окна настроек/истории), `quitApp()` завершает приложение. Захват, OCR, перевод и оверлеи
+принадлежат `Controller` и своим окнам, а не главному окну, поэтому скрытие GUI их не затрагивает.
+Закрытие главного окна скрывает его только при включённой настройке `close_to_tray`
+(«Сворачивать приложение в системный трей») и доступном трее; иначе это полный выход.
+`QGuiApplication::quitOnLastWindowClosed` выключен: процесс завершается только явным выходом.
+Приложение создаётся как `QApplication` (`app_icon.h`): тема KDE строит значок трея из виджетов.
+
+`quitApp()` и `main`: остановка слежения, закрытие окон и оверлеев, скрытие значка, `Qt.quit()`;
+после event loop — `bridge::shutdown()` (abort задач, portal, скрипт KWin; дочерние процессы
+OCR и GStreamer запущены с `kill_on_drop`), затем уничтожение QML-движка и `QApplication`.
+
+Значок трея — `Qt.labs.platform.SystemTrayIcon` (StatusNotifierItem). ЛКМ: скрыто или не в фокусе —
+показать и активировать, в фокусе — скрыть. Меню ПКМ зеркалирует Desktop Actions; пункты
+«Запустить/Остановить автоперевод» переключаются по `Controller.running` сразу.
+
+`crates/app/src/instance.rs`: первый процесс занимает имя `io.lipa.Translator` на сессионной
+шине (без права замены) и обслуживает `org.freedesktop.Application`
+(`Activate`, `ActivateAction`) по пути `/io/lipa/Translator`. Повторный запуск
+(`lipax --show|--settings|--capture|--start-autotranslate|--stop-autotranslate|--quit`, без
+параметров — «показать») передаёт действие первому процессу и завершается. Токен
+xdg-activation из `XDG_ACTIVATION_TOKEN` передаётся в `platform_data` и применяется через
+`KWindowSystem`, чтобы Wayland разрешил вывести окно вперёд. `--quit` без запущенного
+экземпляра ничего не делает. Без сессионной шины LipaX работает как раньше. `LIPAX_INSTANCE_ID`
+добавляет суффикс к имени шины (тесты и отладка рядом с рабочим экземпляром).
+Секции `[Desktop Action …]` в `packaging/io.lipa.Translator.desktop` совпадают с этими
+параметрами (проверяется тестом). «Захватить окно» = выбор окна игры (`pickWindow`).
+
 ## Сборка и проверки
 
 `./packaging/build-local.sh` собирает снимок рабочего дерева, выполняет Rust- и
-QML-тесты и создаёт `dist/lipax-1.0.1-1-x86_64.pkg.tar.zst`. Пакет содержит бинарник,
+QML-тесты и создаёт `dist/lipax-1.0.2-1-x86_64.pkg.tar.zst`. Пакет содержит бинарник,
 встроенные шрифты и лицензии OFL, desktop-файл с именем LipaX, SVG и документацию.
 
 Проверки выполнены на Qt 6.11.2 и текущей KDE/Wayland-сессии. Отдельной проверки

@@ -20,6 +20,7 @@ serde_json.workspace = true
 dirs.workspace = true
 image.workspace = true
 tracing.workspace = true
+zbus = { version = "5", default-features = false, features = ["tokio"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 cxx-qt = "0.10"
 cxx-qt-lib = { version = "0.10", features = ["qt_qml", "qt_gui"] }

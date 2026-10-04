@@ -100,6 +100,17 @@ pub mod qobject {
         fn start(self: Pin<&mut Controller>);
         #[qinvokable]
         fn stop(self: Pin<&mut Controller>);
+        /// Запустить слежение, если есть область; иначе статус «Сначала выберите область» и `false`.
+        #[qinvokable]
+        #[cxx_name = "startAutoTranslate"]
+        fn start_auto_translate(self: Pin<&mut Controller>) -> bool;
+        #[qinvokable]
+        #[cxx_name = "stopAutoTranslate"]
+        fn stop_auto_translate(self: Pin<&mut Controller>);
+        /// Вывести окно (по `objectName`) на передний план. Wayland: по токену xdg-activation, он может быть пуст.
+        #[qinvokable]
+        #[cxx_name = "activateWindow"]
+        fn activate_window(self: &Controller, object_name: &QString, token: &QString);
         #[qinvokable]
         #[cxx_name = "translateOnce"]
         fn translate_once(self: Pin<&mut Controller>);
@@ -139,6 +150,11 @@ pub mod qobject {
         #[qsignal]
         #[cxx_name = "togglePinRequested"]
         fn toggle_pin_requested(self: Pin<&mut Controller>);
+        /// Действие извне: командная строка, Desktop Actions, повторный запуск. Имена —
+        /// `instance::Action::name`; окно и меню трея обрабатывает QML, у него же состояние окон.
+        #[qsignal]
+        #[cxx_name = "actionRequested"]
+        fn action_requested(self: Pin<&mut Controller>, action: &QString, activation_token: &QString);
     }
 
     impl cxx_qt::Threading for Controller {}
@@ -163,7 +179,7 @@ use lipa_core::translate::HttpTranslate;
 use std::sync::{Arc, OnceLock};
 use tokio::sync::{mpsc, watch};
 
-fn rt() -> &'static tokio::runtime::Runtime {
+pub(crate) fn rt() -> &'static tokio::runtime::Runtime {
     static RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
     RT.get_or_init(|| {
         tokio::runtime::Builder::new_multi_thread()
@@ -416,10 +432,7 @@ impl cxx_qt::Initialize for qobject::Controller {
                     },
                     HotkeyEvent::Pressed(action) => match action {
                         HotkeyAction::Toggle if *o.running() => o.as_mut().stop(),
-                        HotkeyAction::Toggle if *o.has_region() => o.as_mut().start(),
-                        HotkeyAction::Toggle => o
-                            .as_mut()
-                            .set_status(QString::from("Сначала выберите область")),
+                        HotkeyAction::Toggle => { o.as_mut().start_auto_translate(); }
                         HotkeyAction::TranslateOnce => o.as_mut().translate_once(),
                         HotkeyAction::SelectRegion => o.as_mut().select_region_requested(),
                         // Показывает/скрывает перевод активного режима — второй режим не трогается.
@@ -511,6 +524,21 @@ impl cxx_qt::Initialize for qobject::Controller {
             }
         });
 
+
+        // Действия извне (D-Bus `org.freedesktop.Application`, командная строка) → QML.
+        // Очередь живёт, пока работает процесс, а не окно: backend не зависит от GUI.
+        if let Some(mut requests) = crate::instance::take_requests() {
+            let qt = self.qt_thread();
+            spawn_service(async move {
+                while let Some(request) = requests.recv().await {
+                    tracing::info!(target: "instance", action = request.action.name(), "действие извне");
+                    let delivered = qt.queue(move |mut o| {
+                        o.as_mut().action_requested(&QString::from(request.action.name()), &QString::from(request.activation_token.as_str()));
+                    });
+                    if delivered.is_err() { break; }
+                }
+            });
+        }
 
         // Первичная проверка Tesseract в фоне, чтобы окно настроек открывалось сразу с данными.
         self.as_mut().refresh_tesseract();
@@ -984,6 +1012,22 @@ impl qobject::Controller {
         self.as_mut().set_running(false);
         self.as_mut().set_status(QString::from("Остановлено"));
     }
+
+    fn start_auto_translate(mut self: Pin<&mut Self>) -> bool {
+        if *self.running() { return true; }
+        if !*self.has_region() {
+            self.as_mut().set_status(QString::from("Сначала выберите область"));
+            return false;
+        }
+        self.as_mut().start();
+        true
+    }
+
+    fn stop_auto_translate(mut self: Pin<&mut Self>) {
+        if *self.running() { self.as_mut().stop(); }
+    }
+
+    fn activate_window(&self, object_name: &QString, token: &QString) { crate::icon::activate_window(object_name, token); }
 
     fn translate_once(mut self: Pin<&mut Self>) {
         tracing::info!("Запрошен ручной перевод / повтор");

@@ -9,3 +9,34 @@ Icon=io.lipa.Translator
 Categories=Utility;Game;
 Terminal=false
 X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2
+Actions=ShowWindow;Settings;CaptureWindow;StartAutoTranslate;StopAutoTranslate;Quit;
+
+[Desktop Action ShowWindow]
+Name=Open LipaX
+Name[ru]=Открыть LipaX
+Exec=/usr/bin/lipax --show
+
+[Desktop Action Settings]
+Name=Settings
+Name[ru]=Настройки
+Exec=/usr/bin/lipax --settings
+
+[Desktop Action CaptureWindow]
+Name=Capture window
+Name[ru]=Захватить окно
+Exec=/usr/bin/lipax --capture
+
+[Desktop Action StartAutoTranslate]
+Name=Start auto-translation
+Name[ru]=Запустить автоперевод
+Exec=/usr/bin/lipax --start-autotranslate
+
+[Desktop Action StopAutoTranslate]
+Name=Stop auto-translation
+Name[ru]=Остановить автоперевод
+Exec=/usr/bin/lipax --stop-autotranslate
+
+[Desktop Action Quit]
+Name=Quit
+Name[ru]=Выход
+Exec=/usr/bin/lipax --quit

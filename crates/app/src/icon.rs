@@ -2,6 +2,9 @@
 mod ffi {
     unsafe extern "C++" {
         include!("app_icon.h");
+        fn createLipaApplication(args: &Vec<String>);
+        fn execLipaApplication() -> i32;
+        fn destroyLipaApplication();
         fn configureLipaApplication();
         fn loadLipaFonts(directory: &QString) -> QString;
         include!("cxx-qt-lib/qstring.h");
@@ -9,6 +12,7 @@ mod ffi {
         fn configureOverlayInput(passthrough: bool, rects: &[i32]);
         fn configureOverlayBlur(enable: bool, radius: i32);
         fn copyLipaText(text: &QString);
+        fn activateLipaWindow(object_name: &QString, token: &QString);
         #[allow(dead_code)]
         fn scheduleLipaTestClose(delay_ms: i32);
         #[allow(clippy::too_many_arguments)]
@@ -36,6 +40,11 @@ impl TextMeasure for QtMeasure {
     }
 }
 
+/// Создаёт `QApplication` (см. `app_icon.h`: трей на теме KDE строится из виджетов).
+pub fn create_application() { ffi::createLipaApplication(&std::env::args().collect()); }
+pub fn exec_application() -> i32 { ffi::execLipaApplication() }
+pub fn destroy_application() { ffi::destroyLipaApplication(); }
+
 pub fn configure() {
     ffi::configureLipaApplication();
     let directory = std::env::var_os("LIPAX_FONT_DIR").map(std::path::PathBuf::from).unwrap_or_else(|| {
@@ -52,6 +61,7 @@ pub fn configure() {
 pub fn overlay_blur(enable: bool, radius: i32) { ffi::configureOverlayBlur(enable, radius); }
 pub fn overlay_input(passthrough: bool, rects: &[i32]) { ffi::configureOverlayInput(passthrough, rects); }
 pub fn copy_text(text: &cxx_qt_lib::QString) { ffi::copyLipaText(text); }
+pub fn activate_window(object_name: &cxx_qt_lib::QString, token: &cxx_qt_lib::QString) { ffi::activateLipaWindow(object_name, token); }
 
 #[cfg(feature = "lifecycle-test")]
 pub fn test_close_after(delay_ms: i32) { ffi::scheduleLipaTestClose(delay_ms); }

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt.labs.platform as Platform
 import io.lipa
 
 ApplicationWindow {
@@ -12,10 +13,46 @@ ApplicationWindow {
     minimumWidth: 720
     minimumHeight: 520
     title: "LipaX — переводчик для игр"
+    // Two separate things: hiding to the tray (`hideToTray`, everything keeps running) and quitting
+    // (`quitApp`, stops everything). Capture, OCR, translation and overlays belong to the
+    // Controller and the overlay windows below, not to this window, so hiding it changes nothing for them.
     property bool closingDown: false
-    onClosing: {
+    readonly property bool trayEnabled: settingsWin.current.close_to_tray === true && tray.available
+
+    onClosing: (close) => {
+        if (closingDown) return
+        if (trayEnabled) {
+            close.accepted = false
+            hideToTray()
+        } else {
+            quitApp()
+        }
+    }
+
+    function showMain(token) {
+        if (visibility === Window.Minimized) showNormal(); else show()
+        raise()
+        requestActivate()
+        ctl.activateWindow("mainWindow", token || "")
+    }
+    function hideToTray() {
+        // Secondary windows would be left without a way back; the overlays and frames stay.
+        historyWin.close()
+        settingsWin.close()
+        regionWin.close()
+        hide()
+    }
+    // Left click on the tray icon: show / raise / (when it is already in front) hide.
+    function toggleMain() {
+        if (!visible || visibility === Window.Minimized) showMain("")
+        else if (!active) showMain("")
+        else hideToTray()
+    }
+    // The only exit path: command line, tray menu and the close button without the tray option.
+    function quitApp() {
         if (closingDown) return
         closingDown = true
+        tray.visible = false
         settingsWin.apply()
         ctl.stop()
         historyWin.close()
@@ -23,6 +60,20 @@ ApplicationWindow {
         regionWin.close()
         selectionFrame.close()
         Qt.quit()
+    }
+    // One handler for the tray menu, `lipax --…`, Desktop Actions and the second launch.
+    function perform(action, token) {
+        switch (action) {
+        case "show": showMain(token); break
+        case "settings":
+            settingsWin.openWindow()
+            Qt.callLater(() => ctl.activateWindow("settingsWindow", token || ""))
+            break
+        case "capture": ctl.pickWindow(); break
+        case "start-autotranslate": if (!ctl.startAutoTranslate()) showMain(token); break
+        case "stop-autotranslate": ctl.stopAutoTranslate(); break
+        case "quit": quitApp(); break
+        }
     }
 
     HistoryWindow { id: historyWin; settingsWindow: settingsWin }
@@ -33,6 +84,35 @@ ApplicationWindow {
         onFrameRequested: (x, y, w, h) => selectionFrame.flash(x, y, w, h)
         onSelectRegionRequested: if (ctl.windowTitle.length > 0) regionWin.begin()
         onTogglePinRequested: ctl.setOverlayPinned(!overlay.pinned, "hotkey")
+        onActionRequested: (action, token) => root.perform(action, token)
+    }
+
+    // System tray. The menu mirrors the Desktop Actions of io.lipa.Translator.desktop; the
+    // start / stop entries follow the live state of the Controller.
+    Platform.SystemTrayIcon {
+        id: tray
+        objectName: "trayIcon"
+        visible: !root.closingDown
+        icon.source: "qrc:/lipa/icon.svg"
+        tooltip: "LipaX — " + (ctl.running ? "автоперевод запущен" : "автоперевод остановлен")
+        onActivated: (reason) => { if (reason === Platform.SystemTrayIcon.Trigger) root.toggleMain() }
+        menu: Platform.Menu {
+            Platform.MenuItem { text: "Открыть LipaX"; onTriggered: root.perform("show", "") }
+            Platform.MenuItem { text: "Настройки"; onTriggered: root.perform("settings", "") }
+            Platform.MenuItem { text: "Захватить окно"; onTriggered: root.perform("capture", "") }
+            Platform.MenuItem {
+                text: "Запустить автоперевод"
+                visible: !ctl.running
+                onTriggered: root.perform("start-autotranslate", "")
+            }
+            Platform.MenuItem {
+                text: "Остановить автоперевод"
+                visible: ctl.running
+                onTriggered: root.perform("stop-autotranslate", "")
+            }
+            Platform.MenuSeparator {}
+            Platform.MenuItem { text: "Выход"; onTriggered: root.perform("quit", "") }
+        }
     }
 
     SettingsWindow { id: settingsWin; controller: ctl; onSelectRegionRequested: regionWin.begin() }
