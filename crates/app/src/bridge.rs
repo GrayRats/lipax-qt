@@ -147,7 +147,8 @@ use lipa_core::capture::AnyCapture;
 use lipa_core::hotkeys::{self, HotkeyAction, HotkeyEvent};
 use lipa_core::ocr::AnyOcr;
 use lipa_core::history::{History, Entry};
-use lipa_core::layout::engine::InplaceBlock;
+use lipa_core::layout::engine::InplaceFrame;
+use lipa_core::layout::place::{PlacementCache, RegionInput, place_regions};
 use lipa_core::pipeline::{Cmd, Event, Pipeline};
 use lipa_core::settings::{CaptureBackendKind, NormRect, Settings};
 use lipa_core::tesseract::{TesseractInfo, TesseractManager};
@@ -230,7 +231,9 @@ pub struct ControllerRust {
     history: History,
     region_text: std::collections::BTreeMap<String, (String, String)>,
     /// Последние поля «поверх оригинала» каждой области: размер кадра и поля.
-    region_inplace: std::collections::BTreeMap<String, ((u32, u32), Vec<InplaceBlock>)>,
+    region_inplace: std::collections::BTreeMap<String, Arc<InplaceFrame>>,
+    /// Подгонка полей кэшируется: перемещение окна игры и повторные публикации ничего не пересчитывают.
+    placement_cache: PlacementCache,
     /// PNG подложек: (область, поле) → (ревизия, URL). Файл пишется только при новой ревизии.
     inplace_images: std::collections::HashMap<(String, u64), (u64, String)>,
     inplace_json: QString,
@@ -276,6 +279,7 @@ impl Default for ControllerRust {
             history,
             region_text: Default::default(),
             region_inplace: Default::default(),
+            placement_cache: PlacementCache::default(),
             inplace_images: Default::default(),
             inplace_json: QString::from("[]"),
             faults: Default::default(),
@@ -513,7 +517,7 @@ impl cxx_qt::Initialize for qobject::Controller {
                             o.as_mut().publish_history();
                         }
                         let frame = *frame;
-                        o.as_mut().rust_mut().region_inplace.insert(region_id, (frame.frame, frame.blocks));
+                        o.as_mut().rust_mut().region_inplace.insert(region_id, Arc::new(frame));
                         o.as_mut().publish_translation();
                         o.as_mut().set_status(QString::from("Перевод обновлён"));
                         o.as_mut().set_status_kind(QString::from("info"));
@@ -624,86 +628,60 @@ impl qobject::Controller {
     /// Поля «поверх оригинала» для QML: всё уже решено (шрифт, кегль после подгонки метриками
     /// Qt, типографика, фон); QML только рисует. Неизменное состояние не переустанавливается.
     fn publish_inplace(mut self: Pin<&mut Self>) {
-        let settings = self.rust().shared.settings.borrow().clone();
-        let regions = settings.capture_regions();
+        // Только нужное из настроек: полный клон `Settings` на каждую публикацию не нужен.
+        let (regions, inplace) = {
+            let settings = self.rust().shared.settings.borrow();
+            (settings.capture_regions(), settings.inplace.clone())
+        };
         self.as_mut().rust_mut().region_inplace.retain(|id, _| regions.iter().any(|r| &r.id == id));
-        let geometry: Option<[f64; 4]> = serde_json::from_str(&self.game_geometry().to_string()).ok();
-        let mut entries = Vec::new();
-        let mut candidates = Vec::new();
-        let mut live = std::collections::HashSet::new();
-        for r in &regions {
-            let (Some(rect), Some(g)) = (r.rect, geometry) else { continue };
-            let Some((frame, blocks)) = self.rust().region_inplace.get(&r.id).cloned() else { continue };
-            // Пикселей экрана на пиксель кадра (кадр — в родном разрешении окна).
-            let scale = rect.w * g[2] / frame.0.max(1) as f64;
-            for b in &blocks {
-                live.insert((r.id.clone(), b.id));
-                let image = b.background.image.as_ref().and_then(|img| {
-                    let key = (r.id.clone(), b.id);
-                    match self.rust().inplace_images.get(&key) {
-                        Some((rev, url)) if *rev == b.revision => Some(url.clone()),
-                        _ => {
-                            let url = save_backdrop(&r.id, b.id, b.revision, img)?;
-                            self.as_mut().rust_mut().inplace_images.insert(key, (b.revision, url.clone()));
-                            Some(url)
+        let window = serde_json::from_str::<[f64; 4]>(&self.game_geometry().to_string()).ok();
+        // Арк-указатели: клонируются только счётчики, не блоки и не картинки.
+        let frames: Vec<(String, lipa_core::settings::NormRect, Arc<InplaceFrame>)> = match window {
+            Some(_) => regions.iter().filter_map(|r| Some((r.id.clone(), r.rect?, self.rust().region_inplace.get(&r.id)?.clone()))).collect(),
+            None => Vec::new(),
+        };
+        // Подложки пишутся на диск только при новой ревизии поля.
+        let mut images = std::collections::HashMap::new();
+        for (region, _, frame) in &frames {
+            for b in &frame.blocks {
+                let Some(img) = b.background.image.as_ref() else { continue };
+                let key = (region.clone(), b.id);
+                let url = match self.rust().inplace_images.get(&key) {
+                    Some((rev, url)) if *rev == b.revision => url.clone(),
+                    _ => match save_backdrop(region, b.id, b.revision, img) {
+                        Some(url) => {
+                            self.as_mut().rust_mut().inplace_images.insert(key.clone(), (b.revision, url.clone()));
+                            url
                         }
-                    }
-                });
-                let entry = inplace_placement(r, frame, b, scale as f32, image.as_deref(), &settings.inplace);
-                let sx = rect.w * g[2] / frame.0.max(1) as f64;
-                let sy = rect.h * g[3] / frame.1.max(1) as f64;
-                let origin_x = g[0] + rect.x * g[2];
-                let origin_y = g[1] + rect.y * g[3];
-                let effect_px = settings.inplace.outline_width.max(1.0) + if settings.inplace.shadow { 2.0 } else { 0.0 };
-                let transparent_area = b.text_rect.expand(effect_px / (scale as f32).max(0.01), frame.0 as f32, frame.1 as f32);
-                let area = if b.background.mode == lipa_core::layout::background::BackgroundRenderMode::Transparent { &transparent_area } else { &b.background.rect };
-                let box_rect = lipa_core::layout::Rect::new((origin_x + area.x as f64 * sx) as f32,
-                    (origin_y + area.y as f64 * sy) as f32, (area.w as f64 * sx) as f32, (area.h as f64 * sy) as f32);
-                let inner = entry["inner"].as_array().unwrap();
-                let pad = |index: usize| inner[index].as_f64().unwrap_or(0.0) as f32;
-                let text_rect = lipa_core::layout::Rect::new(box_rect.x + pad(0), box_rect.y + pad(1),
-                    (box_rect.w - pad(0) - pad(2)).max(1.0), (box_rect.h - pad(1) - pad(3)).max(1.0));
-                let source = &b.text_rect;
-                candidates.push(lipa_core::layout::collision::Candidate {
-                    id: format!("{}:{}", r.id, b.id),
-                    source_rect: lipa_core::layout::Rect::new((origin_x + source.x as f64 * sx) as f32,
-                        (origin_y + source.y as f64 * sy) as f32, (source.w as f64 * sx) as f32, (source.h as f64 * sy) as f32),
-                    text_rect, background_rect: box_rect,
-                    effect_margin: if entry["outline"].as_bool().unwrap_or(false) { settings.inplace.outline_width.max(1.0) + if settings.inplace.shadow { 2.0 } else { 0.0 } } else { 0.0 },
-                    image_background: b.background.image.is_some(),
-                    allow_text_shift: b.background.mode != lipa_core::layout::background::BackgroundRenderMode::Transparent,
-                });
-                entries.push(entry);
+                        None => {
+                            tracing::warn!(target: "inplace.render", region = %region, block_id = b.id, "backdrop image could not be written");
+                            continue;
+                        }
+                    },
+                };
+                images.insert(key, url);
             }
-        }
-        if let Some(g) = geometry {
-            let bounds = lipa_core::layout::Rect::new(g[0] as f32, g[1] as f32, g[2] as f32, g[3] as f32);
-            let resolved = lipa_core::layout::collision::resolve(&candidates, bounds);
-            let mut visible = Vec::new();
-            for ((mut entry, candidate), placement) in entries.into_iter().zip(candidates).zip(resolved) {
-                let Some(place) = placement else { continue };
-                if place.background_rect != candidate.background_rect || place.text_rect != candidate.text_rect {
-                    let region = entry["rect"].as_object().unwrap();
-                    let rx = g[0] + region["x"].as_f64().unwrap_or(0.0) * g[2];
-                    let ry = g[1] + region["y"].as_f64().unwrap_or(0.0) * g[3];
-                    let rw = region["w"].as_f64().unwrap_or(1.0) * g[2];
-                    let rh = region["h"].as_f64().unwrap_or(1.0) * g[3];
-                    let bg = place.background_rect;
-                    entry["box"] = serde_json::json!([(bg.x as f64 - rx) / rw, (bg.y as f64 - ry) / rh, bg.w as f64 / rw, bg.h as f64 / rh]);
-                    entry["inner"] = serde_json::json!([place.text_rect.x - bg.x, place.text_rect.y - bg.y,
-                        bg.right() - place.text_rect.right(), bg.bottom() - place.text_rect.bottom()]);
-                }
-                visible.push(entry);
-            }
-            entries = visible;
         }
         // Подложки исчезнувших полей больше не нужны.
-        let gone: Vec<_> = self.rust().inplace_images.keys().filter(|k| !live.contains(*k)).cloned().collect();
+        let gone: Vec<_> = self.rust().inplace_images.keys().filter(|k| !images.contains_key(*k)).cloned().collect();
         for key in gone {
             self.as_mut().rust_mut().inplace_images.remove(&key);
             let _ = std::fs::remove_file(backdrop_path(&key.0, key.1));
         }
-        let json = serde_json::to_string(&entries).unwrap();
+        let placed = match window {
+            Some(window) => {
+                let inputs: Vec<RegionInput> = frames.iter().map(|(id, rect, frame)| RegionInput { id, rect: *rect, frame }).collect();
+                let mut cache = std::mem::take(&mut self.as_mut().rust_mut().placement_cache);
+                let placed = place_regions(&inputs, window, &inplace, &images, &crate::icon::QtMeasure, &mut cache);
+                self.as_mut().rust_mut().placement_cache = cache;
+                placed
+            }
+            None => Vec::new(),
+        };
+        let json = serde_json::to_string(&placed).unwrap_or_else(|e| {
+            tracing::error!(target: "inplace.render", error = %e, "cannot serialize the placed fields");
+            "[]".into()
+        });
         if *self.inplace_json() != QString::from(json.as_str()) {
             self.as_mut().set_inplace_json(QString::from(json.as_str()));
         }
@@ -966,85 +944,6 @@ fn save_backdrop(region_id: &str, block: u64, revision: u64, img: &image::RgbaIm
     std::fs::create_dir_all(path.parent()?).inspect_err(|e| tracing::error!(component = "inplace", error = %e, "Не удалось создать каталог подложек")).ok()?;
     img.save(&path).inspect_err(|e| tracing::error!(component = "inplace", error = %e, "Не удалось сохранить подложку")).ok()?;
     Some(format!("file://{}?r={revision}", path.display()))
-}
-
-/// Размещение поля для QML: подгонка перевода метриками Qt и все решённые свойства.
-fn inplace_placement(region: &lipa_core::settings::RegionProfile, frame: (u32, u32), b: &InplaceBlock, scale: f32, image: Option<&str>, settings: &lipa_core::settings::InplaceSettings) -> serde_json::Value {
-    use lipa_core::layout::fit::{FitInput, FontSpec, fit_translation_to_box};
-    use lipa_core::layout::{TextAlignment, WrapMode, contrast_ratio, hex};
-    use lipa_core::layout::background::BackgroundRenderMode;
-    let st = &b.style;
-    let (fw, fh) = (frame.0.max(1) as f32, frame.1.max(1) as f32);
-    let transparent = b.background.mode == BackgroundRenderMode::Transparent;
-    // Заливка закрывает поле с полями; в прозрачном режиме — только сам текст.
-    let effect_px = settings.outline_width.max(1.0) + if settings.shadow { 2.0 } else { 0.0 };
-    let area = if transparent { b.text_rect.expand(effect_px / scale.max(0.01), fw, fh) } else { b.background.rect };
-    // Отступы текста внутри заливки, px экрана: ручные — как заданы, иначе — где был оригинал.
-    let inner = if st.padding_manual {
-        [st.padding.left, st.padding.top, st.padding.right, st.padding.bottom]
-    } else {
-        [(b.text_rect.x - area.x) * scale, (b.text_rect.y - area.y) * scale,
-         (area.right() - b.text_rect.right()) * scale, (area.bottom() - b.text_rect.bottom()) * scale]
-    };
-    let width = (area.w * scale - inner[0] - inner[2]).max(1.0);
-    let height = (area.h * scale - inner[1] - inner[3]).max(1.0);
-    let font = FontSpec { family: st.font_family.clone(), weight: st.font_weight, italic: st.italic };
-    let fit = fit_translation_to_box(&FitInput {
-        text: &b.translation, width, height, font,
-        manual_px: st.font_size, cap_height_px: st.cap_height_px * scale,
-        min_px: st.min_font_size, max_px: st.max_font_size, source_lines: st.source_lines,
-        manual_line_height: st.line_height, source_line_px: st.line_height_px.map(|v| v * scale),
-        letter_spacing: if st.letter_spacing_manual { st.letter_spacing } else { st.letter_spacing * scale },
-        letter_spacing_manual: st.letter_spacing_manual, manual_wrap: st.wrap_mode, script: b.script,
-        condensed_family: if st.allow_condensed && st.font_size.is_none() { b.font.condensed_family.clone() } else { None },
-    }, &crate::icon::QtMeasure);
-    let bg = b.background.color;
-    let darker = bg.map(|v| v.saturating_sub(96));
-    let lighter = bg.map(|v| v.saturating_add(96));
-    let outline = if contrast_ratio(st.text_color, darker) >= contrast_ratio(st.text_color, lighter) { darker } else { lighter };
-    let selected_outline = settings.outline_color.manual().and_then(|v| parse_hex_color(v)).unwrap_or(outline);
-    let selected_fill = settings.fill_color.manual().and_then(|v| parse_hex_color(v)).unwrap_or(bg);
-    serde_json::json!({
-        "key": format!("{}:{}", region.id, b.id),
-        "region_id": region.id,
-        "block_id": b.id,
-        "block_type": b.block_type,
-        "rect": region.rect,
-        "box": [area.x / fw, area.y / fh, area.w / fw, area.h / fh],
-        "inner": inner,
-        "text": b.translation,
-        "original": b.original,
-        "font_family": fit.family,
-        "font_px": fit.font_px.floor().max(1.0),
-        "font_weight": st.font_weight.value(),
-        "italic": st.italic,
-        "line_height": fit.line_height,
-        "letter_spacing": fit.letter_spacing,
-        "alignment": match st.alignment { TextAlignment::Left => "left", TextAlignment::Center => "center", TextAlignment::Right => "right" },
-        "wrap": match fit.wrap_mode { WrapMode::WordWrap => "word", WrapMode::WrapAnywhere => "anywhere", WrapMode::NoWrap => "none", WrapMode::Elide => "elide" },
-        "max_lines": fit.max_lines,
-        "text_color": hex(st.text_color),
-        // Без заливки текст читается за счёт контрастной обводки.
-        "outline": transparent,
-        "outline_color": hex(selected_outline),
-        "outline_width": settings.outline_width,
-        "shadow": settings.shadow,
-        "text_opacity": settings.text_opacity,
-        "background": {
-            "mode": b.background.mode,
-            "color": hex(selected_fill),
-            "opacity": settings.fill_opacity,
-            "radius": settings.corner_radius,
-            "image": image.unwrap_or(""),
-        },
-        "font_selection": { "category": b.font.category, "generic": b.font.generic, "confidence": b.font.confidence },
-    })
-}
-
-fn parse_hex_color(value: &str) -> Option<[u8; 3]> {
-    let v = value.strip_prefix('#')?;
-    if v.len() != 6 { return None; }
-    Some([u8::from_str_radix(&v[0..2], 16).ok()?, u8::from_str_radix(&v[2..4], 16).ok()?, u8::from_str_radix(&v[4..6], 16).ok()?])
 }
 
 /// Положение свободного окна сохраняется после перемещения — не во время него.

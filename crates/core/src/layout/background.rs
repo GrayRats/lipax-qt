@@ -35,7 +35,8 @@ pub struct BackgroundResult {
     pub mode: BackgroundRenderMode,
     pub color: [u8; 3],
     /// Уменьшенная размытая заливка для `InpaintBlur`; область — `rect`.
-    pub image: Option<RgbaImage>,
+    /// Общая картинка: блок клонируется без копирования пикселей.
+    pub image: Option<std::sync::Arc<RgbaImage>>,
     /// Область заливки, px кадра (поле с полями).
     pub rect: Rect,
     pub analysis: BackgroundAnalysis,
@@ -161,7 +162,7 @@ impl BackgroundInpainter {
         let x0 = (rect.x - px).max(0.0);
         let y0 = (rect.y - py).max(0.0);
         let area = Rect::new(x0, y0, (rect.right() + px).min(fw) - x0, (rect.bottom() + py).min(fh) - y0);
-        let image = (mode == BackgroundRenderMode::InpaintBlur).then(|| inpaint_blur(img, mask, &area, analysis.median));
+        let image = (mode == BackgroundRenderMode::InpaintBlur).then(|| std::sync::Arc::new(inpaint_blur(img, mask, &area, analysis.median)));
         BackgroundResult { mode, color: analysis.median, image, rect: area, analysis }
     }
 }

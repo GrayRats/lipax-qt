@@ -19,6 +19,7 @@ pub mod fit;
 pub mod font_classifier;
 pub mod font_database;
 pub mod font_matcher;
+pub mod place;
 pub mod tracker;
 pub mod typography;
 
@@ -295,6 +296,13 @@ pub(crate) fn mean_color(img: &image::RgbaImage, r: &Rect, mut pick: impl FnMut(
         }
     }
     (n > 0).then(|| sum.map(|v| (v / n) as u8))
+}
+
+/// `#rrggbb` -> цвет; всё остальное — `None`.
+pub fn parse_hex_color(value: &str) -> Option<[u8; 3]> {
+    let v = value.strip_prefix('#').filter(|v| v.len() == 6 && v.is_ascii())?;
+    let n = u32::from_str_radix(v, 16).ok()?;
+    Some([(n >> 16) as u8, (n >> 8) as u8, n as u8])
 }
 
 pub fn hex(c: [u8; 3]) -> String {

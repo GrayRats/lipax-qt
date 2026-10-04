@@ -91,6 +91,8 @@ pub struct InplaceEngine {
     published: Vec<(u64, u64)>,
     new_translations: Vec<(String, String)>,
     missing_font_warned: HashSet<u64>,
+    /// Content signatures of the fields handed out by the last `begin`, applied by `complete`.
+    pending_signatures: HashMap<u64, Vec<u8>>,
 }
 
 impl Default for InplaceEngine {
@@ -128,11 +130,11 @@ impl InplaceEngine {
     /// Встроенный реестр создаётся при первом выборе шрифта и кешируется на сеанс.
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
-            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new() }
+            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new() }
     }
 
-    pub fn with_fonts(db: InstalledFontDatabase) -> Self {
-        Self { fonts: Some(Arc::new(db)), ..Self::new() }
+    pub fn with_fonts(db: impl Into<Arc<InstalledFontDatabase>>) -> Self {
+        Self { fonts: Some(db.into()), ..Self::new() }
     }
 
     fn font_db(&mut self) -> Arc<InstalledFontDatabase> {
@@ -159,8 +161,10 @@ impl InplaceEngine {
 
     /// Кадр: поиск и сопоставление полей, анализ шрифта новых полей, фон и типографика там,
     /// где они изменились. Возвращает задания OCR для полей с изменившимся содержимым.
-    pub fn begin(&mut self, frame: &DynamicImage, s: &Settings, now: Instant, force: bool) -> Vec<OcrJob> {
-        let image = frame.to_rgba8();
+    pub fn begin(&mut self, frame: DynamicImage, s: &Settings, now: Instant, force: bool) -> Vec<OcrJob> {
+        // The frame is moved in: an RGBA8 capture is kept as is, with no copy.
+        let image = frame.into_rgba8();
+        self.pending_signatures.clear();
         let mask = BlockDetector::ink_mask(&image);
         let detected = self.detector.detect_text_blocks(&image, &mask);
         let assignments = self.tracker.update(&detected, now);
@@ -178,7 +182,9 @@ impl InplaceEngine {
             if force || t.original_text.is_empty() || signature_changed(&signature, &t.content_signature) {
                 let (x, y, w, h) = d.rect.expand((0.25 * lh).max(3.0), fw, fh).pixels(image.width(), image.height());
                 jobs.push(OcrJob { id: a.id, image: DynamicImage::ImageRgba8(image::imageops::crop_imm(&image, x, y, w, h).to_image()) });
-                t.content_signature = signature;
+                // Remembered only when the field is completed (see `complete`): a failed or cancelled
+                // recognition must leave the field due for the next scan.
+                self.pending_signatures.insert(a.id, signature);
             }
             // Признаки шрифта — один раз за жизнь поля (до сброса идентичности или явного запроса).
             if t.font_analysis.is_none() {
@@ -243,6 +249,8 @@ impl InplaceEngine {
     /// сохраняется (гистерезис), новое поле остаётся скрытым.
     pub fn complete(&mut self, id: u64, result: Option<(String, String)>, s: &Settings) {
         let Some(t) = self.tracker.get_mut(id) else { return };
+        // The field was handled (recognised, or recognised as empty): remember what it looked like.
+        if let Some(signature) = self.pending_signatures.remove(&id) { t.content_signature = signature; }
         let Some((original, translation)) = result else { return };
         if original != t.original_text || translation != t.translated_text {
             if translation != t.translated_text { self.new_translations.push((original.clone(), translation.clone())); }
@@ -348,10 +356,35 @@ mod tests {
     }
 
     fn run(e: &mut InplaceEngine, frame: &DynamicImage, s: &Settings, now: Instant) -> (usize, Option<InplaceFrame>) {
-        let jobs = e.begin(frame, s, now, false);
+        let jobs = e.begin(frame.clone(), s, now, false);
         let n = jobs.len();
         for j in jobs { e.complete(j.id, Some((format!("text {}", j.id), format!("перевод {}", j.id))), s); }
         (n, e.finish(s))
+    }
+
+    /// Where the time goes on a 2560×1080 frame with six lines of text:
+    /// cargo test --release -p lipa-core layout::engine::tests::stages -- --ignored --nocapture
+    #[test]
+    #[ignore]
+    fn stages() {
+        let mut img = canvas(2560, 1080, [25, 30, 40]);
+        for row in 0..6 { draw_line(&mut img, 200, 120 + row * 150, 60, 14, 4, 22, 3, [240, 240, 240], row % 2 == 0); }
+        let dynamic_frame = dynamic(img.clone());
+        let time = |name: &str, runs: u32, mut f: Box<dyn FnMut() + '_>| {
+            let t = Instant::now();
+            for _ in 0..runs { f(); }
+            println!("{name:<28} {:>9.3} ms", t.elapsed().as_secs_f64() * 1000.0 / runs as f64);
+        };
+        time("to_rgba8 copy", 20, Box::new(|| { std::hint::black_box(dynamic_frame.to_rgba8()); }));
+        time("ink_mask", 20, Box::new(|| { std::hint::black_box(BlockDetector::ink_mask(&img)); }));
+        let mask = BlockDetector::ink_mask(&img);
+        time("detect_text_blocks", 20, Box::new(|| { std::hint::black_box(BlockDetector::default().detect_text_blocks(&img, &mask)); }));
+        let s = settings();
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let t0 = Instant::now();
+        for j in e.begin(dynamic_frame.clone(), &s, t0, false) { e.complete(j.id, Some(("a".into(), "б".into())), &s); }
+        let mut i = 0u64;
+        time("begin (stable, whole)", 20, Box::new(|| { i += 1; e.begin(dynamic_frame.clone(), &s, t0 + Duration::from_millis(100 * i), false); }));
     }
 
     /// cargo test --release -p lipa-core layout::engine::tests::speed -- --ignored --nocapture
@@ -364,12 +397,12 @@ mod tests {
         let s = settings();
         let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::parse(SAMPLE));
         let t0 = Instant::now();
-        let jobs = e.begin(&frame, &s, t0, false);
+        let jobs = e.begin(frame.clone(), &s, t0, false);
         for j in jobs { e.complete(j.id, Some(("a".into(), "б".into())), &s); }
         println!("first frame (detect + classify + background + fonts): {:?}", t0.elapsed());
         let runs = 10u32;
         let t1 = Instant::now();
-        for i in 0..runs { e.begin(&frame, &s, t0 + Duration::from_millis(100 * (i as u64 + 1)), false); e.finish(&s); }
+        for i in 0..runs { e.begin(frame.clone(), &s, t0 + Duration::from_millis(100 * (i as u64 + 1)), false); e.finish(&s); }
         println!("stable frame: {:?}", t1.elapsed() / runs);
     }
 
@@ -385,7 +418,7 @@ mod tests {
         let fonts: HashMap<u64, String> = out.blocks.iter().map(|b| (b.id, b.font.family.clone())).collect();
 
         // Сдвиг на 2 px и новый перевод того же поля: id и шрифт те же, OCR не повторяется для неизменного.
-        let jobs = e.begin(&scene(2, [255, 200, 60]), &s, t0 + Duration::from_millis(500), false);
+        let jobs = e.begin(scene(2, [255, 200, 60]), &s, t0 + Duration::from_millis(500), false);
         assert!(jobs.is_empty(), "same content → no OCR");
         let dialogue = out.blocks.iter().find(|b| b.style.source_lines == 2).unwrap().id;
         e.complete(dialogue, Some(("text changed".into(), "гораздо более длинный перевод этой реплики".into())), &s);
@@ -421,10 +454,28 @@ mod tests {
         let s = settings();
         let t0 = Instant::now();
         let out = run(&mut e, &scene(0, [255, 200, 60]), &s, t0).1.unwrap();
-        let jobs = e.begin(&scene(0, [255, 200, 60]), &s, t0 + Duration::from_millis(300), true);
+        let jobs = e.begin(scene(0, [255, 200, 60]), &s, t0 + Duration::from_millis(300), true);
         for j in jobs { e.complete(j.id, None, &s); }
         assert!(e.finish(&s).is_none(), "the stable fields stay as they were");
         assert_eq!(e.tracker().blocks().iter().filter(|t| !t.translated_text.is_empty()).count(), out.blocks.len());
+    }
+
+    #[test]
+    fn a_changed_field_stays_due_until_it_is_completed() {
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let s = settings();
+        let t0 = Instant::now();
+        run(&mut e, &scene(0, [255, 200, 60]), &s, t0);
+        // The name changes colour and the dialogue is replaced by a different image; recognition
+        // does not complete (it failed, or the tick was cancelled).
+        let changed = scene(0, [60, 200, 255]);
+        let first = e.begin(changed.clone(), &s, t0 + Duration::from_millis(200), false);
+        assert!(!first.is_empty(), "the changed field needs recognising");
+        let again = e.begin(changed.clone(), &s, t0 + Duration::from_millis(400), false);
+        assert_eq!(again.len(), first.len(), "an unfinished field is handed out again, not forgotten");
+        // Completing it (even as 'nothing recognised') settles it.
+        for j in again { e.complete(j.id, None, &s); }
+        assert!(e.begin(changed, &s, t0 + Duration::from_millis(600), false).is_empty());
     }
 
     #[test]
@@ -435,7 +486,7 @@ mod tests {
         run(&mut e, &scene(0, [255, 200, 60]), &s, t0);
         e.reanalyze_fonts();
         assert!(e.tracker().blocks().iter().all(|t| !t.font_selection_locked()));
-        let jobs = e.begin(&scene(0, [255, 200, 60]), &s, t0 + Duration::from_millis(200), false);
+        let jobs = e.begin(scene(0, [255, 200, 60]), &s, t0 + Duration::from_millis(200), false);
         assert!(jobs.is_empty(), "text is unchanged: no OCR needed");
         assert!(e.tracker().blocks().iter().all(|t| t.font_selection_locked()), "fonts chosen again from the last analysis");
         assert!(e.finish(&s).is_some());

@@ -131,14 +131,23 @@ impl BlockDetector {
     /// Маска «чернил» для всего кадра. Считается один раз и используется всеми стадиями.
     pub fn ink_mask(img: &RgbaImage) -> InkMask {
         let (w, h) = (img.width() as usize, img.height() as usize);
-        let raw = img.as_raw();
+        // Яркость считается один раз в плоскость u8 (цикл без ветвлений векторизуется),
+        // гистограмма — четырьмя независимыми счётчиками: один массив с `+= 1` по случайному
+        // индексу упирается в зависимость чтения после записи на однотонных кадрах.
+        let luma_plane: Vec<u8> = img.as_raw().as_chunks::<4>().0.iter().map(|p| luma(p)).collect();
+        let mut lanes = [[0u32; 256]; 4];
+        let (quads, rest) = luma_plane.as_chunks::<4>();
+        for q in quads {
+            for (lane, &v) in lanes.iter_mut().zip(q) { lane[v as usize] += 1; }
+        }
+        for &v in rest { lanes[0][v as usize] += 1; }
         let mut hist = [0u64; 256];
-        for p in raw.as_chunks::<4>().0 { hist[luma(p) as usize] += 1; }
+        for (i, slot) in hist.iter_mut().enumerate() { *slot = lanes.iter().map(|l| l[i] as u64).sum(); }
         let total = (w * h).max(1) as u64;
         let t = otsu(&hist, total);
         let dark: u64 = hist[..=t as usize].iter().sum();
         let ink_is_dark = dark * 2 < total;
-        let ink = raw.as_chunks::<4>().0.iter().map(|p| (luma(p) <= t) == ink_is_dark).collect();
+        let ink = luma_plane.iter().map(|&l| (l <= t) == ink_is_dark).collect();
         InkMask { w, h, ink, ink_is_dark }
     }
 

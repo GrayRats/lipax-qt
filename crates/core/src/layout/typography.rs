@@ -8,7 +8,7 @@
 use super::block_detector::DetectedTextBlock;
 use super::font_classifier::FontAnalysis;
 use super::font_matcher::FontSelection;
-use super::{FontWeight, Padding, Rect, TextAlignment, WrapMode, contrast_ratio};
+use super::{FontWeight, Padding, Rect, TextAlignment, WrapMode, contrast_ratio, parse_hex_color};
 use crate::settings::InplaceSettings;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -75,10 +75,6 @@ fn spread(v: &[f32]) -> f32 {
     (v.iter().map(|x| (x - m).powi(2)).sum::<f32>() / v.len() as f32).sqrt()
 }
 
-fn parse_hex(s: &str) -> Option<[u8; 3]> {
-    let v = u32::from_str_radix(s.strip_prefix('#')?, 16).ok()?;
-    Some([(v >> 16) as u8, (v >> 8) as u8, v as u8])
-}
 
 impl TypographyEstimator {
     /// `frame_w` — ширина кадра области: одиночную строку выравнивают по её положению в кадре.
@@ -148,7 +144,7 @@ impl TypographyEstimator {
             letter_spacing_manual: s.letter_spacing.manual().is_some(),
             alignment: s.alignment.resolve(est.alignment),
             wrap_mode: s.wrap_mode.manual().copied(),
-            text_color: s.text_color.manual().and_then(|c| parse_hex(c)).unwrap_or(est.text_color),
+            text_color: s.text_color.manual().and_then(|c| parse_hex_color(c)).unwrap_or(est.text_color),
             padding: s.padding.resolve(est.padding),
             padding_manual: s.padding.manual().is_some(),
             source_lines: est.lines,
