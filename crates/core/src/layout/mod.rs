@@ -25,60 +25,8 @@ pub mod typography;
 
 use serde::{Deserialize, Serialize};
 
-/// Прямоугольник в пикселях кадра области.
-#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
-pub struct Rect {
-    pub x: f32,
-    pub y: f32,
-    pub w: f32,
-    pub h: f32,
-}
-
-impl Rect {
-    pub fn new(x: f32, y: f32, w: f32, h: f32) -> Self {
-        Self { x, y, w, h }
-    }
-    pub fn right(&self) -> f32 {
-        self.x + self.w
-    }
-    pub fn bottom(&self) -> f32 {
-        self.y + self.h
-    }
-    pub fn center(&self) -> (f32, f32) {
-        (self.x + self.w / 2.0, self.y + self.h / 2.0)
-    }
-    pub fn area(&self) -> f32 {
-        self.w.max(0.0) * self.h.max(0.0)
-    }
-    pub fn union(&self, o: &Rect) -> Rect {
-        let (x, y) = (self.x.min(o.x), self.y.min(o.y));
-        Rect::new(x, y, self.right().max(o.right()) - x, self.bottom().max(o.bottom()) - y)
-    }
-    pub fn intersection(&self, o: &Rect) -> f32 {
-        let w = self.right().min(o.right()) - self.x.max(o.x);
-        let h = self.bottom().min(o.bottom()) - self.y.max(o.y);
-        if w > 0.0 && h > 0.0 { w * h } else { 0.0 }
-    }
-    pub fn iou(&self, o: &Rect) -> f32 {
-        let i = self.intersection(o);
-        let u = self.area() + o.area() - i;
-        if u > 0.0 { i / u } else { 0.0 }
-    }
-    /// Расширить на `pad` со всех сторон, не выходя за `w`×`h`.
-    pub fn expand(&self, pad: f32, w: f32, h: f32) -> Rect {
-        let (x0, y0) = ((self.x - pad).max(0.0), (self.y - pad).max(0.0));
-        let (x1, y1) = ((self.right() + pad).min(w), (self.bottom() + pad).min(h));
-        Rect::new(x0, y0, (x1 - x0).max(0.0), (y1 - y0).max(0.0))
-    }
-    /// Целочисленный прямоугольник внутри `w`×`h`: x, y, ширина, высота (не меньше 1).
-    pub fn pixels(&self, w: u32, h: u32) -> (u32, u32, u32, u32) {
-        let x0 = (self.x.floor().max(0.0) as u32).min(w.saturating_sub(1));
-        let y0 = (self.y.floor().max(0.0) as u32).min(h.saturating_sub(1));
-        let x1 = (self.right().ceil().max(0.0) as u32).clamp(x0 + 1, w);
-        let y1 = (self.bottom().ceil().max(0.0) as u32).clamp(y0 + 1, h);
-        (x0, y0, x1 - x0, y1 - y0)
-    }
-}
+pub mod units;
+pub use units::{CropPx, CropRect, DesktopPx, DesktopRect, FramePx, FrameToDesktop, LogicalScale, Rect, Space};
 
 /// Смысловой тип блока. `Unknown`, если признаков мало: уверенность не выдумывается.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

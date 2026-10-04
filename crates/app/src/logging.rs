@@ -122,6 +122,9 @@ mod tests {
             };
             struct BrokenCapture;
             impl Capture for BrokenCapture {
+                fn capabilities(&self, _: &WindowKey, _: &Settings) -> lipa_core::capture::CaptureCapabilities {
+                    lipa_core::capture::CaptureCapabilities::KWIN
+                }
                 async fn grab(
                     &self,
                     _: &WindowKey,

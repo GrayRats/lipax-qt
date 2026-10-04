@@ -275,13 +275,126 @@ pub fn default_regions() -> Vec<RegionProfile> {
     vec![RegionProfile::default()]
 }
 
+/// Version of the config layout. A file without `schema_version` is version 0 (everything
+/// written before versions existed). Each step in [`migrate`] lifts a file by exactly one version.
+pub const SCHEMA_VERSION: u32 = 1;
+
+/// Lift a parsed config from `from` to [`SCHEMA_VERSION`], one step at a time, so a file of any age
+/// goes through every step it missed. Steps work on the raw table: they may rename or drop
+/// keys the current structs no longer know.
+fn migrate(table: &mut toml::Table, from: u32) {
+    for version in from..SCHEMA_VERSION {
+        match version {
+            // 0 -> 1: before frame modes, `frame_seconds = 0` meant "never show the frame".
+            0 => {
+                let never = table.get("frame_seconds").and_then(toml::Value::as_integer) == Some(0);
+                if never && !table.contains_key("region_frame_mode") {
+                    table.insert("region_frame_mode".into(), "off".into());
+                }
+            }
+            _ => unreachable!("no migration from schema {version}"),
+        }
+    }
+    table.insert("schema_version".into(), i64::from(SCHEMA_VERSION).into());
+}
+
+/// What a changed setting needs in order to take effect. Every key of [`Settings`] is declared in
+/// [`REACTIONS`] (a test fails when one is missing or stale), so no setting is saved without a
+/// known way of reaching the running application.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub enum Reaction {
+    /// Read live by the windows or the backend: nothing to restart.
+    Immediate,
+    /// The in-place layout is rebuilt from the last frame (no new capture, no OCR).
+    Layout,
+    /// The pipeline is reset: what was recognised so far no longer describes the new setting.
+    Pipeline,
+    /// The global shortcuts are registered again.
+    Hotkeys,
+    /// Takes effect when the game window is selected again; the user is told so.
+    Reselect,
+    /// Written by the backend only (window selection, capture, saving state); the form cannot change it.
+    Managed,
+}
+
+/// Declaration of what every setting needs. `Managed` keys are refused in form patches.
+pub const REACTIONS: &[(&str, Reaction)] = &{
+    use Reaction::*;
+    [
+        ("schema_version", Managed), ("portal_token", Managed), ("game_profiles", Managed), ("floating_geometry", Managed),
+        ("window", Managed), ("region", Managed),
+        // Recognition and translation: the pipeline starts over.
+        ("source_lang", Pipeline), ("target_lang", Pipeline), ("ocr_engine", Pipeline), ("paddle_python", Pipeline),
+        ("ocr_min_confidence", Pipeline), ("translator", Pipeline), ("yandex_api_key", Pipeline), ("yandex_folder_id", Pipeline),
+        ("custom_url", Pipeline), ("portal_fills_monitor", Pipeline), ("custom_api_key", Pipeline), ("interval_ms", Pipeline), ("sensitivity", Pipeline),
+        ("debounce_ms", Pipeline), ("translation_display", Pipeline), ("regions", Pipeline),
+        ("inplace", Layout),
+        ("hotkeys", Hotkeys),
+        // The backend is chosen by the window key at selection time.
+        ("capture_backend", Reselect),
+        ("overlay_screen", Immediate), ("overlay_mode", Immediate), ("overlay_pinned", Immediate), ("overlay_style", Immediate),
+        ("blur_enabled", Immediate), ("blur_tint", Immediate), ("dim_inverse", Immediate), ("overlay_corner_radius", Immediate),
+        ("overlay_pinned_corner_radius", Immediate), ("font_family", Immediate), ("font_bold", Immediate), ("font_italic", Immediate),
+        ("text_color", Immediate), ("background_color", Immediate), ("border_color", Immediate), ("border_opacity", Immediate),
+        ("border_width", Immediate), ("border_pattern", Immediate), ("border_always", Immediate), ("border_seconds", Immediate),
+        ("overlay_padding", Immediate), ("text_alignment", Immediate), ("text_wrap", Immediate), ("text_outline", Immediate),
+        ("outline_color", Immediate), ("line_spacing", Immediate), ("show_original", Immediate), ("original_font_family", Immediate),
+        ("original_font_size", Immediate), ("original_color", Immediate), ("max_width_enabled", Immediate), ("overlay_max_width", Immediate),
+        ("history_enabled", Immediate), ("history_persist", Immediate), ("history_limit", Immediate), ("close_to_tray", Immediate),
+        ("auto_translate", Immediate), ("active_region", Immediate), ("allow_multiple_regions", Immediate), ("font_size", Immediate),
+        ("overlay_auto_shrink", Immediate), ("opacity", Immediate), ("click_through", Immediate), ("overlay_pos", Immediate),
+        ("overlay_size", Immediate), ("frame_color", Immediate), ("frame_width", Immediate), ("frame_seconds", Immediate),
+        ("region_frame_mode", Immediate), ("region_frame_pinned", Immediate), ("game_profiles_enabled", Immediate),
+    ]
+};
+
+/// Reaction of a setting; `None` for a key that does not exist.
+pub fn reaction(key: &str) -> Option<Reaction> {
+    REACTIONS.iter().find(|(k, _)| *k == key).map(|(_, r)| *r)
+}
+
+/// Most games remembered; a new one beyond this is simply not stored.
+pub const MAX_GAME_PROFILES: usize = 64;
+
+/// What is remembered per game (window class): where the text is, how it is read and where the
+/// translation sits. Region rectangles are fractions of the client frame, so they survive
+/// restarts, window moves and resolution changes. Appearance and hotkeys stay global.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
-pub struct Settings {
+pub struct GameProfile {
+    /// Window title when the profile was last saved: only to recognise it in the list.
+    pub caption: String,
     pub source_lang: String,
     pub target_lang: String,
     pub ocr_engine: String,
+    pub regions: Vec<RegionProfile>,
+    pub active_region: String,
+    pub allow_multiple_regions: bool,
+    pub translation_display: TranslationDisplay,
+    pub overlay_pinned: bool,
+    pub overlay_screen: String,
+    pub overlay_pos: (i32, i32),
+    pub overlay_size: (u32, u32),
+    pub floating_geometry: Option<FloatingGeometry>,
+}
+
+impl Default for GameProfile {
+    fn default() -> Self { Settings::default().game_profile("") }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Settings {
+    /// Layout of the config file, see [`SCHEMA_VERSION`]; managed by the backend.
+    pub schema_version: u32,
+    pub source_lang: String,
+    pub target_lang: String,
+    /// "tesseract", "paddleocr" or "auto" (Tesseract first, PaddleOCR when Tesseract is unsure).
+    pub ocr_engine: String,
     pub paddle_python: String,
+    /// Text the engine itself is less sure about than this (0–100) is ignored instead of translated;
+    /// 0 turns the check off. Applies only to engines that report confidence.
+    pub ocr_min_confidence: u32,
     /// Empty: follow the selected game; otherwise a Qt screen name.
     pub overlay_screen: String,
     pub translator: TranslatorKind,
@@ -294,6 +407,9 @@ pub struct Settings {
     pub capture_backend: CaptureBackendKind,
     /// Токен восстановления xdg-desktop-portal: повторный запуск без диалога выбора окна.
     pub portal_token: String,
+    /// The window chosen through the portal fills a whole monitor (a fullscreen game): the portal does not
+    /// say where a window is, so the monitor stands for it, and the translation can go over the original.
+    pub portal_fills_monitor: bool,
     pub interval_ms: u64,
     /// Чувствительность детектора смены текста: порог контраста краёв букв 40 + 8·value (ниже — чувствительнее).
     pub sensitivity: f32,
@@ -374,6 +490,11 @@ pub struct Settings {
     pub region_frame_pinned: String,
     pub window: Option<WindowKey>,
     pub region: Option<NormRect>,
+    /// Remember the areas, languages, engine and translation position of every game and bring
+    /// them back when its window is chosen again.
+    pub game_profiles_enabled: bool,
+    /// Keyed by lower-case window class; managed by the backend (`remember_game`).
+    pub game_profiles: BTreeMap<String, GameProfile>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -401,9 +522,11 @@ impl Default for Hotkeys {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            schema_version: SCHEMA_VERSION,
             source_lang: "eng".into(),
             target_lang: "ru".into(),
             ocr_engine: "tesseract".into(),
+            ocr_min_confidence: 30,
             paddle_python: "python3".into(),
             overlay_screen: String::new(),
             translator: TranslatorKind::Google,
@@ -413,6 +536,7 @@ impl Default for Settings {
             custom_api_key: String::new(),
             capture_backend: CaptureBackendKind::Auto,
             portal_token: String::new(),
+            portal_fills_monitor: false,
             interval_ms: 500,
             sensitivity: 2.0,
             debounce_ms: 400,
@@ -472,6 +596,8 @@ impl Default for Settings {
             region_frame_pinned: "dim".into(),
             window: None,
             region: None,
+            game_profiles_enabled: true,
+            game_profiles: BTreeMap::new(),
         }
     }
 }
@@ -494,6 +620,14 @@ impl Settings {
                 String::new()
             },
         };
+        // The next save rewrites the file in this version's layout: keep what a newer one wrote.
+        let version = Self::file_schema_version(&text);
+        if version > SCHEMA_VERSION {
+            let backup = path.with_extension(format!("toml.v{version}.bak"));
+            if !backup.exists() && let Err(e) = std::fs::copy(&path, &backup) {
+                tracing::error!(path = %backup.display(), error = %e, "Не удалось сохранить копию настроек новой версии");
+            }
+        }
         let mut settings = Self::from_toml(&text);
         // Migrate the old single rectangle into the first named region.
         if settings.regions.iter().all(|r| r.rect.is_none())
@@ -502,22 +636,34 @@ impl Settings {
         settings
     }
 
-    /// Parse a saved config, migrating older formats.
+    /// Parse a saved config, migrating older formats. A file from a newer LipaX is read as far as
+    /// this version understands it (unknown keys are ignored); `load` keeps a copy of it first.
     pub fn from_toml(text: &str) -> Self {
-        let mut settings: Self = toml::from_str(text).unwrap_or_else(|e: toml::de::Error| {
-            // Do not print the TOML excerpt: configuration may contain API keys.
-            tracing::error!(reason = e.message(), "Некорректный TOML настроек; используются значения по умолчанию");
-            Self::default()
+        let parsed = text.parse::<toml::Table>().map_err(|e| e.message().to_owned()).and_then(|mut table| {
+            let version = table.get("schema_version").and_then(toml::Value::as_integer).map_or(0, |v| v.clamp(0, i64::from(u32::MAX)) as u32);
+            if version > SCHEMA_VERSION {
+                tracing::warn!(file = version, supported = SCHEMA_VERSION, "Настройки записаны более новой версией LipaX; неизвестные поля будут потеряны при сохранении");
+                table.insert("schema_version".into(), i64::from(SCHEMA_VERSION).into());
+            } else {
+                migrate(&mut table, version);
+            }
+            table.try_into::<Self>().map_err(|e| e.message().to_owned())
         });
-        // Before frame modes, `frame_seconds = 0` meant "never show the frame".
-        if settings.frame_seconds == 0 && !text.contains("region_frame_mode") {
-            settings.region_frame_mode = "off".into();
-        }
-        settings
+        parsed.unwrap_or_else(|reason| {
+            // Do not print the TOML excerpt: configuration may contain API keys.
+            tracing::error!(reason, "Некорректный TOML настроек; используются значения по умолчанию");
+            Self::default()
+        })
+    }
+
+    /// Version number written in the file at `path`, if it can be read.
+    fn file_schema_version(text: &str) -> u32 {
+        text.parse::<toml::Table>().ok().and_then(|t| t.get("schema_version").and_then(toml::Value::as_integer)).map_or(0, |v| v.clamp(0, i64::from(u32::MAX)) as u32)
     }
 
     pub fn sanitize(&mut self) {
         self.font_size = self.font_size.clamp(8, 96);
+        self.ocr_min_confidence = self.ocr_min_confidence.min(95);
         // The translation window uses only fonts shipped with LipaX. Old configurations may
         // name a system font, which must never silently resolve through Qt/fontconfig.
         let bundled = crate::layout::font_database::InstalledFontDatabase::bundled();
@@ -584,13 +730,89 @@ impl Settings {
         }
     }
 
-    /// Display-only edits must not interrupt OCR or reset its retry budget.
+    /// Everything that makes what was recognised so far stale: the `Pipeline` settings and what the
+    /// backend selected (window, area). Display-only edits must not interrupt OCR or reset its retry budget.
     pub fn processing_key(&self) -> String {
-        serde_json::json!([self.window, self.region, self.regions, self.source_lang, self.target_lang,
-            self.ocr_engine, self.paddle_python, self.translator, self.custom_url, self.custom_api_key,
-            self.yandex_api_key, self.yandex_folder_id, self.interval_ms, self.debounce_ms, self.sensitivity,
-            // Switching to "over the original" re-reads the text so its layout is known.
-            self.translation_display]).to_string()
+        let all = serde_json::to_value(self).unwrap_or_default();
+        let part: Vec<&serde_json::Value> = REACTIONS.iter()
+            .filter(|(key, reaction)| *reaction == Reaction::Pipeline || *key == "window" || *key == "region")
+            .filter_map(|(key, _)| all.get(*key)).collect();
+        serde_json::to_string(&part).unwrap_or_default()
+    }
+
+    /// Top-level settings that differ between two states.
+    pub fn changed_keys(&self, other: &Self) -> Vec<String> {
+        let (a, b) = (serde_json::to_value(self).unwrap_or_default(), serde_json::to_value(other).unwrap_or_default());
+        REACTIONS.iter().filter(|(key, _)| a.get(*key) != b.get(*key)).map(|(key, _)| (*key).to_owned()).collect()
+    }
+
+    /// What the user has to do for the changes between `self` and `other` to take full effect;
+    /// empty if everything applies at once.
+    pub fn pending_actions(&self, other: &Self) -> Vec<&'static str> {
+        let mut notes = Vec::new();
+        for key in self.changed_keys(other) {
+            if reaction(&key) == Some(Reaction::Reselect) {
+                notes.push("Способ захвата сменится при следующем выборе окна игры");
+            }
+        }
+        notes.dedup();
+        notes
+    }
+
+    /// Key of the selected game: its window class. Portal windows have no class of their own.
+    pub fn game_key(&self) -> Option<String> {
+        let window = self.window.as_ref().filter(|w| !crate::capture::portal::is_portal_window(w))?;
+        let class = window.resource_class.trim().to_lowercase();
+        (!class.is_empty()).then_some(class)
+    }
+
+    fn game_profile(&self, caption: &str) -> GameProfile {
+        GameProfile {
+            caption: caption.to_owned(),
+            source_lang: self.source_lang.clone(),
+            target_lang: self.target_lang.clone(),
+            ocr_engine: self.ocr_engine.clone(),
+            regions: self.regions.clone(),
+            active_region: self.active_region.clone(),
+            allow_multiple_regions: self.allow_multiple_regions,
+            translation_display: self.translation_display,
+            overlay_pinned: self.overlay_pinned,
+            overlay_screen: self.overlay_screen.clone(),
+            overlay_pos: self.overlay_pos,
+            overlay_size: self.overlay_size,
+            floating_geometry: self.floating_geometry.clone(),
+        }
+    }
+
+    /// Store the current state of the selected game. Called after every change, so a game
+    /// never needs an explicit «save profile».
+    pub fn remember_game(&mut self) {
+        let Some(key) = self.game_key().filter(|_| self.game_profiles_enabled) else { return };
+        if !self.game_profiles.contains_key(&key) && self.game_profiles.len() >= MAX_GAME_PROFILES {
+            tracing::warn!(component = "settings", limit = MAX_GAME_PROFILES, "Слишком много профилей игр: новый не сохранён");
+            return;
+        }
+        let caption = self.window.as_ref().map(|w| w.caption.clone()).unwrap_or_default();
+        let profile = self.game_profile(&caption);
+        self.game_profiles.insert(key, profile);
+    }
+
+    /// Bring back what was remembered for the selected game. `false`: the game is new.
+    pub fn apply_game_profile(&mut self) -> bool {
+        let Some(profile) = self.game_key().filter(|_| self.game_profiles_enabled).and_then(|k| self.game_profiles.get(&k)).cloned() else { return false };
+        self.source_lang = profile.source_lang;
+        self.target_lang = profile.target_lang;
+        self.ocr_engine = profile.ocr_engine;
+        self.regions = profile.regions;
+        self.active_region = profile.active_region;
+        self.allow_multiple_regions = profile.allow_multiple_regions;
+        self.translation_display = profile.translation_display;
+        self.overlay_pinned = profile.overlay_pinned;
+        self.overlay_screen = profile.overlay_screen;
+        self.overlay_pos = profile.overlay_pos;
+        self.overlay_size = profile.overlay_size;
+        self.floating_geometry = profile.floating_geometry;
+        true
     }
 
     pub fn save(&self) -> std::io::Result<()> {
@@ -617,6 +839,166 @@ impl Settings {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn game(class: &str, uuid: &str) -> Option<WindowKey> {
+        Some(WindowKey { uuid: uuid.into(), resource_class: class.into(), caption: format!("{class} window") })
+    }
+
+    #[test]
+    fn a_game_gets_back_its_areas_languages_and_overlay() {
+        let rect = NormRect { x: 0.1, y: 0.7, w: 0.8, h: 0.2 };
+        let mut s = Settings { window: game("Witcher3.exe", "u1"), ..Settings::default() };
+        s.regions[0].rect = Some(rect);
+        s.source_lang = "jpn".into();
+        s.overlay_pos = (40, 50);
+        s.remember_game();
+        assert_eq!(s.game_profiles.len(), 1);
+        assert_eq!(s.game_profiles["witcher3.exe"].caption, "Witcher3.exe window");
+
+        // Another game starts clean...
+        s.window = game("Other", "u2");
+        s.regions[0].rect = None;
+        s.source_lang = "eng".into();
+        assert!(!s.apply_game_profile(), "unknown game");
+        s.remember_game();
+        assert_eq!(s.game_profiles.len(), 2);
+
+        // ...and the first one comes back, even from a new window (new UUID, other letter case).
+        s.window = game("witcher3.EXE", "u3");
+        assert!(s.apply_game_profile());
+        assert_eq!((s.regions[0].rect, s.source_lang.as_str(), s.overlay_pos), (Some(rect), "jpn", (40, 50)));
+    }
+
+    #[test]
+    fn profiles_ignore_portal_windows_and_can_be_turned_off() {
+        let mut s = Settings { window: Some(crate::capture::portal::portal_window_key()), ..Settings::default() };
+        s.remember_game();
+        assert!(s.game_profiles.is_empty(), "a portal window has no class of its own");
+        s.window = game("Game", "u1");
+        s.game_profiles_enabled = false;
+        s.remember_game();
+        assert!(s.game_profiles.is_empty());
+        assert!(!s.apply_game_profile());
+        s.window = game("", "u2");
+        s.game_profiles_enabled = true;
+        s.remember_game();
+        assert!(s.game_profiles.is_empty(), "no class, no key");
+    }
+
+    #[test]
+    fn profile_count_is_capped_and_existing_ones_still_update() {
+        let mut s = Settings::default();
+        for i in 0..MAX_GAME_PROFILES + 5 {
+            s.window = game(&format!("game{i}"), "u");
+            s.remember_game();
+        }
+        assert_eq!(s.game_profiles.len(), MAX_GAME_PROFILES);
+        s.window = game("game0", "u");
+        s.target_lang = "de".into();
+        s.remember_game();
+        assert_eq!(s.game_profiles["game0"].target_lang, "de");
+    }
+
+    #[test]
+    fn profiles_survive_the_config_file() {
+        let mut s = Settings { window: game("Game", "u1"), ..Settings::default() };
+        s.regions[0].rect = Some(NormRect { x: 0.1, y: 0.6, w: 0.8, h: 0.3 });
+        s.remember_game();
+        let saved = toml::to_string_pretty(&s).unwrap();
+        assert_eq!(Settings::from_toml(&saved).game_profiles, s.game_profiles);
+        assert!(Settings::from_toml("").game_profiles_enabled, "on by default, also for old configs");
+    }
+
+    #[test]
+    fn an_old_config_is_lifted_step_by_step_and_stamped() {
+        // Version 0: no stamp, frame_seconds = 0 meant "never".
+        let old = Settings::from_toml("frame_seconds = 0\ntarget_lang = \"de\"");
+        assert_eq!((old.schema_version, old.region_frame_mode.as_str(), old.target_lang.as_str()), (SCHEMA_VERSION, "off", "de"));
+        // The same text already stamped with the current version is taken as it is.
+        let current = Settings::from_toml("schema_version = 1\nframe_seconds = 0");
+        assert_ne!(current.region_frame_mode, "off");
+        // A new config always carries its version.
+        let saved = toml::to_string_pretty(&Settings::default()).unwrap();
+        assert!(saved.contains(&format!("schema_version = {SCHEMA_VERSION}")));
+    }
+
+    #[test]
+    fn a_config_from_a_newer_version_is_read_not_rejected() {
+        let s = Settings::from_toml("schema_version = 99\ntarget_lang = \"fr\"\nsome_future_key = true");
+        assert_eq!((s.target_lang.as_str(), s.schema_version), ("fr", SCHEMA_VERSION));
+        assert_eq!(Settings::file_schema_version("schema_version = 99"), 99);
+        assert_eq!(Settings::file_schema_version("target_lang = \"fr\""), 0);
+        assert_eq!(Settings::file_schema_version("not toml ["), 0);
+    }
+
+    #[test]
+    fn a_broken_config_falls_back_to_defaults() {
+        assert_eq!(Settings::from_toml("this is [not toml"), Settings::default());
+        assert_eq!(Settings::from_toml("target_lang = 5"), Settings::default(), "a wrong type is not a reason to crash");
+    }
+
+    #[test]
+    fn every_setting_declares_what_it_needs() {
+        let all = serde_json::to_value(Settings::default()).unwrap();
+        let keys: Vec<&str> = all.as_object().unwrap().keys().map(String::as_str).collect();
+        let declared: Vec<&str> = REACTIONS.iter().map(|(k, _)| *k).collect();
+        let missing: Vec<&&str> = keys.iter().filter(|k| !declared.contains(k)).collect();
+        let stale: Vec<&&str> = declared.iter().filter(|k| !keys.contains(k)).collect();
+        assert!(missing.is_empty(), "settings without a declared reaction (add them to REACTIONS): {missing:?}");
+        assert!(stale.is_empty(), "REACTIONS names settings that do not exist: {stale:?}");
+        let mut sorted = declared.clone();
+        sorted.sort_unstable();
+        sorted.dedup();
+        assert_eq!(sorted.len(), declared.len(), "a setting is declared twice");
+    }
+
+    #[test]
+    fn only_pipeline_settings_and_the_selection_reset_the_pipeline() {
+        let base = Settings::default();
+        let key = base.processing_key();
+        for change in [
+            |s: &mut Settings| s.target_lang = "de".into(),
+            |s: &mut Settings| s.source_lang = "jpn".into(),
+            |s: &mut Settings| s.ocr_engine = "auto".into(),
+            |s: &mut Settings| s.ocr_min_confidence = 50,
+            |s: &mut Settings| s.interval_ms += 100,
+            |s: &mut Settings| s.translation_display = TranslationDisplay::Inplace,
+            |s: &mut Settings| s.regions[0].enabled = false,
+            |s: &mut Settings| s.window = Some(WindowKey { uuid: "u".into(), resource_class: "c".into(), caption: "t".into() }),
+        ] {
+            let mut changed = base.clone();
+            change(&mut changed);
+            assert_ne!(changed.processing_key(), key);
+        }
+        for change in [
+            |s: &mut Settings| s.font_size += 1,
+            |s: &mut Settings| s.overlay_pinned = !s.overlay_pinned,
+            |s: &mut Settings| s.close_to_tray = true,
+            |s: &mut Settings| s.history_limit += 1,
+            |s: &mut Settings| s.hotkeys.toggle = "Ctrl+Alt+Q".into(),
+            |s: &mut Settings| s.capture_backend = CaptureBackendKind::Portal,
+            |s: &mut Settings| s.game_profiles_enabled = false,
+            |s: &mut Settings| s.inplace.fill_opacity = 0.5,
+        ] {
+            let mut changed = base.clone();
+            change(&mut changed);
+            assert_eq!(changed.processing_key(), key, "an appearance or behaviour edit must not reset the pipeline");
+        }
+    }
+
+    #[test]
+    fn changed_keys_and_pending_actions() {
+        let a = Settings::default();
+        let mut b = a.clone();
+        b.font_size += 2;
+        assert_eq!(a.changed_keys(&b), ["font_size"]);
+        assert!(a.pending_actions(&b).is_empty(), "applies at once");
+        b.capture_backend = CaptureBackendKind::Portal;
+        assert_eq!(a.changed_keys(&b), ["capture_backend", "font_size"]);
+        assert_eq!(a.pending_actions(&b), ["Способ захвата сменится при следующем выборе окна игры"]);
+        assert_eq!(reaction("hotkeys"), Some(Reaction::Hotkeys));
+        assert_eq!(reaction("nonsense"), None);
+    }
 
     #[test]
     fn roundtrip() {

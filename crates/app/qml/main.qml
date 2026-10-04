@@ -38,6 +38,7 @@ ApplicationWindow {
     function hideToTray() {
         // Secondary windows would be left without a way back; the overlays and frames stay.
         historyWin.close()
+        ocrWin.close()
         settingsWin.close()
         regionWin.close()
         hide()
@@ -56,6 +57,7 @@ ApplicationWindow {
         settingsWin.apply()
         ctl.stop()
         historyWin.close()
+        ocrWin.close()
         settingsWin.close()
         regionWin.close()
         selectionFrame.close()
@@ -77,6 +79,7 @@ ApplicationWindow {
     }
 
     HistoryWindow { id: historyWin; settingsWindow: settingsWin }
+    OcrPreviewWindow { id: ocrWin; controller: ctl }
 
     Controller {
         id: ctl
@@ -121,6 +124,15 @@ ApplicationWindow {
     // (effectiveDisplay, with a logged fallback for portal capture) and their own visibility.
     readonly property bool inplaceActive: ctl.effectiveDisplay === "inplace"
     readonly property bool windowActive: ctl.effectiveDisplay === "window"
+    readonly property string portalMonitorGeometry: {
+        const s = settingsWin.current
+        if (!s || !s.portal_fills_monitor || !s.window || s.window.uuid !== "portal:window" || !s.overlay_screen)
+            return ""
+        const screen = Qt.application.screens.find(item => item.name === s.overlay_screen)
+        return screen ? JSON.stringify([screen.virtualX, screen.virtualY, screen.width, screen.height]) : ""
+    }
+    onPortalMonitorGeometryChanged: ctl.reportPortalMonitorGeometry(portalMonitorGeometry)
+    Component.onCompleted: ctl.reportPortalMonitorGeometry(portalMonitorGeometry)
     readonly property var inplaceEntries: { try { return JSON.parse(ctl.inplaceJson || "[]") } catch (e) { return [] } }
     // Keyed by "region:field": a stable field keeps its window; only its properties update.
     readonly property string inplaceKeys: JSON.stringify(closingDown ? [] : inplaceEntries.map(e => e.key))
@@ -155,18 +167,25 @@ ApplicationWindow {
     }
     RegionSelector { id: regionWin; controller: ctl }
     FrameOverlay { id: selectionFrame; settings: settingsWin.current }
+    // What could not be shown over the game as planned (see Controller.inplaceFallbackJson): translations
+    // without room go to the translation window, even in the "over the original" mode.
+    readonly property var inplaceFallback: { try { return JSON.parse(ctl.inplaceFallbackJson || "{}") } catch (e) { return ({}) } }
+    readonly property var fallbackTexts: inplaceFallback.texts || []
+    readonly property int degradedFields: inplaceFallback.degraded || 0
+    readonly property string fallbackText: fallbackTexts.map(f => fallbackTexts.length > 1 ? f.region + ": " + f.text : f.text).join("\n\n")
+    readonly property bool fallbackShown: inplaceActive && ctl.inplaceVisible && fallbackText.length > 0
     TranslationOverlay {
         id: overlay
         controller: ctl
-        translation: ctl.translation
-        original: ctl.original
+        translation: root.windowActive ? ctl.translation : root.fallbackText
+        original: root.windowActive ? ctl.original : ""
         gameGeometry: ctl.gameGeometry
-        shown: !root.closingDown && root.windowActive && ctl.windowOverlayVisible && ctl.translation.length > 0
+        shown: !root.closingDown && ((root.windowActive && ctl.windowOverlayVisible && ctl.translation.length > 0) || root.fallbackShown)
         settings: settingsWin.current
         // Pin state and the pinned placement are decided in Rust (pinned lands where floating was).
         onPinToggled: (p) => ctl.setOverlayPinned(p, "mmb")
         // Closing hides only the translation window; "Поверх игры" or Ctrl+Alt+H shows it again.
-        onCloseRequested: ctl.setWindowOverlayVisibility(false, "close_button")
+        onCloseRequested: root.windowActive ? ctl.setWindowOverlayVisibility(false, "close_button") : ctl.setInplaceVisibility(false, "fallback_close")
         // Any change of the selected areas (KWin or portal) briefly reveals a hidden frame.
         readonly property string areasKey: JSON.stringify((settingsWin.current.regions || []).map(r => [r.enabled, r.rect]))
         onAreasKeyChanged: flashFrame()
@@ -240,6 +259,7 @@ ApplicationWindow {
                 onToggled: ctl.setInplaceVisibility(checked, "checkbox")
             }
             Item { Layout.fillWidth: true }
+            Button { objectName: "ocrPreviewButton"; text: "Просмотр OCR"; onClicked: ocrWin.openWindow() }
             Button { objectName: "historyButton"; text: "История"; onClicked: historyWin.openWindow() }
             Button { text: "Настройки"; onClicked: settingsWin.openWindow() }
         }
@@ -253,6 +273,19 @@ ApplicationWindow {
             wrapMode: Text.Wrap
             color: "#ffc23d"
             font.pixelSize: 12
+        }
+        // Not every field fitted over the game: simplified ones and ones that went to the translation window.
+        Label {
+            objectName: "fallbackNote"
+            Layout.fillWidth: true
+            visible: root.inplaceActive && (root.degradedFields > 0 || root.fallbackTexts.length > 0)
+            wrapMode: Text.Wrap
+            color: "#ffc23d"
+            font.pixelSize: 12
+            text: "Не все поля удалось показать поверх оригинала"
+                + (root.degradedFields > 0 ? ": упрощено — " + root.degradedFields : "")
+                + (root.fallbackTexts.length > 0 ? (root.degradedFields > 0 ? ", " : ": ") + "в окне перевода — " + root.fallbackTexts.length : "")
+                + ". Причина — нет места без перекрытия соседнего текста."
         }
         Label { text: "Оригинал"; font.bold: true }
         ScrollView {

@@ -79,7 +79,18 @@ fn spread(v: &[f32]) -> f32 {
 impl TypographyEstimator {
     /// `frame_w` — ширина кадра области: одиночную строку выравнивают по её положению в кадре.
     pub fn estimate(&self, block: &DetectedTextBlock, analysis: &FontAnalysis, background: [u8; 3], frame_w: f32) -> TypographyEstimate {
-        let lines: Vec<&Rect> = block.lines.iter().map(|l| &l.rect).collect();
+        self.estimate_from(block, analysis, background, frame_w, None)
+    }
+
+    /// Like `estimate`, but the structure of the lines (how many, the step between them, which edge
+    /// they share) comes from `ocr_lines` when given: the engine that read the text knows its
+    /// lines better than the picture analysis. The detector still supplies everything else
+    /// (letter gaps, colour) and is the fallback when the engine gave no geometry.
+    pub fn estimate_from(&self, block: &DetectedTextBlock, analysis: &FontAnalysis, background: [u8; 3], frame_w: f32, ocr_lines: Option<&[Rect]>) -> TypographyEstimate {
+        let lines: Vec<&Rect> = match ocr_lines {
+            Some(found) if !found.is_empty() => found.iter().collect(),
+            _ => block.lines.iter().map(|l| &l.rect).collect(),
+        };
         let cap = analysis.cap_height_px.max(1.0);
         // Межстрочный: медиана расстояний между верхами соседних строк.
         let mut steps: Vec<f32> = lines.windows(2).map(|p| p[1].y - p[0].y).filter(|d| *d > 0.0).collect();
@@ -117,7 +128,7 @@ impl TypographyEstimator {
         let text_color = if reliable { block.ink_color } else if contrast_ratio([255; 3], background) >= contrast_ratio([0; 3], background) { [255; 3] } else { [0; 3] };
         TypographyEstimate {
             cap_height_px: cap,
-            lines: block.lines.len() as u32,
+            lines: lines.len() as u32,
             line_height,
             weight: analysis.weight,
             italic: analysis.italic,

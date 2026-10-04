@@ -235,6 +235,13 @@ ApplicationWindow {
         target: win.controller
         function onSettingsStateChanged() { if (autosave.running) win.apply(); else win.reload() }
     }
+    readonly property var gameProfileKeys: Object.keys(current.game_profiles || ({})).sort()
+    readonly property string currentGameKey: current.window && current.window.resource_class ? current.window.resource_class.trim().toLowerCase() : ""
+    // What the capture backend of the chosen window can do (see CaptureCapabilities in core).
+    readonly property bool usesPaddle: current.ocr_engine === "paddleocr" || current.ocr_engine === "auto"
+    readonly property var capabilities: { try { return JSON.parse(controller.captureCapabilities || "{}") } catch (e) { return ({}) } }
+    readonly property string frameBlocker: capabilities.frameBlocker || ""
+    readonly property string inplaceBlocker: capabilities.inplaceBlocker || ""
     readonly property var history: { try { return JSON.parse(controller.historyJson || "[]") } catch (e) { return [] } }
     readonly property var diagnostics: { try { return JSON.parse(controller.diagnosticsJson || "[]") } catch (e) { return [] } }
     // ── Regions: at most `maxRegions`; one active unless several are allowed ──
@@ -325,21 +332,37 @@ ApplicationWindow {
             Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "OCR-движок" }
             ComboBox {
                 Layout.fillWidth: true; Layout.minimumWidth: 0
-                model: ["Tesseract", "PaddleOCR 3.x"]
-                currentIndex: win.current.ocr_engine === "paddleocr" ? 1 : 0
-                onActivated: win.set("ocr_engine", currentIndex === 1 ? "paddleocr" : "tesseract")
+                objectName: "ocrEngineBox"
+                readonly property var values: ["tesseract", "paddleocr", "auto"]
+                model: ["Tesseract", "PaddleOCR 3.x", "Авто: Tesseract, при сомнении PaddleOCR"]
+                currentIndex: Math.max(0, values.indexOf(win.current.ocr_engine))
+                onActivated: win.set("ocr_engine", values[currentIndex])
             }
-            Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Python для PaddleOCR"; visible: win.current.ocr_engine === "paddleocr" }
+            Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Python для PaddleOCR"; visible: win.usesPaddle }
             TextField {
-                Layout.fillWidth: true; Layout.minimumWidth: 0; visible: win.current.ocr_engine === "paddleocr"
+                Layout.fillWidth: true; Layout.minimumWidth: 0; visible: win.usesPaddle
                 text: win.current.paddle_python || "python3"
                 placeholderText: "/путь/к/venv/bin/python"
                 onTextEdited: win.set("paddle_python", text)
             }
             Label {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap
-                visible: win.current.ocr_engine === "paddleocr"
-                text: "PaddleOCR использует основной язык; дополнительные языки относятся к Tesseract. При первом запуске загружаются модели. Установка: docs/PaddleOCR.md."
+                visible: win.usesPaddle
+                text: win.current.ocr_engine === "auto"
+                    ? "Сначала читает Tesseract; если он сам не уверен в результате (ниже 60 %), текст перечитывает PaddleOCR. Если PaddleOCR не установлен, остаётся результат Tesseract, и повторная попытка будет через несколько минут. Установка: docs/PaddleOCR.md."
+                    : "PaddleOCR использует основной язык; дополнительные языки относятся к Tesseract. При первом запуске загружаются модели. Установка: docs/PaddleOCR.md."
+            }
+            Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Минимальная уверенность OCR, %" }
+            SpinBox {
+                objectName: "ocrMinConfidence"
+                from: 0; to: 95; stepSize: 5; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.ocr_min_confidence !== undefined ? win.current.ocr_min_confidence : 30
+                onValueModified: win.set("ocr_min_confidence", value)
+            }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
+                text: "Текст, в котором сам движок не уверен (мусор из-за фона, анимации, мелкого шрифта), не переводится и не показывается. "
+                      + "0 — не проверять. Работает с Tesseract и PaddleOCR; причина отброшенного текста видна в «Просмотре OCR»."
             }
 
             // ── Tesseract OCR: состояние и языки ────────────────────────────────
@@ -433,7 +456,7 @@ ApplicationWindow {
                 enabled: !win.controller.tesseractBusy
                 onClicked: win.controller.refreshTesseract()
             }
-            ResetButton { keys: ["ocr_engine", "paddle_python", "source_lang"] }
+            ResetButton { keys: ["ocr_engine", "paddle_python", "ocr_min_confidence", "source_lang"] }
 
             }
         }
@@ -465,10 +488,29 @@ ApplicationWindow {
                     onActivated: win.set("capture_backend", win.backends[currentIndex])
                 }
                 Label {
+                    objectName: "captureBackendNote"
+                    Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; color: "#ffc23d"
+                    text: "Способ захвата сменится при следующем выборе окна игры (кнопка «Выбрать окно»)."
+                }
+                Label {
                     Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
                     visible: win.current.capture_backend !== "kwin"
                     text: "Portal показывает системный диалог выбора окна и требует gstreamer с gst-plugin-pipewire. "
                           + "Выбор запоминается, диалог при следующем запуске не нужен. Выбранное окно переключается заново кнопкой «Выбрать окно»."
+                }
+                Switch {
+                    objectName: "portalFillsMonitor"
+                    Layout.fillWidth: true
+                    visible: win.current.capture_backend !== "kwin"
+                    enabled: !!win.current.overlay_screen
+                    checked: win.current.portal_fills_monitor === true
+                    text: "Выбранное через portal окно занимает весь указанный монитор"
+                    onToggled: win.set("portal_fills_monitor", checked)
+                }
+                Label {
+                    Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; color: "#ffc23d"
+                    visible: win.current.capture_backend !== "kwin" && !win.current.overlay_screen
+                    text: "Для полноэкранного portal сначала выберите монитор на вкладке «Окно перевода»."
                 }
             }
 
@@ -540,6 +582,39 @@ ApplicationWindow {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
                 text: "Включено: закрытие главного окна скрывает его в трей, захват и перевод продолжают работать. "
                       + "Выключено: закрытие главного окна завершает LipaX. Полностью выйти можно из меню значка в трее."
+            }
+            Label { wrapMode: Text.Wrap; Layout.preferredWidth: 230; Layout.maximumWidth: 230; Layout.minimumWidth: 0; text: "Запоминать настройки каждой игры" }
+            Switch {
+                objectName: "gameProfilesSwitch"
+                checked: win.current.game_profiles_enabled !== false
+                onToggled: win.set("game_profiles_enabled", checked)
+            }
+            Label {
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
+                text: "Области, языки, движок OCR и положение перевода сохраняются отдельно для каждого окна (по его классу) "
+                      + "и возвращаются, когда вы снова выбираете окно этой игры. Внешний вид и клавиши общие."
+            }
+            Repeater {
+                objectName: "gameProfileList"
+                model: win.gameProfileKeys
+                delegate: RowLayout {
+                    required property string modelData
+                    readonly property var profile: (win.current.game_profiles || ({}))[modelData] || ({})
+                    readonly property bool selected: modelData === win.currentGameKey
+                    Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
+                    Label {
+                        Layout.fillWidth: true; Layout.minimumWidth: 0; elide: Text.ElideRight
+                        text: modelData + (profile.caption ? " — " + profile.caption : "")
+                            + " · областей: " + (profile.regions || []).filter(r => r.rect).length
+                            + (selected ? " (выбрана)" : "")
+                    }
+                    Button {
+                        objectName: "forgetGame_" + modelData
+                        text: "Забыть"
+                        enabled: !selected
+                        onClicked: win.controller.forgetGameProfile(modelData)
+                    }
+                }
             }
 
             }
@@ -657,8 +732,13 @@ ApplicationWindow {
             Label {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.7
                 text: "Рамка рисуется вокруг каждой активной области и не мешает кликам. У каждой области свой таймер; "
-                      + "режим можно переопределить для отдельной области во вкладке «Области». "
-                      + "Для окна, выбранного через portal, положение на экране неизвестно, и рамка не показывается."
+                      + "режим можно переопределить для отдельной области во вкладке «Области»."
+            }
+            Label {
+                objectName: "frameBlockerNote"
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; color: "#ffc23d"
+                visible: win.frameBlocker.length > 0
+                text: "Для этого окна недоступно: " + win.frameBlocker + "."
             }
             ResetButton { keys: ["overlay_screen", "overlay_pinned", "click_through", "overlay_pos", "overlay_size", "overlay_pinned_corner_radius", "frame_color", "frame_width", "frame_seconds", "region_frame_mode", "region_frame_pinned"] }
 
@@ -689,8 +769,13 @@ ApplicationWindow {
                 visible: win.current.translation_display === "inplace"
                 text: "Перевод закрывает исходный текст в каждой активной области: размытая заливка цвета фона, "
                       + "цвет, размер и начертание оцениваются по кадру; длинный перевод уменьшается. "
-                      + "Можно выбрать свой шрифт ниже. Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Перевод поверх оригинала». "
-                      + "Нужен захват через KWin: при захвате через portal используется окно перевода."
+                      + "Можно выбрать свой шрифт ниже. Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Перевод поверх оригинала»."
+            }
+            Label {
+                objectName: "inplaceBlockerNote"
+                Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; color: "#ffc23d"
+                visible: win.current.translation_display === "inplace" && win.inplaceBlocker.length > 0
+                text: "Для этого окна недоступно: " + win.inplaceBlocker + "."
             }
             GridLayout {
                 objectName: "inplaceSettings"
@@ -1238,8 +1323,8 @@ ApplicationWindow {
                         FieldLabel { text: "OCR-движок" }
                         ComboBox {
                             Layout.fillWidth: true; Layout.minimumWidth: 0
-                            readonly property var values: ["", "tesseract", "paddleocr"]
-                            model: ["Как в общих настройках", "Tesseract", "PaddleOCR"]
+                            readonly property var values: ["", "tesseract", "paddleocr", "auto"]
+                            model: ["Как в общих настройках", "Tesseract", "PaddleOCR", "Авто"]
                             currentIndex: Math.max(0, values.indexOf(regionFrame.modelData.ocr_engine || ""))
                             onActivated: win.setRegionField(regionFrame.index, "ocr_engine", values[currentIndex])
                         }

@@ -13,6 +13,18 @@ Window {
     property real selW: 0
     property real selH: 0
     readonly property bool hasSel: selW > 4 && selH > 4
+    // A title bar the window draws itself (GTK/libadwaita): it is part of the frame, and the text
+    // region belongs below it. The height is a hint found from the picture, never a crop.
+    readonly property real barPx: win.controller && win.controller.previewTitleBar ? win.controller.previewTitleBar : 0
+    // Pixels of the frame -> pixels of the painted picture.
+    readonly property real pxScale: img.implicitHeight > 0 ? img.paintedHeight / img.implicitHeight : 1
+    readonly property real barHeight: barPx * pxScale
+    readonly property bool overlapsBar: barPx > 0 && hasSel && selY < barHeight - 1
+    function belowTitleBar() {
+        const bottom = selY + selH
+        selY = barHeight
+        selH = Math.max(0, bottom - barHeight)
+    }
 
     title: "Выбор области перевода"
     width: 960
@@ -81,6 +93,23 @@ Window {
                     }
                 }
 
+                // Заголовок, нарисованный самим окном: область ниже него.
+                Rectangle {
+                    objectName: "titleBarHint"
+                    visible: win.barPx > 0
+                    x: 0; y: 0; width: parent.width; height: win.barHeight
+                    color: "#55ffb300"
+                    border.width: 1
+                    border.color: "#ffffb300"
+                    Label {
+                        anchors.centerIn: parent
+                        visible: parent.height > 14
+                        text: "заголовок окна"
+                        font.pixelSize: 11
+                        color: "#ffe9a8"
+                    }
+                }
+
                 // Выделение: тонкая рамка и почти прозрачная заливка.
                 Rectangle {
                     visible: win.hasSel
@@ -92,9 +121,21 @@ Window {
             }
         }
 
+        Label {
+            objectName: "titleBarNote"
+            Layout.fillWidth: true
+            Layout.leftMargin: 8; Layout.rightMargin: 8; Layout.topMargin: 6
+            visible: win.barPx > 0
+            wrapMode: Text.Wrap
+            color: win.overlapsBar ? "#ff8a80" : "#ffd54f"
+            text: win.overlapsBar
+                ? "Выделение захватывает собственный заголовок окна (≈" + win.barPx + " px сверху): его текст и кнопки будут читаться как текст игры."
+                : "Окно рисует собственный заголовок (≈" + win.barPx + " px сверху, подсвечен): выделяйте область ниже него."
+        }
         RowLayout {
             Layout.margins: 8
             Label { Layout.fillWidth: true; text: "Выделите мышью область с текстом. Enter — сохранить, Esc — отмена." ; color: "white" }
+            Button { objectName: "belowTitleBar"; text: "Начать ниже заголовка"; visible: win.overlapsBar; onClicked: win.belowTitleBar() }
             Button { text: "Сбросить"; onClicked: { win.selW = 0; win.selH = 0 } }
             Button { text: "Сохранить"; enabled: win.hasSel; highlighted: true; onClicked: win.accept() }
         }

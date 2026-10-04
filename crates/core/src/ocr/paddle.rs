@@ -1,4 +1,4 @@
-use super::{Ocr, OcrError};
+use super::{Ocr, OcrError, OcrLine, OcrResult};
 use crate::settings::Settings;
 use image::{DynamicImage, ImageFormat};
 use std::{
@@ -62,6 +62,35 @@ fn language(source: &str) -> Result<&'static str, OcrError> {
     }
 }
 
+#[derive(serde::Deserialize)]
+struct Reply {
+    text: Option<String>,
+    error: Option<String>,
+    /// Optional: older workers and unusual PaddleOCR versions send only the text.
+    #[serde(default)]
+    lines: Vec<ReplyLine>,
+}
+
+#[derive(serde::Deserialize)]
+struct ReplyLine {
+    text: String,
+    /// 0–1.
+    score: f32,
+    /// x1, y1, x2, y2 in pixels of the image.
+    #[serde(rename = "box")]
+    rect: [f32; 4],
+}
+
+fn reply_to_result(text: String, lines: Vec<ReplyLine>) -> OcrResult {
+    let lines: Vec<OcrLine> = lines.into_iter().map(|l| OcrLine {
+        rect: crate::layout::CropRect::in_space(l.rect[0], l.rect[1], (l.rect[2] - l.rect[0]).max(0.0), (l.rect[3] - l.rect[1]).max(0.0)),
+        text: l.text,
+        confidence: (l.score * 100.0).clamp(0.0, 100.0),
+    }).collect();
+    let confidence = (!lines.is_empty()).then(|| lines.iter().map(|l| l.confidence).sum::<f32>() / lines.len() as f32);
+    OcrResult { text, lines, confidence, engine: "paddleocr" }
+}
+
 impl Worker {
     fn spawn(python: &str, language: &str, script: &str) -> Result<Self, OcrError> {
         let mut child = Command::new(python)
@@ -101,7 +130,7 @@ impl Worker {
         })
     }
 
-    async fn recognize(&mut self, png: &[u8]) -> Result<String, OcrError> {
+    async fn recognize(&mut self, png: &[u8]) -> Result<OcrResult, OcrError> {
         let size = u32::try_from(png.len()).map_err(setup)?;
         self.input
             .write_all(&size.to_be_bytes())
@@ -114,21 +143,21 @@ impl Worker {
             let detail = String::from_utf8_lossy(&self.stderr.lock().unwrap()).into_owned();
             return Err(setup(format!("процесс завершился: {detail}")));
         }
-        #[derive(serde::Deserialize)]
-        struct Reply {
-            text: Option<String>,
-            error: Option<String>,
-        }
         let reply: Reply = serde_json::from_str(&line).map_err(setup)?;
         if let Some(error) = reply.error {
             return Err(setup(error));
         }
-        reply.text.ok_or_else(|| setup("ответ не содержит текста"))
+        let text = reply.text.ok_or_else(|| setup("ответ не содержит текста"))?;
+        Ok(reply_to_result(text, reply.lines))
     }
 }
 
 impl Ocr for PaddleOcr {
     async fn recognize(&self, img: &DynamicImage, settings: &Settings) -> Result<String, OcrError> {
+        Ok(self.recognize_detailed(img, settings).await?.text)
+    }
+
+    async fn recognize_detailed(&self, img: &DynamicImage, settings: &Settings) -> Result<OcrResult, OcrError> {
         tracing::debug!(engine = "paddleocr", width = img.width(), height = img.height(), language = %settings.source_lang, "Начало OCR");
         let language = language(&settings.source_lang)?;
         let mut png = Vec::new();
@@ -174,6 +203,19 @@ mod tests {
         assert!(language("unknown").is_err());
     }
 
+    #[test]
+    fn lines_and_scores_become_percent_and_rectangles() {
+        let reply: Reply = serde_json::from_str(r#"{"text":"A\nB","lines":[{"text":"A","score":0.9,"box":[10,20,110,40]},{"text":"B","score":0.7,"box":[10,50,60,70]}]}"#).unwrap();
+        let result = reply_to_result(reply.text.unwrap(), reply.lines);
+        assert_eq!(result.lines[0].rect, crate::layout::CropRect::in_space(10.0, 20.0, 100.0, 20.0));
+        assert!((result.confidence.unwrap() - 80.0).abs() < 0.01);
+        assert_eq!(result.engine, "paddleocr");
+        // A worker that sends only text still works, just without confidence.
+        let plain: Reply = serde_json::from_str(r#"{"text":"only"}"#).unwrap();
+        let plain = reply_to_result(plain.text.unwrap(), plain.lines);
+        assert_eq!((plain.lines.len(), plain.confidence), (0, None));
+    }
+
     #[tokio::test]
     async fn worker_protocol_reuses_process_and_reports_failure() {
         let script = r#"
@@ -184,8 +226,8 @@ for i in range(3):
     print(json.dumps({'text': 'Привет ' + str(i)} if i < 2 else {'error': 'model unavailable'}), flush=True)
 "#;
         let mut worker = Worker::spawn("python3", "en", script).unwrap();
-        assert_eq!(worker.recognize(b"image").await.unwrap(), "Привет 0");
-        assert_eq!(worker.recognize(b"image").await.unwrap(), "Привет 1");
+        assert_eq!(worker.recognize(b"image").await.unwrap().text, "Привет 0");
+        assert_eq!(worker.recognize(b"image").await.unwrap().text, "Привет 1");
         assert!(
             worker
                 .recognize(b"image")

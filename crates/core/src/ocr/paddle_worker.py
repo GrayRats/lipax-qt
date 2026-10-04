@@ -43,9 +43,21 @@ def main():
         if image is None:
             raise ValueError("invalid PNG")
         texts = []
+        lines = []
         for result in ocr.predict(image):
-            texts.extend(result["rec_texts"])
-        reply(text="\n".join(texts))
+            found = list(result["rec_texts"])
+            texts.extend(found)
+            # Geometry and confidence are optional: the text must reach the application even if
+            # a PaddleOCR version names them differently.
+            try:
+                scores = [float(v) for v in result.get("rec_scores", [])]
+                boxes = [[float(c) for c in box] for box in result.get("rec_boxes", [])]
+                if len(scores) == len(found) == len(boxes):
+                    for text, score, box in zip(found, scores, boxes):
+                        lines.append({"text": text, "score": score, "box": box})
+            except Exception as error:
+                print(f"no line geometry: {error}", file=sys.stderr, flush=True)
+        reply(text="\n".join(texts), lines=lines)
 
 
 try:

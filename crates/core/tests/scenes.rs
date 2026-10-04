@@ -2,6 +2,7 @@
 //! (packaging/render-scene-fixtures.py): detection of independent fields, font choice, fitting
 //! and overlap protection, end to end.
 
+use lipa_core::capture::kwin::WindowGeometry;
 use image::DynamicImage;
 use lipa_core::layout::engine::{InplaceEngine, InplaceFrame};
 use lipa_core::layout::fit::ApproxMeasure;
@@ -68,9 +69,11 @@ fn scene_quality_thresholds() {
             total_style += 1;
         }
         let region = RegionInput { id: "r", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
-        let placed = place_regions(&[region], [0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64],
+        let placed = place_regions(&[region], &WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64]),
             &settings().inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default());
-        assert_eq!(placed.len(), expect.fields, "{scene}: translated fields fit without collisions");
+        assert_eq!(placed.placed.len(), expect.fields, "{scene}: translated fields fit without collisions");
+        assert!(placed.fallback.is_empty(), "{scene}: nothing is sent to the translation window");
+        assert!(placed.placed.iter().all(|p| p.degraded.is_none()), "{scene}: a scene that fits is not degraded: {:?}", placed.placed.iter().map(|p| p.degraded).collect::<Vec<_>>());
     }
     assert!(correct_style * 10 >= total_style * 9,
         "font style accuracy {correct_style}/{total_style} is below 90%");
@@ -99,7 +102,7 @@ fn scene_report() {
                 b.font.family, kind(&b.font.family), b.style.font_weight.value(), b.style.italic, b.background.mode, b.style.alignment as u8);
         }
         let region = RegionInput { id: "r", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
-        let placed = place_regions(&[region], [0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64], &settings().inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default());
+        let placed = place_regions(&[region], &WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64]), &settings().inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default()).placed;
         println!("  placed {} of {}", placed.len(), frame.blocks.len());
     }
 }

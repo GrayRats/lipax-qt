@@ -25,9 +25,34 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Instant;
 
+/// OCR lines belong to a block if their union covers about the same area: a different place means
+/// the engine read something else than the detector found, and neither should override the other blindly.
+fn lines_agree(lines: &[Rect], block: &Rect) -> bool {
+    let Some(first) = lines.first() else { return false };
+    lines.iter().skip(1).fold(*first, |union, l| union.union(l)).iou(block) >= LINES_AGREE_IOU
+}
+const LINES_AGREE_IOU: f32 = 0.5;
+
+/// The glyph rectangle according to the OCR lines, if it may replace the detected one: each side
+/// moves by at most half a line height, so a field whose second line the engine missed keeps the
+/// detector's boundary (the original line would otherwise stay uncovered). `None` keeps the detector.
+fn refine_bounds(lines: &[Rect], detected: &Rect, line_height: f32) -> Option<Rect> {
+    let first = lines.first()?;
+    let u = lines.iter().skip(1).fold(*first, |union, l| union.union(l));
+    let tolerance = (0.5 * line_height).max(2.0);
+    let within = (u.x - detected.x).abs() <= tolerance && (u.y - detected.y).abs() <= tolerance
+        && (u.right() - detected.right()).abs() <= tolerance && (u.bottom() - detected.bottom()).abs() <= tolerance;
+    // One pixel of margin: the engine's boxes are tight to the glyphs.
+    within.then(|| Rect::new(u.x - 1.0, u.y - 1.0, u.w + 2.0, u.h + 2.0))
+}
+
 /// Поле, текст которого нужно распознать.
 pub struct OcrJob {
     pub id: u64,
+    /// Glyph rectangle of the field, px of the frame.
+    pub rect: Rect,
+    /// Where `image` was cut out of the frame: OCR geometry is relative to it.
+    pub origin: (u32, u32),
     pub image: DynamicImage,
 }
 
@@ -43,14 +68,27 @@ pub struct InplaceBlock {
     pub font: FontSelection,
     pub style: TranslationTextStyle,
     pub background: super::background::BackgroundResult,
+    /// Откуда взята структура строк (OCR или детектор) и почему; для инспектора.
+    pub lines_note: String,
     /// Меняется вместе с видимым состоянием поля.
     pub revision: u64,
+}
+
+/// A field that has a translation but cannot be drawn over the original at all (for example no
+/// bundled font covers its script): its text goes to the translation window instead of being lost.
+#[derive(Debug, Clone, PartialEq)]
+pub struct UndrawableField {
+    pub id: u64,
+    pub original: String,
+    pub translation: String,
+    pub reason: &'static str,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct InplaceFrame {
     pub frame: (u32, u32),
     pub blocks: Vec<InplaceBlock>,
+    pub undrawable: Vec<UndrawableField>,
     /// Новые пары «оригинал → перевод» с последней отправки: для истории.
     pub new_translations: Vec<(String, String)>,
 }
@@ -191,10 +229,13 @@ impl InplaceEngine {
             let Some(t) = self.tracker.get_mut(a.id) else { continue };
             let lh = d.line_height();
             // Содержимое поля изменилось — распознать заново.
+            // Where the glyphs are: the OCR lines' boundary while it agrees with the detected block.
+            let rect = t.ocr_bounds.filter(|b| b.iou(&d.rect) >= LINES_AGREE_IOU).and_then(|b| refine_bounds(&[b], &d.rect, lh)).unwrap_or(d.rect);
+            t.refined_rect = (rect != d.rect).then_some(rect);
             let signature = content_signature(&image, &d.rect);
             if force || t.original_text.is_empty() || signature_changed(&signature, &t.content_signature) {
                 let (x, y, w, h) = d.rect.expand((0.25 * lh).max(3.0), fw, fh).pixels(image.width(), image.height());
-                jobs.push(OcrJob { id: a.id, image: DynamicImage::ImageRgba8(image::imageops::crop_imm(&image, x, y, w, h).to_image()) });
+                jobs.push(OcrJob { id: a.id, rect: d.rect, origin: (x, y), image: DynamicImage::ImageRgba8(image::imageops::crop_imm(&image, x, y, w, h).to_image()) });
                 // Remembered only when the field is completed (see `complete`): a failed or cancelled
                 // recognition must leave the field due for the next scan.
                 self.pending_signatures.insert(a.id, signature);
@@ -205,20 +246,28 @@ impl InplaceEngine {
             }
             // Фон — только если он заметно изменился (подвижная сцена) или сменили режим.
             let margin = BackgroundAnalyzer::margin(lh);
-            let bg_sig = BackgroundAnalyzer::signature(&image, &d.rect, margin);
+            let bg_sig = BackgroundAnalyzer::signature(&image, &rect, margin);
             let moved = (t.previous_rect.x - t.current_rect.x).abs() > 3.0 || (t.previous_rect.y - t.current_rect.y).abs() > 3.0;
             if t.background.is_none() || bg_changed || moved || t.background_signature.is_none_or(|old| color_distance(old, bg_sig) > 18.0) {
-                let analysis = BackgroundAnalyzer.analyze(&image, &mask, &d.rect, margin);
-                t.background = Some(BackgroundInpainter.render(&image, &mask, &d.rect, lh, analysis, &s.inplace, d.block_type));
+                let analysis = BackgroundAnalyzer.analyze(&image, &mask, &rect, margin);
+                t.background = Some(BackgroundInpainter.render(&image, &mask, &rect, lh, analysis, &s.inplace, d.block_type));
                 t.background_signature = Some(bg_sig);
                 t.revision += 1;
             }
             // Типографика — для нового поля и при заметной смене размера или числа строк.
             let resized = (t.typography_rect.w - d.rect.w).abs() > 0.1 * d.rect.w || (t.typography_rect.h - d.rect.h).abs() > 0.1 * d.rect.h;
-            let relined = t.typography.as_ref().is_some_and(|e| e.lines as usize != d.lines.len());
+            // The lines the OCR engine found count while they still lie on the detected block.
+            if t.ocr_lines.as_ref().is_some_and(|lines| !lines_agree(lines, &d.rect)) {
+                t.ocr_lines = None;
+                t.ocr_bounds = None;
+                t.refined_rect = None;
+                t.lines_note = "строки по детектору: геометрия OCR больше не совпадает с блоком".into();
+            }
+            let expected_lines = t.ocr_lines.as_ref().map_or(d.lines.len(), Vec::len);
+            let relined = t.typography.as_ref().is_some_and(|e| e.lines as usize != expected_lines);
             if t.typography.is_none() || resized || relined {
                 let bg = t.background.as_ref().map(|b| b.color).unwrap_or([0; 3]);
-                t.typography = Some(TypographyEstimator.estimate(d, t.font_analysis.as_ref().unwrap(), bg, fw));
+                t.typography = Some(TypographyEstimator.estimate_from(d, t.font_analysis.as_ref().unwrap(), bg, fw, t.ocr_lines.as_deref()));
                 t.typography_rect = d.rect;
                 t.revision += 1;
             }
@@ -232,6 +281,58 @@ impl InplaceEngine {
         for id in pending { self.lock_font(id, s); }
         self.snapshot = Some(Snapshot { image, mask, blocks });
         jobs
+    }
+
+    /// What the OCR engine says about the lines of a field it has just read (`lines` in frame pixels,
+    /// top to bottom). If they lie on the detected block, they decide the line structure — how many
+    /// lines, the step between them, the alignment — and the typography is estimated again; if they
+    /// do not, the detector's lines stay and the inspector says why. No lines (an engine without
+    /// geometry) changes nothing.
+    pub fn observe_ocr_lines(&mut self, id: u64, lines: &[Rect], s: &Settings) {
+        if lines.is_empty() { return; }
+        let Some(snapshot) = &self.snapshot else { return };
+        let Some(d) = snapshot.blocks.get(&id) else { return };
+        let frame_w = snapshot.image.width() as f32;
+        let agree = lines_agree(lines, &d.rect);
+        let Some(t) = self.tracker.get_mut(id) else { return };
+        if !agree {
+            t.ocr_lines = None;
+            if t.ocr_bounds.take().is_some() || t.refined_rect.take().is_some() { t.background_signature = None; }
+            let on = lines.iter().skip(1).fold(lines[0], |u, l| u.union(l));
+            t.lines_note = format!("строки по детектору: геометрия OCR ({} стр.) не совпала с блоком (IoU {:.2})", lines.len(), on.iou(&d.rect));
+            tracing::debug!(target: "inplace.lines", block_id = id, ocr_lines = lines.len(), detected = d.lines.len(), "OCR geometry does not match the block; detector lines kept");
+            return;
+        }
+        t.ocr_lines = Some(lines.to_vec());
+        t.lines_note = if lines.len() == d.lines.len() { format!("строк: {} (OCR и детектор согласны)", lines.len()) }
+            else { format!("строк: {} по OCR, детектор насчитал {}", lines.len(), d.lines.len()) };
+        if lines.len() != d.lines.len() {
+            tracing::debug!(target: "inplace.lines", block_id = id, ocr_lines = lines.len(), detected = d.lines.len(), "OCR and the detector disagree on the lines; OCR decides");
+        }
+        // The boundary of the glyphs: the lines' union, if it stays close to the detected block.
+        let refined = refine_bounds(lines, &d.rect, d.line_height());
+        t.ocr_bounds = refined;
+        let rect = refined.unwrap_or(d.rect);
+        if refined.is_none() { t.lines_note.push_str("; граница блока по детектору (OCR расходится больше допуска)"); }
+        if t.refined_rect != refined.filter(|r| *r != d.rect) {
+            t.refined_rect = refined.filter(|r| *r != d.rect);
+            // The plate follows the glyphs: it is restored again for the new boundary.
+            let margin = BackgroundAnalyzer::margin(d.line_height());
+            let analysis = BackgroundAnalyzer.analyze(&snapshot.image, &snapshot.mask, &rect, margin);
+            t.background = Some(BackgroundInpainter.render(&snapshot.image, &snapshot.mask, &rect, d.line_height(), analysis, &s.inplace, d.block_type));
+            t.background_signature = Some(BackgroundAnalyzer::signature(&snapshot.image, &rect, margin));
+            t.revision += 1;
+            if refined.is_some() { t.lines_note.push_str("; граница блока по OCR"); }
+        }
+        if let (Some(analysis), Some(old)) = (t.font_analysis.as_ref(), t.typography.as_ref()) {
+            let bg = t.background.as_ref().map(|b| b.color).unwrap_or([0; 3]);
+            let estimate = TypographyEstimator.estimate_from(d, analysis, bg, frame_w, t.ocr_lines.as_deref());
+            if estimate != *old {
+                t.typography = Some(estimate);
+                t.typography_rect = d.rect;
+                t.revision += 1;
+            }
+        }
     }
 
     /// Однократный выбор шрифта поля по признакам первого анализа.
@@ -287,10 +388,18 @@ impl InplaceEngine {
         let font_db = self.font_db();
         let snap = self.snapshot.as_ref()?;
         let mut blocks = Vec::new();
+        let mut undrawable = Vec::new();
         for t in self.tracker.blocks() {
             // Пропуск одного кадра не гасит поле: короткие сбои распознавания не мигают.
             if t.misses > 1 || t.translated_text.is_empty() { continue; }
-            let (Some(font), Some(est), Some(bg)) = (t.font.as_ref(), t.typography.as_ref(), t.background.as_ref()) else { continue };
+            let (Some(font), Some(est), Some(bg)) = (t.font.as_ref(), t.typography.as_ref(), t.background.as_ref()) else {
+                // Not lost: a field with a translation that cannot be drawn in place is handed on.
+                if t.font.is_none() && t.typography.is_some() {
+                    undrawable.push(UndrawableField { id: t.id, original: t.original_text.clone(), translation: t.translated_text.clone(),
+                        reason: "нет встроенного шрифта с нужными глифами" });
+                }
+                continue;
+            };
             let mut style = TypographyEstimator.resolve(est, font, &s.inplace);
             // Старый ручной шрифт из системного списка не должен попасть в inplace.
             if style.font_family != font.family && !font_db.find(&style.font_family).is_some_and(|f| f.covers(Script::from_lang(&s.target_lang).fontconfig_lang())) {
@@ -298,15 +407,17 @@ impl InplaceEngine {
                 style.font_family = font.family.clone();
             }
             blocks.push(InplaceBlock {
-                id: t.id, block_type: t.block_type, text_rect: t.current_rect,
+                id: t.id, block_type: t.block_type, text_rect: t.text_rect(),
                 original: t.original_text.clone(), translation: t.translated_text.clone(),
-                script: Script::from_lang(&s.target_lang), font: font.clone(), style, background: bg.clone(), revision: t.revision,
+                script: Script::from_lang(&s.target_lang), font: font.clone(), style, background: bg.clone(), lines_note: t.lines_note.clone(), revision: t.revision,
             });
         }
-        let state: Vec<(u64, u64)> = blocks.iter().map(|b| (b.id, b.revision)).collect();
+        // Undrawable fields are part of what was published (marked by the top bit of the id).
+        let revision_of = |id: u64| self.tracker.get(id).map_or(0, |t| t.revision);
+        let state: Vec<(u64, u64)> = blocks.iter().map(|b| (b.id, b.revision)).chain(undrawable.iter().map(|u| (u.id | 1 << 63, revision_of(u.id)))).collect();
         if state == self.published { return None; }
         self.published = state;
-        Some(InplaceFrame { frame: (snap.image.width(), snap.image.height()), blocks, new_translations: std::mem::take(&mut self.new_translations) })
+        Some(InplaceFrame { frame: (snap.image.width(), snap.image.height()), blocks, undrawable, new_translations: std::mem::take(&mut self.new_translations) })
     }
 
     /// Настройки поменялись без нового кадра: перестроить то, что от них зависит.
@@ -358,6 +469,7 @@ impl InplaceEngine {
 mod tests {
     use super::*;
     use crate::layout::font_database::tests::SAMPLE;
+    use crate::layout::font_database::InstalledFontDatabase;
     use crate::layout::testing::*;
     use crate::settings::{InplaceBackgroundMode, PropertyMode};
     use std::time::Duration;
@@ -372,6 +484,126 @@ mod tests {
 
     fn settings() -> Settings {
         Settings { target_lang: "ru".into(), translation_display: crate::settings::TranslationDisplay::Inplace, ..Settings::default() }
+    }
+
+    /// One block of three lines, as dialogue text.
+    fn three_lines() -> DynamicImage {
+        let mut img = canvas(1200, 400, [25, 30, 40]);
+        for y in [100, 134, 168] { draw_line(&mut img, 100, y, 30, 14, 4, 22, 3, [240, 240, 240], false); }
+        dynamic(img)
+    }
+
+    fn halves(r: &Rect) -> [Rect; 2] {
+        [Rect::new(r.x, r.y, r.w, r.h / 2.0 - 2.0), Rect::new(r.x, r.y + r.h / 2.0, r.w, r.h / 2.0)]
+    }
+
+    #[test]
+    fn ocr_lines_decide_the_line_structure_when_they_lie_on_the_block() {
+        let s = settings();
+        let (frame, t0) = (three_lines(), Instant::now());
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let jobs = e.begin(frame.clone(), &s, t0, false);
+        assert_eq!(jobs.len(), 1);
+        let job = &jobs[0];
+        // The detector sees three lines; the engine that read the text found two.
+        e.observe_ocr_lines(job.id, &halves(&job.rect), &s);
+        e.complete(job.id, Some(("a b".into(), "в г".into())), &s);
+        let block = e.finish(&s).expect("the field").blocks.remove(0);
+        assert_eq!(block.style.source_lines, 2, "the OCR line count wins");
+        assert!(block.lines_note.contains("2 по OCR") && block.lines_note.contains("детектор насчитал 3"), "{}", block.lines_note);
+        // The decision is stable: the same picture again neither re-reads the field nor changes it.
+        let again = e.begin(frame, &s, t0 + Duration::from_millis(200), false);
+        assert!(again.is_empty());
+        assert!(e.finish(&s).is_none(), "an OCR-decided structure must not make the field flap");
+    }
+
+    #[test]
+    fn ocr_lines_that_agree_with_the_detector_change_nothing_but_the_note() {
+        let s = settings();
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let jobs = e.begin(three_lines(), &s, Instant::now(), false);
+        let job = &jobs[0];
+        let third = job.rect.h / 3.0;
+        let lines: Vec<Rect> = (0..3).map(|i| Rect::new(job.rect.x, job.rect.y + third * i as f32, job.rect.w, third - 2.0)).collect();
+        e.observe_ocr_lines(job.id, &lines, &s);
+        e.complete(job.id, Some(("a b c".into(), "в г д".into())), &s);
+        let block = e.finish(&s).expect("the field").blocks.remove(0);
+        assert_eq!(block.style.source_lines, 3);
+        assert!(block.lines_note.contains("согласны"), "{}", block.lines_note);
+    }
+
+    /// The OCR lines of `job.rect` with every side moved by `by` pixels (negative: inwards).
+    fn lines_moved_by(rect: &Rect, by: f32) -> [Rect; 1] {
+        [Rect::new(rect.x - by, rect.y - by, rect.w + 2.0 * by, rect.h + 2.0 * by)]
+    }
+
+    fn block_with(frame: DynamicImage, lines: impl Fn(&Rect) -> Vec<Rect>) -> (InplaceBlock, Rect) {
+        let s = settings();
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let jobs = e.begin(frame, &s, Instant::now(), false);
+        let job = &jobs[0];
+        e.observe_ocr_lines(job.id, &lines(&job.rect), &s);
+        e.complete(job.id, Some(("a".into(), "б".into())), &s);
+        (e.finish(&s).expect("the field").blocks.remove(0), job.rect)
+    }
+
+    #[test]
+    fn the_boundary_follows_the_ocr_lines_when_they_are_close_to_the_block() {
+        let (plain, detected) = block_with(three_lines(), |_| Vec::new());
+        assert_eq!(plain.text_rect, detected, "no OCR geometry: the detector's boundary");
+        // The engine's lines are 4 px tighter on every side than the detected block.
+        let (refined, _) = block_with(three_lines(), |r| lines_moved_by(r, -4.0).to_vec());
+        assert!(refined.text_rect.w < detected.w - 5.0 && refined.text_rect.h < detected.h - 5.0, "{:?} vs {:?}", refined.text_rect, detected);
+        assert!((refined.text_rect.x - (detected.x + 3.0)).abs() < 0.01, "tight box plus one pixel of margin: {:?}", refined.text_rect);
+        assert!(refined.lines_note.contains("граница блока по OCR"), "{}", refined.lines_note);
+        // The plate follows: it was restored again for the new boundary, not left at the old size.
+        assert!(refined.background.rect.w < plain.background.rect.w && refined.background.rect.h < plain.background.rect.h,
+            "{:?} vs {:?}", refined.background.rect, plain.background.rect);
+    }
+
+    #[test]
+    fn a_boundary_that_cuts_off_lines_is_not_taken() {
+        // The engine read only the top two of three lines: its boundary would leave the third one
+        // uncovered under the translation, so the detector's boundary stays.
+        let (block, detected) = block_with(three_lines(), |r| vec![Rect::new(r.x, r.y, r.w, r.h * 0.66)]);
+        assert_eq!(block.text_rect, detected, "{}", block.lines_note);
+        assert!(block.lines_note.contains("граница блока по детектору"), "{}", block.lines_note);
+    }
+
+    #[test]
+    fn a_refined_boundary_is_stable_between_scans() {
+        let s = settings();
+        let (frame, t0) = (three_lines(), Instant::now());
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let job = e.begin(frame.clone(), &s, t0, false).remove(0);
+        e.observe_ocr_lines(job.id, &lines_moved_by(&job.rect, -4.0), &s);
+        e.complete(job.id, Some(("a".into(), "б".into())), &s);
+        let first = e.finish(&s).expect("the field").blocks.remove(0);
+        // The same picture is detected again (with the old, wider boundary): the refinement stays.
+        assert!(e.begin(frame.clone(), &s, t0 + Duration::from_millis(200), false).is_empty());
+        assert!(e.finish(&s).is_none(), "nothing changed, nothing is sent again");
+        // A forced re-read gives back the same boundary and plate.
+        let again = e.begin(frame, &s, t0 + Duration::from_millis(400), true).remove(0);
+        e.observe_ocr_lines(again.id, &lines_moved_by(&again.rect, -4.0), &s);
+        e.complete(again.id, Some(("a".into(), "б".into())), &s);
+        let second = e.finish(&s).map_or(first.clone(), |f| f.blocks[0].clone());
+        assert_eq!((second.text_rect, second.background.rect), (first.text_rect, first.background.rect));
+    }
+
+    #[test]
+    fn ocr_lines_somewhere_else_do_not_override_the_detector() {
+        let s = settings();
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let jobs = e.begin(three_lines(), &s, Instant::now(), false);
+        let job = &jobs[0];
+        let elsewhere = [Rect::new(job.rect.x, job.rect.y + 250.0, job.rect.w, 20.0)];
+        e.observe_ocr_lines(job.id, &elsewhere, &s);
+        e.complete(job.id, Some(("a".into(), "б".into())), &s);
+        let block = e.finish(&s).expect("the field").blocks.remove(0);
+        assert_eq!(block.style.source_lines, 3, "the detector's lines stay");
+        assert!(block.lines_note.contains("не совпала"), "{}", block.lines_note);
+        // An engine without geometry changes nothing at all.
+        e.observe_ocr_lines(job.id, &[], &s);
     }
 
     fn run(e: &mut InplaceEngine, frame: &DynamicImage, s: &Settings, now: Instant) -> (usize, Option<InplaceFrame>) {

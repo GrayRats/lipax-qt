@@ -43,6 +43,7 @@ fn main() {
         "qml/RegionFrame.qml",
         "qml/InplaceText.qml",
         "qml/HistoryWindow.qml",
+        "qml/OcrPreviewWindow.qml",
     ]))
     // Widgets: the KDE platform theme builds the tray icon from QWidgets, so the app is a QApplication.
     .qt_module("Widgets")

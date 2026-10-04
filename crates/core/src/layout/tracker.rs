@@ -30,6 +30,16 @@ pub struct TrackedTextBlock {
     /// Выбранный шрифт. `Some` — выбор заблокирован до сброса идентичности поля.
     pub font: Option<FontSelection>,
     pub typography: Option<TypographyEstimate>,
+    /// Lines as the OCR engine found them (frame pixels, top to bottom): the primary source of the
+    /// line structure while they still agree with the detected block.
+    pub ocr_lines: Option<Vec<Rect>>,
+    /// For the inspector: how the line structure was decided.
+    pub lines_note: String,
+    /// Where the glyphs really are according to the OCR lines (frame pixels), when that differs from
+    /// the detected block within the allowed tolerance.
+    pub ocr_bounds: Option<Rect>,
+    /// `ocr_bounds` while it still lies on the detected block, else `None`: set on every scan.
+    pub refined_rect: Option<Rect>,
     pub background: Option<BackgroundResult>,
     /// Уменьшенная яркость содержимого: по ней видно, менялся ли текст поля.
     pub content_signature: Vec<u8>,
@@ -63,6 +73,10 @@ impl TrackedTextBlock {
             font_analysis: None,
             font: None,
             typography: None,
+            ocr_lines: None,
+            lines_note: String::new(),
+            ocr_bounds: None,
+            refined_rect: None,
             background: None,
             content_signature: Vec::new(),
             background_signature: None,
@@ -73,6 +87,11 @@ impl TrackedTextBlock {
             confidence: 0.5,
             revision: 0,
         }
+    }
+
+    /// Glyph rectangle of the field: refined by the OCR lines when they agree, else as detected.
+    pub fn text_rect(&self) -> Rect {
+        self.refined_rect.unwrap_or(self.current_rect)
     }
 
     pub fn font_selection_locked(&self) -> bool {

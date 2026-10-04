@@ -41,6 +41,9 @@ TestCase {
             saved = JSON.stringify(Object.assign({}, JSON.parse(saved), JSON.parse(json)))
             settingsState = saved
         }
+        property string captureCapabilities: "{}"
+        property var forgotten: []
+        function forgetGameProfile(key) { forgotten = forgotten.concat([key]) }
         function refreshTesseract() {}
         function bundledFonts() { return JSON.stringify(["Inter", "PT Serif", "Roboto Slab", "JetBrains Mono", "Noto Sans CJK SC"]) }
     }
@@ -190,6 +193,118 @@ TestCase {
         settings.apply()
         compare(JSON.parse(controller.saved).close_to_tray, true)
         settings.set("close_to_tray", false)
+        settings.apply()
+    }
+
+    function test_gameProfilesAreListedAndTheSelectedOneCannotBeForgotten() {
+        settings.show()
+        settings.reload()
+        findChild(settings, "settingsTabs").currentIndex = 1
+        settings.current = Object.assign({}, settings.current, {
+            window: {uuid: "u", resource_class: "Witcher3.exe", caption: "The Witcher 3"},
+            game_profiles: {
+                "witcher3.exe": {caption: "The Witcher 3", regions: [{id: "subtitles", rect: {x: 0, y: 0.7, w: 1, h: 0.3}}]},
+                "other": {caption: "Other", regions: []}}})
+        compare(settings.gameProfileKeys.length, 2)
+        compare(settings.currentGameKey, "witcher3.exe")
+        const page = findChild(settings, "settingsPage1")
+        function find(item, name) {
+            if (item.objectName === name) return item
+            for (const c of item.children || []) { const f = find(c, name); if (f) return f }
+            return null
+        }
+        tryVerify(() => find(page.contentItem, "forgetGame_other") !== null)
+        const other = find(page.contentItem, "forgetGame_other")
+        const selected = find(page.contentItem, "forgetGame_witcher3.exe")
+        verify(other.enabled)
+        verify(!selected.enabled, "the game being played is saved again at once")
+        other.clicked()
+        compare(controller.forgotten.length, 1)
+        compare(controller.forgotten[0], "other")
+        settings.reload()
+    }
+
+    function test_unsupportedCaptureFeaturesAreExplained() {
+        settings.show()
+        settings.reload()
+        const tabs = findChild(settings, "settingsTabs")
+        function find(item, name) {
+            if (item.objectName === name) return item
+            for (const c of item.children || []) { const f = find(c, name); if (f) return f }
+            return null
+        }
+        function note(page, name) { return find(findChild(settings, page).contentItem, name) }
+        settings.set("translation_display", "inplace")
+        controller.captureCapabilities = "{}"
+
+        tabs.currentIndex = 2
+        tryVerify(() => note("settingsPage2", "frameBlockerNote") !== null)
+        verify(!note("settingsPage2", "frameBlockerNote").visible, "nothing is blocked while the backend can do everything")
+        tabs.currentIndex = 3
+        tryVerify(() => note("settingsPage3", "inplaceBlockerNote") !== null)
+        verify(!note("settingsPage3", "inplaceBlockerNote").visible)
+
+        // The backend of the chosen window (the portal one) can do neither.
+        controller.captureCapabilities = JSON.stringify({window_geometry: false, inplace_overlay: false,
+            frameBlocker: "положение окна на экране неизвестно, рамка не показывается",
+            inplaceBlocker: "положение окна на экране неизвестно, перевод показывается в окне перевода"})
+        const inplaceNote = note("settingsPage3", "inplaceBlockerNote")
+        tryVerify(() => inplaceNote.visible)
+        verify(inplaceNote.text.indexOf("в окне перевода") >= 0)
+        tabs.currentIndex = 2
+        const frameNote = note("settingsPage2", "frameBlockerNote")
+        tryVerify(() => frameNote.visible)
+        verify(frameNote.text.indexOf("рамка не показывается") >= 0)
+
+        // Nothing to warn about while the translation window is chosen.
+        settings.set("translation_display", "window")
+        tabs.currentIndex = 3
+        tryVerify(() => !inplaceNote.visible)
+        controller.captureCapabilities = "{}"
+        settings.apply()
+    }
+
+    function test_ocrEngineAutoAndConfidenceThreshold() {
+        settings.show()
+        settings.reload()
+        findChild(settings, "settingsTabs").currentIndex = 0
+        const box = findChild(settings, "ocrEngineBox")
+        verify(box !== null)
+        compare(box.count, 3)
+        settings.set("ocr_engine", "tesseract")
+        compare(box.currentIndex, 0)
+        settings.set("ocr_engine", "auto")
+        compare(box.currentIndex, 2)
+        verify(settings.usesPaddle, "auto may call PaddleOCR: its Python is configurable")
+        box.currentIndex = 1
+        box.activated(1)
+        compare(settings.current.ocr_engine, "paddleocr")
+        settings.set("ocr_engine", "tesseract")
+        verify(!settings.usesPaddle)
+
+        const spin = findChild(settings, "ocrMinConfidence")
+        verify(spin !== null)
+        compare(spin.value, 30, "default threshold")
+        spin.value = 55
+        spin.valueModified()
+        compare(settings.current.ocr_min_confidence, 55)
+        settings.apply()
+        compare(JSON.parse(controller.saved).ocr_min_confidence, 55)
+        settings.set("ocr_min_confidence", 30)
+        settings.apply()
+    }
+
+    function test_gameProfilesSwitchSavesTheSetting() {
+        settings.show()
+        settings.reload()
+        findChild(settings, "settingsTabs").currentIndex = 1
+        const toggle = findChild(settings, "gameProfilesSwitch")
+        verify(toggle !== null)
+        compare(toggle.checked, true, "on by default")
+        settings.set("game_profiles_enabled", false)
+        settings.apply()
+        compare(JSON.parse(controller.saved).game_profiles_enabled, false)
+        settings.set("game_profiles_enabled", true)
         settings.apply()
     }
 

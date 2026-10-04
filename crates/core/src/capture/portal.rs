@@ -9,7 +9,7 @@
 //! `restore_token` сохраняется в настройках: при следующем запуске окно выбирается без диалога.
 
 use super::{Capture, CaptureError, rect_px};
-use crate::settings::{NormRect, WindowKey};
+use crate::settings::{NormRect, Settings, WindowKey};
 use futures_util::StreamExt;
 use image::{DynamicImage, ImageFormat};
 use std::collections::HashMap;
@@ -414,6 +414,8 @@ impl PortalCapture {
 }
 
 impl Capture for PortalCapture {
+    fn capabilities(&self, window: &WindowKey, settings: &Settings) -> super::CaptureCapabilities { super::capabilities_for(window, settings) }
+
     async fn grab(&self, window: &WindowKey, rect: NormRect) -> Result<DynamicImage, CaptureError> {
         if !is_portal_window(window) {
             return Err(CaptureError::WindowGone);

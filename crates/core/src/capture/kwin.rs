@@ -7,7 +7,7 @@
 //! (см. packaging/io.lipa.Translator.desktop). Обходов модели безопасности нет.
 
 use super::{Capture, CaptureError, rect_px};
-use crate::settings::{NormRect, WindowKey};
+use crate::settings::{NormRect, Settings, WindowKey};
 use image::{DynamicImage, RgbaImage};
 use std::collections::HashMap;
 use std::io::Read;
@@ -43,6 +43,11 @@ pub struct WindowGeometry {
     pub y: f64,
     pub w: f64,
     pub h: f64,
+}
+
+impl From<[f64; 4]> for WindowGeometry {
+    /// x, y, ширина, высота: так геометрия окна приходит в QML и обратно.
+    fn from([x, y, w, h]: [f64; 4]) -> Self { Self { x, y, w, h } }
 }
 
 impl WindowGeometry {
@@ -285,6 +290,8 @@ pub fn rgba_from_raw(w: u32, h: u32, stride: u32, format: u32, data: &[u8]) -> R
 }
 
 impl Capture for KwinCapture {
+    fn capabilities(&self, _: &WindowKey, _: &Settings) -> super::CaptureCapabilities { super::CaptureCapabilities::KWIN }
+
     async fn grab(&self, window: &WindowKey, rect: NormRect) -> Result<DynamicImage, CaptureError> {
         let full = self.grab_window(&window.uuid).await?;
         let (x, y, w, h) = rect_px(rect, full.width(), full.height());
