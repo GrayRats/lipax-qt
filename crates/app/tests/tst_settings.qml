@@ -36,6 +36,7 @@ TestCase {
         function missingLanguages(spec) { return "[]" }
         function applySettings(json) { saved = json }
         function refreshTesseract() {}
+        function bundledFonts() { return JSON.stringify(["Inter", "PT Serif", "Roboto Slab", "JetBrains Mono", "Noto Sans CJK SC"]) }
     }
     Lipa.SettingsWindow { id: settings; controller: controller }
 

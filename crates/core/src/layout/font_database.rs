@@ -77,43 +77,114 @@ pub struct InstalledFontDatabase {
 }
 
 static SYSTEM: RwLock<Option<Arc<InstalledFontDatabase>>> = RwLock::new(None);
+/// Реестр с учётом того, что Qt реально загрузил; пересоздаётся при `set_bundled_available`.
+static BUNDLED_CACHE: RwLock<Option<Arc<InstalledFontDatabase>>> = RwLock::new(None);
 static BUNDLED_AVAILABLE: RwLock<Option<BTreeSet<String>>> = RwLock::new(None);
 
-/// Семейства, реально загруженные Qt из комплекта приложения. До инициализации GUI
-/// используется полная таблица (для тестов ядра и проверки выбора).
-pub fn set_bundled_available(families: impl IntoIterator<Item = String>) {
-    *BUNDLED_AVAILABLE.write().unwrap() = Some(families.into_iter().collect());
+/// Шрифт, поставляемый с приложением. Единственный источник истины: из этой таблицы строятся
+/// и выбор шрифта, и список в настройках; загрузчик Qt просто читает каталог со шрифтами.
+/// Курсивных файлов нет (ради размера): курсив рисует Qt синтетическим наклоном.
+#[derive(Debug, Clone, Copy)]
+pub struct BundledFont {
+    /// Имя семейства, как его сообщает Qt после загрузки файла.
+    pub family: &'static str,
+    pub files: &'static [&'static str],
+    pub category: FontCategory,
+    /// Языковые теги fontconfig, которые шрифт покрывает полностью.
+    pub langs: &'static [&'static str],
+    pub weights: &'static [FontWeight],
+    pub monospace: bool,
+    pub condensed: bool,
+    /// Средняя ширина глифа в долях кегля (оценка; точные метрики — у Qt при подгонке).
+    pub glyph_width: f32,
 }
 
-/// Минимальный набор, независимый от шрифтов системы и порядка fontconfig.
-pub const BUNDLED_FAMILIES: &[&str] = &[
-    "Inter", "Noto Sans", "Noto Serif", "JetBrains Mono",
-    "Noto Sans CJK JP", "Noto Sans CJK KR", "Noto Sans CJK SC", "Noto Sans CJK TC",
-    "Noto Serif CJK JP", "Noto Serif CJK KR", "Noto Serif CJK SC", "Noto Serif CJK TC",
+use FontWeight::{Black, Bold, DemiBold, ExtraBold, ExtraLight, Light, Medium, Normal, Thin};
+const LATIN: &[&str] = &["en", "ru", "uk", "el"];
+const CJK: &[&str] = &["en", "ru", "ja", "ko", "zh-cn", "zh-tw"];
+const W_ALL: &[FontWeight] = &[Thin, ExtraLight, Light, Normal, Medium, DemiBold, Bold, ExtraBold, Black];
+const W_200_900: &[FontWeight] = &[ExtraLight, Light, Normal, Medium, DemiBold, Bold, ExtraBold, Black];
+const W_300_800: &[FontWeight] = &[Light, Normal, Medium, DemiBold, Bold, ExtraBold];
+const W_400_700: &[FontWeight] = &[Normal, Medium, DemiBold, Bold];
+const W_400_800: &[FontWeight] = &[Normal, Medium, DemiBold, Bold, ExtraBold];
+const W_100_800: &[FontWeight] = &[Thin, ExtraLight, Light, Normal, Medium, DemiBold, Bold, ExtraBold];
+const W_300_700: &[FontWeight] = &[Light, Normal, Medium, DemiBold, Bold];
+const W_REG_BOLD: &[FontWeight] = &[Normal, Bold];
+
+use FontCategory::{CjkSans, Condensed, HumanistSans, GeometricSans, Monospace, NeoGrotesqueSans, OldStyleSerif, Serif, SlabSerif, TransitionalSerif};
+macro_rules! font {
+    ($family:literal, [$($file:literal),+], $cat:expr, $weights:expr, $width:expr $(, $flag:ident)?) => {
+        BundledFont { family: $family, files: &[$($file),+], category: $cat, langs: LATIN, weights: $weights, glyph_width: $width,
+            monospace: font!(@mono $($flag)?), condensed: font!(@cond $($flag)?) }
+    };
+    (@mono mono) => { true }; (@mono $($x:ident)?) => { false };
+    (@cond condensed) => { true }; (@cond $($x:ident)?) => { false };
+}
+
+/// Набор независим от шрифтов системы: одинаковый выбор на любом дистрибутиве.
+pub const BUNDLED: &[BundledFont] = &[
+    font!("Inter", ["Inter.ttf"], NeoGrotesqueSans, W_ALL, 0.55),
+    font!("Roboto", ["Roboto.ttf"], NeoGrotesqueSans, W_ALL, 0.53),
+    font!("Noto Sans", ["NotoSans.ttf"], HumanistSans, W_ALL, 0.54),
+    font!("Open Sans", ["OpenSans.ttf"], HumanistSans, W_300_800, 0.55),
+    font!("Fira Sans", ["FiraSans-Regular.ttf", "FiraSans-Bold.ttf"], HumanistSans, W_REG_BOLD, 0.52),
+    font!("Montserrat", ["Montserrat.ttf"], GeometricSans, W_ALL, 0.63),
+    font!("Roboto Condensed", ["RobotoCondensed.ttf"], Condensed, W_ALL, 0.44, condensed),
+    font!("Noto Serif", ["NotoSerif.ttf"], TransitionalSerif, W_ALL, 0.56),
+    font!("PT Serif", ["PTSerif-Regular.ttf", "PTSerif-Bold.ttf"], TransitionalSerif, W_REG_BOLD, 0.51),
+    font!("Source Serif 4", ["SourceSerif4.ttf"], Serif, W_200_900, 0.50),
+    font!("Literata", ["Literata.ttf"], Serif, W_200_900, 0.55),
+    font!("Lora", ["Lora.ttf"], Serif, W_400_700, 0.52),
+    font!("EB Garamond", ["EBGaramond.ttf"], OldStyleSerif, W_400_800, 0.45),
+    font!("Roboto Slab", ["RobotoSlab.ttf"], SlabSerif, W_ALL, 0.57),
+    font!("Bitter", ["Bitter.ttf"], SlabSerif, W_ALL, 0.56),
+    font!("JetBrains Mono", ["JetBrainsMono.ttf"], Monospace, W_100_800, 0.60, mono),
+    font!("Fira Code", ["FiraCode.ttf"], Monospace, W_300_700, 0.60, mono),
+    font!("Source Code Pro", ["SourceCodePro.ttf"], Monospace, W_200_900, 0.60, mono),
+    BundledFont { family: "Noto Sans CJK SC", files: &["NotoSansCJK-VF.otf"], category: CjkSans, langs: CJK, weights: W_ALL,
+        monospace: false, condensed: false, glyph_width: 1.0 },
 ];
 
-fn bundled_info(family: &str) -> FontInfo {
-    let cjk = family.contains("CJK");
-    let serif = family.contains("Serif");
-    let mono = family == "JetBrains Mono";
-    let category = if cjk && serif { FontCategory::CjkSerif } else if cjk { FontCategory::CjkSans }
-        else if serif { FontCategory::Serif } else if mono { FontCategory::Monospace }
-        else if family == "Inter" { FontCategory::NeoGrotesqueSans } else { FontCategory::HumanistSans };
-    let langs = if cjk { ["en", "ru", "ja", "ko", "zh-cn", "zh-tw"].into_iter().map(str::to_owned).collect() }
-        else if mono { ["en", "ru", "el"].into_iter().map(str::to_owned).collect() }
-        else { ["en", "ru", "uk", "el"].into_iter().map(str::to_owned).collect() };
-    FontInfo { family: family.into(), supports_latin: true, supports_cyrillic: true, supports_cjk: cjk,
-        langs, category, available_weights: if cjk { vec![FontWeight::Normal, FontWeight::Bold] } else { FontWeight::ALL.to_vec() }, italic_available: !cjk,
-        is_condensed: false, is_monospace: mono, average_glyph_width: if cjk { 1.0 } else if mono { 0.6 } else { 0.52 }, x_height: None }
+fn bundled_info(f: &BundledFont) -> FontInfo {
+    FontInfo {
+        family: f.family.into(),
+        supports_latin: true,
+        supports_cyrillic: true,
+        supports_cjk: f.langs.contains(&"ja"),
+        langs: f.langs.iter().map(|l| (*l).to_owned()).collect(),
+        category: f.category,
+        available_weights: f.weights.to_vec(),
+        italic_available: false,
+        is_condensed: f.condensed,
+        is_monospace: f.monospace,
+        average_glyph_width: f.glyph_width,
+        x_height: None,
+    }
+}
+
+/// Семейства, реально загруженные Qt из комплекта приложения. До инициализации GUI используется
+/// вся таблица (тесты ядра). Каждое незагруженное семейство — ошибка в журнале: без него выбор
+/// шрифта молча стал бы беднее.
+pub fn set_bundled_available(families: impl IntoIterator<Item = String>) {
+    let loaded: BTreeSet<String> = families.into_iter().collect();
+    for font in BUNDLED.iter().filter(|f| !loaded.contains(f.family)) {
+        tracing::error!(target: "inplace.font", family = font.family, files = ?font.files, "bundled font family is not available");
+    }
+    *BUNDLED_AVAILABLE.write().unwrap() = Some(loaded);
+    *BUNDLED_CACHE.write().unwrap() = None;
 }
 
 impl InstalledFontDatabase {
+    /// Шрифты приложения. Результат общий и неизменяемый: повторные вызовы не пересобирают таблицу.
     pub fn bundled() -> Arc<Self> {
+        if let Some(db) = BUNDLED_CACHE.read().unwrap().as_ref() { return db.clone(); }
         let loaded = BUNDLED_AVAILABLE.read().unwrap();
-        let fonts = BUNDLED_FAMILIES.iter()
-            .filter(|name| loaded.as_ref().is_none_or(|set| set.contains::<str>(**name)))
-            .map(|name| bundled_info(name)).collect();
-        Arc::new(Self { fonts })
+        let fonts = BUNDLED.iter()
+            .filter(|f| loaded.as_ref().is_none_or(|set| set.contains(f.family)))
+            .map(bundled_info).collect();
+        let db = Arc::new(Self { fonts });
+        *BUNDLED_CACHE.write().unwrap() = Some(db.clone());
+        db
     }
 }
 
@@ -230,9 +301,20 @@ Fancy Latin Only\ten|de|fr\t0\t80\t100\t0\n";
     #[test]
     fn bundled_registry_has_fixed_families_and_cjk_coverage() {
         let db = InstalledFontDatabase::bundled();
-        assert_eq!(db.fonts().len(), BUNDLED_FAMILIES.len());
-        assert!(db.find("Noto Sans CJK JP").unwrap().covers("ja"));
-        assert!(db.find("Noto Serif CJK SC").unwrap().covers("zh-cn"));
+        assert_eq!(db.fonts().len(), BUNDLED.len());
+        let cjk = db.find("Noto Sans CJK SC").unwrap();
+        assert!(["ja", "ko", "zh-cn", "zh-tw"].iter().all(|l| cjk.covers(l)));
         assert!(!db.find("Inter").unwrap().covers("ja"));
+        // Every family covers the scripts the matcher relies on, and no file is shipped twice.
+        assert!(db.fonts().iter().all(|f| f.covers("en") && f.covers("ru")));
+        let mut files: Vec<_> = BUNDLED.iter().flat_map(|f| f.files).collect();
+        files.sort();
+        assert!(files.windows(2).all(|w| w[0] != w[1]), "duplicate font file in the registry");
+        assert!(files.iter().all(|f| f.ends_with(".ttf") || f.ends_with(".otf")), "no italic or collection files");
+        assert!(BUNDLED.iter().all(|f| f.files.iter().all(|n| !n.to_ascii_lowercase().contains("italic"))));
+        // Every category used by the matcher has at least one bundled family.
+        for (name, cat) in [("slab", FontCategory::SlabSerif), ("mono", FontCategory::Monospace), ("condensed", FontCategory::Condensed), ("cjk", FontCategory::CjkSans)] {
+            assert!(db.fonts().iter().any(|f| f.category == cat), "no bundled {name} font");
+        }
     }
 }

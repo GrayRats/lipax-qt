@@ -14,17 +14,22 @@ use super::font_database::{FontInfo, InstalledFontDatabase};
 use super::{FontCategory, Script, TextBlockType};
 use std::collections::BTreeMap;
 
-pub const SANS: &[&str] = &["Inter", "Noto Sans"];
-pub const SERIF: &[&str] = &["Noto Serif"];
-pub const SLAB: &[&str] = &["Noto Serif"];
-pub const MONO: &[&str] = &["JetBrains Mono"];
-pub const CJK_SANS: &[&str] = &["Noto Sans CJK SC", "Noto Sans CJK TC", "Noto Sans CJK JP", "Noto Sans CJK KR"];
-pub const CJK_SERIF: &[&str] = &["Noto Serif CJK SC", "Noto Serif CJK TC", "Noto Serif CJK JP", "Noto Serif CJK KR"];
+// Кураторские списки: порядок — приоритет. Содержат только семейства из реестра приложения
+// (`font_database::BUNDLED`); тест `lists_only_name_bundled_families` следит за этим.
+pub const SANS: &[&str] = &["Inter", "Roboto", "Noto Sans", "Open Sans", "Fira Sans", "Montserrat"];
+pub const SERIF: &[&str] = &["PT Serif", "Noto Serif", "Source Serif 4", "Literata", "Lora", "EB Garamond"];
+pub const SLAB: &[&str] = &["Roboto Slab", "Bitter"];
+pub const MONO: &[&str] = &["JetBrains Mono", "Source Code Pro", "Fira Code"];
+pub const CONDENSED: &[&str] = &["Roboto Condensed", "Inter"];
+/// CJK-шрифт один (Noto Sans CJK, все регионы); CJK-варианта с засечками в комплекте нет.
+pub const CJK_SANS: &[&str] = &["Noto Sans CJK SC"];
+pub const CJK_SERIF: &[&str] = &["Noto Sans CJK SC"];
 /// Общий список для категории `Unknown`, если тип блока тоже неизвестен.
-pub const GENERAL: &[&str] = &["Noto Serif", "Inter", "Noto Sans", "JetBrains Mono"];
-const UI_SANS: &[&str] = &["Inter", "Noto Sans"];
-const DIALOGUE_SERIF: &[&str] = &["Noto Serif", "Inter"];
-const SUBTITLE_SANS: &[&str] = &["Inter", "Noto Sans"];
+pub const GENERAL: &[&str] = &["PT Serif", "Roboto Slab", "Inter", "Noto Sans", "Noto Serif", "Roboto", "Open Sans",
+    "Fira Sans", "Source Serif 4", "Montserrat", "Roboto Condensed", "JetBrains Mono", "Source Code Pro"];
+const UI_SANS: &[&str] = &["Inter", "Noto Sans", "Roboto", "Open Sans", "Fira Sans"];
+const DIALOGUE_SERIF: &[&str] = &["PT Serif", "Noto Serif", "Source Serif 4", "Literata", "Lora", "Inter"];
+const SUBTITLE_SANS: &[&str] = &["Inter", "Noto Sans", "Roboto", "Open Sans"];
 
 /// Пользовательские предпочтения: замена для категории и семейства, проверяемые первыми.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -90,6 +95,7 @@ impl FontMatcher {
             c if c.is_serif() => SERIF,
             FontCategory::SlabSerif => SLAB,
             FontCategory::Monospace => MONO,
+            FontCategory::Condensed => CONDENSED,
             FontCategory::Unknown => match block_type {
                 TextBlockType::UiLabel | TextBlockType::Button | TextBlockType::MenuItem | TextBlockType::Notification => UI_SANS,
                 TextBlockType::Dialogue => DIALOGUE_SERIF,
@@ -106,11 +112,6 @@ impl FontMatcher {
         } else if !script.is_cjk() {
             // Для латиницы и кириллицы CJK-семейства из общего списка не предпочитаются.
             list.retain(|f| !is_cjk_family(f));
-        }
-        if script.is_cjk() {
-            let suffix = match script { Script::Japanese => " JP", Script::Korean => " KR",
-                Script::ChineseSimplified => " SC", Script::ChineseTraditional => " TC", _ => "" };
-            list.sort_by_key(|f| !f.ends_with(suffix));
         }
         list
     }
@@ -182,11 +183,38 @@ mod tests {
     use crate::layout::font_database::tests::SAMPLE;
 
     #[test]
-    fn bundled_cjk_prioritizes_target_variant() {
+    fn every_cjk_script_uses_the_single_bundled_cjk_font() {
         let db = InstalledFontDatabase::bundled();
-        let a = analysis(FontCategory::CjkSans);
-        let picked = FontMatcher.select_font(&a, Script::Japanese, TextBlockType::Subtitle, &db, &Default::default());
-        assert_eq!(picked.family, "Noto Sans CJK JP");
+        for script in [Script::Japanese, Script::Korean, Script::ChineseSimplified, Script::ChineseTraditional] {
+            for category in [FontCategory::CjkSans, FontCategory::Serif, FontCategory::Unknown] {
+                let picked = FontMatcher.select_font(&analysis(category), script, TextBlockType::Subtitle, &db, &Default::default());
+                assert_eq!((picked.family.as_str(), picked.generic), ("Noto Sans CJK SC", false), "{script:?} {category:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn lists_only_name_bundled_families() {
+        let db = InstalledFontDatabase::bundled();
+        for list in [SANS, SERIF, SLAB, MONO, CONDENSED, CJK_SANS, CJK_SERIF, GENERAL, UI_SANS, DIALOGUE_SERIF, SUBTITLE_SANS] {
+            for family in list { assert!(db.find(family).is_some(), "{family} is not a bundled family"); }
+        }
+    }
+
+    #[test]
+    fn every_category_resolves_to_a_bundled_font_for_latin_and_cyrillic() {
+        let db = InstalledFontDatabase::bundled();
+        for category in [FontCategory::SansSerif, FontCategory::Serif, FontCategory::SlabSerif, FontCategory::Monospace,
+                         FontCategory::Condensed, FontCategory::Display, FontCategory::Unknown] {
+            for script in [Script::Latin, Script::Cyrillic] {
+                let a = FontAnalysis { monospace: category == FontCategory::Monospace, condensed: category == FontCategory::Condensed, ..analysis(category) };
+                let picked = FontMatcher.select_font(&a, script, TextBlockType::Dialogue, &db, &Default::default());
+                assert!(!picked.generic, "{category:?} {script:?} fell back to a generic family");
+                assert!(db.find(&picked.family).is_some_and(|f| f.covers(script.fontconfig_lang())));
+            }
+        }
+        let slab = FontMatcher.select_font(&analysis(FontCategory::SlabSerif), Script::Cyrillic, TextBlockType::Dialogue, &db, &Default::default());
+        assert!(["Roboto Slab", "Bitter"].contains(&slab.family.as_str()), "slab text gets a slab font, got {}", slab.family);
     }
 
     fn analysis(category: FontCategory) -> FontAnalysis {
@@ -195,26 +223,26 @@ mod tests {
     }
 
     fn select(category: FontCategory, script: Script, block: TextBlockType) -> String {
-        let db = InstalledFontDatabase::parse(SAMPLE);
+        let db = InstalledFontDatabase::bundled();
         FontMatcher.select_font(&analysis(category), script, block, &db, &FontPreferences::default()).family
     }
 
     #[test]
     fn unknown_dialogue_prefers_serif_and_ui_prefers_sans() {
-        assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Dialogue), "Noto Serif");
+        assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Dialogue), "PT Serif");
         assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Button), "Inter");
-        let db = InstalledFontDatabase::parse(SAMPLE);
+        let db = InstalledFontDatabase::bundled();
         let inter = FontMatcher.select_font(&analysis(FontCategory::Unknown), Script::Cyrillic, TextBlockType::Button, &db, &Default::default());
         assert_eq!(inter.condensed_family.as_deref(), Some("Roboto Condensed"), "narrow sans for overlong translations");
-        assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Unknown), "Noto Serif", "general list starts with Noto Serif");
+        assert_eq!(select(FontCategory::Unknown, Script::Cyrillic, TextBlockType::Unknown), "PT Serif", "general list starts with PT Serif");
     }
 
     #[test]
     fn categories_map_to_matching_families() {
-        assert_eq!(select(FontCategory::SlabSerif, Script::Cyrillic, TextBlockType::Unknown), "Noto Serif");
+        assert_eq!(select(FontCategory::SlabSerif, Script::Cyrillic, TextBlockType::Unknown), "Roboto Slab");
         let mut mono = analysis(FontCategory::Monospace);
         mono.monospace = true;
-        let db = InstalledFontDatabase::parse(SAMPLE);
+        let db = InstalledFontDatabase::bundled();
         assert_eq!(FontMatcher.select_font(&mono, Script::Latin, TextBlockType::Unknown, &db, &Default::default()).family, "JetBrains Mono");
     }
 
@@ -227,7 +255,7 @@ mod tests {
         assert!(s.generic, "no Cyrillic font installed → generic family");
         assert_eq!(s.family, "serif");
         // Перевод на японский — только CJK-шрифт.
-        assert_eq!(select(FontCategory::SansSerif, Script::Japanese, TextBlockType::Subtitle), "Noto Sans CJK JP");
+        assert_eq!(select(FontCategory::SansSerif, Script::Japanese, TextBlockType::Subtitle), "Noto Sans CJK SC");
     }
 
     #[test]

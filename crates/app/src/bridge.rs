@@ -97,6 +97,10 @@ pub mod qobject {
         #[cxx_name = "translateOnce"]
         fn translate_once(self: Pin<&mut Controller>);
         /// «Поверх оригинала»: определить шрифты полей заново (выбор шрифта иначе зафиксирован за полем).
+        /// Семейства шрифтов приложения (JSON-массив): для выбора шрифта в настройках.
+        #[qinvokable]
+        #[cxx_name = "bundledFonts"]
+        fn bundled_fonts(self: &Controller) -> QString;
         #[qinvokable]
         #[cxx_name = "reanalyzeFonts"]
         fn reanalyze_fonts(self: Pin<&mut Controller>);
@@ -935,6 +939,12 @@ impl qobject::Controller {
         self.as_mut().set_status_kind(QString::from("info"));
         self.as_mut().set_status(QString::from("Распознавание окна…"));
         let _ = self.rust().shared.cmds.send(Cmd::TranslateOnce);
+    }
+
+    fn bundled_fonts(&self) -> QString {
+        let db = lipa_core::layout::font_database::InstalledFontDatabase::bundled();
+        let names: Vec<&str> = db.fonts().iter().map(|f| f.family.as_str()).collect();
+        QString::from(serde_json::to_string(&names).unwrap_or_else(|_| "[]".into()).as_str())
     }
 
     fn reanalyze_fonts(mut self: Pin<&mut Self>) {

@@ -4,9 +4,10 @@ pkgrel=1
 pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')
 url="https://github.com/GrayRats/lipax-qt"
-license=('MIT' 'OFL-1.1')
+license=('MIT' 'OFL-1.1' 'Apache-2.0')  # Apache-2.0: Roboto Slab; the other bundled fonts are OFL-1.1
 depends=('qt6-base' 'qt6-declarative' 'qt6-svg' 'layer-shell-qt' 'kwindowsystem' 'tesseract' 'tesseract-data-eng')
-makedepends=('cargo' 'rust')
+# xz: the bundled fonts are stored compressed and unpacked by crates/app/build.rs
+makedepends=('cargo' 'rust' 'xz')
 provides=('LipaXQT' 'lipa')
 conflicts=('LipaXQT' 'lipa')
 optdepends=(
@@ -31,13 +32,6 @@ else
     source=()
     sha256sums=()
 fi
-_font_manifest="$startdir/fonts.sources"
-if [[ ! -f $_font_manifest ]]; then _font_manifest="$startdir/packaging/fonts.sources"; fi
-while read -r _font_name _font_sha _font_url; do
-    [[ -z ${_font_name:-} || $_font_name == \#* ]] && continue
-    source+=("$_font_name::$_font_url")
-    sha256sums+=("$_font_sha")
-done < "$_font_manifest"
 options=('!lto' '!debug')
 
 _project_dir() {
@@ -81,13 +75,12 @@ package() {
     for doc in PaddleOCR ARCHITECTURE IMPROVEMENTS LOGGING; do
         install -Dm644 "docs/$doc.md" "$pkgdir/usr/share/doc/$pkgname/$doc.md"
     done
-    while read -r _font_name _font_sha _font_url; do
-        [[ -z ${_font_name:-} || $_font_name == \#* ]] && continue
-        if [[ $_font_name == *.ttf || $_font_name == *.ttc ]]; then
-            install -Dm644 "$srcdir/$_font_name" "$pkgdir/usr/share/lipax/fonts/$_font_name"
-        else
-            install -Dm644 "$srcdir/$_font_name" "$pkgdir/usr/share/licenses/lipax/$_font_name"
-        fi
-    done < "$_font_manifest"
+    # Fonts were unpacked from assets/fonts/*.xz by build.rs; licences are shipped with them.
+    for _font in crates/app/assets/fonts/*.ttf crates/app/assets/fonts/*.otf; do
+        install -Dm644 "$_font" "$pkgdir/usr/share/lipax/fonts/${_font##*/}"
+    done
+    for _licence in crates/app/assets/fonts/*.txt; do
+        install -Dm644 "$_licence" "$pkgdir/usr/share/licenses/$pkgname/fonts/${_licence##*/}"
+    done
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

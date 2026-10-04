@@ -80,9 +80,8 @@ ApplicationWindow {
         { value: "slab_serif", label: "Брусковые засечки" }, { value: "monospace", label: "Моноширинный" },
         { value: "cjk_sans", label: "CJK без засечек" }, { value: "cjk_serif", label: "CJK с засечками" }
     ]
-    readonly property var bundledFonts: ["Inter", "Noto Sans", "Noto Serif", "JetBrains Mono",
-        "Noto Sans CJK JP", "Noto Sans CJK KR", "Noto Sans CJK SC", "Noto Sans CJK TC",
-        "Noto Serif CJK JP", "Noto Serif CJK KR", "Noto Serif CJK SC", "Noto Serif CJK TC"]
+    // The families LipaX ships (and Qt loaded); the registry lives in Rust.
+    readonly property var bundledFonts: { try { return JSON.parse(controller.bundledFonts()) } catch (e) { return [] } }
     // Строка свойства: «Авто / Вручную» и редактор значения (дочерние элементы экземпляра).
     component PropRow: RowLayout {
         id: propRow

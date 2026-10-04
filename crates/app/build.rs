@@ -1,6 +1,34 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
+use std::{fs, path::Path, process::Command};
+
+/// The repository stores the bundled fonts compressed (`assets/fonts/*.xz`); the application loads
+/// the plain files. Unpacking happens here, so a clean checkout builds without any download.
+/// A missing `xz` or a damaged archive is reported as a build warning; at run time the missing
+/// families are logged as errors and the in-place mode skips fields it cannot render.
+fn unpack_fonts() {
+    let dir = Path::new("assets/fonts");
+    println!("cargo:rerun-if-changed=assets/fonts");
+    let Ok(entries) = fs::read_dir(dir) else { return };
+    for archive in entries.flatten().map(|e| e.path()).filter(|p| p.extension().is_some_and(|e| e == "xz")) {
+        let target = archive.with_extension("");
+        let current = fs::metadata(&target).and_then(|t| t.modified()).ok()
+            .zip(fs::metadata(&archive).and_then(|a| a.modified()).ok())
+            .is_some_and(|(plain, packed)| plain >= packed);
+        if current { continue; }
+        let partial = target.with_extension("partial");
+        let status = fs::File::create(&partial).and_then(|out| Command::new("xz").arg("-dc").arg(&archive).stdout(out).status());
+        match status {
+            Ok(s) if s.success() => { let _ = fs::rename(&partial, &target); }
+            other => {
+                let _ = fs::remove_file(&partial);
+                println!("cargo:warning=cannot unpack {}: {other:?} (install `xz`)", archive.display());
+            }
+        }
+    }
+}
 
 fn main() {
+    unpack_fonts();
     let builder = CxxQtBuilder::new_qml_module(QmlModule::new("io.lipa").qml_files([
         "qml/main.qml",
         "qml/SettingsWindow.qml",

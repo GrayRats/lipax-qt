@@ -1,5 +1,8 @@
 target/
-/crates/app/assets/fonts/
+# Unpacked at build time from the tracked *.xz (crates/app/build.rs)
+/crates/app/assets/fonts/*.ttf
+/crates/app/assets/fonts/*.otf
+/crates/app/assets/fonts/*.ttc
 
 # Local package/build artifacts
 /dist/

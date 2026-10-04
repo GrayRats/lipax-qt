@@ -9,18 +9,14 @@ inline void configureLipaApplication() {
     QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/lipa/icon.svg")));
 }
 
+// Loads every .ttf/.otf from `directory`. Which families must be there is decided by the Rust
+// registry (layout::font_database::BUNDLED); it logs each missing family as an error.
 inline QString loadLipaFonts(const QString &directory) {
-    const char *names[] = {
-        "inter-Inter[opsz,wght].ttf", "inter-Inter-Italic[opsz,wght].ttf",
-        "notosans-NotoSans[wdth,wght].ttf", "notosans-NotoSans-Italic[wdth,wght].ttf",
-        "notoserif-NotoSerif[wdth,wght].ttf", "notoserif-NotoSerif-Italic[wdth,wght].ttf",
-        "jetbrainsmono-JetBrainsMono[wght].ttf", "jetbrainsmono-JetBrainsMono-Italic[wght].ttf",
-        "NotoSansCJK-Regular.ttc", "NotoSansCJK-Bold.ttc",
-        "NotoSerifCJK-Regular.ttc", "NotoSerifCJK-Bold.ttc",
-    };
+    const QDir dir(directory);
+    if (!dir.exists()) qCritical().noquote() << "inplace.font: bundled font directory does not exist path=" << directory;
     QStringList families;
-    for (const char *name : names) {
-        const QString path = QDir(directory).filePath(QString::fromUtf8(name));
+    for (const QString &name : dir.entryList({"*.ttf", "*.otf"}, QDir::Files, QDir::Name)) {
+        const QString path = dir.filePath(name);
         const int id = QFontDatabase::addApplicationFont(path);
         if (id < 0) {
             qCritical().noquote() << "inplace.font: failed to load bundled font path=" << path;
