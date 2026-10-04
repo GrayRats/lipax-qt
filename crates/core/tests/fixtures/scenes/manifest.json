@@ -1,0 +1,29 @@
+{
+ "dialogue": {
+  "fields": 4,
+  "multiline": 1,
+  "kinds": [
+   "serif",
+   "serif",
+   "sans",
+   "sans"
+  ]
+ },
+ "subtitles": {
+  "fields": 1,
+  "multiline": 1,
+  "kinds": [
+   "sans"
+  ]
+ },
+ "menu": {
+  "fields": 4,
+  "multiline": 0,
+  "kinds": [
+   "mono",
+   "mono",
+   "mono",
+   "mono"
+  ]
+ }
+}

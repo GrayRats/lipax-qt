@@ -20,6 +20,8 @@ pub struct TrackedTextBlock {
     pub previous_rect: Rect,
     pub block_type: TextBlockType,
     pub line_height: f32,
+    /// Цвет чернил оригинала: поля одного оформления (кнопки, пункты меню) похожи цветом.
+    pub ink_color: [u8; 3],
     pub original_text: String,
     pub translated_text: String,
     pub detected_language: Script,
@@ -54,6 +56,7 @@ impl TrackedTextBlock {
             previous_rect: d.rect,
             block_type: d.block_type,
             line_height: d.line_height(),
+            ink_color: d.ink_color,
             original_text: String::new(),
             translated_text: String::new(),
             detected_language: Script::Other,
@@ -139,6 +142,7 @@ impl TextBlockTracker {
             t.previous_rect = t.current_rect;
             t.current_rect = d.rect;
             t.line_height = d.line_height();
+            t.ink_color = d.ink_color;
             if d.block_type != TextBlockType::Unknown { t.block_type = d.block_type; }
             t.last_seen = now;
             t.misses = 0;
@@ -171,6 +175,33 @@ impl TextBlockTracker {
 
     pub fn blocks(&self) -> &[TrackedTextBlock] {
         &self.blocks
+    }
+
+    /// Признаки шрифта поля для выбора. Короткий текст («OK», «Quit») по пикселям классифицируется
+    /// ненадёжно, а кнопки и пункты меню одного оформления почти всегда набраны одним шрифтом.
+    /// Малонадёжное поле поэтому перенимает признаки у заметно более надёжного поля с тем же
+    /// размером строки и похожим цветом. Результат не зависит от порядка обработки полей: берутся
+    /// признаки, измеренные по пикселям, а не уже выбранные шрифты.
+    pub fn analysis_with_peers(&self, id: u64) -> Option<FontAnalysis> {
+        const WEAK: f32 = 0.7;
+        const MARGIN: f32 = 0.12;
+        let own = self.get(id)?;
+        let mut best = own.font_analysis.clone()?;
+        if best.confidence >= WEAK { return Some(best); }
+        let color_distance = |a: [u8; 3], b: [u8; 3]| a.iter().zip(b).map(|(x, y)| (*x as f32 - y as f32).powi(2)).sum::<f32>().sqrt();
+        let peer = self.blocks.iter()
+            .filter(|p| p.id != id && p.misses == 0)
+            .filter(|p| p.line_height.max(own.line_height) / p.line_height.min(own.line_height).max(1.0) <= 1.1)
+            .filter(|p| color_distance(p.ink_color, own.ink_color) <= 70.0)
+            .filter_map(|p| p.font_analysis.as_ref())
+            .filter(|a| a.confidence >= best.confidence + MARGIN)
+            .max_by(|a, b| a.confidence.total_cmp(&b.confidence));
+        if let Some(peer) = peer {
+            // Начертание берётся у соседа; геометрия (высота прописных, наклон к своему тексту) — своя.
+            best = FontAnalysis { cap_height_px: best.cap_height_px, stroke_px: best.stroke_px, features: best.features.clone(),
+                confidence: (best.confidence + peer.confidence) / 2.0, ..peer.clone() };
+        }
+        Some(best)
     }
 
     /// Новый сеанс (другое окно, сброс): все поля и их шрифты забываются.

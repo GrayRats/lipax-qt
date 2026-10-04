@@ -122,8 +122,9 @@ fn color_distance(a: [u8; 3], b: [u8; 3]) -> f32 {
 /// Признаки поля для выбора шрифта. Пиксели CJK-текста не отличить от моноширинного (ровный шаг)
 /// и не классифицировать по засечкам, поэтому, если OCR прочитал CJK, категория берётся
 /// по языку оригинала: с засечками (минтё) при высоком контрасте штрихов, иначе — готика.
-fn analysis_for(t: &super::tracker::TrackedTextBlock) -> Option<FontAnalysis> {
-    let mut a = t.font_analysis.clone()?;
+fn analysis_for(tracker: &TextBlockTracker, id: u64) -> Option<FontAnalysis> {
+    let t = tracker.get(id)?;
+    let mut a = tracker.analysis_with_peers(id)?;
     if t.detected_language.is_cjk() {
         a.category = if a.features.contrast >= 1.8 { FontCategory::CjkSerif } else { FontCategory::CjkSans };
         a.monospace = false;
@@ -237,8 +238,8 @@ impl InplaceEngine {
     fn lock_font(&mut self, id: u64, s: &Settings) {
         if self.tracker.get(id).is_none_or(|t| t.font_selection_locked()) { return; }
         let db = self.font_db();
+        let Some(analysis) = analysis_for(&self.tracker, id) else { return };
         let Some(t) = self.tracker.get_mut(id) else { return };
-        let Some(analysis) = analysis_for(t) else { return };
         let selected = FontMatcher.select_font(&analysis, Script::from_lang(&s.target_lang), t.block_type, &db, &preferences(s));
         if analysis.category == FontCategory::Unknown {
             tracing::warn!(target: "inplace.font", block_id = id, fallback = %selected.family, "font category could not be determined");
@@ -340,8 +341,9 @@ impl InplaceEngine {
             let db = self.font_db();
             let target = Script::from_lang(&s.target_lang);
             for id in &ids {
+                let analysis = analysis_for(&self.tracker, *id);
                 if let Some(t) = self.tracker.get_mut(*id)
-                    && let (Some(a), true) = (analysis_for(t), t.font.is_some()) {
+                    && let (Some(a), true) = (analysis, t.font.is_some()) {
                         let selected = FontMatcher.select_font(&a, target, t.block_type, &db, &preferences(s));
                         t.font = if selected.generic { None } else { Some(selected) };
                         t.revision += 1;

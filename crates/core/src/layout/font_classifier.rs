@@ -105,7 +105,8 @@ fn merge_glyphs(mut parts: Vec<Rect>) -> Vec<Rect> {
 
 /// Отклонение шага от целого кратного по центрам глифов строки.
 fn pitch_error(glyphs: &[Rect]) -> Option<f32> {
-    if glyphs.len() < 6 { return None; }
+    // Короткая строка ровна случайно: надёжно судить о шаге можно от восьми глифов.
+    if glyphs.len() < 8 { return None; }
     let centers: Vec<f32> = glyphs.iter().map(|g| g.center().0).collect();
     let mut diffs: Vec<f32> = centers.windows(2).map(|p| p[1] - p[0]).filter(|d| *d > 1.0).collect();
     if diffs.len() < 5 { return None; }
