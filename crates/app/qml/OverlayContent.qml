@@ -23,7 +23,14 @@ Item {
 
     readonly property int frameWidth: Math.max(1, settings.border_width || 2) + (pinned ? 0 : 2)
     readonly property int padding: (settings.overlay_padding !== undefined ? settings.overlay_padding : 16) + frameWidth
-    readonly property int cornerRadius: floating ? (settings.overlay_corner_radius !== undefined ? settings.overlay_corner_radius : 12) : 0
+    readonly property int cornerRadius: pinned
+        ? (settings.overlay_pinned_corner_radius !== undefined ? settings.overlay_pinned_corner_radius : 0)
+        : (settings.overlay_corner_radius !== undefined ? settings.overlay_corner_radius : 12)
+    readonly property int requestedFontSize: settings.font_size || 20
+    readonly property bool autoShrink: settings.overlay_auto_shrink !== false
+    readonly property bool wrapOverflow: autoShrink && settings.text_wrap === false
+        && fitProbe.fontInfo.pixelSize <= 14 && fitProbe.contentWidth > textScroll.width
+    onTranslationChanged: textScroll.contentY = 0
 
     // ── Display style: blur / transparent / dim (or its light inverse) / solid ──
     readonly property string style: settings.overlay_style || "solid"
@@ -79,14 +86,35 @@ Item {
         color: content.settings.border_color || "#ff00ff"
         opacity: content.settings.border_opacity !== undefined ? content.settings.border_opacity : 0.65
     }
+    // A bounded measurement item lets Qt choose the largest real-font size that fits.
+    // The visible Text keeps its natural height, so overflow at 14 px remains scrollable.
+    Text {
+        id: fitProbe
+        objectName: "overlayFitProbe"
+        visible: false
+        width: textScroll.width
+        height: Math.max(1, textScroll.height - (originalText.visible ? originalText.implicitHeight + 4 : 0))
+        text: content.translation
+        textFormat: Text.PlainText
+        wrapMode: content.settings.text_wrap !== false ? Text.Wrap : Text.NoWrap
+        font.family: content.settings.font_family || "Inter"
+        font.pixelSize: content.requestedFontSize
+        font.bold: content.settings.font_bold === true
+        font.italic: content.settings.font_italic === true
+        lineHeight: content.settings.line_spacing || 1.0
+        fontSizeMode: content.autoShrink ? Text.Fit : Text.FixedSize
+        minimumPixelSize: Math.min(14, content.requestedFontSize)
+    }
     Flickable {
         id: textScroll
+        objectName: "overlayTextScroll"
         anchors.fill: parent
         anchors.margins: content.padding
         clip: true
         contentWidth: width
         contentHeight: Math.max(height, textColumn.implicitHeight)
         interactive: false
+        boundsBehavior: Flickable.StopAtBounds
         Column {
             id: textColumn
             width: parent.width
@@ -115,12 +143,13 @@ Item {
                 text: content.translation
                 textFormat: Text.PlainText
                 color: content.textColor
-                wrapMode: content.settings.text_wrap !== false ? Text.Wrap : Text.NoWrap
-                elide: content.settings.text_wrap === false ? Text.ElideRight : Text.ElideNone
+                wrapMode: content.settings.text_wrap !== false || content.wrapOverflow ? Text.Wrap : Text.NoWrap
+                elide: content.autoShrink ? Text.ElideNone
+                    : content.settings.text_wrap === false ? Text.ElideRight : Text.ElideNone
                 lineHeight: content.settings.line_spacing || 1.0
                 horizontalAlignment: content.settings.text_alignment === "left" ? Text.AlignLeft : content.settings.text_alignment === "right" ? Text.AlignRight : Text.AlignHCenter
-                font.family: content.settings.font_family || Qt.application.font.family
-                font.pixelSize: content.settings.font_size || 20
+                font.family: content.settings.font_family || "Inter"
+                font.pixelSize: content.autoShrink ? fitProbe.fontInfo.pixelSize : content.requestedFontSize
                 font.bold: content.settings.font_bold === true
                 font.italic: content.settings.font_italic === true
                 // Transparent style: a light shadow (no shaders, so it also renders without GPU).
@@ -163,7 +192,11 @@ Item {
             else if (content.floating) content.moveRequested()
         }
         onWheel: (wheel) => {
-            if (content.floating) textScroll.contentY = Math.max(0, Math.min(textScroll.contentY - wheel.angleDelta.y, textScroll.contentHeight - textScroll.height))
+            if (content.floating) {
+                textScroll.contentY = Math.max(0, Math.min(textScroll.contentY - wheel.angleDelta.y,
+                                                             textScroll.contentHeight - textScroll.height))
+                wheel.accepted = true
+            } else wheel.accepted = false
         }
     }
     // Close button of the floating window; above the drag area so it gets the click.

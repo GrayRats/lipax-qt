@@ -1,5 +1,5 @@
 pkgname=lipax
-pkgver=0.3.0
+pkgver=1.0.1
 pkgrel=1
 pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')
@@ -61,6 +61,8 @@ build() {
 check() {
     _project_dir
     cargo test --frozen --workspace
+    cargo build --frozen -p lipa --features lifecycle-test
+    bash packaging/test-process-exit.sh "$CARGO_TARGET_DIR/debug/lipax"
     QT_QPA_PLATFORM=offscreen QT_QUICK_CONTROLS_STYLE=Universal QT_QUICK_CONTROLS_UNIVERSAL_THEME=Dark \
         /usr/lib/qt6/bin/qmltestrunner -input crates/app/tests
 }
@@ -79,7 +81,7 @@ package() {
     for _font in crates/app/assets/fonts/*.ttf crates/app/assets/fonts/*.otf; do
         install -Dm644 "$_font" "$pkgdir/usr/share/lipax/fonts/${_font##*/}"
     done
-    for _licence in crates/app/assets/fonts/*.txt; do
+    for _licence in crates/app/assets/fonts/*-OFL.txt crates/app/assets/fonts/*-LICENSE.txt; do
         install -Dm644 "$_licence" "$pkgdir/usr/share/licenses/$pkgname/fonts/${_licence##*/}"
     done
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"

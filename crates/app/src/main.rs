@@ -29,6 +29,12 @@ fn main() {
     if let Some(engine) = engine.as_mut() {
         engine.load(&QUrl::from("qrc:/qt/qml/io/lipa/qml/main.qml"));
     }
+    #[cfg(feature = "lifecycle-test")]
+    if let Some(delay_ms) = std::env::var("LIPAX_TEST_CLOSE_AFTER_MS").ok()
+        .and_then(|value| value.parse::<i32>().ok())
+        .filter(|delay| (1..=30_000).contains(delay)) {
+        icon::test_close_after(delay_ms);
+    }
     if let Some(app) = app.as_mut() {
         app.exec();
     }

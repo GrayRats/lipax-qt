@@ -68,12 +68,12 @@ def subtitles():
     return img
 
 
-def menu():
+def menu(selected=0):
     img = panel(sky((22, 26, 44), (10, 12, 22)), (60, 30, 420, H - 30), (0, 0, 0, 120), radius=6)
     d = ImageDraw.Draw(img)
     f = font("JetBrainsMono.ttf", 26)
     for i, label in enumerate(["> New Game", "  Load Game", "  Options", "  Quit"]):
-        d.text((100, 84 + i * 56), label, font=f, fill=(120, 230, 170) if i == 0 else (200, 205, 215), anchor="ls")
+        d.text((100, 84 + i * 56), label, font=f, fill=(120, 230, 170) if i == selected else (200, 205, 215), anchor="ls")
     return img
 
 
@@ -82,6 +82,7 @@ SCENES = {
     "dialogue": (dialogue, {"fields": 4, "multiline": 1, "kinds": ["serif", "serif", "sans", "sans"]}),
     "subtitles": (subtitles, {"fields": 1, "multiline": 1, "kinds": ["sans"]}),
     "menu": (menu, {"fields": 4, "multiline": 0, "kinds": ["mono", "mono", "mono", "mono"]}),
+    "menu_selected_quit": (lambda: menu(3), {"fields": 4, "multiline": 0, "kinds": ["mono", "mono", "mono", "mono"]}),
 }
 
 

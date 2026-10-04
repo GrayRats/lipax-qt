@@ -25,5 +25,15 @@
    "mono",
    "mono"
   ]
+ },
+ "menu_selected_quit": {
+  "fields": 4,
+  "multiline": 0,
+  "kinds": [
+   "mono",
+   "mono",
+   "mono",
+   "mono"
+  ]
  }
 }

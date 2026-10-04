@@ -9,6 +9,9 @@ build = "build.rs"
 name = "lipax"
 path = "src/main.rs"
 
+[features]
+lifecycle-test = []
+
 [dependencies]
 lipa-core = { path = "../core" }
 cxx = "1"

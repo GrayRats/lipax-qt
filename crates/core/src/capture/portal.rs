@@ -343,7 +343,15 @@ impl PortalCapture {
 
     /// Stop the reader and GStreamer when the UI exits.
     pub async fn close(&self) {
-        *self.session.lock().await = None;
+        let session = self.session.lock().await.take();
+        if let Some(mut session) = session {
+            session.reader.abort();
+            session.stderr_reader.abort();
+            let _ = session.child.start_kill();
+            if let Err(e) = session.child.wait().await {
+                tracing::warn!(component = "GStreamer", error = %e, "Не удалось дождаться завершения процесса захвата");
+            }
+        }
     }
 
     /// Изменения restore token (для сохранения в настройках).

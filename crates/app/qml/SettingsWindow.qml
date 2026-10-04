@@ -24,7 +24,11 @@ ApplicationWindow {
     Component.onCompleted: reload()
     // Every edit is previewed at once (overlay binds to `current`) and saved after a short pause.
     property string lastApplied: ""
-    function reload() { current = JSON.parse(controller.settingsJson()); lastApplied = JSON.stringify(current) }
+    function reload() {
+        const loaded = JSON.parse(controller.settingsJson())
+        lastApplied = JSON.stringify(loaded)
+        current = loaded
+    }
     function openWindow() { reload(); show(); raise(); requestActivate() }
     function set(key, v) { const c = Object.assign({}, current); c[key] = v; current = c }
     onCurrentChanged: if (JSON.stringify(current) !== lastApplied) autosave.restart()
@@ -43,15 +47,15 @@ ApplicationWindow {
         { value: "solid", label: "Сплошной фон" }
     ]
     readonly property bool solidStyle: (current.overlay_style || "solid") === "solid"
-    readonly property var appearanceKeys: ["translation_display", "overlay_style", "blur_enabled", "blur_tint", "dim_inverse", "overlay_corner_radius",
-        "font_family", "font_size", "font_bold", "font_italic", "text_color", "background_color",
+    readonly property var appearanceKeys: ["translation_display", "overlay_style", "blur_enabled", "blur_tint", "dim_inverse", "overlay_corner_radius", "overlay_pinned_corner_radius",
+        "font_family", "font_size", "overlay_auto_shrink", "font_bold", "font_italic", "text_color", "background_color",
         "opacity", "border_color", "border_opacity", "border_width", "border_pattern", "border_always", "border_seconds", "overlay_padding", "text_alignment",
         "text_wrap", "text_outline", "outline_color", "line_spacing", "show_original", "original_font_family",
         "original_font_size", "original_color", "max_width_enabled", "overlay_max_width"]
     // Largest connected screen in logical pixels: bounds for overlay position and size.
     readonly property int screenMaxWidth: Math.max(200, ...Qt.application.screens.map(s => s.width))
     readonly property int screenMaxHeight: Math.max(60, ...Qt.application.screens.map(s => s.height))
-    readonly property var fontFamilies: ["Системный"].concat(Qt.fontFamilies())
+    readonly property var fontFamilies: bundledFonts
     function fontIndex(name) { return name ? Math.max(0, fontFamilies.indexOf(name)) : 0 }
 
     // ── «Поверх оригинала»: каждое свойство отдельно — Авто или Вручную ──
@@ -211,7 +215,19 @@ ApplicationWindow {
         onAccepted: win.controller.installPackage(win.pendingPackage)
     }
 
-    function apply() { autosave.stop(); controller.applySettings(JSON.stringify(current)); reload() }
+    function pendingPatch() {
+        const previous = JSON.parse(lastApplied || "{}")
+        const patch = ({})
+        for (const key of Object.keys(current))
+            if (JSON.stringify(current[key]) !== JSON.stringify(previous[key])) patch[key] = current[key]
+        return patch
+    }
+    function apply() {
+        autosave.stop()
+        const patch = pendingPatch()
+        if (Object.keys(patch).length) controller.applySettingsPatch(JSON.stringify(patch))
+        reload()
+    }
 
     // Changes made elsewhere (overlay drag, pin, region selection) arrive here; pending edits are saved first.
     Connections {
@@ -545,6 +561,13 @@ ApplicationWindow {
                 // Through the Controller: pinning places the pinned window where the floating one was.
                 onToggled: if (win.controller.setOverlayPinned) win.controller.setOverlayPinned(checked, "settings"); else win.set("overlay_pinned", checked)
             }
+            FieldLabel { text: "Скругление углов закреплённого окна, px" }
+            SpinBox {
+                objectName: "pinnedCornerRadius"
+                from: 0; to: 32; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.overlay_pinned_corner_radius !== undefined ? win.current.overlay_pinned_corner_radius : 0
+                onValueModified: win.set("overlay_pinned_corner_radius", value)
+            }
             Label {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap; opacity: 0.75
                 text: "Средняя кнопка мыши по рамке перевода переключает закрепление. Незакреплённый перевод перетаскивается левой кнопкой, его рамка толще. "
@@ -625,7 +648,7 @@ ApplicationWindow {
                       + "режим можно переопределить для отдельной области во вкладке «Области». "
                       + "Для окна, выбранного через portal, положение на экране неизвестно, и рамка не показывается."
             }
-            ResetButton { keys: ["overlay_screen", "overlay_pinned", "click_through", "overlay_pos", "overlay_size", "frame_color", "frame_width", "frame_seconds", "region_frame_mode", "region_frame_pinned"] }
+            ResetButton { keys: ["overlay_screen", "overlay_pinned", "click_through", "overlay_pos", "overlay_size", "overlay_pinned_corner_radius", "frame_color", "frame_width", "frame_seconds", "region_frame_mode", "region_frame_pinned"] }
 
             }
         }
@@ -935,16 +958,23 @@ ApplicationWindow {
             SectionTitle { text: "Текст перевода" }
             FieldLabel { text: "Шрифт" }
             ComboBox {
+                objectName: "translationFontFamily"
                 Layout.fillWidth: true; Layout.minimumWidth: 0
                 model: win.fontFamilies
                 currentIndex: win.fontIndex(win.current.font_family)
-                onActivated: win.set("font_family", currentIndex === 0 ? "" : currentText)
+                onActivated: win.set("font_family", currentText)
             }
             FieldLabel { text: "Размер шрифта, px" }
             SpinBox {
                 from: 8; to: 96; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
                 value: win.current.font_size || 20
                 onValueModified: win.set("font_size", value)
+            }
+            FieldLabel { text: "Автоматически уменьшать размер текста, если он не помещается" }
+            Switch {
+                objectName: "overlayAutoShrink"
+                checked: win.current.overlay_auto_shrink !== false
+                onToggled: win.set("overlay_auto_shrink", checked)
             }
             FieldLabel { text: "Начертание" }
             RowLayout {
@@ -988,8 +1018,8 @@ ApplicationWindow {
             ComboBox {
                 visible: win.current.show_original === true
                 Layout.fillWidth: true; Layout.minimumWidth: 0
-                model: ["Как у перевода"].concat(win.fontFamilies.slice(1))
-                currentIndex: win.fontIndex(win.current.original_font_family)
+                model: ["Как у перевода"].concat(win.fontFamilies)
+                currentIndex: win.current.original_font_family ? win.fontIndex(win.current.original_font_family) + 1 : 0
                 onActivated: win.set("original_font_family", currentIndex === 0 ? "" : currentText)
             }
             FieldLabel { text: "Размер оригинала, px"; visible: win.current.show_original === true }
@@ -1071,6 +1101,13 @@ ApplicationWindow {
                 from: 0; to: 32; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
                 value: win.current.overlay_corner_radius !== undefined ? win.current.overlay_corner_radius : 12
                 onValueModified: win.set("overlay_corner_radius", value)
+            }
+            FieldLabel { text: "Скругление углов закреплённого окна, px" }
+            SpinBox {
+                objectName: "pinnedCornerRadiusAppearance"
+                from: 0; to: 32; editable: true; Layout.fillWidth: true; Layout.minimumWidth: 0
+                value: win.current.overlay_pinned_corner_radius !== undefined ? win.current.overlay_pinned_corner_radius : 0
+                onValueModified: win.set("overlay_pinned_corner_radius", value)
             }
             FieldLabel { text: "Внутренние отступы, px" }
             SpinBox {

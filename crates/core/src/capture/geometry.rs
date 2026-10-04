@@ -3,10 +3,21 @@
 use super::kwin::{WindowFrames, WindowGeometry};
 use std::collections::HashMap;
 use crate::settings::FloatingGeometry;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock, atomic::{AtomicBool, Ordering}};
 use tokio::sync::{Notify, watch};
 
 static SCRIPTS: OnceLock<Mutex<Vec<(zbus::Connection, String)>>> = OnceLock::new();
+// Armed by the QML overlay controller immediately before it maps the normal window.
+// KWin consumes this once; subsequent manual activations must keep their focus.
+static FLOATING_FOCUS_RESTORE: AtomicBool = AtomicBool::new(false);
+
+pub fn arm_floating_focus_restore() {
+    FLOATING_FOCUS_RESTORE.store(true, Ordering::SeqCst);
+}
+
+pub fn clear_floating_focus_restore() {
+    FLOATING_FOCUS_RESTORE.store(false, Ordering::SeqCst);
+}
 
 /// Explicitly unload scripts before the application runtime is shut down.
 pub async fn shutdown() {
@@ -67,6 +78,11 @@ impl GeometryService {
     /// `{output,rx,ry}` relative to an output, or `null` to let KWin place it.
     fn floating_placement(&self) -> String {
         self.0.placement.lock().unwrap().clone()
+    }
+
+    /// One-shot guard for an automatic show. A task-manager click after this returns false.
+    fn consume_floating_focus_restore(&self) -> bool {
+        FLOATING_FOCUS_RESTORE.swap(false, Ordering::SeqCst)
     }
 
     /// The floating window's frame after a move/restore, in logical desktop coordinates.
@@ -196,6 +212,38 @@ impl Drop for ClientGeometry {
 mod tests {
     use super::*;
     use crate::settings::NormRect;
+
+    #[test]
+    fn floating_focus_guard_is_consumed_once_per_automatic_show() {
+        let service = GeometryService(Arc::new(State::default()));
+        clear_floating_focus_restore();
+        arm_floating_focus_restore();
+        assert!(service.consume_floating_focus_restore());
+        assert!(!service.consume_floating_focus_restore(), "manual activation keeps focus");
+        arm_floating_focus_restore();
+        assert!(service.consume_floating_focus_restore(), "a second unpin has its own guard");
+        clear_floating_focus_restore();
+    }
+
+    #[tokio::test]
+    #[ignore = "requires an active KWin Wayland session"]
+    async fn kwin_script_loads_and_consumes_the_focus_guard_over_dbus() {
+        let tracker = ClientGeometry::connect().await.expect("KWin script should announce Ready");
+        arm_floating_focus_restore();
+        for expected in [true, false] {
+            let response = tracker.conn.call_method(
+                Some(tracker.conn.unique_name().unwrap().as_str()),
+                "/io/lipa/Geometry",
+                Some("io.lipa.Geometry"),
+                "ConsumeFloatingFocusRestore",
+                &(),
+            ).await.unwrap();
+            let actual: bool = response.body().deserialize().unwrap();
+            assert_eq!(actual, expected);
+        }
+        drop(tracker);
+        shutdown().await;
+    }
 
     #[test]
     fn client_geometry_excludes_titlebar_and_survives_move_and_close() {

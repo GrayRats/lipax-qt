@@ -5,17 +5,31 @@ import io.lipa
 
 ApplicationWindow {
     id: root
+    objectName: "mainWindow"
     visible: true
     width: 820
     height: 620
     minimumWidth: 720
     minimumHeight: 520
     title: "LipaX — переводчик для игр"
+    property bool closingDown: false
+    onClosing: {
+        if (closingDown) return
+        closingDown = true
+        settingsWin.apply()
+        ctl.stop()
+        historyWin.close()
+        settingsWin.close()
+        regionWin.close()
+        selectionFrame.close()
+        Qt.quit()
+    }
 
     HistoryWindow { id: historyWin; settingsWindow: settingsWin }
 
     Controller {
         id: ctl
+        objectName: "controller"
         onFrameRequested: (x, y, w, h) => selectionFrame.flash(x, y, w, h)
         onSelectRegionRequested: if (ctl.windowTitle.length > 0) regionWin.begin()
         onTogglePinRequested: ctl.setOverlayPinned(!overlay.pinned, "hotkey")
@@ -29,7 +43,7 @@ ApplicationWindow {
     readonly property bool windowActive: ctl.effectiveDisplay === "window"
     readonly property var inplaceEntries: { try { return JSON.parse(ctl.inplaceJson || "[]") } catch (e) { return [] } }
     // Keyed by "region:field": a stable field keeps its window; only its properties update.
-    readonly property string inplaceKeys: JSON.stringify(inplaceEntries.map(e => e.key))
+    readonly property string inplaceKeys: JSON.stringify(closingDown ? [] : inplaceEntries.map(e => e.key))
     Instantiator {
         model: JSON.parse(root.inplaceKeys)
         delegate: InplaceText {
@@ -47,7 +61,7 @@ ApplicationWindow {
     property bool started: false
     Timer { interval: 1500; running: true; onTriggered: root.started = true }
     readonly property string frameRegionIds:
-        JSON.stringify((settingsWin.current.regions || []).filter(r => r.enabled && r.rect).map(r => r.id))
+        JSON.stringify(closingDown ? [] : (settingsWin.current.regions || []).filter(r => r.enabled && r.rect).map(r => r.id))
     Instantiator {
         model: JSON.parse(root.frameRegionIds)
         delegate: RegionFrame {
@@ -67,7 +81,7 @@ ApplicationWindow {
         translation: ctl.translation
         original: ctl.original
         gameGeometry: ctl.gameGeometry
-        shown: root.windowActive && ctl.windowOverlayVisible && ctl.translation.length > 0
+        shown: !root.closingDown && root.windowActive && ctl.windowOverlayVisible && ctl.translation.length > 0
         settings: settingsWin.current
         // Pin state and the pinned placement are decided in Rust (pinned lands where floating was).
         onPinToggled: (p) => ctl.setOverlayPinned(p, "mmb")
@@ -174,6 +188,7 @@ ApplicationWindow {
                 text: ctl.translation
                 readOnly: true
                 wrapMode: Text.Wrap
+                font.family: settingsWin.current.font_family || "Inter"
                 font.pixelSize: settingsWin.current.font_size || 20
             }
         }

@@ -28,6 +28,26 @@ const FLOATING_CAPTION = "LipaX · окно перевода";
 function isFloating(window) {
     return window.pid === LIPA_PID && String(window.caption) === FLOATING_CAPTION;
 }
+// A normal xdg_toplevel belongs in the task manager, but KWin may activate it when it
+// appears. LipaX explicitly arms the next automatic show before mapping the surface;
+// this D-Bus guard is consumed once. Later task-manager or direct clicks retain focus.
+let previousActive = workspace.activeWindow;
+function restoreAutomaticFocus(window) {
+    if (!isFloating(window)) return;
+    callDBus("__DESTINATION__", "/io/lipa/Geometry", "io.lipa.Geometry", "ConsumeFloatingFocusRestore", function(armed) {
+        if (!armed || workspace.activeWindow !== window) return;
+        if (previousActive && previousActive !== window && workspace.windowList().includes(previousActive)) {
+            workspace.activeWindow = previousActive;
+        }
+    });
+}
+workspace.windowActivated.connect(function(window) {
+    if (window && isFloating(window)) restoreAutomaticFocus(window);
+    else if (window) previousActive = window;
+});
+workspace.windowRemoved.connect(function(window) {
+    if (previousActive === window) previousActive = null;
+});
 function screens() {
     return workspace.screens || [];
 }
@@ -45,6 +65,10 @@ function reportFloating(window, reason) {
 }
 function adoptFloating(window) {
     window.keepAbove = true;
+    // Also consume the guard if KWin mapped the window without activating it. This prevents
+    // a later manual task-manager click from being mistaken for the automatic show.
+    restoreAutomaticFocus(window);
+    if (window.windowShown) window.windowShown.connect(function() { restoreAutomaticFocus(window); });
     callDBus("__DESTINATION__", "/io/lipa/Geometry", "io.lipa.Geometry", "FloatingPlacement", function(json) {
         let p = null;
         try { p = JSON.parse(json); } catch (e) {}

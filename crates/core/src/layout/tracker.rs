@@ -179,20 +179,33 @@ impl TextBlockTracker {
 
     /// Признаки шрифта поля для выбора. Короткий текст («OK», «Quit») по пикселям классифицируется
     /// ненадёжно, а кнопки и пункты меню одного оформления почти всегда набраны одним шрифтом.
-    /// Малонадёжное поле поэтому перенимает признаки у заметно более надёжного поля с тем же
-    /// размером строки и похожим цветом. Результат не зависит от порядка обработки полей: берутся
+    /// Малонадёжное поле поэтому перенимает признаки у заметно более надёжного поля с близкой
+    /// высотой строки. Обычно цвет тоже совпадает; выделенный пункт вертикального меню может
+    /// иметь другой цвет, поэтому для соседних строк одной колонки цвет не обязателен.
+    /// Результат не зависит от порядка обработки полей: берутся
     /// признаки, измеренные по пикселям, а не уже выбранные шрифты.
     pub fn analysis_with_peers(&self, id: u64) -> Option<FontAnalysis> {
         const WEAK: f32 = 0.7;
-        const MARGIN: f32 = 0.12;
+        const MARGIN: f32 = 0.10;
         let own = self.get(id)?;
         let mut best = own.font_analysis.clone()?;
         if best.confidence >= WEAK { return Some(best); }
         let color_distance = |a: [u8; 3], b: [u8; 3]| a.iter().zip(b).map(|(x, y)| (*x as f32 - y as f32).powi(2)).sum::<f32>().sqrt();
         let peer = self.blocks.iter()
             .filter(|p| p.id != id && p.misses == 0)
-            .filter(|p| p.line_height.max(own.line_height) / p.line_height.min(own.line_height).max(1.0) <= 1.1)
-            .filter(|p| color_distance(p.ink_color, own.ink_color) <= 70.0)
+            .filter(|p| {
+                let one_line = |b: &TrackedTextBlock| b.current_rect.h <= b.line_height * 1.15;
+                let single_lines = one_line(own) && one_line(p);
+                let same_color = color_distance(p.ink_color, own.ink_color) <= 70.0;
+                let row = p.line_height.max(own.line_height);
+                let vertical_gap = (p.current_rect.center().1 - own.current_rect.center().1).abs();
+                let same_menu_column = single_lines
+                    && (p.current_rect.x - own.current_rect.x).abs() <= 1.5 * row
+                    && (1.4 * row..=6.0 * row).contains(&vertical_gap);
+                let height_ratio = p.line_height.max(own.line_height) / p.line_height.min(own.line_height).max(1.0);
+                if height_ratio > if same_menu_column { 1.35 } else { 1.1 } { return false; }
+                same_color || same_menu_column
+            })
             .filter_map(|p| p.font_analysis.as_ref())
             .filter(|a| a.confidence >= best.confidence + MARGIN)
             .max_by(|a, b| a.confidence.total_cmp(&b.confidence));

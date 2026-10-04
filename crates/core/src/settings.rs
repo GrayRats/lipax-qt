@@ -313,6 +313,8 @@ pub struct Settings {
     pub dim_inverse: bool,
     /// Corner radius of the unpinned (floating) translation window, px.
     pub overlay_corner_radius: u32,
+    /// Corner radius of the pinned layer-shell translation window, px.
+    pub overlay_pinned_corner_radius: u32,
     pub font_family: String,
     pub font_bold: bool,
     pub font_italic: bool,
@@ -348,6 +350,8 @@ pub struct Settings {
     /// Off: activating a region deactivates the others.
     pub allow_multiple_regions: bool,
     pub font_size: u32,
+    /// Shrink translated text in the translation window until it fits, but never below 14 px.
+    pub overlay_auto_shrink: bool,
     pub opacity: f64,
     pub click_through: bool,
     /// Закреплённое окно: положение относительно экрана `overlay_screen`.
@@ -419,7 +423,8 @@ impl Default for Settings {
             blur_tint: 0.3,
             dim_inverse: false,
             overlay_corner_radius: 12,
-            font_family: String::new(),
+            overlay_pinned_corner_radius: 0,
+            font_family: "Inter".into(),
             font_bold: false,
             font_italic: false,
             text_color: "#ffffff".into(),
@@ -449,6 +454,7 @@ impl Default for Settings {
             active_region: "subtitles".into(),
             allow_multiple_regions: false,
             font_size: 20,
+            overlay_auto_shrink: true,
             opacity: 0.85,
             click_through: true,
             overlay_pos: (100, 100),
@@ -508,6 +514,17 @@ impl Settings {
 
     pub fn sanitize(&mut self) {
         self.font_size = self.font_size.clamp(8, 96);
+        // The translation window uses only fonts shipped with LipaX. Old configurations may
+        // name a system font, which must never silently resolve through Qt/fontconfig.
+        let bundled = crate::layout::font_database::InstalledFontDatabase::bundled();
+        let available = bundled.fonts();
+        if !available.iter().any(|font| font.family == self.font_family) {
+            self.font_family = available.first().map(|font| font.family.clone()).unwrap_or_else(|| "Inter".into());
+        }
+        if !self.original_font_family.is_empty()
+            && !available.iter().any(|font| font.family == self.original_font_family) {
+            self.original_font_family.clear();
+        }
         self.original_font_size = self.original_font_size.clamp(8, 96);
         self.line_spacing = if self.line_spacing.is_finite() { self.line_spacing.clamp(0.8, 2.5) } else { 1.0 };
         if !["left", "center", "right"].contains(&self.text_alignment.as_str()) { self.text_alignment = "center".into(); }
@@ -519,6 +536,7 @@ impl Settings {
         if self.floating_geometry.as_ref().is_some_and(|g| !g.is_valid()) { self.floating_geometry = None; }
         if !OVERLAY_STYLES.contains(&self.overlay_style.as_str()) { self.overlay_style = "solid".into(); }
         self.overlay_corner_radius = self.overlay_corner_radius.min(32);
+        self.overlay_pinned_corner_radius = self.overlay_pinned_corner_radius.min(32);
         self.blur_tint = if self.blur_tint.is_finite() { self.blur_tint.clamp(0.0, 0.8) } else { 0.3 };
         self.frame_width = self.frame_width.clamp(1, 12);
         if !REGION_FRAME_MODES.contains(&self.region_frame_mode.as_str()) { self.region_frame_mode = "selection".into(); }
@@ -601,6 +619,31 @@ mod tests {
         let s = Settings { region: Some(NormRect { x: 0.1, y: 0.6, w: 0.8, h: 0.3 }), ..Settings::default() };
         let t = toml::to_string_pretty(&s).unwrap();
         assert_eq!(toml::from_str::<Settings>(&t).unwrap(), s);
+    }
+
+    #[test]
+    fn pinned_overlay_radius_is_saved_and_bounded() {
+        let mut s = Settings { overlay_pinned_corner_radius: 18, ..Settings::default() };
+        let saved = toml::to_string_pretty(&s).unwrap();
+        assert_eq!(Settings::from_toml(&saved).overlay_pinned_corner_radius, 18);
+        s.overlay_pinned_corner_radius = 100;
+        s.sanitize();
+        assert_eq!(s.overlay_pinned_corner_radius, 32);
+        s.overlay_pinned_corner_radius = 0;
+        s.sanitize();
+        assert_eq!(s.overlay_pinned_corner_radius, 0);
+    }
+
+    #[test]
+    fn old_system_font_falls_back_to_a_bundled_family() {
+        let mut settings = Settings::from_toml("font_family = 'DejaVu Sans'\noriginal_font_family = 'Liberation Serif'\noverlay_auto_shrink = false");
+        settings.sanitize();
+        assert_eq!(settings.font_family, "Inter");
+        assert!(settings.original_font_family.is_empty(), "original follows the bundled translation font");
+        assert!(!settings.overlay_auto_shrink);
+        let restored = Settings::from_toml(&toml::to_string(&settings).unwrap());
+        assert_eq!(restored.font_family, "Inter");
+        assert!(!restored.overlay_auto_shrink);
     }
 
     #[test]

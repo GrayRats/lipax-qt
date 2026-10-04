@@ -42,6 +42,10 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "setOverlayPinned"]
         fn set_overlay_pinned(self: Pin<&mut Controller>, pinned: bool, source: &QString);
+        /// Mark the next automatic floating-window show for one-time KWin focus restoration.
+        #[qinvokable]
+        #[cxx_name = "armFloatingFocusRestore"]
+        fn arm_floating_focus_restore(self: &Controller);
         /// Геометрия свободного окна от QML (только X11: там Qt знает положение окна).
         #[qinvokable]
         #[cxx_name = "reportFloatingGeometry"]
@@ -77,6 +81,9 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "applySettings"]
         fn apply_settings(self: Pin<&mut Controller>, json: &QString);
+        #[qinvokable]
+        #[cxx_name = "applySettingsPatch"]
+        fn apply_settings_patch(self: Pin<&mut Controller>, json: &QString);
         #[qinvokable]
         #[cxx_name = "pickWindow"]
         fn pick_window(self: Pin<&mut Controller>);
@@ -178,6 +185,13 @@ fn services() -> &'static std::sync::Mutex<RuntimeServices> {
     SERVICES.get_or_init(Default::default)
 }
 
+fn spawn_service(future: impl std::future::Future<Output = ()> + Send + 'static) {
+    let task = rt().spawn(future);
+    let mut services = services().lock().unwrap();
+    services.tasks.retain(|task| !task.is_finished());
+    services.tasks.push(task);
+}
+
 pub fn shutdown() {
     let services = std::mem::take(&mut *services().lock().unwrap());
     rt().block_on(async move {
@@ -203,8 +217,17 @@ impl Shared {
 
     /// Изменить настройки, сохранить на диск и сбросить состояние pipeline.
     fn update(&self, f: impl FnOnce(&mut Settings)) {
+        let _ = self.update_checked(|s| { f(s); Ok(()) });
+    }
+
+    fn update_checked(&self, f: impl FnOnce(&mut Settings) -> Result<(), String>) -> Result<(), String> {
         let before = self.settings.borrow().processing_key();
-        self.settings.send_modify(|s| { f(s); s.sanitize(); });
+        let mut error = None;
+        self.settings.send_if_modified(|s| match f(s) {
+            Ok(()) => { s.sanitize(); true }
+            Err(e) => { error = Some(e); false }
+        });
+        if let Some(e) = error { return Err(e); }
         if let Err(e) = self.settings.borrow().save() {
             tracing::error!(component = "settings", error = %e, "Не удалось сохранить настройки");
         }
@@ -218,7 +241,23 @@ impl Shared {
             }
             changed
         });
+        Ok(())
     }
+}
+
+/// Apply only the edited top-level fields to the latest backend state. A delayed appearance
+/// autosave must never replace a newly selected capture window, region or Portal token.
+fn merge_settings_patch(current: &Settings, patch: &serde_json::Map<String, serde_json::Value>) -> Result<Settings, String> {
+    let mut state = serde_json::to_value(current).map_err(|e| e.to_string())?;
+    let fields = state.as_object_mut().ok_or("settings are not a JSON object")?;
+    for (key, value) in patch {
+        if ["window", "region", "portal_token"].contains(&key.as_str()) {
+            return Err(format!("field {key} is managed by the capture backend"));
+        }
+        if !fields.contains_key(key) { return Err(format!("unknown settings field: {key}")); }
+        fields.insert(key.clone(), value.clone());
+    }
+    serde_json::from_value(state).map_err(|e| e.to_string())
 }
 
 pub struct ControllerRust {
@@ -332,19 +371,18 @@ impl cxx_qt::Initialize for qobject::Controller {
 
         // Pipeline: захват → OCR → перевод в фоне. Бэкенд захвата выбирается по ключу окна.
         let capture = shared.capture.clone();
-        let pipeline = rt().spawn(async move {
+        spawn_service(async move {
             Pipeline::new(capture, AnyOcr::default(), HttpTranslate::new()).run(settings_rx, running_rx, cmd_rx, ev_tx).await
         });
 
         {
             let mut services = services().lock().unwrap();
-            services.tasks.push(pipeline);
             services.capture = Some(shared.capture.clone());
         }
 
         // Токен восстановления portal сохраняется, чтобы окно выбиралось без диалога при следующем запуске.
         let sh = shared.clone();
-        rt().spawn(async move {
+        spawn_service(async move {
             let mut rx = sh.capture.portal.token_updates();
             while rx.changed().await.is_ok() {
                 let token = rx.borrow_and_update().clone();
@@ -359,7 +397,7 @@ impl cxx_qt::Initialize for qobject::Controller {
         let (hk_tx, mut hk_rx) = mpsc::unbounded_channel();
         let hk = shared.hotkeys.subscribe();
         let qt = self.qt_thread();
-        rt().spawn(async move {
+        spawn_service(async move {
             if let Err(e) = hotkeys::listen(hk, hk_tx).await {
                 tracing::error!(component = "KGlobalAccel/D-Bus", error = %e, "Глобальные клавиши недоступны");
                 let _ = qt.queue(move |mut o| {
@@ -369,7 +407,7 @@ impl cxx_qt::Initialize for qobject::Controller {
             }
         });
         let qt = self.qt_thread();
-        rt().spawn(async move {
+        spawn_service(async move {
             while let Some(ev) = hk_rx.recv().await {
                 let _ = qt.queue(move |mut o| match ev {
                     HotkeyEvent::Conflict(a) => {
@@ -409,7 +447,7 @@ impl cxx_qt::Initialize for qobject::Controller {
         // перемещения; без KWin место выбирает композитор.
         let sh = shared.clone();
         let qt = self.qt_thread();
-        let floating_task = rt().spawn(async move {
+        spawn_service(async move {
             let kwin = match sh.kwin().await {
                 Ok(k) => k,
                 Err(e) => {
@@ -442,12 +480,11 @@ impl cxx_qt::Initialize for qobject::Controller {
                 }
             }
         });
-        services().lock().unwrap().tasks.push(floating_task);
 
         // Client geometry follows window moves and monitor changes, even while paused.
         let sh = shared.clone();
         let qt = self.qt_thread();
-        let geometry_task = rt().spawn(async move {
+        spawn_service(async move {
             let mut ticker = tokio::time::interval(std::time::Duration::from_millis(500));
             // Only changes reach the GUI thread.
             let mut last: Option<String> = None;
@@ -474,14 +511,13 @@ impl cxx_qt::Initialize for qobject::Controller {
             }
         });
 
-        services().lock().unwrap().tasks.push(geometry_task);
 
         // Первичная проверка Tesseract в фоне, чтобы окно настроек открывалось сразу с данными.
         self.as_mut().refresh_tesseract();
 
         // Доставка событий в GUI-поток.
         let qt = self.qt_thread();
-        rt().spawn(async move {
+        spawn_service(async move {
             while let Some(ev) = ev_rx.recv().await {
                 let _ = qt.queue(move |mut o| match ev {
                     Event::Status(s) => {
@@ -545,6 +581,10 @@ impl cxx_qt::Initialize for qobject::Controller {
 }
 
 impl qobject::Controller {
+    fn arm_floating_focus_restore(&self) {
+        lipa_core::capture::arm_floating_focus_restore();
+        tracing::debug!(target: "overlay.focus", "armed one-time focus restoration for automatic floating show");
+    }
     fn default_settings_json(&self) -> QString {
         QString::from(serde_json::to_string(&Settings::default()).unwrap().as_str())
     }
@@ -556,6 +596,8 @@ impl qobject::Controller {
         crate::icon::overlay_input(passthrough, &rects.concat());
     }
     fn set_overlay_pinned(mut self: Pin<&mut Self>, pinned: bool, source: &QString) {
+        // Cancel an automatic show that was superseded before KWin saw the floating surface.
+        if pinned { lipa_core::capture::clear_floating_focus_restore(); }
         self.rust().shared.update(|s| {
             if pinned {
                 // Закреплённое окно — на месте свободного, на том же выходе.
@@ -713,7 +755,7 @@ impl qobject::Controller {
         self.as_mut().set_diagnostics_busy(true);
         let s = self.rust().shared.settings.borrow().clone();
         let qt = self.qt_thread();
-        rt().spawn(async move {
+        spawn_service(async move {
             let result = lipa_core::diagnostics::inspect(&s).await;
             let json = serde_json::to_string(&result).unwrap();
             let _ = qt.queue(move |mut o| {
@@ -758,6 +800,38 @@ impl qobject::Controller {
         }
     }
 
+    fn apply_settings_patch(mut self: Pin<&mut Self>, json: &QString) {
+        let patch = match serde_json::from_str::<serde_json::Map<String, serde_json::Value>>(&json.to_string()) {
+            Ok(patch) => patch,
+            Err(e) => {
+                tracing::error!(component = "settings", error = %e, "Некорректное изменение настроек из QML");
+                self.as_mut().set_status(QString::from(format!("Настройки не сохранены: {e}").as_str()));
+                self.as_mut().set_status_kind(QString::from("error"));
+                return;
+            }
+        };
+        if patch.is_empty() { return; }
+        let before = self.rust().shared.settings.borrow().processing_key();
+        match self.rust().shared.update_checked(|s| {
+            *s = merge_settings_patch(s, &patch)?;
+            Ok(())
+        }) {
+            Ok(()) => {
+                if self.rust().shared.settings.borrow().processing_key() != before {
+                    self.as_mut().rust_mut().region_inplace.clear();
+                }
+                self.as_mut().publish_settings();
+                self.as_mut().publish_translation();
+                self.as_mut().publish_history();
+            }
+            Err(e) => {
+                tracing::error!(component = "settings", error = %e, "Изменение настроек не принято");
+                self.as_mut().set_status(QString::from(format!("Настройки не сохранены: {e}").as_str()));
+                self.as_mut().set_status_kind(QString::from("error"));
+            }
+        }
+    }
+
     fn pick_window(self: Pin<&mut Self>) {
         let shared = self.rust().shared.clone();
         let qt = self.qt_thread();
@@ -765,7 +839,7 @@ impl qobject::Controller {
             o.as_mut()
                 .set_status(QString::from("Кликните по окну игры (Esc — отмена)"))
         });
-        rt().spawn(async move {
+        spawn_service(async move {
             let backend = shared.settings.borrow().capture_backend;
             let by_kwin = async {
                 match shared.kwin().await {
@@ -831,7 +905,7 @@ impl qobject::Controller {
     fn request_preview(self: Pin<&mut Self>) {
         let shared = self.rust().shared.clone();
         let qt = self.qt_thread();
-        rt().spawn(async move {
+        spawn_service(async move {
             let Some(window) = shared.settings.borrow().window.clone() else {
                 let _ = qt.queue(|mut o| {
                     o.as_mut()
@@ -997,7 +1071,7 @@ impl qobject::Controller {
         }
         self.as_mut().set_tesseract_busy(true);
         let qt = self.qt_thread();
-        rt().spawn(async move {
+        spawn_service(async move {
             let info = tokio::task::spawn_blocking(tesseract_snapshot).await;
             let _ = qt.queue(move |mut o| {
                 if let Ok(info) = info {
@@ -1034,7 +1108,7 @@ impl qobject::Controller {
             format!("Установка {package}: подтвердите пароль в системном окне").as_str(),
         ));
         let qt = self.qt_thread();
-        rt().spawn(async move {
+        spawn_service(async move {
             let res = tokio::task::spawn_blocking(move || {
                 std::process::Command::new(&argv[0])
                     .args(&argv[1..])
@@ -1099,7 +1173,7 @@ impl qobject::Controller {
 
 /// Рамка вокруг только что выбранного окна. Геометрию отдаёт KWin; рамки областей рисует QML (RegionFrame).
 fn show_frame(shared: Arc<Shared>, qt: cxx_qt::CxxQtThread<qobject::Controller>) {
-    rt().spawn(async move {
+    spawn_service(async move {
         let Some(uuid) = shared.settings.borrow().window.clone().filter(|w| !is_portal_window(w)).map(|w| w.uuid) else {
             return; // у portal-окна геометрия на рабочем столе неизвестна
         };
@@ -1113,6 +1187,22 @@ fn show_frame(shared: Arc<Shared>, qt: cxx_qt::CxxQtThread<qobject::Controller>)
 mod display_tests {
     use super::*;
     use lipa_core::settings::{FloatingGeometry, TranslationDisplay, WindowKey};
+
+    #[test]
+    fn appearance_patch_preserves_live_capture_settings() {
+        let mut current = Settings::default();
+        current.window = Some(WindowKey { uuid: "game-now".into(), resource_class: "Game".into(), caption: "Game".into() });
+        current.capture_backend = CaptureBackendKind::Portal;
+        let before = current.processing_key();
+        let patch = serde_json::json!({ "font_size": 30, "overlay_pinned_corner_radius": 18 });
+        let updated = merge_settings_patch(&current, patch.as_object().unwrap()).unwrap();
+        assert_eq!(updated.window, current.window);
+        assert_eq!(updated.capture_backend, CaptureBackendKind::Portal);
+        assert_eq!(updated.processing_key(), before, "appearance must not reset the capture pipeline");
+        assert_eq!((updated.font_size, updated.overlay_pinned_corner_radius), (30, 18));
+        let forbidden = serde_json::json!({ "window": null });
+        assert!(merge_settings_patch(&current, forbidden.as_object().unwrap()).is_err());
+    }
 
     #[test]
     fn inplace_does_not_depend_on_the_window_overlay() {

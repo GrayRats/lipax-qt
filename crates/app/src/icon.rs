@@ -9,6 +9,8 @@ mod ffi {
         fn configureOverlayInput(passthrough: bool, rects: &[i32]);
         fn configureOverlayBlur(enable: bool, radius: i32);
         fn copyLipaText(text: &QString);
+        #[allow(dead_code)]
+        fn scheduleLipaTestClose(delay_ms: i32);
         #[allow(clippy::too_many_arguments)]
         fn measureLipaText(family: &str, weight: i32, italic: bool, px: f64, letter_spacing: f64, width: f64, wrap: i32, text: &str, out: &mut [f64]);
         fn lipaCapRatio(family: &str, weight: i32, italic: bool) -> f64;
@@ -50,3 +52,6 @@ pub fn configure() {
 pub fn overlay_blur(enable: bool, radius: i32) { ffi::configureOverlayBlur(enable, radius); }
 pub fn overlay_input(passthrough: bool, rects: &[i32]) { ffi::configureOverlayInput(passthrough, rects); }
 pub fn copy_text(text: &cxx_qt_lib::QString) { ffi::copyLipaText(text); }
+
+#[cfg(feature = "lifecycle-test")]
+pub fn test_close_after(delay_ms: i32) { ffi::scheduleLipaTestClose(delay_ms); }

@@ -4,7 +4,7 @@ import org.kde.layershell 1.0 as LayerShell
 
 // Pinned translation window: a wlr-layer-shell surface (layer Overlay) that stays above the
 // game. Its position is overlay-controlled: margins from the top-left corner of one screen.
-// The screen is chosen once when the surface is created and changes only when the user picks
+// The screen is chosen when the surface is shown and changes only when the user picks
 // another screen in the settings or that screen disappears — never on game geometry updates
 // or settings autosave. The body is click-through; the pin handle keeps receiving input.
 Window {
@@ -48,7 +48,8 @@ Window {
     }
     Component.onCompleted: {
         place("pinned_surface_created")
-        visible = true
+    }
+    onVisibleChanged: if (visible) {
         // Show the frame briefly after pinning so the new state is visible in any frame mode.
         content.flashFrame()
         Qt.callLater(updateInput)
@@ -94,15 +95,16 @@ Window {
     // Click-through except the pin handle (and the frame band while it is visible).
     readonly property bool passthrough: settings.click_through !== false
     function updateInput() {
+        if (!visible) return
         if (controller) controller.configureOverlay(passthrough, JSON.stringify(content.inputRects()))
     }
     function updateBlur() {
-        if (controller && controller.configureOverlayBlur) controller.configureOverlayBlur(visible && content.blurBehind, content.cornerRadius)
+        if (!visible) return
+        if (controller && controller.configureOverlayBlur) controller.configureOverlayBlur(content.blurBehind, content.cornerRadius)
     }
     onPassthroughChanged: Qt.callLater(updateInput)
     onWidthChanged: { Qt.callLater(updateInput); Qt.callLater(updateBlur) }
     onHeightChanged: { Qt.callLater(updateInput); Qt.callLater(updateBlur) }
-    onVisibleChanged: if (visible) { Qt.callLater(updateInput); Qt.callLater(updateBlur) }
 
     OverlayContent {
         id: content
@@ -117,6 +119,7 @@ Window {
         onWidthChanged: Qt.callLater(win.updateInput)
         onHeightChanged: Qt.callLater(win.updateInput)
         onBlurBehindChanged: Qt.callLater(win.updateBlur)
+        onCornerRadiusChanged: { Qt.callLater(win.updateInput); Qt.callLater(win.updateBlur) }
         onPinToggleRequested: win.pinToggleRequested()
     }
 }

@@ -31,9 +31,12 @@ Window {
 
     // Independent top-level: not transient for the main window.
     transientParent: null
-    flags: Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowDoesNotAcceptFocus
+    // A normal xdg_toplevel is listed by Plasma's task manager. The application's
+    // desktopFileName (io.lipa.Translator) supplies its Wayland app_id.
+    flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
     visible: false
+    onClosing: closeRequested()
     width: Math.min(settings.overlay_size ? settings.overlay_size[0] : 700,
                     settings.max_width_enabled !== false ? (settings.overlay_max_width || 900) : 100000)
     height: settings.overlay_size ? settings.overlay_size[1] : 120
@@ -46,7 +49,8 @@ Window {
             console.debug(logGeometry, "position changed by restore_geometry x=" + x + " y=" + y)
         }
         console.debug(logState, "pinned=false floating=true window_role=" + (x11 ? "x11_toplevel" : "xdg_toplevel") + " layershell=false")
-        visible = true
+    }
+    onVisibleChanged: if (visible) {
         Qt.callLater(updateInput)
         Qt.callLater(updateBlur)
     }
@@ -68,10 +72,12 @@ Window {
 
     // Floating windows capture input: no click-through mask.
     function updateInput() {
+        if (!visible) return
         if (controller) controller.configureOverlay(false, "[]")
     }
     function updateBlur() {
-        if (controller && controller.configureOverlayBlur) controller.configureOverlayBlur(visible && content.blurBehind, content.cornerRadius)
+        if (!visible) return
+        if (controller && controller.configureOverlayBlur) controller.configureOverlayBlur(content.blurBehind, content.cornerRadius)
     }
     onWidthChanged: Qt.callLater(updateBlur)
     onHeightChanged: Qt.callLater(updateBlur)
@@ -84,6 +90,7 @@ Window {
         original: win.original
         pinned: false
         onBlurBehindChanged: Qt.callLater(win.updateBlur)
+        onCornerRadiusChanged: Qt.callLater(win.updateBlur)
         onPinToggleRequested: win.pinToggleRequested()
         onCloseRequested: win.closeRequested()
         onMoveRequested: {

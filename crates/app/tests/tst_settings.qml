@@ -23,7 +23,8 @@ TestCase {
             {name: "GStreamer", state: "error", detail: "not found", instruction: "sudo pacman -S gstreamer"}])
         property bool diagnosticsBusy: false
         property string copied: ""
-        function defaultSettingsJson() { return JSON.stringify({font_size: 20, border_color: "#ff00ff", hotkeys: {toggle: "Ctrl+Alt+P"},
+        property int patchCalls: 0
+        function defaultSettingsJson() { return JSON.stringify({font_size: 20, border_color: "#ff00ff", overlay_pinned_corner_radius: 0, hotkeys: {toggle: "Ctrl+Alt+P"},
             regions: [{id: "subtitles", name: "Субтитры", enabled: true, rect: null, source_lang: "", target_lang: "", ocr_engine: "", interval_ms: 500, debounce_ms: 400}]}) }
         function refreshDiagnostics() {}
         function clearHistory() { historyJson = "[]" }
@@ -31,10 +32,15 @@ TestCase {
         property string saved: JSON.stringify({source_lang:"eng", target_lang:"ru", ocr_engine:"tesseract", capture_backend:"auto", frame_color:"#ff0000", hotkeys:{},
             regions: [{id: "subtitles", name: "Субтитры", enabled: true, rect: {x: 0, y: 0.7, w: 1, h: 0.3}, source_lang: "", target_lang: "", ocr_engine: "", interval_ms: 500, debounce_ms: 400},
                       {id: "dialogue", name: "Диалоги", enabled: false, rect: null, source_lang: "jpn", target_lang: "", ocr_engine: "paddleocr", interval_ms: 800, debounce_ms: 400}],
-            active_region: "subtitles", font_size: 22, border_color: "#00ff00"})
+            active_region: "subtitles", font_size: 22, border_color: "#00ff00", overlay_pinned_corner_radius: 0})
         function settingsJson() { return saved }
         function missingLanguages(spec) { return "[]" }
         function applySettings(json) { saved = json }
+        function applySettingsPatch(json) {
+            patchCalls++
+            saved = JSON.stringify(Object.assign({}, JSON.parse(saved), JSON.parse(json)))
+            settingsState = saved
+        }
         function refreshTesseract() {}
         function bundledFonts() { return JSON.stringify(["Inter", "PT Serif", "Roboto Slab", "JetBrains Mono", "Noto Sans CJK SC"]) }
     }
@@ -125,5 +131,76 @@ TestCase {
         wait(50)
         verify(!findChild(settings, "inplaceSettings").visible)
         verify(findChild(settings, "overlayStyle").visible)
+    }
+
+    function test_appearanceEditKeepsNewCaptureState() {
+        settings.reload()
+        settings.set("font_size", 31)
+        settings.set("overlay_pinned_corner_radius", 18)
+        const newer = JSON.parse(controller.saved)
+        newer.capture_backend = "portal"
+        newer.regions[0].rect = {x: 0.2, y: 0.5, w: 0.6, h: 0.3}
+        controller.saved = JSON.stringify(newer)
+        controller.settingsState = controller.saved
+        tryCompare(settings.current, "font_size", 31)
+        compare(settings.current.overlay_pinned_corner_radius, 18)
+        compare(settings.current.capture_backend, "portal")
+        compare(settings.current.regions[0].rect.x, 0.2)
+        settings.resetKeys(["overlay_pinned_corner_radius"])
+        compare(settings.current.overlay_pinned_corner_radius, 0)
+        settings.apply()
+        settings.reload()
+    }
+
+    function test_pinnedRadiusIsVisibleAndEditsTheSavedSetting() {
+        settings.show()
+        settings.reload()
+        const tabs = findChild(settings, "settingsTabs")
+        tabs.currentIndex = 2
+        const page = findChild(settings, "settingsPage2")
+        const control = findChild(settings, "pinnedCornerRadius")
+        verify(control !== null)
+        const pos = control.mapToItem(page, 0, 0)
+        verify(pos.y >= 0 && pos.y + control.height <= page.height,
+               "the pinned radius is visible without scrolling the Window tab")
+        settings.set("overlay_pinned_corner_radius", 0)
+        mouseClick(control, control.width - 12, control.height / 4)
+        compare(settings.current.overlay_pinned_corner_radius, 1)
+        settings.apply()
+        compare(JSON.parse(controller.saved).overlay_pinned_corner_radius, 1)
+
+        tabs.currentIndex = 3
+        const appearanceControl = findChild(settings, "pinnedCornerRadiusAppearance")
+        verify(appearanceControl !== null)
+        compare(appearanceControl.value, 1, "both tabs edit the same setting")
+        settings.set("overlay_pinned_corner_radius", 0)
+        settings.apply()
+    }
+
+    function test_appearanceOffersOnlyBundledFontsAndSavesAutoShrink() {
+        settings.show()
+        settings.reload()
+        const tabs = findChild(settings, "settingsTabs")
+        tabs.currentIndex = 3
+        const fontPicker = findChild(settings, "translationFontFamily")
+        compare(fontPicker.count, 5)
+        compare(fontPicker.textAt(0), "Inter")
+        verify(settings.fontFamilies.every(name => JSON.parse(controller.bundledFonts()).includes(name)))
+        verify(!settings.fontFamilies.includes("Системный"))
+        const shrink = findChild(settings, "overlayAutoShrink")
+        verify(shrink !== null)
+        settings.set("overlay_auto_shrink", false)
+        settings.apply()
+        compare(JSON.parse(controller.saved).overlay_auto_shrink, false)
+        settings.set("overlay_auto_shrink", true)
+        settings.apply()
+    }
+
+    function test_reloadDoesNotScheduleAnUnchangedSave() {
+        settings.apply()
+        const before = controller.patchCalls
+        settings.reload()
+        wait(650)
+        compare(controller.patchCalls, before)
     }
 }

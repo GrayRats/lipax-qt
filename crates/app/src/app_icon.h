@@ -1,5 +1,6 @@
 #pragma once
 #include <QGuiApplication>
+#include <QTimer>
 #include <QIcon>
 #include <QFontDatabase>
 #include <QDir>
@@ -42,7 +43,7 @@ inline QString loadLipaFonts(const QString &directory) {
 // KWin's global setting; elsewhere this is a no-op and only the tint is drawn.
 inline void configureOverlayBlur(bool enable, int radius) {
     for (QWindow *window : QGuiApplication::allWindows()) {
-        if (window->objectName() != QStringLiteral("translationOverlay")) continue;
+        if (window->objectName() != QStringLiteral("translationOverlay") || !window->isVisible()) continue;
         QRegion region;
         if (enable && radius > 0) {
             QPainterPath path;
@@ -57,7 +58,7 @@ inline void configureOverlayBlur(bool enable, int radius) {
 // receiving input while clicks pass through to the game.
 inline void configureOverlayInput(bool passthrough, rust::Slice<const int32_t> rects) {
     for (QWindow *window : QGuiApplication::allWindows()) {
-        if (window->objectName() != QStringLiteral("translationOverlay")) continue;
+        if (window->objectName() != QStringLiteral("translationOverlay") || !window->isVisible()) continue;
         // On Wayland QWindow::mask defines the input region. Some X11 backends
         // also clip rendering, so preserve the complete window on that fallback.
         if (passthrough && rects.size() >= 4 && QGuiApplication::platformName().startsWith(QStringLiteral("wayland"))) {
@@ -69,6 +70,29 @@ inline void configureOverlayInput(bool passthrough, rust::Slice<const int32_t> r
     }
 }
 inline void copyLipaText(const QString &text) { QGuiApplication::clipboard()->setText(text); }
+
+// Debug-build lifecycle test: deliver the same QWindow::close() event as the title-bar button.
+inline void scheduleLipaTestClose(int delayMs) {
+    if (qEnvironmentVariableIsSet("LIPAX_TEST_WITH_OVERLAY")) {
+        QTimer::singleShot(delayMs / 2, [] {
+            for (QWindow *window : QGuiApplication::allWindows()) {
+                if (window->objectName() != QStringLiteral("mainWindow")) continue;
+                if (QObject *controller = window->findChild<QObject *>(QStringLiteral("controller"))) {
+                    controller->setProperty("translation", QStringLiteral("Проверка окна перевода"));
+                }
+                return;
+            }
+        });
+    }
+    QTimer::singleShot(delayMs, [] {
+        for (QWindow *window : QGuiApplication::allWindows()) {
+            if (window->objectName() == QStringLiteral("mainWindow")) {
+                window->close();
+                return;
+            }
+        }
+    });
+}
 
 // ── Font metrics for fitting the in-place translation (layout::fit::TextMeasure) ──
 #include <QFont>

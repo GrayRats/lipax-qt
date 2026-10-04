@@ -3,6 +3,7 @@
 
 mod geometry;
 pub use geometry::shutdown as shutdown_geometry;
+pub use geometry::{arm_floating_focus_restore, clear_floating_focus_restore};
 pub mod kwin;
 pub mod portal;
 

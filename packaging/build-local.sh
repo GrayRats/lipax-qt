@@ -6,7 +6,7 @@ lipa_root=$PWD
 lipa_version=$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)
 mkdir -p dist
 # Explicit list avoids capturing credentials, target/, old archives or .git/.
-# Planning files (such as PLAN.md) are not required to build the application.
+# Only files required to build and package the application are included.
 tar --exclude='__pycache__' --exclude='.qmlls.ini' --exclude='crates/app/assets/fonts/*.ttf' --exclude='crates/app/assets/fonts/*.otf' --transform="s,^,lipax-${lipa_version}/," \
     -czf "dist/lipax-${lipa_version}.tar.gz" Cargo.toml Cargo.lock LICENSE PKGBUILD README.md crates docs packaging
 cp PKGBUILD dist/PKGBUILD
