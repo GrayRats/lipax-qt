@@ -1,29 +1,30 @@
 import QtQuick
 import QtTest
 import "../qml" as Lipa
+import "SettingsFixture.js" as Fixture
 
 TestCase {
     name: "RegionFrame"
     when: windowShown
 
-    property var base: ({ frame_seconds: 1, frame_width: 2, frame_color: "#ff0000", region_frame_pinned: "dim" })
+    property var base: ({ "capture.frame_seconds": 1, "capture.frame_width": 2, "capture.frame_color": "#ff0000", "capture.region_frame_pinned": "dim" })
     Lipa.RegionFrame {
         id: subtitles
         flashOnCreate: false
         gameGeometry: "[100,50,1000,500]"
         region: ({ id: "subtitles", enabled: true, rect: { x: 0, y: 0.7, w: 1, h: 0.3 }, frame_mode: "" })
-        settings: Object.assign({}, base, { region_frame_mode: "selection" })
+        settings: Fixture.make(Object.assign({}, base, { "capture.region_frame_mode": "selection" }))
     }
     Lipa.RegionFrame {
         id: dialogue
         flashOnCreate: false
         gameGeometry: "[100,50,1000,500]"
         region: ({ id: "dialogue", enabled: true, rect: { x: 0.2, y: 0.1, w: 0.6, h: 0.2 }, frame_mode: "" })
-        settings: Object.assign({}, base, { region_frame_mode: "selection" })
+        settings: Fixture.make(Object.assign({}, base, { "capture.region_frame_mode": "selection" }))
     }
 
     function content(f) { return findChild(f.contentItem, "regionFrameContent") }
-    function setMode(f, mode, extra) { f.settings = Object.assign({}, base, { region_frame_mode: mode }, extra || ({})) }
+    function setMode(f, mode, extra) { f.settings = Fixture.make(Object.assign({}, base, { "capture.region_frame_mode": mode }, extra || ({}))) }
 
     function init() {
         for (const f of [subtitles, dialogue]) { setMode(f, "selection"); f.pinned = false }
@@ -65,7 +66,7 @@ TestCase {
         compare(subtitles.targetOpacity, data.shown)
         subtitles.pinned = true
         compare(subtitles.targetOpacity, data.dim, "pinned translation dims the outline")
-        setMode(subtitles, data.mode, { region_frame_pinned: "hide" })
+        setMode(subtitles, data.mode, { "capture.region_frame_pinned": "hide" })
         compare(subtitles.targetOpacity, data.hidden, "or hides it")
         subtitles.flash()
         compare(subtitles.flashing, data.mode !== "off", "nothing flashes when the frame is off")

@@ -159,7 +159,10 @@ ApplicationWindow {
             }
             Button {
                 text: "Копировать оригинал"
+                id: copyRecognizedText
                 enabled: !!win.region && win.region.original.length > 0
+                Accessible.description: copyRecognizedTextHint.explanation
+                UnavailableHint { id: copyRecognizedTextHint; control: copyRecognizedText; feature: "Копировать распознанный текст"; reason: "Нет распознанного текста выбранной области."; remedy: "Выберите область с результатом распознавания." }
                 onClicked: win.controller.copyText(win.region.original)
             }
             Item { Layout.fillWidth: true }

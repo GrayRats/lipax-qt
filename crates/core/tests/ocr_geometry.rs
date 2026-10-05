@@ -5,7 +5,7 @@ use image::DynamicImage;
 use lipa_core::layout::engine::InplaceEngine;
 use lipa_core::layout::font_database::InstalledFontDatabase;
 use lipa_core::ocr::Tesseract;
-use lipa_core::settings::{Settings, TranslationDisplay};
+use lipa_core::settings::{Settings, TranslationDisplayMode};
 use lipa_core::tesseract::TesseractManager;
 use std::path::Path;
 use std::time::Instant;
@@ -25,7 +25,7 @@ async fn real_ocr_lines_land_on_the_detected_block_in_frame_coordinates() {
     }
     let frame = image::open(&png).unwrap();
     let _ = std::fs::remove_file(&png);
-    let settings = Settings { target_lang: "ru".into(), translation_display: TranslationDisplay::Inplace, ..Settings::default() };
+    let settings = { let mut value = Settings::default(); value.translation.target_language = "ru".into(); value.display_mode = TranslationDisplayMode::Inplace; value };
     let mut engine = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
     let jobs = engine.begin(DynamicImage::from(frame.to_rgba8()), &settings, Instant::now(), false);
     assert_eq!(jobs.len(), 1, "one block of dialogue");

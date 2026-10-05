@@ -69,11 +69,11 @@ inline QString loadLipaFonts(const QString &directory) {
 #include <KWindowSystem>
 #include "rust/cxx.h"
 
-// Blur behind the translation overlay, done by KWin (org_kde_kwin_blur). The strength is
+// Blur behind the translation window, done by KWin (org_kde_kwin_blur). The strength is
 // KWin's global setting; elsewhere this is a no-op and only the tint is drawn.
-inline void configureOverlayBlur(bool enable, int radius) {
+inline void configureTranslationWindowBlur(bool enable, int radius) {
     for (QWindow *window : QGuiApplication::allWindows()) {
-        if (window->objectName() != QStringLiteral("translationOverlay") || !window->isVisible()) continue;
+        if (window->objectName() != QStringLiteral("translationWindow") || !window->isVisible()) continue;
         QRegion region;
         if (enable && radius > 0) {
             QPainterPath path;
@@ -84,11 +84,11 @@ inline void configureOverlayBlur(bool enable, int radius) {
         KWindowEffects::enableBlurBehind(window, enable, region);
     }
 }
-// `rects` is a flat list of x, y, w, h computed by the overlay QML: the only parts that keep
+// `rects` is a flat list of x, y, w, h computed by the translation window QML: the only parts that keep
 // receiving input while clicks pass through to the game.
-inline void configureOverlayInput(bool passthrough, rust::Slice<const int32_t> rects) {
+inline void configureTranslationWindowInput(bool passthrough, rust::Slice<const int32_t> rects) {
     for (QWindow *window : QGuiApplication::allWindows()) {
-        if (window->objectName() != QStringLiteral("translationOverlay") || !window->isVisible()) continue;
+        if (window->objectName() != QStringLiteral("translationWindow") || !window->isVisible()) continue;
         // On Wayland QWindow::mask defines the input region. Some X11 backends
         // also clip rendering, so preserve the complete window on that fallback.
         if (passthrough && rects.size() >= 4 && QGuiApplication::platformName().startsWith(QStringLiteral("wayland"))) {

@@ -22,7 +22,7 @@ function watchWindow(window) {
 // the saved position, keeps the window above others and reports where the user left it.
 // Snapping/tiling while the user drags is KWin's own behaviour and is not changed here.
 const LIPA_PID = __PID__;
-// Exact title of FloatingOverlayWindow.qml; the main window ("LipaX — переводчик для игр")
+// Exact title of FloatingTranslationSurface.qml; the main window ("LipaX — переводчик для игр")
 // must never match.
 const FLOATING_CAPTION = "LipaX · окно перевода";
 function isFloating(window) {

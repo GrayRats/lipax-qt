@@ -9,8 +9,8 @@ mod ffi {
         fn loadLipaFonts(directory: &QString) -> QString;
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
-        fn configureOverlayInput(passthrough: bool, rects: &[i32]);
-        fn configureOverlayBlur(enable: bool, radius: i32);
+        fn configureTranslationWindowInput(passthrough: bool, rects: &[i32]);
+        fn configureTranslationWindowBlur(enable: bool, radius: i32);
         fn copyLipaText(text: &QString);
         fn activateLipaWindow(object_name: &QString, token: &QString);
         #[allow(dead_code)]
@@ -58,8 +58,8 @@ pub fn configure() {
     lipa_core::layout::font_database::set_bundled_available(names.lines().map(str::to_owned));
 }
 
-pub fn overlay_blur(enable: bool, radius: i32) { ffi::configureOverlayBlur(enable, radius); }
-pub fn overlay_input(passthrough: bool, rects: &[i32]) { ffi::configureOverlayInput(passthrough, rects); }
+pub fn translation_window_blur(enable: bool, radius: i32) { ffi::configureTranslationWindowBlur(enable, radius); }
+pub fn translation_window_input(passthrough: bool, rects: &[i32]) { ffi::configureTranslationWindowInput(passthrough, rects); }
 pub fn copy_text(text: &cxx_qt_lib::QString) { ffi::copyLipaText(text); }
 pub fn activate_window(object_name: &cxx_qt_lib::QString, token: &cxx_qt_lib::QString) { ffi::activateLipaWindow(object_name, token); }
 

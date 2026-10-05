@@ -13,11 +13,11 @@ import QtQml
 // the window after the user releases it.
 Window {
     id: win
-    objectName: "translationOverlay"
+    objectName: "translationWindow"
     // Matched exactly by the KWin script (capture/geometry.js); keep both in sync.
     title: "LipaX · окно перевода"
     property var controller
-    property var settings: ({})
+    property var settings: ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
     property string translation: ""
     property string original: ""
     signal pinToggleRequested()
@@ -25,9 +25,9 @@ Window {
     readonly property alias content: content
     readonly property bool x11: Qt.platform.pluginName === "xcb"
 
-    LoggingCategory { id: logState; name: "overlay.state"; defaultLogLevel: LoggingCategory.Debug }
-    LoggingCategory { id: logDrag; name: "overlay.drag"; defaultLogLevel: LoggingCategory.Debug }
-    LoggingCategory { id: logGeometry; name: "overlay.geometry"; defaultLogLevel: LoggingCategory.Debug }
+    LoggingCategory { id: logState; name: "translation_window.state"; defaultLogLevel: LoggingCategory.Debug }
+    LoggingCategory { id: logDrag; name: "translation_window.drag"; defaultLogLevel: LoggingCategory.Debug }
+    LoggingCategory { id: logGeometry; name: "translation_window.geometry"; defaultLogLevel: LoggingCategory.Debug }
 
     // Independent top-level: not transient for the main window.
     transientParent: null
@@ -37,12 +37,12 @@ Window {
     color: "transparent"
     visible: false
     onClosing: closeRequested()
-    width: Math.min(settings.overlay_size ? settings.overlay_size[0] : 700,
-                    settings.max_width_enabled !== false ? (settings.overlay_max_width || 900) : 100000)
-    height: settings.overlay_size ? settings.overlay_size[1] : 120
+    width: Math.min(settings.translation_window.size ? settings.translation_window.size[0] : 700,
+                    settings.translation_window.max_width_enabled !== false ? (settings.translation_window.maximum_width || 900) : 100000)
+    height: settings.translation_window.size ? settings.translation_window.size[1] : 120
 
     Component.onCompleted: {
-        const g = settings.floating_geometry
+        const g = settings.translation_window.floating_geometry
         if (x11 && g) {
             // X11: Qt may position top-level windows; restore once, before showing.
             x = Math.round(g.x); y = Math.round(g.y)
@@ -73,16 +73,16 @@ Window {
     // Floating windows capture input: no click-through mask.
     function updateInput() {
         if (!visible) return
-        if (controller) controller.configureOverlay(false, "[]")
+        if (controller) controller.configureTranslationWindow(false, "[]")
     }
     function updateBlur() {
         if (!visible) return
-        if (controller && controller.configureOverlayBlur) controller.configureOverlayBlur(content.blurBehind, content.cornerRadius)
+        if (controller && controller.configureTranslationWindowBlur) controller.configureTranslationWindowBlur(content.blurBehind, content.cornerRadius)
     }
     onWidthChanged: Qt.callLater(updateBlur)
     onHeightChanged: Qt.callLater(updateBlur)
 
-    OverlayContent {
+    TranslationWindowContent {
         id: content
         anchors.fill: parent
         settings: win.settings

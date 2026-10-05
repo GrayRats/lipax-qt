@@ -41,7 +41,7 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
             }
             rows
         },
-        output(&s.paddle_python, &["-c", include_str!("ocr/paddle_check.py")]),
+        output(&s.recognition.paddle_python, &["-c", include_str!("ocr/paddle_check.py")]),
     );
     let mut rows = vec![tess, gst, pipewire];
     rows.extend(plugins);
@@ -58,8 +58,8 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
         Err(e) => rows.push(row("Python / PaddleOCR", "error", e, "Укажите путь к Python из venv; инструкция: docs/PaddleOCR.md.")),
     }
     let langs = output("tesseract", &["--list-langs"]).await;
-    let missing: Vec<_> = s.source_lang.split('+').filter(|l| !langs.as_ref().is_ok_and(|text| text.lines().any(|line| line.trim() == *l))).collect();
-    rows.push(row("Языки Tesseract", if missing.is_empty() { "ready" } else { "error" }, if missing.is_empty() { format!("Готовы: {}", s.source_lang) } else { format!("Нет языков: {}", missing.join(", ")) }, "Установите языковые пакеты во вкладке «Распознавание». Arch: tesseract-data-<код языка>."));
+    let missing: Vec<_> = s.recognition.language.split('+').filter(|l| !langs.as_ref().is_ok_and(|text| text.lines().any(|line| line.trim() == *l))).collect();
+    rows.push(row("Языки Tesseract", if missing.is_empty() { "ready" } else { "error" }, if missing.is_empty() { format!("Готовы: {}", s.recognition.language) } else { format!("Нет языков: {}", missing.join(", ")) }, "Установите языковые пакеты во вкладке «Распознавание». Arch: tesseract-data-<код языка>."));
     let portal = match zbus::Connection::session().await {
         Ok(conn) => conn.call_method(Some("org.freedesktop.DBus"), "/org/freedesktop/DBus", Some("org.freedesktop.DBus"), "NameHasOwner", &("org.freedesktop.portal.Desktop",)).await.ok().and_then(|r| r.body().deserialize::<bool>().ok()).unwrap_or(false),
         Err(_) => false,

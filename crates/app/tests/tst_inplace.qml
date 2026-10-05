@@ -15,7 +15,7 @@ TestCase {
         text_color: "#ffe066", outline: false, outline_color: "#000000",
         background: { mode: "solid_fill", color: "#203040", image: "" } })
     property int hides: 0
-    Lipa.InplaceText {
+    Lipa.InplaceTranslation {
         id: inplace
         visible: true
         gameGeometry: "[100,50,1000,500]"

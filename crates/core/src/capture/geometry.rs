@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex, OnceLock, atomic::{AtomicBool, Ordering}};
 use tokio::sync::{Notify, watch};
 
 static SCRIPTS: OnceLock<Mutex<Vec<(zbus::Connection, String)>>> = OnceLock::new();
-// Armed by the QML overlay controller immediately before it maps the normal window.
+// Armed by the QML translation window controller immediately before it maps the normal window.
 // KWin consumes this once; subsequent manual activations must keep their focus.
 static FLOATING_FOCUS_RESTORE: AtomicBool = AtomicBool::new(false);
 
@@ -89,7 +89,7 @@ impl GeometryService {
     fn floating_moved(&self, geometry: &str, reason: &str) {
         match serde_json::from_str::<FloatingGeometry>(geometry) {
             Ok(g) if g.is_valid() => { let _ = self.0.floating.send(Some((g, reason.to_string()))); }
-            _ => tracing::warn!(target: "overlay.geometry", geometry, reason, "KWin reported an invalid floating geometry"),
+            _ => tracing::warn!(target: "translation_window.geometry", geometry, reason, "KWin reported an invalid floating geometry"),
         }
     }
 }

@@ -8,7 +8,7 @@ use lipa_core::layout::engine::{InplaceEngine, InplaceFrame};
 use lipa_core::layout::fit::ApproxMeasure;
 use lipa_core::layout::font_database::InstalledFontDatabase;
 use lipa_core::layout::place::{PlacementCache, RegionInput, place_regions};
-use lipa_core::settings::{NormRect, Settings, TranslationDisplay};
+use lipa_core::settings::{NormRect, Settings, TranslationDisplayMode};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -31,7 +31,7 @@ fn expectations() -> HashMap<String, Expect> {
 }
 
 fn settings() -> Settings {
-    Settings { target_lang: "ru".into(), translation_display: TranslationDisplay::Inplace, ..Settings::default() }
+    { let mut value = Settings::default(); value.translation.target_language = "ru".into(); value.display_mode = TranslationDisplayMode::Inplace; value }
 }
 
 /// What the OCR + translator would return: the same text in Russian, a bit longer than English.
@@ -70,7 +70,7 @@ fn scene_quality_thresholds() {
         }
         let region = RegionInput { id: "r", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
         let placed = place_regions(&[region], &WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64]),
-            &settings().inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default());
+            &settings().appearance.inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default());
         assert_eq!(placed.placed.len(), expect.fields, "{scene}: translated fields fit without collisions");
         assert!(placed.fallback.is_empty(), "{scene}: nothing is sent to the translation window");
         assert!(placed.placed.iter().all(|p| p.degraded.is_none()), "{scene}: a scene that fits is not degraded: {:?}", placed.placed.iter().map(|p| p.degraded).collect::<Vec<_>>());
@@ -102,7 +102,7 @@ fn scene_report() {
                 b.font.family, kind(&b.font.family), b.style.font_weight.value(), b.style.italic, b.background.mode, b.style.alignment as u8);
         }
         let region = RegionInput { id: "r", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
-        let placed = place_regions(&[region], &WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64]), &settings().inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default()).placed;
+        let placed = place_regions(&[region], &WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64]), &settings().appearance.inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default()).placed;
         println!("  placed {} of {}", placed.len(), frame.blocks.len());
     }
 }

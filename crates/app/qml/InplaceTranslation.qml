@@ -3,13 +3,13 @@ import org.kde.layershell 1.0 as LayerShell
 
 // One tracked text field drawn over the original. Everything is decided in Rust (font chosen once
 // per field, typography, Qt-metric fitting, background); this item only renders `entry`:
-//   InplaceText
+//   InplaceTranslation
 //   ├── BackgroundItem — the replacement background (never chooses the font)
 //   └── TextItem       — the translation (never reconstructs the background)
 // Instances are reused by field key, so a stable field keeps its window between scans.
 Window {
     id: win
-    property var settings: ({})
+    property var settings: ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
     // Element of Controller.inplaceJson.
     property var entry: null
     property string gameGeometry: ""

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtTest
 import "../qml" as Lipa
+import "SettingsFixture.js" as Fixture
 
 TestCase {
     id: test
@@ -18,27 +19,30 @@ TestCase {
         property bool hasRegion: false
         property string windowTitle: "Game"
         property string settingsState: ""
-        property string historyJson: JSON.stringify([{timestamp: 1700000000000, region: "Субтитры", original: "Hello", translation: "Привет"}])
+        property string historyJson: JSON.stringify([{timestamp: 1700000000000, "capture.region": "Субтитры", original: "Hello", translation: "Привет"}])
         property string diagnosticsJson: JSON.stringify([{name: "Tesseract", state: "ready", detail: "5.5", instruction: "x"},
             {name: "GStreamer", state: "error", detail: "not found", instruction: "sudo pacman -S gstreamer"}])
         property bool diagnosticsBusy: false
         property string copied: ""
         property int patchCalls: 0
-        function defaultSettingsJson() { return JSON.stringify({font_size: 20, border_color: "#ff00ff", overlay_pinned_corner_radius: 0, hotkeys: {toggle: "Ctrl+Alt+P"},
-            regions: [{id: "subtitles", name: "Субтитры", enabled: true, rect: null, source_lang: "", target_lang: "", ocr_engine: "", interval_ms: 500, debounce_ms: 400}]}) }
+        property string pickedSource: ""
+        function pickWindow() { pickedSource = JSON.parse(saved).capture.source }
+        function defaultSettingsJson() { return JSON.stringify(Fixture.make({"appearance.window.font_size": 20, "translation_window.border_color": "#ff00ff", "translation_window.pinned_corner_radius": 0, hotkeys: {toggle: "Ctrl+Alt+P"},
+            "capture.regions": [{id: "subtitles", name: "Субтитры", enabled: true, rect: null, recognition_language: "", target_language: "", engine: null, interval_ms: 500, debounce_ms: 400}]})) }
+        function editableSettingsPaths() { return JSON.stringify(Fixture.paths()) }
         function refreshDiagnostics() {}
         function clearHistory() { historyJson = "[]" }
         function copyText(t) { copied = t }
-        property string saved: JSON.stringify({source_lang:"eng", target_lang:"ru", ocr_engine:"tesseract", capture_backend:"auto", frame_color:"#ff0000", hotkeys:{},
-            regions: [{id: "subtitles", name: "Субтитры", enabled: true, rect: {x: 0, y: 0.7, w: 1, h: 0.3}, source_lang: "", target_lang: "", ocr_engine: "", interval_ms: 500, debounce_ms: 400},
-                      {id: "dialogue", name: "Диалоги", enabled: false, rect: null, source_lang: "jpn", target_lang: "", ocr_engine: "paddleocr", interval_ms: 800, debounce_ms: 400}],
-            active_region: "subtitles", font_size: 22, border_color: "#00ff00", overlay_pinned_corner_radius: 0})
+        property string saved: JSON.stringify(Fixture.make({"recognition.language":"eng", "translation.target_language":"ru", "recognition.engine":"tesseract", "capture.source":"auto", "capture.frame_color":"#ff0000", hotkeys:{},
+            "capture.regions": [{id: "subtitles", name: "Субтитры", enabled: true, rect: {x: 0, y: 0.7, w: 1, h: 0.3}, recognition_language: "", target_language: "", engine: null, interval_ms: 500, debounce_ms: 400},
+                      {id: "dialogue", name: "Диалоги", enabled: false, rect: null, recognition_language: "jpn", target_language: "", engine: "paddleocr", interval_ms: 800, debounce_ms: 400}],
+            "capture.active_region": "subtitles", "appearance.window.font_size": 22, "translation_window.border_color": "#00ff00", "translation_window.pinned_corner_radius": 0}))
         function settingsJson() { return saved }
         function missingLanguages(spec) { return "[]" }
         function applySettings(json) { saved = json }
         function applySettingsPatch(json) {
             patchCalls++
-            saved = JSON.stringify(Object.assign({}, JSON.parse(saved), JSON.parse(json)))
+            saved = JSON.stringify(Fixture.patch(JSON.parse(saved), JSON.parse(json)))
             settingsState = saved
         }
         property string captureCapabilities: "{}"
@@ -49,20 +53,116 @@ TestCase {
     }
     Lipa.SettingsWindow { id: settings; controller: controller }
 
+    function test_captureSelectionUsesTheJustEditedSource() {
+        settings.reload()
+        const previous = settings.current.capture.source
+        settings.set("capture.source", "portal")
+        findChild(settings, "selectCaptureWindow").clicked()
+        compare(controller.pickedSource, "portal")
+        settings.set("capture.source", previous)
+        settings.apply()
+    }
+
+    function test_disabledDisplayChoiceExplainsReasonOnHover() {
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 3
+        settings.set("display_mode", "inplace")
+        controller.captureCapabilities = JSON.stringify({inplaceTranslation: {
+            available: false, reason: "Нет глобальных координат окна", remedy: "Выберите KWin"}})
+        const choice = findChild(settings, "displayInplace")
+        const hint = findChild(settings.contentItem, "inplaceUnavailableHint")
+        verify(!choice.enabled)
+        verify(choice.checked, "the desired mode is preserved during fallback")
+        verify(hint !== null)
+        wait(60)
+        const point = choice.mapToItem(settings.contentItem, choice.width / 2, choice.height / 2)
+        mouseMove(settings.contentItem, point.x, point.y)
+        tryVerify(() => hint.tooltipVisible)
+        verify(hint.explanation.includes("Нет глобальных координат окна"))
+        verify(hint.explanation.includes("Выберите KWin"))
+        controller.captureCapabilities = JSON.stringify({inplaceTranslation: {
+            available: false, reason: "Нет шрифта", remedy: "Измените язык"}})
+        tryVerify(() => hint.explanation.includes("Нет шрифта"))
+        controller.captureCapabilities = JSON.stringify({inplaceTranslation: {available: true, reason: "", remedy: ""}})
+        tryVerify(() => choice.enabled && !hint.visible)
+        settings.set("display_mode", "window")
+        settings.apply()
+    }
+
+    function test_appearanceResetAndSourceLanguageAreIndependent() {
+        settings.reload()
+        settings.set("appearance.window.font_size", 33)
+        settings.setInplace("shadow", true)
+        settings.set("display_mode", "inplace")
+        settings.resetKeys(["appearance.window"])
+        compare(settings.current.appearance.window.font_size, 20)
+        verify(settings.current.appearance.inplace.shadow)
+        compare(settings.current.display_mode, "inplace")
+        const before = settings.current.recognition.language
+        const source = findChild(settings, "translationSourceLanguage")
+        source.currentIndex = 2
+        source.activated(2)
+        compare(settings.current.translation.source_language.mode, "explicit")
+        compare(settings.current.translation.source_language.language, "en")
+        compare(settings.current.recognition.language, before)
+        source.currentIndex = 0
+        source.activated(0)
+        compare(settings.current.translation.source_language.mode, "recognition_language")
+        settings.set("display_mode", "window")
+        settings.apply()
+    }
+
+    function test_topTabsScrollAndAcceptKeyboardNavigation() {
+        settings.show()
+        settings.width = 740
+        settings.height = 540
+        const tabs = findChild(settings, "settingsTabs")
+        tabs.currentIndex = 0
+        tabs.itemAt(0).forceActiveFocus()
+        keyClick(Qt.Key_Right)
+        tryCompare(tabs, "currentIndex", 1)
+        tabs.currentIndex = 8
+        tryVerify(() => tabs.contentItem.contentX > 0, 2000, "the last tab scrolls into view")
+        tabs.currentIndex = 0
+    }
+
+    function test_manualInplacePropertyUsesOnlyItsOwnAppearance() {
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 5
+        settings.appearanceMode = "inplace"
+        settings.setProp("font_size", false, 20)
+        const editor = findChild(settings, "inplaceSettings")
+        function findRow(item) {
+            if (item.key === "font_size" && item.defaultValue !== undefined) return item
+            for (const child of item.children || []) { const found = findRow(child); if (found) return found }
+            return null
+        }
+        const row = findRow(editor)
+        verify(row !== null)
+        const mode = row.children[0]
+        mode.currentIndex = 1
+        mode.activated(1)
+        verify(settings.propManual("font_size"))
+        compare(settings.current.appearance.inplace.font_size.value, 20)
+        verify(settings.pendingPatch()["appearance.inplace.font_size"] !== undefined)
+        settings.appearanceMode = "window"
+        settings.apply()
+    }
+
     function test_regionModel() {
         settings.reload()
-        const enabled = () => settings.current.regions.filter(r => r.enabled).map(r => r.id)
-        compare(settings.current.regions.length, 2)
+        const enabled = () => settings.current.capture.regions.filter(r => r.enabled).map(r => r.id)
+        compare(settings.current.capture.regions.length, 2)
         verify(settings.addRegion(), "third region is created")
-        compare(settings.current.regions.length, 3)
-        verify(!settings.current.regions[2].enabled, "a new region starts inactive")
+        compare(settings.current.capture.regions.length, 3)
+        verify(!settings.current.capture.regions[2].enabled, "a new region starts inactive")
         verify(!settings.addRegion(), "fourth region is refused")
-        compare(settings.current.regions.length, 3)
+        compare(settings.current.capture.regions.length, 3)
         verify(settings.regionNotice.length > 0, "the user is told why")
 
         settings.activateRegion(1, true)
         compare(enabled(), ["dialogue"], "activating one deactivates the previous")
-        compare(settings.current.active_region, "dialogue")
+        compare(settings.current.capture.active_region, "dialogue")
 
         settings.setAllowMultipleRegions(true)
         settings.activateRegion(0, true)
@@ -70,7 +170,7 @@ TestCase {
         compare(enabled().length, 3, "up to three active when allowed")
 
         settings.setAllowMultipleRegions(false)
-        compare(enabled(), [settings.current.active_region], "turning the option off keeps only the active one")
+        compare(enabled(), [settings.current.capture.active_region], "turning the option off keeps only the active one")
         settings.removeRegion(2)
         verify(settings.addRegion(), "after removing one, a region can be added again")
         settings.reload()
@@ -82,11 +182,11 @@ TestCase {
         settings.height = 540
         const tabs = findChild(settings, "settingsTabs")
         verify(tabs !== null)
-        compare(tabs.itemAt(4).text, "Область")
-        compare(tabs.itemAt(5).text, "Клавиши")
-        compare(tabs.itemAt(6).text, "Статус")
-        compare(tabs.itemAt(7).text, "О программе")
-        for (let i = 0; i < 8; ++i) {
+        compare(tabs.itemAt(0).text, "Источник изображения")
+        compare(tabs.itemAt(6).text, "Клавиши")
+        compare(tabs.itemAt(7).text, "Статус")
+        compare(tabs.itemAt(8).text, "О программе")
+        for (let i = 0; i < 9; ++i) {
             tabs.currentIndex = i
             wait(100)
             const page = findChild(settings, "settingsPage" + i)
@@ -99,19 +199,19 @@ TestCase {
             }
         }
         // Reset restores defaults for listed keys only.
-        settings.resetKeys(["font_size", "border_color"])
-        compare(settings.current.font_size, 20)
-        compare(settings.current.border_color, "#ff00ff")
-        compare(settings.current.regions.length, 2)
+        settings.resetKeys(["appearance.window.font_size", "translation_window.border_color"])
+        compare(settings.current.appearance.window.font_size, 20)
+        compare(settings.current.translation_window.border_color, "#ff00ff")
+        compare(settings.current.capture.regions.length, 2)
         settings.setRegionField(1, "enabled", true)
-        verify(settings.current.regions[1].enabled)
+        verify(settings.current.capture.regions[1].enabled)
         compare(settings.history.length, 1)
         compare(settings.diagnostics.length, 2)
-        settings.set("ocr_engine", "paddleocr")
-        compare(settings.current.ocr_engine, "paddleocr")
+        settings.set("recognition.engine", "paddleocr")
+        compare(settings.current.recognition.engine, "paddleocr")
         compare(settings.langModel.length, 12)
         settings.apply()
-        compare(JSON.parse(controller.saved).ocr_engine, "paddleocr")
+        compare(JSON.parse(controller.saved).recognition.engine, "paddleocr")
         tabs.currentIndex = 3
         settings.width = 880
         settings.height = 740
@@ -124,33 +224,33 @@ TestCase {
     function test_inplaceSettingsDoNotShowWindowControls() {
         settings.reload()
         settings.show()
-        findChild(settings, "settingsTabs").currentIndex = 3
+        findChild(settings, "settingsTabs").currentIndex = 5
         compare(settings.inplaceBackgrounds.length, 4)
-        settings.set("translation_display", "inplace")
+        settings.appearanceMode = "inplace"
         wait(50)
         verify(findChild(settings, "inplaceSettings").visible)
-        verify(!findChild(settings, "overlayStyle").visible)
-        settings.set("translation_display", "window")
+        verify(!findChild(settings, "windowBackgroundStyle").visible)
+        settings.appearanceMode = "window"
         wait(50)
         verify(!findChild(settings, "inplaceSettings").visible)
-        verify(findChild(settings, "overlayStyle").visible)
+        verify(findChild(settings, "windowBackgroundStyle").visible)
     }
 
     function test_appearanceEditKeepsNewCaptureState() {
         settings.reload()
-        settings.set("font_size", 31)
-        settings.set("overlay_pinned_corner_radius", 18)
+        settings.set("appearance.window.font_size", 31)
+        settings.set("translation_window.pinned_corner_radius", 18)
         const newer = JSON.parse(controller.saved)
-        newer.capture_backend = "portal"
-        newer.regions[0].rect = {x: 0.2, y: 0.5, w: 0.6, h: 0.3}
+        newer.capture.source = "portal"
+        newer.capture.regions[0].rect = {x: 0.2, y: 0.5, w: 0.6, h: 0.3}
         controller.saved = JSON.stringify(newer)
         controller.settingsState = controller.saved
-        tryCompare(settings.current, "font_size", 31)
-        compare(settings.current.overlay_pinned_corner_radius, 18)
-        compare(settings.current.capture_backend, "portal")
-        compare(settings.current.regions[0].rect.x, 0.2)
-        settings.resetKeys(["overlay_pinned_corner_radius"])
-        compare(settings.current.overlay_pinned_corner_radius, 0)
+        tryVerify(() => settings.current.appearance.window.font_size === 31)
+        compare(settings.current.translation_window.pinned_corner_radius, 18)
+        compare(settings.current.capture.source, "portal")
+        compare(settings.current.capture.regions[0].rect.x, 0.2)
+        settings.resetKeys(["translation_window.pinned_corner_radius"])
+        compare(settings.current.translation_window.pinned_corner_radius, 0)
         settings.apply()
         settings.reload()
     }
@@ -159,24 +259,21 @@ TestCase {
         settings.show()
         settings.reload()
         const tabs = findChild(settings, "settingsTabs")
-        tabs.currentIndex = 2
-        const page = findChild(settings, "settingsPage2")
+        tabs.currentIndex = 4
+        const page = findChild(settings, "settingsPage4")
         const control = findChild(settings, "pinnedCornerRadius")
         verify(control !== null)
         const pos = control.mapToItem(page, 0, 0)
         verify(pos.y >= 0 && pos.y + control.height <= page.height,
                "the pinned radius is visible without scrolling the Window tab")
-        settings.set("overlay_pinned_corner_radius", 0)
+        settings.set("translation_window.pinned_corner_radius", 0)
         mouseClick(control, control.width - 12, control.height / 4)
-        compare(settings.current.overlay_pinned_corner_radius, 1)
+        compare(settings.current.translation_window.pinned_corner_radius, 1)
         settings.apply()
-        compare(JSON.parse(controller.saved).overlay_pinned_corner_radius, 1)
+        compare(JSON.parse(controller.saved).translation_window.pinned_corner_radius, 1)
 
-        tabs.currentIndex = 3
-        const appearanceControl = findChild(settings, "pinnedCornerRadiusAppearance")
-        verify(appearanceControl !== null)
-        compare(appearanceControl.value, 1, "both tabs edit the same setting")
-        settings.set("overlay_pinned_corner_radius", 0)
+        verify(findChild(settings, "pinnedCornerRadiusAppearance") === null, "window geometry belongs only to the Window tab")
+        settings.set("translation_window.pinned_corner_radius", 0)
         settings.apply()
     }
 
@@ -199,15 +296,15 @@ TestCase {
     function test_gameProfilesAreListedAndTheSelectedOneCannotBeForgotten() {
         settings.show()
         settings.reload()
-        findChild(settings, "settingsTabs").currentIndex = 1
-        settings.current = Object.assign({}, settings.current, {
-            window: {uuid: "u", resource_class: "Witcher3.exe", caption: "The Witcher 3"},
+        findChild(settings, "settingsTabs").currentIndex = 0
+        settings.current = Fixture.patch(settings.current, {
+            "capture.window": {uuid: "u", resource_class: "Witcher3.exe", caption: "The Witcher 3"},
             game_profiles: {
-                "witcher3.exe": {caption: "The Witcher 3", regions: [{id: "subtitles", rect: {x: 0, y: 0.7, w: 1, h: 0.3}}]},
-                "other": {caption: "Other", regions: []}}})
+                "witcher3.exe": {caption: "The Witcher 3", capture: {regions: [{id: "subtitles", rect: {x: 0, y: 0.7, w: 1, h: 0.3}}]}},
+                "other": {caption: "Other", capture: {regions: []}}}})
         compare(settings.gameProfileKeys.length, 2)
         compare(settings.currentGameKey, "witcher3.exe")
-        const page = findChild(settings, "settingsPage1")
+        const page = findChild(settings, "settingsPage0")
         function find(item, name) {
             if (item.objectName === name) return item
             for (const c of item.children || []) { const f = find(c, name); if (f) return f }
@@ -234,30 +331,30 @@ TestCase {
             return null
         }
         function note(page, name) { return find(findChild(settings, page).contentItem, name) }
-        settings.set("translation_display", "inplace")
+        settings.set("display_mode", "inplace")
         controller.captureCapabilities = "{}"
 
-        tabs.currentIndex = 2
-        tryVerify(() => note("settingsPage2", "frameBlockerNote") !== null)
-        verify(!note("settingsPage2", "frameBlockerNote").visible, "nothing is blocked while the backend can do everything")
+        tabs.currentIndex = 0
+        tryVerify(() => note("settingsPage0", "frameBlockerNote") !== null)
+        verify(!note("settingsPage0", "frameBlockerNote").visible, "nothing is blocked while the backend can do everything")
         tabs.currentIndex = 3
         tryVerify(() => note("settingsPage3", "inplaceBlockerNote") !== null)
         verify(!note("settingsPage3", "inplaceBlockerNote").visible)
 
         // The backend of the chosen window (the portal one) can do neither.
-        controller.captureCapabilities = JSON.stringify({window_geometry: false, inplace_overlay: false,
+        controller.captureCapabilities = JSON.stringify({window_geometry: false, inplace_translation: false,
             frameBlocker: "положение окна на экране неизвестно, рамка не показывается",
-            inplaceBlocker: "положение окна на экране неизвестно, перевод показывается в окне перевода"})
+            inplaceTranslation: {available: false, reason: "положение окна на экране неизвестно, перевод показывается в окне перевода", remedy: "Выберите KWin"}})
         const inplaceNote = note("settingsPage3", "inplaceBlockerNote")
         tryVerify(() => inplaceNote.visible)
         verify(inplaceNote.text.indexOf("в окне перевода") >= 0)
-        tabs.currentIndex = 2
-        const frameNote = note("settingsPage2", "frameBlockerNote")
+        tabs.currentIndex = 0
+        const frameNote = note("settingsPage0", "frameBlockerNote")
         tryVerify(() => frameNote.visible)
         verify(frameNote.text.indexOf("рамка не показывается") >= 0)
 
         // Nothing to warn about while the translation window is chosen.
-        settings.set("translation_display", "window")
+        settings.set("display_mode", "window")
         tabs.currentIndex = 3
         tryVerify(() => !inplaceNote.visible)
         controller.captureCapabilities = "{}"
@@ -271,15 +368,15 @@ TestCase {
         const box = findChild(settings, "ocrEngineBox")
         verify(box !== null)
         compare(box.count, 3)
-        settings.set("ocr_engine", "tesseract")
+        settings.set("recognition.engine", "tesseract")
         compare(box.currentIndex, 0)
-        settings.set("ocr_engine", "auto")
+        settings.set("recognition.engine", "auto")
         compare(box.currentIndex, 2)
         verify(settings.usesPaddle, "auto may call PaddleOCR: its Python is configurable")
         box.currentIndex = 1
         box.activated(1)
-        compare(settings.current.ocr_engine, "paddleocr")
-        settings.set("ocr_engine", "tesseract")
+        compare(settings.current.recognition.engine, "paddleocr")
+        settings.set("recognition.engine", "tesseract")
         verify(!settings.usesPaddle)
 
         const spin = findChild(settings, "ocrMinConfidence")
@@ -287,10 +384,10 @@ TestCase {
         compare(spin.value, 30, "default threshold")
         spin.value = 55
         spin.valueModified()
-        compare(settings.current.ocr_min_confidence, 55)
+        compare(settings.current.recognition.minimum_confidence, 55)
         settings.apply()
-        compare(JSON.parse(controller.saved).ocr_min_confidence, 55)
-        settings.set("ocr_min_confidence", 30)
+        compare(JSON.parse(controller.saved).recognition.minimum_confidence, 55)
+        settings.set("recognition.minimum_confidence", 30)
         settings.apply()
     }
 
@@ -318,12 +415,12 @@ TestCase {
         compare(fontPicker.textAt(0), "Inter")
         verify(settings.fontFamilies.every(name => JSON.parse(controller.bundledFonts()).includes(name)))
         verify(!settings.fontFamilies.includes("Системный"))
-        const shrink = findChild(settings, "overlayAutoShrink")
+        const shrink = findChild(settings, "translationWindowAutoShrink")
         verify(shrink !== null)
-        settings.set("overlay_auto_shrink", false)
+        settings.set("translation_window.auto_shrink", false)
         settings.apply()
-        compare(JSON.parse(controller.saved).overlay_auto_shrink, false)
-        settings.set("overlay_auto_shrink", true)
+        compare(JSON.parse(controller.saved).translation_window.auto_shrink, false)
+        settings.set("translation_window.auto_shrink", true)
         settings.apply()
     }
 
