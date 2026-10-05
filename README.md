@@ -29,6 +29,21 @@ sudo pacman -U dist/lipax-1.0.2-1-x86_64.pkg.tar.zst
 
 Для сборки из клонированного репозитория также подходит `makepkg -si`. Пакет устанавливает команду `lipax`, ярлык приложения и встроенные шрифты. Для распознавания нужного языка установите соответствующий пакет данных Tesseract; [настройка PaddleOCR](docs/PaddleOCR.md) описана отдельно.
 
+Локальную сборку для проверки захвата KWin запускайте через `packaging/run-local.sh`.
+Скрипт собирает приложение и регистрирует отдельную скрытую desktop-запись для пути
+локального бинарника, не меняя установленный ярлык. Для уже собранного бинарника:
+`LIPAX_LOCAL_BINARY=/полный/путь/к/lipax packaging/run-local.sh`.
+Сначала закройте другой экземпляр LipaX: повторный запуск передаёт команды уже работающему приложению.
+
+Ошибка `ScreenShot2.Error.NoAuthorized` означает отказ KWin в разрешении на захват.
+В KWin с проверкой desktop-файлов разрешение связано с путём исполняемого файла:
+ярлык пакета разрешает `/usr/bin/lipax`, но не `target/debug/lipax` или `target/release/lipax`.
+После обновления пакета перезапустите приложение; при устаревшем кэше KDE выполните
+`kbuildsycoca6`. В режиме «Авто» отказ при проверке доступа приводит к выбору через portal.
+Для удаления регистрации локальной сборки удалите
+`${XDG_DATA_HOME:-~/.local/share}/applications/io.lipa.Translator.Development.desktop`
+и выполните `kbuildsycoca6`.
+
 ## Первый запуск
 
 1. Запустите `lipax` из меню приложений или терминала. В настройках проверьте язык распознавания, язык перевода и сервис перевода.
@@ -85,5 +100,4 @@ Start `lipax`, choose a game window and text region, configure OCR languages and
 Check overlay placement with your particular fullscreen game or mixed-scale monitor setup.
 
 Run `RUST_LOG=debug lipax` to see more diagnostic output, or use `2>&1 | tee lipax.log` to save it. See [logging](docs/LOGGING.md), [architecture](docs/ARCHITECTURE.md), and [PaddleOCR setup](docs/PaddleOCR.md).
-
 
