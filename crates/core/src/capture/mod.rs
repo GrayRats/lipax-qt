@@ -77,6 +77,9 @@ pub enum CaptureError {
     WindowGone,
     #[error("захват недоступен: {0}")]
     Unavailable(String),
+    /// KWin refused: its permission belongs to the path of the executable named in a desktop file.
+    #[error("KWin не разрешил захват этому процессу (ScreenShot2.Error.NoAuthorized). Разрешение выдаётся по пути исполняемого файла из .desktop-файла: пакет разрешает /usr/bin/lipax, но не локальную сборку. Локальную сборку запускайте через packaging/run-local.sh; после обновления пакета перезапустите LipaX (при устаревшем кэше — kbuildsycoca6)")]
+    NotAuthorized,
 }
 
 pub trait Capture: Send + Sync {

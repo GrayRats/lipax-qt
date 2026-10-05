@@ -63,6 +63,7 @@ check() {
     cargo test --frozen --workspace
     cargo build --frozen -p lipa --features lifecycle-test
     bash packaging/test-process-exit.sh "$CARGO_TARGET_DIR/debug/lipax"
+    bash packaging/test-run-local.sh
     QT_QPA_PLATFORM=offscreen QT_QUICK_CONTROLS_STYLE=Universal QT_QUICK_CONTROLS_UNIVERSAL_THEME=Dark \
         /usr/lib/qt6/bin/qmltestrunner -input crates/app/tests
 }

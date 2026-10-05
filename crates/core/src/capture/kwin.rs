@@ -27,6 +27,17 @@ fn unavailable(e: impl std::fmt::Display) -> CaptureError {
     CaptureError::Unavailable(e.to_string())
 }
 
+/// What a D-Bus error of `CaptureWindow` means for the caller.
+fn method_error(name: &str, error: &dyn std::fmt::Display) -> CaptureError {
+    if name.contains("InvalidArgs") {
+        CaptureError::WindowGone
+    } else if name.contains("NoAuthorized") {
+        CaptureError::NotAuthorized
+    } else {
+        unavailable(error)
+    }
+}
+
 fn string(m: &HashMap<String, OwnedValue>, k: &str) -> String {
     m.get(k).and_then(|v| <&str>::try_from(&**v).ok()).unwrap_or_default().to_string()
 }
@@ -137,6 +148,15 @@ impl KwinCapture {
         }))
     }
 
+    /// Does KWin let this process capture windows? Asked with one real capture of `uuid`: the only
+    /// error that matters here is the refusal; a vanished window or a failed frame say nothing about permission.
+    pub async fn check_access(&self, uuid: &str) -> Result<(), CaptureError> {
+        match self.capture_window(uuid).await {
+            Err(CaptureError::NotAuthorized) => Err(CaptureError::NotAuthorized),
+            _ => Ok(()),
+        }
+    }
+
     /// Окно ещё существует (KWin знает его uuid)?
     pub async fn window_exists(&self, uuid: &str) -> bool {
         match self
@@ -240,7 +260,7 @@ impl KwinCapture {
             Err(e) => {
                 let _ = read.await;
                 return Err(match &e {
-                    zbus::Error::MethodError(n, _, _) if n.as_str().contains("InvalidArgs") => CaptureError::WindowGone,
+                    zbus::Error::MethodError(n, _, _) => method_error(n.as_str(), &e),
                     _ => unavailable(e),
                 });
             }
@@ -301,6 +321,18 @@ impl Capture for KwinCapture {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_refusal_of_kwin_is_told_apart_from_other_errors() {
+        use super::*;
+        assert!(matches!(method_error("org.kde.KWin.ScreenShot2.Error.NoAuthorized", &"x"), CaptureError::NotAuthorized));
+        assert!(matches!(method_error("org.freedesktop.DBus.Error.InvalidArgs", &"x"), CaptureError::WindowGone));
+        assert!(matches!(method_error("org.kde.KWin.ScreenShot2.Error.Cancelled", &"boom"), CaptureError::Unavailable(m) if m == "boom"));
+        let text = CaptureError::NotAuthorized.to_string();
+        for needed in ["NoAuthorized", "/usr/bin/lipax", "packaging/run-local.sh", "kbuildsycoca6"] {
+            assert!(text.contains(needed), "{needed} in {text}");
+        }
+    }
+
     use super::*;
     use image::GenericImageView;
 

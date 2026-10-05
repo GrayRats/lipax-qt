@@ -973,7 +973,12 @@ impl qobject::Controller {
             let backend = shared.settings.borrow().capture_backend;
             let by_kwin = async {
                 match shared.kwin().await {
-                    Ok(k) => k.pick_window().await.map_err(|e| e.to_string()),
+                    Ok(k) => match k.pick_window().await.map_err(|e| e.to_string())? {
+                        // Picking works for anyone; capturing needs KWin's permission. Better to learn
+                        // that now, with a clear reason, than from the first failed frame.
+                        Some(key) => k.check_access(&key.uuid).await.map(|()| Some(key)).map_err(|e| e.to_string()),
+                        None => Ok(None),
+                    },
                     Err(e) => Err(e),
                 }
             };
@@ -986,9 +991,12 @@ impl qobject::Controller {
                     Ok(r) => Ok(r),
                     Err(e) => {
                         tracing::warn!(component = "KWin", error = %e, "Переключение на Portal-захват");
-                        let _ = qt.queue(|mut o| {
-                            o.as_mut().set_status(QString::from("KWin недоступен, выберите окно в системном диалоге (portal)"))
-                        });
+                        let note = if e.contains("NoAuthorized") {
+                            "KWin не разрешил захват этому процессу (локальная сборка? см. packaging/run-local.sh): выберите окно в системном диалоге (portal)"
+                        } else {
+                            "KWin недоступен, выберите окно в системном диалоге (portal)"
+                        };
+                        let _ = qt.queue(move |mut o| o.as_mut().set_status(QString::from(note)));
                         by_portal.await
                     }
                 },

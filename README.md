@@ -29,6 +29,21 @@ sudo pacman -U dist/lipax-1.0.2-1-x86_64.pkg.tar.zst
 
 Для сборки из клонированного репозитория также подходит `makepkg -si`. Пакет устанавливает команду `lipax`, ярлык приложения и встроенные шрифты. Для распознавания нужного языка установите соответствующий пакет данных Tesseract; [настройка PaddleOCR](docs/PaddleOCR.md) описана отдельно.
 
+Локальную сборку для проверки захвата KWin запускайте через `packaging/run-local.sh`.
+Скрипт собирает приложение и регистрирует отдельную скрытую desktop-запись для пути
+локального бинарника, не меняя установленный ярлык. Для уже собранного бинарника:
+`LIPAX_LOCAL_BINARY=/полный/путь/к/lipax packaging/run-local.sh`.
+Сначала закройте другой экземпляр LipaX: повторный запуск передаёт команды уже работающему приложению.
+
+Ошибка `ScreenShot2.Error.NoAuthorized` означает отказ KWin в разрешении на захват.
+В KWin с проверкой desktop-файлов разрешение связано с путём исполняемого файла:
+ярлык пакета разрешает `/usr/bin/lipax`, но не `target/debug/lipax` или `target/release/lipax`.
+После обновления пакета перезапустите приложение; при устаревшем кэше KDE выполните
+`kbuildsycoca6`. В режиме «Авто» отказ при проверке доступа приводит к выбору через portal.
+Для удаления регистрации локальной сборки выполните `packaging/run-local.sh --unregister`
+(или удалите `${XDG_DATA_HOME:-~/.local/share}/applications/io.lipa.Translator.Development.desktop`
+и выполните `kbuildsycoca6`). Вкладка «Статус» показывает, разрешён ли захват текущему бинарнику.
+
 ## Первый запуск
 
 1. Запустите `lipax` из меню приложений или терминала. В настройках проверьте язык распознавания, язык перевода и сервис перевода.
@@ -83,6 +98,14 @@ Start `lipax`, choose a game window and text region, configure OCR languages and
 
 **Known limitation:** a changed setting may be saved without taking effect immediately, for this reason, there may be a translation error 429 (timeout). If that happens, close LipaX completely and start it again. 
 Check overlay placement with your particular fullscreen game or mixed-scale monitor setup.
+
+To test a local build against KWin screen capture, start it with `packaging/run-local.sh` (or
+`LIPAX_LOCAL_BINARY=/full/path/to/lipax packaging/run-local.sh` for a binary you already built; `--unregister` removes
+the registration). KWin allows `ScreenShot2` only to the executable path named in a desktop file: the package
+allows `/usr/bin/lipax`, not `target/debug/lipax`, which fails with `ScreenShot2.Error.NoAuthorized`. The script
+registers a separate hidden desktop entry for the local path and leaves the installed launcher alone. Close any
+other LipaX first: a second start only forwards its command. In “Авто” mode a refusal makes LipaX choose the
+window through the portal; the “Статус” tab shows whether the current binary is allowed to capture.
 
 Run `RUST_LOG=debug lipax` to see more diagnostic output, or use `2>&1 | tee lipax.log` to save it. See [logging](docs/LOGGING.md), [architecture](docs/ARCHITECTURE.md), and [PaddleOCR setup](docs/PaddleOCR.md).
 

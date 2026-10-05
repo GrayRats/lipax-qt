@@ -68,7 +68,10 @@ KWin `CaptureWindow` вызывается с `include-decoration=false`, `includ
 `include-cursor=false`, `native-resolution=true`. Захватывается конкретное окно:
 рамки и перевод находятся на других поверхностях и не становятся входом OCR.
 Доступ задаёт `.desktop` с `X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2`;
-`Exec` должен совпадать с абсолютным путём запущенного бинарника.
+`Exec` должен совпадать с абсолютным путём запущенного бинарника. Отказ KWin (`NoAuthorized`) — отдельная
+ошибка `CaptureError::NotAuthorized` с объяснением; доступ проверяется при выборе окна (в «Авто» отказ
+ведёт к portal), а «Статус» показывает, разрешает ли какой-либо `.desktop` путь текущего бинарника.
+Локальную сборку запускает `packaging/run-local.sh`: он регистрирует скрытую запись для её пути.
 
 Скрипт KWin передаёт `clientGeometry`, `frameGeometry`, `bufferGeometry` и обновляет
 их при перемещении/изменении размеров. `client_crop` сопоставляет размер кадра
