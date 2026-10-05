@@ -9,23 +9,23 @@ import org.kde.layershell 1.0 as LayerShell
 // or settings autosave. The body is click-through; the pin handle keeps receiving input.
 Window {
     id: win
-    objectName: "translationOverlay"
+    objectName: "translationWindow"
     property var controller
-    property var settings: ({})
+    property var settings: ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
     property string translation: ""
     property string original: ""
     property string gameGeometry: ""
     signal pinToggleRequested()
     readonly property alias content: content
 
-    LoggingCategory { id: logLayer; name: "overlay.layershell"; defaultLogLevel: LoggingCategory.Debug }
-    LoggingCategory { id: logScreen; name: "overlay.screen"; defaultLogLevel: LoggingCategory.Debug }
+    LoggingCategory { id: logLayer; name: "translation_window.layershell"; defaultLogLevel: LoggingCategory.Debug }
+    LoggingCategory { id: logScreen; name: "translation_window.screen"; defaultLogLevel: LoggingCategory.Debug }
 
     property var targetScreen: null
     // The screen for a new pinned surface: the one chosen in the settings, else the game's.
     function chooseScreen() {
         const screens = Qt.application.screens
-        let chosen = screens.find(s => s.name === settings.overlay_screen)
+        let chosen = screens.find(s => s.name === settings.translation_window.screen)
         if (!chosen && gameGeometry.length) {
             try {
                 const g = JSON.parse(gameGeometry)
@@ -56,7 +56,7 @@ Window {
         Qt.callLater(updateBlur)
     }
     // Only an explicit screen choice in the settings moves the pinned surface to another screen.
-    readonly property string screenSetting: settings.overlay_screen || ""
+    readonly property string screenSetting: settings.translation_window.screen || ""
     onScreenSettingChanged: if (visible) { console.debug(logScreen, "position changed by user_screen_setting"); place("user_screen_setting") }
     Connections {
         target: Qt.application
@@ -71,8 +71,8 @@ Window {
     readonly property int screenWidth: targetScreen ? targetScreen.width : Screen.width
     readonly property int screenHeight: targetScreen ? targetScreen.height : Screen.height
     // Kept on its screen: this is the placement of an overlay, not a drag constraint.
-    readonly property int actualX: Math.max(0, Math.min(settings.overlay_pos ? settings.overlay_pos[0] : 100, screenWidth - width))
-    readonly property int actualY: Math.max(0, Math.min(settings.overlay_pos ? settings.overlay_pos[1] : 100, screenHeight - height))
+    readonly property int actualX: Math.max(0, Math.min(settings.translation_window.position ? settings.translation_window.position[0] : 100, screenWidth - width))
+    readonly property int actualY: Math.max(0, Math.min(settings.translation_window.position ? settings.translation_window.position[1] : 100, screenHeight - height))
 
     visible: false
     color: "transparent"
@@ -80,10 +80,10 @@ Window {
     // On an X11 Qt backend these coordinates accompany the WM keep-above hint.
     x: (targetScreen ? targetScreen.virtualX : 0) + actualX
     y: (targetScreen ? targetScreen.virtualY : 0) + actualY
-    width: Math.min(settings.overlay_size ? settings.overlay_size[0] : 700,
-                    settings.max_width_enabled !== false ? (settings.overlay_max_width || 900) : 100000,
+    width: Math.min(settings.translation_window.size ? settings.translation_window.size[0] : 700,
+                    settings.translation_window.max_width_enabled !== false ? (settings.translation_window.maximum_width || 900) : 100000,
                     screenWidth)
-    height: Math.min(settings.overlay_size ? settings.overlay_size[1] : 120, screenHeight)
+    height: Math.min(settings.translation_window.size ? settings.translation_window.size[1] : 120, screenHeight)
 
     LayerShell.Window.scope: "lipa-overlay"
     LayerShell.Window.layer: LayerShell.Window.LayerOverlay
@@ -93,20 +93,20 @@ Window {
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityNone
 
     // Click-through except the pin handle (and the frame band while it is visible).
-    readonly property bool passthrough: settings.click_through !== false
+    readonly property bool passthrough: settings.translation_window.click_through !== false
     function updateInput() {
         if (!visible) return
-        if (controller) controller.configureOverlay(passthrough, JSON.stringify(content.inputRects()))
+        if (controller) controller.configureTranslationWindow(passthrough, JSON.stringify(content.inputRects()))
     }
     function updateBlur() {
         if (!visible) return
-        if (controller && controller.configureOverlayBlur) controller.configureOverlayBlur(content.blurBehind, content.cornerRadius)
+        if (controller && controller.configureTranslationWindowBlur) controller.configureTranslationWindowBlur(content.blurBehind, content.cornerRadius)
     }
     onPassthroughChanged: Qt.callLater(updateInput)
     onWidthChanged: { Qt.callLater(updateInput); Qt.callLater(updateBlur) }
     onHeightChanged: { Qt.callLater(updateInput); Qt.callLater(updateBlur) }
 
-    OverlayContent {
+    TranslationWindowContent {
         id: content
         anchors.fill: parent
         settings: win.settings

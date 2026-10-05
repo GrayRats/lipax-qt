@@ -109,13 +109,13 @@ struct Fingerprints {
 
 impl Fingerprints {
     fn of(s: &Settings) -> Self {
-        let i = &s.inplace;
+        let i = &s.appearance.inplace;
         let style = serde_json::json!([i.font_family, i.font_size, i.font_weight, i.italic, i.line_height, i.letter_spacing,
             i.alignment, i.wrap_mode, i.text_color, i.padding, i.minimum_font_size, i.maximum_font_size, i.allow_condensed_fallback]).to_string();
         Self {
             style,
             background: serde_json::json!([i.background_mode, i.fill_color, i.fill_opacity, i.padding_x, i.padding_y, i.extra_margin, i.corner_radius, i.outline_color, i.outline_width, i.shadow, i.text_opacity]).to_string(),
-            fonts: serde_json::json!([i.font_overrides, i.preferred_fonts, s.target_lang]).to_string(),
+            fonts: serde_json::json!([i.font_overrides, i.preferred_fonts, s.translation.target_language]).to_string(),
         }
     }
 }
@@ -171,10 +171,10 @@ fn analysis_for(tracker: &TextBlockTracker, id: u64) -> Option<FontAnalysis> {
 }
 
 fn preferences(s: &Settings) -> FontPreferences {
-    let category_overrides = s.inplace.font_overrides.iter()
+    let category_overrides = s.appearance.inplace.font_overrides.iter()
         .filter_map(|(k, v)| serde_json::from_value::<FontCategory>(serde_json::Value::String(k.clone())).ok().map(|c| (c, v.clone())))
         .collect();
-    FontPreferences { category_overrides, preferred: s.inplace.preferred_fonts.clone() }
+    FontPreferences { category_overrides, preferred: s.appearance.inplace.preferred_fonts.clone() }
 }
 
 impl InplaceEngine {
@@ -250,7 +250,7 @@ impl InplaceEngine {
             let moved = (t.previous_rect.x - t.current_rect.x).abs() > 3.0 || (t.previous_rect.y - t.current_rect.y).abs() > 3.0;
             if t.background.is_none() || bg_changed || moved || t.background_signature.is_none_or(|old| color_distance(old, bg_sig) > 18.0) {
                 let analysis = BackgroundAnalyzer.analyze(&image, &mask, &rect, margin);
-                t.background = Some(BackgroundInpainter.render(&image, &mask, &rect, lh, analysis, &s.inplace, d.block_type));
+                t.background = Some(BackgroundInpainter.render(&image, &mask, &rect, lh, analysis, &s.appearance.inplace, d.block_type));
                 t.background_signature = Some(bg_sig);
                 t.revision += 1;
             }
@@ -319,7 +319,7 @@ impl InplaceEngine {
             // The plate follows the glyphs: it is restored again for the new boundary.
             let margin = BackgroundAnalyzer::margin(d.line_height());
             let analysis = BackgroundAnalyzer.analyze(&snapshot.image, &snapshot.mask, &rect, margin);
-            t.background = Some(BackgroundInpainter.render(&snapshot.image, &snapshot.mask, &rect, d.line_height(), analysis, &s.inplace, d.block_type));
+            t.background = Some(BackgroundInpainter.render(&snapshot.image, &snapshot.mask, &rect, d.line_height(), analysis, &s.appearance.inplace, d.block_type));
             t.background_signature = Some(BackgroundAnalyzer::signature(&snapshot.image, &rect, margin));
             t.revision += 1;
             if refined.is_some() { t.lines_note.push_str("; граница блока по OCR"); }
@@ -341,7 +341,7 @@ impl InplaceEngine {
         let db = self.font_db();
         let Some(analysis) = analysis_for(&self.tracker, id) else { return };
         let Some(t) = self.tracker.get_mut(id) else { return };
-        let selected = FontMatcher.select_font(&analysis, Script::from_lang(&s.target_lang), t.block_type, &db, &preferences(s));
+        let selected = FontMatcher.select_font(&analysis, Script::from_lang(&s.translation.target_language), t.block_type, &db, &preferences(s));
         if analysis.category == FontCategory::Unknown {
             tracing::warn!(target: "inplace.font", block_id = id, fallback = %selected.family, "font category could not be determined");
         }
@@ -349,7 +349,7 @@ impl InplaceEngine {
             category = ?analysis.category, confidence = analysis.confidence, selected_fallback = %selected.family, "font analysis");
         if selected.generic {
             if self.missing_font_warned.insert(id) {
-                tracing::warn!(target: "inplace.font", block_id = id, script = ?Script::from_lang(&s.target_lang), "no bundled font has full glyph coverage");
+                tracing::warn!(target: "inplace.font", block_id = id, script = ?Script::from_lang(&s.translation.target_language), "no bundled font has full glyph coverage");
             }
             return;
         }
@@ -400,16 +400,16 @@ impl InplaceEngine {
                 }
                 continue;
             };
-            let mut style = TypographyEstimator.resolve(est, font, &s.inplace);
+            let mut style = TypographyEstimator.resolve(est, font, &s.appearance.inplace);
             // Старый ручной шрифт из системного списка не должен попасть в inplace.
-            if style.font_family != font.family && !font_db.find(&style.font_family).is_some_and(|f| f.covers(Script::from_lang(&s.target_lang).fontconfig_lang())) {
+            if style.font_family != font.family && !font_db.find(&style.font_family).is_some_and(|f| f.covers(Script::from_lang(&s.translation.target_language).fontconfig_lang())) {
                 tracing::warn!(target: "inplace.font", block_id = t.id, family = %style.font_family, "manual font lacks bundled glyph coverage; using selected font");
                 style.font_family = font.family.clone();
             }
             blocks.push(InplaceBlock {
                 id: t.id, block_type: t.block_type, text_rect: t.text_rect(),
                 original: t.original_text.clone(), translation: t.translated_text.clone(),
-                script: Script::from_lang(&s.target_lang), font: font.clone(), style, background: bg.clone(), lines_note: t.lines_note.clone(), revision: t.revision,
+                script: Script::from_lang(&s.translation.target_language), font: font.clone(), style, background: bg.clone(), lines_note: t.lines_note.clone(), revision: t.revision,
             });
         }
         // Undrawable fields are part of what was published (marked by the top bit of the id).
@@ -441,7 +441,7 @@ impl InplaceEngine {
                     if let Some(t) = self.tracker.get_mut(*id) {
                         let margin = BackgroundAnalyzer::margin(d.line_height());
                         let analysis = BackgroundAnalyzer.analyze(&snap.image, &snap.mask, &d.rect, margin);
-                        t.background = Some(BackgroundInpainter.render(&snap.image, &snap.mask, &d.rect, d.line_height(), analysis, &s.inplace, d.block_type));
+                        t.background = Some(BackgroundInpainter.render(&snap.image, &snap.mask, &d.rect, d.line_height(), analysis, &s.appearance.inplace, d.block_type));
                         t.revision += 1;
                     }
                 }
@@ -450,7 +450,7 @@ impl InplaceEngine {
         if now.fonts != self.applied.fonts && !self.applied.fonts.is_empty() {
             self.missing_font_warned.clear();
             let db = self.font_db();
-            let target = Script::from_lang(&s.target_lang);
+            let target = Script::from_lang(&s.translation.target_language);
             for id in &ids {
                 let analysis = analysis_for(&self.tracker, *id);
                 if let Some(t) = self.tracker.get_mut(*id)
@@ -483,7 +483,7 @@ mod tests {
     }
 
     fn settings() -> Settings {
-        Settings { target_lang: "ru".into(), translation_display: crate::settings::TranslationDisplay::Inplace, ..Settings::default() }
+        { let mut value = Settings::default(); value.translation.target_language = "ru".into(); value.display_mode = crate::settings::TranslationDisplayMode::Inplace; value }
     }
 
     /// One block of three lines, as dialogue text.
@@ -684,14 +684,14 @@ mod tests {
         let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::parse(SAMPLE));
         let mut s = settings();
         let first = run(&mut e, &scene(0, [255, 200, 60]), &s, Instant::now()).1.unwrap();
-        s.inplace.background_mode = InplaceBackgroundMode::TransparentOutline;
+        s.appearance.inplace.background_mode = InplaceBackgroundMode::TransparentOutline;
         let restyled = e.restyle(&s).unwrap();
         for (a, b) in first.blocks.iter().zip(&restyled.blocks) {
             assert_eq!((a.id, &a.font, &a.style), (b.id, &b.font, &b.style));
             assert_eq!(b.background.mode, super::super::background::BackgroundRenderMode::Transparent);
         }
         // Ручной трекинг меняет только его.
-        s.inplace.letter_spacing = PropertyMode::Manual(2.0);
+        s.appearance.inplace.letter_spacing = PropertyMode::Manual(2.0);
         let spaced = e.restyle(&s).unwrap();
         for (a, b) in restyled.blocks.iter().zip(&spaced.blocks) {
             assert_eq!(b.style.letter_spacing, 2.0);

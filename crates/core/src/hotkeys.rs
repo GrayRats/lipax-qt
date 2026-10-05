@@ -23,19 +23,19 @@ pub enum HotkeyAction {
     Toggle,
     SelectRegion,
     TranslateOnce,
-    ToggleOverlay,
+    ToggleTranslation,
     TogglePin,
 }
 
 impl HotkeyAction {
-    const ALL: [HotkeyAction; 5] = [Self::Toggle, Self::SelectRegion, Self::TranslateOnce, Self::ToggleOverlay, Self::TogglePin];
+    const ALL: [HotkeyAction; 5] = [Self::Toggle, Self::SelectRegion, Self::TranslateOnce, Self::ToggleTranslation, Self::TogglePin];
 
     fn id(self) -> &'static str {
         match self {
             Self::Toggle => "toggle",
             Self::SelectRegion => "select_region",
             Self::TranslateOnce => "translate_once",
-            Self::ToggleOverlay => "toggle_overlay",
+            Self::ToggleTranslation => "toggle_overlay",
             Self::TogglePin => "toggle_pin",
         }
     }
@@ -43,10 +43,10 @@ impl HotkeyAction {
     pub fn title(self) -> &'static str {
         match self {
             Self::Toggle => "Запустить / остановить слежение",
-            Self::SelectRegion => "Выбрать область перевода",
+            Self::SelectRegion => "Выбрать область захвата",
             Self::TranslateOnce => "Перевести сейчас",
-            Self::ToggleOverlay => "Показать / скрыть overlay",
-            Self::TogglePin => "Закрепить / открепить перевод",
+            Self::ToggleTranslation => "Показать / скрыть перевод",
+            Self::TogglePin => "Закрепить окно / сделать окно свободным",
         }
     }
 
@@ -59,7 +59,7 @@ impl HotkeyAction {
             Self::Toggle => &h.toggle,
             Self::SelectRegion => &h.select_region,
             Self::TranslateOnce => &h.translate_once,
-            Self::ToggleOverlay => &h.toggle_overlay,
+            Self::ToggleTranslation => &h.toggle_translation,
             Self::TogglePin => &h.toggle_pin,
         }
     }

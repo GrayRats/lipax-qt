@@ -6,9 +6,9 @@ import org.kde.layershell 1.0 as LayerShell
 // Цвет, толщина и время показа берутся из настроек.
 Window {
     id: win
-    property var settings: ({})
-    readonly property int borderWidth: Math.max(1, settings.frame_width || 2)
-    readonly property color borderColor: /^#[0-9a-fA-F]{6}$/.test(settings.frame_color || "") ? settings.frame_color : "#ff0000"
+    property var settings: ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
+    readonly property int borderWidth: Math.max(1, settings.capture.frame_width || 2)
+    readonly property color borderColor: /^#[0-9a-fA-F]{6}$/.test(settings.capture.frame_color || "") ? settings.capture.frame_color : "#ff0000"
     property real gx: 0   // положение на рабочем столе
     property real gy: 0
 
@@ -20,8 +20,8 @@ Window {
     }
 
     function flash(x, y, w, h) {
-        const seconds = settings.frame_seconds || 3
-        if (settings.region_frame_mode === "off" || w < 1 || h < 1) return
+        const seconds = settings.capture.frame_seconds || 3
+        if (settings.capture.region_frame_mode === "off" || w < 1 || h < 1) return
         const scr = screenFor(x + w / 2, y + h / 2)
         if (scr && win.screen !== scr) {
             win.visible = false // Recreate the layer surface on the new output.

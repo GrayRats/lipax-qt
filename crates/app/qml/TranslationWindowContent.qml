@@ -7,7 +7,7 @@ import QtQuick
 //   ✕ (floating)   → closeRequested()
 Item {
     id: content
-    property var settings: ({})
+    property var settings: ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
     property string translation: ""
     property string original: ""
     property bool pinned: false
@@ -16,36 +16,36 @@ Item {
     signal closeRequested()
 
     readonly property bool floating: !pinned
-    // An unpinned overlay always shows its frame so it is clear that it can be dragged.
-    readonly property bool frameVisible: floating || settings.border_always !== false || frameTimer.running
-    function flashFrame() { frameTimer.interval = Math.max(1, settings.border_seconds || 5) * 1000; frameTimer.restart() }
+    // An free window always shows its frame so it is clear that it can be dragged.
+    readonly property bool frameVisible: floating || settings.translation_window.border_always !== false || frameTimer.running
+    function flashFrame() { frameTimer.interval = Math.max(1, settings.translation_window.border_seconds || 5) * 1000; frameTimer.restart() }
     Timer { id: frameTimer }
 
-    readonly property int frameWidth: Math.max(1, settings.border_width || 2) + (pinned ? 0 : 2)
-    readonly property int padding: (settings.overlay_padding !== undefined ? settings.overlay_padding : 16) + frameWidth
+    readonly property int frameWidth: Math.max(1, settings.translation_window.border_width || 2) + (pinned ? 0 : 2)
+    readonly property int padding: (settings.appearance.window.padding !== undefined ? settings.appearance.window.padding : 16) + frameWidth
     readonly property int cornerRadius: pinned
-        ? (settings.overlay_pinned_corner_radius !== undefined ? settings.overlay_pinned_corner_radius : 0)
-        : (settings.overlay_corner_radius !== undefined ? settings.overlay_corner_radius : 12)
-    readonly property int requestedFontSize: settings.font_size || 20
-    readonly property bool autoShrink: settings.overlay_auto_shrink !== false
-    readonly property bool wrapOverflow: autoShrink && settings.text_wrap === false
+        ? (settings.translation_window.pinned_corner_radius !== undefined ? settings.translation_window.pinned_corner_radius : 0)
+        : (settings.translation_window.corner_radius !== undefined ? settings.translation_window.corner_radius : 12)
+    readonly property int requestedFontSize: settings.appearance.window.font_size || 20
+    readonly property bool autoShrink: settings.translation_window.auto_shrink !== false
+    readonly property bool wrapOverflow: autoShrink && settings.appearance.window.text_wrap === false
         && fitProbe.fontInfo.pixelSize <= 14 && fitProbe.contentWidth > textScroll.width
     onTranslationChanged: textScroll.contentY = 0
 
     // ── Display style: blur / transparent / dim (or its light inverse) / solid ──
-    readonly property string style: settings.overlay_style || "solid"
-    readonly property bool inverse: style === "dim" && settings.dim_inverse === true
+    readonly property string style: settings.appearance.window.background_style || "solid"
+    readonly property bool inverse: style === "dim" && settings.appearance.window.dim_inverse === true
     // The dim style relies on the same compositor blur, under a denser tint so it reads as faint.
-    readonly property bool blurBehind: (style === "blur" && settings.blur_enabled !== false) || style === "dim"
-    readonly property color backgroundColor: style === "solid" ? (settings.background_color || "#181818")
+    readonly property bool blurBehind: (style === "blur" && settings.appearance.window.blur_enabled !== false) || style === "dim"
+    readonly property color backgroundColor: style === "solid" ? (settings.appearance.window.background_color || "#181818")
         : inverse ? "#f2f2f2" : "#000000"
-    readonly property real backgroundOpacity: style === "solid" ? (settings.opacity !== undefined ? settings.opacity : 0.85)
-        : style === "blur" ? (settings.blur_tint !== undefined ? settings.blur_tint : 0.3)
+    readonly property real backgroundOpacity: style === "solid" ? (settings.translation_window.opacity !== undefined ? settings.translation_window.opacity : 0.85)
+        : style === "blur" ? (settings.appearance.window.blur_tint !== undefined ? settings.appearance.window.blur_tint : 0.3)
         : style === "dim" ? (inverse ? 0.72 : 0.55)
         : 0
-    readonly property color textColor: style === "solid" ? (settings.text_color || "#ffffff") : inverse ? "#141414" : "#ffffff"
-    readonly property color originalColor: style === "solid" ? (settings.original_color || "#b0b0b0") : inverse ? "#4a4a4a" : "#d0d0d0"
-    readonly property bool outlined: (style === "solid" || style === "blur") && settings.text_outline !== false
+    readonly property color textColor: style === "solid" ? (settings.appearance.window.text_color || "#ffffff") : inverse ? "#141414" : "#ffffff"
+    readonly property color originalColor: style === "solid" ? (settings.appearance.window.original_color || "#b0b0b0") : inverse ? "#4a4a4a" : "#d0d0d0"
+    readonly property bool outlined: (style === "solid" || style === "blur") && settings.appearance.window.text_outline !== false
 
     // ── Input: the pin handle always receives input; the frame band only while visible ──
     readonly property int handleSize: 26
@@ -62,52 +62,52 @@ Item {
     }
 
     Rectangle {
-        objectName: "overlayBackground"
+        objectName: "translationWindowBackground"
         anchors.fill: parent
         radius: content.cornerRadius
         color: content.backgroundColor
         opacity: content.backgroundOpacity
     }
     Rectangle {
-        objectName: "overlayBorder"
+        objectName: "translationWindowBorder"
         anchors.fill: parent
         color: "transparent"
-        visible: content.frameVisible && content.settings.border_pattern !== true
+        visible: content.frameVisible && content.settings.translation_window.border_pattern !== true
         radius: content.cornerRadius
         border.width: content.frameWidth
-        border.color: content.settings.border_color || "#ff00ff"
-        opacity: content.settings.border_opacity !== undefined ? content.settings.border_opacity : 0.65
+        border.color: content.settings.translation_window.border_color || "#ff00ff"
+        opacity: content.settings.translation_window.border_opacity !== undefined ? content.settings.translation_window.border_opacity : 0.65
     }
     ErrorPattern {
         anchors.fill: parent
-        visible: content.frameVisible && content.settings.border_pattern === true
+        visible: content.frameVisible && content.settings.translation_window.border_pattern === true
         band: content.frameWidth
         radius: content.cornerRadius
-        color: content.settings.border_color || "#ff00ff"
-        opacity: content.settings.border_opacity !== undefined ? content.settings.border_opacity : 0.65
+        color: content.settings.translation_window.border_color || "#ff00ff"
+        opacity: content.settings.translation_window.border_opacity !== undefined ? content.settings.translation_window.border_opacity : 0.65
     }
     // A bounded measurement item lets Qt choose the largest real-font size that fits.
     // The visible Text keeps its natural height, so overflow at 14 px remains scrollable.
     Text {
         id: fitProbe
-        objectName: "overlayFitProbe"
+        objectName: "translationWindowFitProbe"
         visible: false
         width: textScroll.width
         height: Math.max(1, textScroll.height - (originalText.visible ? originalText.implicitHeight + 4 : 0))
         text: content.translation
         textFormat: Text.PlainText
-        wrapMode: content.settings.text_wrap !== false ? Text.Wrap : Text.NoWrap
-        font.family: content.settings.font_family || "Inter"
+        wrapMode: content.settings.appearance.window.text_wrap !== false ? Text.Wrap : Text.NoWrap
+        font.family: content.settings.appearance.window.font_family || "Inter"
         font.pixelSize: content.requestedFontSize
-        font.bold: content.settings.font_bold === true
-        font.italic: content.settings.font_italic === true
-        lineHeight: content.settings.line_spacing || 1.0
+        font.bold: content.settings.appearance.window.font_bold === true
+        font.italic: content.settings.appearance.window.font_italic === true
+        lineHeight: content.settings.appearance.window.line_spacing || 1.0
         fontSizeMode: content.autoShrink ? Text.Fit : Text.FixedSize
         minimumPixelSize: Math.min(14, content.requestedFontSize)
     }
     Flickable {
         id: textScroll
-        objectName: "overlayTextScroll"
+        objectName: "translationWindowTextScroll"
         anchors.fill: parent
         anchors.margins: content.padding
         clip: true
@@ -123,16 +123,16 @@ Item {
             Text {
                 id: originalText
                 width: parent.width
-                visible: content.settings.show_original === true && text.length > 0
+                visible: content.settings.appearance.window.show_original === true && text.length > 0
                 text: content.original
                 textFormat: Text.PlainText
                 color: content.originalColor
                 wrapMode: translatedText.wrapMode
                 elide: translatedText.elide
-                maximumLineCount: content.settings.text_wrap === false ? 1 : 1000
+                maximumLineCount: content.settings.appearance.window.text_wrap === false ? 1 : 1000
                 horizontalAlignment: translatedText.horizontalAlignment
-                font.family: content.settings.original_font_family || translatedText.font.family
-                font.pixelSize: content.settings.original_font_size || 14
+                font.family: content.settings.appearance.window.original_font_family || translatedText.font.family
+                font.pixelSize: content.settings.appearance.window.original_font_size || 14
                 style: translatedText.style
                 styleColor: translatedText.styleColor
             }
@@ -143,18 +143,18 @@ Item {
                 text: content.translation
                 textFormat: Text.PlainText
                 color: content.textColor
-                wrapMode: content.settings.text_wrap !== false || content.wrapOverflow ? Text.Wrap : Text.NoWrap
+                wrapMode: content.settings.appearance.window.text_wrap !== false || content.wrapOverflow ? Text.Wrap : Text.NoWrap
                 elide: content.autoShrink ? Text.ElideNone
-                    : content.settings.text_wrap === false ? Text.ElideRight : Text.ElideNone
-                lineHeight: content.settings.line_spacing || 1.0
-                horizontalAlignment: content.settings.text_alignment === "left" ? Text.AlignLeft : content.settings.text_alignment === "right" ? Text.AlignRight : Text.AlignHCenter
-                font.family: content.settings.font_family || "Inter"
+                    : content.settings.appearance.window.text_wrap === false ? Text.ElideRight : Text.ElideNone
+                lineHeight: content.settings.appearance.window.line_spacing || 1.0
+                horizontalAlignment: content.settings.appearance.window.text_alignment === "left" ? Text.AlignLeft : content.settings.appearance.window.text_alignment === "right" ? Text.AlignRight : Text.AlignHCenter
+                font.family: content.settings.appearance.window.font_family || "Inter"
                 font.pixelSize: content.autoShrink ? fitProbe.fontInfo.pixelSize : content.requestedFontSize
-                font.bold: content.settings.font_bold === true
-                font.italic: content.settings.font_italic === true
+                font.bold: content.settings.appearance.window.font_bold === true
+                font.italic: content.settings.appearance.window.font_italic === true
                 // Transparent style: a light shadow (no shaders, so it also renders without GPU).
                 style: content.outlined ? Text.Outline : content.style === "transparent" ? Text.Raised : Text.Normal
-                styleColor: content.style === "transparent" ? "#b0000000" : (content.settings.outline_color || "#000000")
+                styleColor: content.style === "transparent" ? "#b0000000" : (content.settings.appearance.window.outline_color || "#000000")
             }
         }
     }
@@ -166,23 +166,23 @@ Item {
         width: content.handleSize; height: content.handleSize; radius: width / 2
         color: "#80000000"
         border.width: 1
-        border.color: content.settings.border_color || "#ff00ff"
+        border.color: content.settings.translation_window.border_color || "#ff00ff"
         opacity: content.pinned && !content.frameVisible ? 0.55 : 1
         Text {
             anchors.centerIn: parent
             text: content.pinned ? "●" : "✥"
-            color: content.settings.border_color || "#ff00ff"
+            color: content.settings.translation_window.border_color || "#ff00ff"
             font.pixelSize: 14
         }
     }
     Text {
         anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
-        text: "⌄"; color: content.settings.text_color || "white"
+        text: "⌄"; color: content.settings.appearance.window.text_color || "white"
         visible: textScroll.contentHeight > textScroll.height + 1
     }
     MouseArea {
         id: dragArea
-        objectName: "overlayDragArea"
+        objectName: "translationWindowDragArea"
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
         cursorShape: content.pinned ? Qt.ArrowCursor : Qt.SizeAllCursor
@@ -208,7 +208,7 @@ Item {
         width: content.handleSize; height: content.handleSize; radius: width / 2
         color: closeArea.containsMouse ? "#c0d03030" : "#80000000"
         border.width: 1
-        border.color: content.settings.border_color || "#ff00ff"
+        border.color: content.settings.translation_window.border_color || "#ff00ff"
         Text { anchors.centerIn: parent; text: "✕"; color: "#ffffff"; font.pixelSize: 13 }
         MouseArea {
             id: closeArea

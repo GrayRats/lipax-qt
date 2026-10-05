@@ -39,7 +39,7 @@ pub mod qobject {
         /// Видимость перевода поверх оригинала. Не связана с окном перевода.
         #[qproperty(bool, inplace_visible, cxx_name = "inplaceVisible")]
         /// Видимость окна перевода («Поверх игры»). Не связана с переводом поверх оригинала.
-        #[qproperty(bool, window_overlay_visible, cxx_name = "windowOverlayVisible")]
+        #[qproperty(bool, translation_window_visible, cxx_name = "translationWindowVisible")]
         /// Какой рендер работает сейчас: "inplace" или "window" (с учётом отката, см. `displayNote`).
         #[qproperty(QString, effective_display, cxx_name = "effectiveDisplay")]
         /// Почему выбранный режим заменён другим (пусто, если не заменён).
@@ -51,8 +51,8 @@ pub mod qobject {
 
         /// Закрепить/открепить окно перевода; закреплённое встаёт туда, где было свободное.
         #[qinvokable]
-        #[cxx_name = "setOverlayPinned"]
-        fn set_overlay_pinned(self: Pin<&mut Controller>, pinned: bool, source: &QString);
+        #[cxx_name = "setTranslationWindowPinned"]
+        fn set_translation_window_pinned(self: Pin<&mut Controller>, pinned: bool, source: &QString);
         /// Mark the next automatic floating-window show for one-time KWin focus restoration.
         #[qinvokable]
         #[cxx_name = "armFloatingFocusRestore"]
@@ -69,12 +69,15 @@ pub mod qobject {
         #[cxx_name = "setInplaceVisibility"]
         fn set_inplace_visibility(self: Pin<&mut Controller>, visible: bool, source: &QString);
         #[qinvokable]
-        #[cxx_name = "setWindowOverlayVisibility"]
-        fn set_window_overlay_visibility(self: Pin<&mut Controller>, visible: bool, source: &QString);
+        #[cxx_name = "setTranslationWindowVisibility"]
+        fn set_translation_window_visibility(self: Pin<&mut Controller>, visible: bool, source: &QString);
 
         #[qinvokable]
         #[cxx_name = "defaultSettingsJson"]
         fn default_settings_json(self: &Controller) -> QString;
+        #[qinvokable]
+        #[cxx_name = "editableSettingsPaths"]
+        fn editable_settings_paths(self: &Controller) -> QString;
         #[qinvokable]
         #[cxx_name = "clearHistory"]
         fn clear_history(self: Pin<&mut Controller>);
@@ -85,11 +88,11 @@ pub mod qobject {
         #[cxx_name = "refreshDiagnostics"]
         fn refresh_diagnostics(self: Pin<&mut Controller>);
         #[qinvokable]
-        #[cxx_name = "configureOverlay"]
-        fn configure_overlay(self: &Controller, passthrough: bool, rects: &QString);
+        #[cxx_name = "configureTranslationWindow"]
+        fn configure_translation_window(self: &Controller, passthrough: bool, rects: &QString);
         #[qinvokable]
-        #[cxx_name = "configureOverlayBlur"]
-        fn configure_overlay_blur(self: &Controller, enable: bool, radius: i32);
+        #[cxx_name = "configureTranslationWindowBlur"]
+        fn configure_translation_window_blur(self: &Controller, enable: bool, radius: i32);
         #[qinvokable]
         #[cxx_name = "settingsJson"]
         fn settings_json(self: &Controller) -> QString;
@@ -137,7 +140,7 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "translateOnce"]
         fn translate_once(self: Pin<&mut Controller>);
-        /// «Поверх оригинала»: определить шрифты полей заново (выбор шрифта иначе зафиксирован за полем).
+        /// «Поверх исходного текста»: определить шрифты полей заново (выбор шрифта иначе зафиксирован за полем).
         /// Семейства шрифтов приложения (JSON-массив): для выбора шрифта в настройках.
         #[qinvokable]
         #[cxx_name = "bundledFonts"]
@@ -197,7 +200,7 @@ use lipa_core::history::{History, Entry};
 use lipa_core::layout::engine::InplaceFrame;
 use lipa_core::layout::place::{PlacementCache, RegionInput, place_regions};
 use lipa_core::pipeline::{Cmd, Event, Pipeline};
-use lipa_core::settings::{CaptureBackendKind, NormRect, Settings};
+use lipa_core::settings::{CaptureSource, NormRect, Settings};
 use lipa_core::tesseract::{TesseractInfo, TesseractManager};
 use lipa_core::translate::HttpTranslate;
 use std::sync::{Arc, OnceLock};
@@ -297,17 +300,19 @@ impl Shared {
     }
 }
 
-/// Apply only the edited top-level fields to the latest backend state. A delayed appearance
+/// Apply only registered leaf paths to the latest backend state. A delayed appearance
 /// autosave must never replace a newly selected capture window, region or Portal token.
 fn merge_settings_patch(current: &Settings, patch: &serde_json::Map<String, serde_json::Value>) -> Result<Settings, String> {
     let mut state = serde_json::to_value(current).map_err(|e| e.to_string())?;
-    let fields = state.as_object_mut().ok_or("settings are not a JSON object")?;
     for (key, value) in patch {
-        if lipa_core::settings::reaction(key) == Some(lipa_core::settings::Reaction::Managed) {
-            return Err(format!("field {key} is managed by the backend"));
+        match lipa_core::settings::reaction(key) {
+            Some(lipa_core::settings::Reaction::Managed) => return Err(format!("field {key} is managed by the backend")),
+            None => return Err(format!("unknown settings path: {key}")),
+            _ => {}
         }
-        if !fields.contains_key(key) { return Err(format!("unknown settings field: {key}")); }
-        fields.insert(key.clone(), value.clone());
+        let mut node = &mut state;
+        for part in key.split('.') { node = node.get_mut(part).ok_or_else(|| format!("unknown settings path: {key}"))?; }
+        *node = value.clone();
     }
     serde_json::from_value(state).map_err(|e| e.to_string())
 }
@@ -349,7 +354,7 @@ pub struct ControllerRust {
     settings_rx: watch::Receiver<Settings>,
     running_rx: watch::Receiver<bool>,
     inplace_visible: bool,
-    window_overlay_visible: bool,
+    translation_window_visible: bool,
     effective_display: QString,
     display_note: QString,
     capture_capabilities: QString,
@@ -385,7 +390,7 @@ impl Default for ControllerRust {
             tesseract_busy: false,
             window_title: QString::from(
                 settings
-                    .window
+                    .capture.window
                     .as_ref()
                     .map(|w| w.caption.as_str())
                     .unwrap_or(""),
@@ -394,7 +399,7 @@ impl Default for ControllerRust {
             preview_title_bar: 0,
             game_geometry: QString::default(),
             inplace_visible: true,
-            window_overlay_visible: true,
+            translation_window_visible: true,
             effective_display: QString::from(effective_display(&settings).0),
             display_note: QString::from(effective_display(&settings).1.as_str()),
             capture_capabilities: QString::from(capabilities_json(&settings).as_str()),
@@ -405,7 +410,7 @@ impl Default for ControllerRust {
                 settings: settings_tx,
                 running: running_tx,
                 cmds: cmd_tx,
-                capture: Arc::new(AnyCapture::new(settings.portal_token.clone())),
+                capture: Arc::new(AnyCapture::new(settings.capture.portal_token.clone())),
                 generation: Arc::default(),
                 preview: Arc::default(),
                 preview_entries: Default::default(),
@@ -450,7 +455,7 @@ impl cxx_qt::Initialize for qobject::Controller {
             let mut rx = sh.capture.portal.token_updates();
             while rx.changed().await.is_ok() {
                 let token = rx.borrow_and_update().clone();
-                sh.settings.send_modify(|s| s.portal_token = token);
+                sh.settings.send_modify(|s| s.capture.portal_token = token);
                 if let Err(e) = sh.settings.borrow().save() {
                     tracing::error!(component = "portal", error = %e, "Не удалось сохранить настройки с токеном Portal");
                 }
@@ -484,14 +489,14 @@ impl cxx_qt::Initialize for qobject::Controller {
                         HotkeyAction::TranslateOnce => o.as_mut().translate_once(),
                         HotkeyAction::SelectRegion => o.as_mut().select_region_requested(),
                         // Показывает/скрывает перевод активного режима — второй режим не трогается.
-                        HotkeyAction::ToggleOverlay => {
+                        HotkeyAction::ToggleTranslation => {
                             let source = QString::from("hotkey");
                             if o.effective_display().to_string() == "inplace" {
                                 let v = !*o.inplace_visible();
                                 o.as_mut().set_inplace_visibility(v, &source);
                             } else {
-                                let v = !*o.window_overlay_visible();
-                                o.as_mut().set_window_overlay_visibility(v, &source);
+                                let v = !*o.translation_window_visible();
+                                o.as_mut().set_translation_window_visibility(v, &source);
                             }
                         }
                         // Закрепление есть только у окна перевода.
@@ -512,14 +517,14 @@ impl cxx_qt::Initialize for qobject::Controller {
             let kwin = match sh.kwin().await {
                 Ok(k) => k,
                 Err(e) => {
-                    tracing::info!(target: "overlay.geometry", error = %e, "KWin недоступен: положение свободного окна выбирает композитор");
+                    tracing::info!(target: "translation_window.geometry", error = %e, "KWin недоступен: положение свободного окна выбирает композитор");
                     return;
                 }
             };
             let mut settings = sh.settings.subscribe();
             let placement = floating_placement(&settings.borrow_and_update());
             if !kwin.set_floating_placement(placement).await {
-                tracing::warn!(target: "overlay.geometry", "скрипт KWin недоступен: положение свободного окна не восстанавливается");
+                tracing::warn!(target: "translation_window.geometry", "скрипт KWin недоступен: положение свободного окна не восстанавливается");
                 return;
             }
             let Some(mut moves) = kwin.floating_moves().await else { return };
@@ -552,8 +557,8 @@ impl cxx_qt::Initialize for qobject::Controller {
             loop {
                 ticker.tick().await;
                 let settings = sh.settings.borrow().clone();
-                let window = settings.window.clone();
-                if window.as_ref().is_some_and(is_portal_window) && settings.portal_fills_monitor {
+                let window = settings.capture.window.clone();
+                if window.as_ref().is_some_and(is_portal_window) && settings.capture.portal_fills_monitor {
                     // QML reports the selected Qt screen in logical desktop coordinates.
                     continue;
                 }
@@ -565,7 +570,7 @@ impl cxx_qt::Initialize for qobject::Controller {
                     None => None,
                 };
                 // Ignore a result for a window that was replaced during the await.
-                if sh.settings.borrow().window != window { continue; }
+                if sh.settings.borrow().capture.window != window { continue; }
                 let json = geometry.map(|g| serde_json::json!([g.x, g.y, g.w, g.h]).to_string()).unwrap_or_default();
                 if last.as_ref() == Some(&json) { continue; }
                 last = Some(json.clone());
@@ -682,35 +687,40 @@ impl cxx_qt::Initialize for qobject::Controller {
 impl qobject::Controller {
     fn arm_floating_focus_restore(&self) {
         lipa_core::capture::arm_floating_focus_restore();
-        tracing::debug!(target: "overlay.focus", "armed one-time focus restoration for automatic floating show");
+        tracing::debug!(target: "translation_window.focus", "armed one-time focus restoration for automatic floating show");
     }
     fn default_settings_json(&self) -> QString {
         QString::from(serde_json::to_string(&Settings::default()).unwrap().as_str())
     }
-    fn copy_text(&self, text: &QString) { crate::icon::copy_text(text); }
-    fn configure_overlay_blur(&self, enable: bool, radius: i32) { crate::icon::overlay_blur(enable, radius); }
-    /// `rects` — JSON `[[x, y, w, h], ...]`: где overlay принимает ввод, когда клики идут сквозь него.
-    fn configure_overlay(&self, passthrough: bool, rects: &QString) {
-        let rects: Vec<[i32; 4]> = serde_json::from_str(&rects.to_string()).unwrap_or_default();
-        crate::icon::overlay_input(passthrough, &rects.concat());
+    fn editable_settings_paths(&self) -> QString {
+        let paths: Vec<_> = lipa_core::settings::REACTIONS.iter()
+            .filter(|(_, reaction)| *reaction != lipa_core::settings::Reaction::Managed).map(|(path, _)| path).collect();
+        QString::from(serde_json::to_string(&paths).unwrap().as_str())
     }
-    fn set_overlay_pinned(mut self: Pin<&mut Self>, pinned: bool, source: &QString) {
+    fn copy_text(&self, text: &QString) { crate::icon::copy_text(text); }
+    fn configure_translation_window_blur(&self, enable: bool, radius: i32) { crate::icon::translation_window_blur(enable, radius); }
+    /// `rects` — JSON `[[x, y, w, h], ...]`: где overlay принимает ввод, когда клики идут сквозь него.
+    fn configure_translation_window(&self, passthrough: bool, rects: &QString) {
+        let rects: Vec<[i32; 4]> = serde_json::from_str(&rects.to_string()).unwrap_or_default();
+        crate::icon::translation_window_input(passthrough, &rects.concat());
+    }
+    fn set_translation_window_pinned(mut self: Pin<&mut Self>, pinned: bool, source: &QString) {
         // Cancel an automatic show that was superseded before KWin saw the floating surface.
         if pinned { lipa_core::capture::clear_floating_focus_restore(); }
         self.rust().shared.update(|s| {
             if pinned {
                 // Закреплённое окно — на месте свободного, на том же выходе.
-                if let Some(g) = s.floating_geometry.clone() {
-                    s.overlay_screen = g.output.clone();
-                    s.overlay_pos = g.relative();
-                    tracing::debug!(target: "overlay.geometry", reason = "pin_transition", screen = %g.output,
-                        x = s.overlay_pos.0, y = s.overlay_pos.1, "pinned placement from floating geometry");
+                if let Some(g) = s.translation_window.floating_geometry.clone() {
+                    s.translation_window.screen = g.output.clone();
+                    s.translation_window.position = g.relative();
+                    tracing::debug!(target: "translation_window.geometry", reason = "pin_transition", screen = %g.output,
+                        x = s.translation_window.position.0, y = s.translation_window.position.1, "pinned placement from floating geometry");
                 }
             }
-            s.overlay_pinned = pinned;
+            s.translation_window.mode = lipa_core::settings::TranslationWindowMode::from_pinned(pinned);
         });
-        tracing::debug!(target: "overlay.state", pinned, floating = !pinned,
-            window_role = if pinned { "layer_shell" } else { "xdg_toplevel" }, source = %source, "overlay pin state");
+        tracing::debug!(target: "translation_window.state", pinned, floating = !pinned,
+            window_role = if pinned { "layer_shell" } else { "xdg_toplevel" }, source = %source, "translation window pin state");
         self.as_mut().publish_settings();
     }
     fn report_floating_geometry(mut self: Pin<&mut Self>, json: &QString, reason: &QString) {
@@ -719,14 +729,14 @@ impl qobject::Controller {
                 store_floating_geometry(&self.rust().shared, g, &reason.to_string());
                 self.as_mut().publish_settings();
             }
-            _ => tracing::warn!(target: "overlay.geometry", json = %json, "invalid floating geometry from QML"),
+            _ => tracing::warn!(target: "translation_window.geometry", json = %json, "invalid floating geometry from QML"),
         }
     }
     fn report_portal_monitor_geometry(mut self: Pin<&mut Self>, json: &QString) {
         let settings = self.rust().shared.settings.borrow().clone();
-        let enabled = settings.portal_fills_monitor
-            && !settings.overlay_screen.is_empty()
-            && settings.window.as_ref().is_some_and(is_portal_window);
+        let enabled = settings.capture.portal_fills_monitor
+            && !settings.translation_window.screen.is_empty()
+            && settings.capture.window.as_ref().is_some_and(is_portal_window);
         let geometry = serde_json::from_str::<[f64; 4]>(&json.to_string()).ok()
             .filter(|g| g.iter().all(|v| v.is_finite()) && g[2] > 0.0 && g[3] > 0.0);
         let value = if enabled { geometry.map(|g| serde_json::to_string(&g).unwrap()) } else { None };
@@ -742,10 +752,10 @@ impl qobject::Controller {
             self.as_mut().set_inplace_visible(visible);
         }
     }
-    fn set_window_overlay_visibility(mut self: Pin<&mut Self>, visible: bool, source: &QString) {
-        if *self.window_overlay_visible() != visible {
-            tracing::debug!(target: "overlay.state", visible, source = %source, "window overlay visibility");
-            self.as_mut().set_window_overlay_visible(visible);
+    fn set_translation_window_visibility(mut self: Pin<&mut Self>, visible: bool, source: &QString) {
+        if *self.translation_window_visible() != visible {
+            tracing::debug!(target: "translation_window.state", visible, source = %source, "translation window visibility");
+            self.as_mut().set_translation_window_visible(visible);
         }
     }
     /// Активный рендер по настройкам и бэкенду захвата; меняется — пишется в журнал.
@@ -790,7 +800,7 @@ impl qobject::Controller {
         // Только нужное из настроек: полный клон `Settings` на каждую публикацию не нужен.
         let (regions, inplace) = {
             let settings = self.rust().shared.settings.borrow();
-            (settings.capture_regions(), settings.inplace.clone())
+            (settings.capture_regions(), settings.appearance.inplace.clone())
         };
         self.as_mut().rust_mut().region_inplace.retain(|id, _| regions.iter().any(|r| &r.id == id));
         let window = serde_json::from_str::<[f64; 4]>(&self.game_geometry().to_string()).ok();
@@ -898,14 +908,8 @@ impl qobject::Controller {
                 let before = self.rust().shared.settings.borrow().processing_key();
                 // Окно и область меняются отдельными действиями — не затираем их из формы.
                 self.rust().shared.update(|s| {
-                    let (w, r, t, p) = (s.window.take(), s.region.take(), std::mem::take(&mut s.portal_token), std::mem::take(&mut s.game_profiles));
-                    *s = Settings {
-                        window: w,
-                        region: r,
-                        portal_token: t,
-                        game_profiles: p,
-                        ..new
-                    };
+                    let (w, r, t, p) = (s.capture.window.take(), s.capture.region.take(), std::mem::take(&mut s.capture.portal_token), std::mem::take(&mut s.game_profiles));
+                    *s = { let mut value = new; value.capture.window = w; value.capture.region = r; value.capture.portal_token = t; value.game_profiles = p; value };
                 });
                 if self.rust().shared.settings.borrow().processing_key() != before {
                     // Поля, найденные в прежней области, не рисуются поверх новой.
@@ -970,24 +974,24 @@ impl qobject::Controller {
                 .set_status(QString::from("Кликните по окну игры (Esc — отмена)"))
         });
         spawn_service(async move {
-            let backend = shared.settings.borrow().capture_backend;
+            let backend = shared.settings.borrow().capture.source;
             let by_kwin = async {
                 match shared.kwin().await {
-                    Ok(k) => match k.pick_window().await.map_err(|e| e.to_string())? {
-                        // Picking works for anyone; capturing needs KWin's permission. Better to learn
-                        // that now, with a clear reason, than from the first failed frame.
-                        Some(key) => k.check_access(&key.uuid).await.map(|()| Some(key)).map_err(|e| e.to_string()),
-                        None => Ok(None),
+                    // Capturing needs KWin's permission, picking does not: ask before the user is made to
+                    // click, and say why if it is refused (the probe takes no picture).
+                    Ok(k) => match k.check_capture_permission().await {
+                        Ok(()) => k.pick_window().await.map_err(|e| e.to_string()),
+                        Err(e) => Err(e.to_string()),
                     },
                     Err(e) => Err(e),
                 }
             };
             let by_portal = async { shared.capture.portal.select_window().await.map(Some).map_err(|e| e.to_string()) };
             let res = match backend {
-                CaptureBackendKind::Kwin => by_kwin.await,
-                CaptureBackendKind::Portal => by_portal.await,
+                CaptureSource::Kwin => by_kwin.await,
+                CaptureSource::Portal => by_portal.await,
                 // KWin недоступен (другой композитор, нет прав на ScreenShot2) — запасной путь через portal.
-                CaptureBackendKind::Auto => match by_kwin.await {
+                CaptureSource::Auto => match by_kwin.await {
                     Ok(r) => Ok(r),
                     Err(e) => {
                         tracing::warn!(component = "KWin", error = %e, "Переключение на Portal-захват");
@@ -1008,10 +1012,10 @@ impl qobject::Controller {
                     // делает прежнюю область недействительной.
                     let mut restored = false;
                     shared.update(|s| {
-                        s.window = Some(key);
-                        s.region = None;
+                        s.capture.window = Some(key);
+                        s.capture.region = None;
                         restored = s.apply_game_profile();
-                        if !restored { for r in &mut s.regions { r.rect = None; } }
+                        if !restored { for r in &mut s.capture.regions { r.rect = None; } }
                     });
                     let has_region = !shared.settings.borrow().capture_regions().is_empty();
                     show_frame(shared.clone(), qt.clone());
@@ -1058,7 +1062,7 @@ impl qobject::Controller {
         let shared = self.rust().shared.clone();
         let qt = self.qt_thread();
         spawn_service(async move {
-            let Some(window) = shared.settings.borrow().window.clone() else {
+            let Some(window) = shared.settings.borrow().capture.window.clone() else {
                 let _ = qt.queue(|mut o| {
                     o.as_mut()
                         .set_status(QString::from("Сначала выберите окно"))
@@ -1103,10 +1107,10 @@ impl qobject::Controller {
     fn set_region(mut self: Pin<&mut Self>, x: f64, y: f64, w: f64, h: f64) {
         let rect = NormRect { x, y, w, h };
         self.rust().shared.update(|s| {
-            s.region = None;
-            if let Some(r) = s.regions.iter_mut().find(|r| r.id == s.active_region) { r.rect = Some(rect); r.enabled = true; }
+            s.capture.region = None;
+            if let Some(r) = s.capture.regions.iter_mut().find(|r| r.id == s.capture.active_region) { r.rect = Some(rect); r.enabled = true; }
         });
-        let active = self.rust().shared.settings.borrow().active_region.clone();
+        let active = self.rust().shared.settings.borrow().capture.active_region.clone();
         self.as_mut().rust_mut().region_inplace.remove(&active);
         self.as_mut().publish_translation();
         // The region outline (RegionFrame) flashes by itself when the area changes.
@@ -1117,8 +1121,8 @@ impl qobject::Controller {
 
     fn reset_region(mut self: Pin<&mut Self>) {
         self.rust().shared.update(|s| {
-            s.region = None;
-            if let Some(r) = s.regions.iter_mut().find(|r| r.id == s.active_region) { r.rect = None; }
+            s.capture.region = None;
+            if let Some(r) = s.capture.regions.iter_mut().find(|r| r.id == s.capture.active_region) { r.rect = None; }
         });
         self.as_mut().publish_settings();
         self.as_mut().publish_translation();
@@ -1260,45 +1264,52 @@ fn publish_preview(shared: &Shared, region_id: String, region_name: String, prev
 
 /// Положение свободного окна сохраняется после перемещения — не во время него.
 fn store_floating_geometry(shared: &Shared, g: lipa_core::settings::FloatingGeometry, reason: &str) {
-    tracing::debug!(target: "overlay.geometry", reason, x = g.x, y = g.y, width = g.w, height = g.h, screen = %g.output, "floating geometry");
-    shared.update(|s| s.floating_geometry = Some(g));
+    tracing::debug!(target: "translation_window.geometry", reason, x = g.x, y = g.y, width = g.w, height = g.h, screen = %g.output, "floating geometry");
+    shared.update(|s| s.translation_window.floating_geometry = Some(g));
 }
 
 /// JSON для скрипта KWin: где поставить свободное окно при появлении. Сначала — где его
 /// оставили, иначе — там, где стоит закреплённое; `null` — пусть место выберет KWin.
 fn floating_placement(s: &Settings) -> String {
-    match &s.floating_geometry {
+    match &s.translation_window.floating_geometry {
         Some(g) => {
             let (rx, ry) = g.relative();
             serde_json::json!({ "x": g.x, "y": g.y, "output": g.output, "rx": rx, "ry": ry }).to_string()
         }
-        None if !s.overlay_screen.is_empty() => serde_json::json!({ "output": s.overlay_screen, "rx": s.overlay_pos.0, "ry": s.overlay_pos.1 }).to_string(),
+        None if !s.translation_window.screen.is_empty() => serde_json::json!({ "output": s.translation_window.screen, "rx": s.translation_window.position.0, "ry": s.translation_window.position.1 }).to_string(),
         None => "null".into(),
     }
 }
 
 /// Какой рендер перевода работает: выбранный в настройках, кроме случая, когда для
 /// «поверх оригинала» нет положения окна на экране (захват через portal).
-fn effective_display(s: &Settings) -> (&'static str, String) {
-    use lipa_core::settings::TranslationDisplay;
-    match s.translation_display {
-        TranslationDisplay::Window => ("window", String::new()),
-        TranslationDisplay::Inplace if let Some((window, reason)) = s.window.as_ref().and_then(|w| Some((w, capabilities_for(w, s).inplace_blocker()?))) =>
-            ("window", format!("захват через {}: {reason}", backend_name(window))),
-        TranslationDisplay::Inplace if {
-            let db = lipa_core::layout::font_database::InstalledFontDatabase::bundled();
-            let regions = s.capture_regions();
-            let langs: Vec<&str> = if regions.is_empty() { vec![s.target_lang.as_str()] }
-                else { regions.iter().map(|r| if r.target_lang.is_empty() { s.target_lang.as_str() } else { r.target_lang.as_str() }).collect() };
-            langs.into_iter().any(|lang| !db.fonts().iter().any(|font| font.covers(lipa_core::layout::Script::from_lang(lang).fontconfig_lang())))
-        } =>
-            ("window", "нет встроенного шрифта для языка перевода: используется окно перевода".into()),
-        TranslationDisplay::Inplace => ("inplace", String::new()),
+fn inplace_availability(s: &Settings) -> lipa_core::capture::FeatureAvailability {
+    use lipa_core::capture::FeatureAvailability;
+    let Some(window) = s.capture.window.as_ref() else {
+        return FeatureAvailability::unavailable("Окно захвата ещё не выбрано.", "Выберите окно в разделе «Источник изображения».");
+    };
+    if let Some(reason) = capabilities_for(window, s).inplace_blocker() {
+        return FeatureAvailability::unavailable(format!("{}: {reason}", backend_name(window)),
+            "Выберите захват KWin либо укажите монитор и подтвердите, что portal захватывает полноэкранное окно на этом мониторе.");
     }
+    let db = lipa_core::layout::font_database::InstalledFontDatabase::bundled();
+    let regions = s.capture_regions();
+    let langs: Vec<&str> = if regions.is_empty() { vec![s.translation.target_language.as_str()] }
+        else { regions.iter().map(|r| if r.target_language.is_empty() { s.translation.target_language.as_str() } else { r.target_language.as_str() }).collect() };
+    if langs.into_iter().any(|lang| !db.fonts().iter().any(|font| font.covers(lipa_core::layout::Script::from_lang(lang).fontconfig_lang()))) {
+        return FeatureAvailability::unavailable("Нет встроенного шрифта для языка перевода.", "Выберите поддерживаемый язык перевода или отдельное окно.");
+    }
+    FeatureAvailability::available()
+}
+
+fn effective_display(s: &Settings) -> (&'static str, String) {
+    if s.display_mode == lipa_core::settings::TranslationDisplayMode::Window { return ("window", String::new()); }
+    let availability = inplace_availability(s);
+    if availability.available { ("inplace", String::new()) } else { ("window", availability.reason) }
 }
 
 /// What did not go over the game as planned, for the translation window and the note in the main window.
-fn fallback_json(outcome: &lipa_core::layout::place::PlacementOutcome, regions: &[lipa_core::settings::RegionProfile]) -> String {
+fn fallback_json(outcome: &lipa_core::layout::place::PlacementOutcome, regions: &[lipa_core::settings::CaptureRegion]) -> String {
     let name = |id: &str| regions.iter().find(|r| r.id == id).map_or_else(|| id.to_owned(), |r| r.name.clone());
     let texts: Vec<serde_json::Value> = outcome.fallback.iter().map(|f| serde_json::json!({ "region": name(&f.region_id), "text": f.text, "reason": f.reason })).collect();
     serde_json::json!({ "texts": texts, "degraded": outcome.placed.iter().filter(|p| p.degraded.is_some()).count() }).to_string()
@@ -1306,10 +1317,18 @@ fn fallback_json(outcome: &lipa_core::layout::place::PlacementOutcome, regions: 
 
 /// Возможности способа захвата выбранного окна для QML; без окна — как у KWin (ограничений нет).
 fn capabilities_json(s: &Settings) -> String {
-    let caps = s.window.as_ref().map(|w| capabilities_for(w, s)).unwrap_or(lipa_core::capture::CaptureCapabilities::KWIN);
+    let caps = s.capture.window.as_ref().map(|w| capabilities_for(w, s)).unwrap_or(lipa_core::capture::CaptureCapabilities::KWIN);
     let mut value = serde_json::to_value(caps).unwrap_or_default();
-    value["inplaceBlocker"] = caps.inplace_blocker().unwrap_or("").into();
-    value["frameBlocker"] = caps.frame_blocker().unwrap_or("").into();
+    let inplace = inplace_availability(s);
+    value["inplaceBlocker"] = inplace.reason.clone().into();
+    value["inplaceTranslation"] = serde_json::to_value(inplace).unwrap();
+    let frames = if s.capture.window.is_none() {
+        lipa_core::capture::FeatureAvailability::unavailable("Окно захвата ещё не выбрано.", "Выберите окно в разделе «Источник изображения».")
+    } else if let Some(reason) = caps.frame_blocker() {
+        lipa_core::capture::FeatureAvailability::unavailable(reason, "Выберите захват KWin или настройте полноэкранный portal.")
+    } else { lipa_core::capture::FeatureAvailability::available() };
+    value["frameBlocker"] = frames.reason.clone().into();
+    value["captureRegionFrame"] = serde_json::to_value(frames).unwrap();
     value.to_string()
 }
 
@@ -1428,7 +1447,7 @@ impl qobject::Controller {
 /// Рамка вокруг только что выбранного окна. Геометрию отдаёт KWin; рамки областей рисует QML (RegionFrame).
 fn show_frame(shared: Arc<Shared>, qt: cxx_qt::CxxQtThread<qobject::Controller>) {
     spawn_service(async move {
-        let Some(uuid) = shared.settings.borrow().window.clone().filter(|w| !is_portal_window(w)).map(|w| w.uuid) else {
+        let Some(uuid) = shared.settings.borrow().capture.window.clone().filter(|w| !is_portal_window(w)).map(|w| w.uuid) else {
             return; // у окна без геометрии (portal) положение на рабочем столе неизвестно
         };
         let Ok(kwin) = shared.kwin().await else { return };
@@ -1440,32 +1459,40 @@ fn show_frame(shared: Arc<Shared>, qt: cxx_qt::CxxQtThread<qobject::Controller>)
 #[cfg(test)]
 mod display_tests {
     use super::*;
-    use lipa_core::settings::{FloatingGeometry, TranslationDisplay, WindowKey};
+    use lipa_core::settings::{FloatingGeometry, TranslationDisplayMode, WindowKey};
 
     #[test]
     fn appearance_patch_preserves_live_capture_settings() {
         let mut current = Settings::default();
-        current.window = Some(WindowKey { uuid: "game-now".into(), resource_class: "Game".into(), caption: "Game".into() });
-        current.capture_backend = CaptureBackendKind::Portal;
+        current.capture.window = Some(WindowKey { uuid: "game-now".into(), resource_class: "Game".into(), caption: "Game".into() });
+        current.capture.source = CaptureSource::Portal;
         let before = current.processing_key();
-        let patch = serde_json::json!({ "font_size": 30, "overlay_pinned_corner_radius": 18 });
+        let patch = serde_json::json!({ "appearance.window.font_size": 30, "translation_window.pinned_corner_radius": 18 });
         let updated = merge_settings_patch(&current, patch.as_object().unwrap()).unwrap();
-        assert_eq!(updated.window, current.window);
-        assert_eq!(updated.capture_backend, CaptureBackendKind::Portal);
+        assert_eq!(updated.capture.window, current.capture.window);
+        assert_eq!(updated.capture.source, CaptureSource::Portal);
         assert_eq!(updated.processing_key(), before, "appearance must not reset the capture pipeline");
-        assert_eq!((updated.font_size, updated.overlay_pinned_corner_radius), (30, 18));
+        assert_eq!((updated.appearance.window.font_size, updated.translation_window.pinned_corner_radius), (30, 18));
         // Anything the backend manages is refused, found by the declaration and not by a list kept here.
-        for key in ["floating_geometry", "schema_version", "portal_token"] {
+        for key in ["translation_window.floating_geometry", "schema_version", "capture.portal_token"] {
             let managed = serde_json::json!({ key: null });
             assert!(merge_settings_patch(&current, managed.as_object().unwrap()).is_err(), "{key}");
         }
-        let forbidden = serde_json::json!({ "window": null });
+        let forbidden = serde_json::json!({ "capture.window": null });
         assert!(merge_settings_patch(&current, forbidden.as_object().unwrap()).is_err());
         // Game profiles are written by the backend only; a stale form must not overwrite them.
         let stale = serde_json::json!({ "game_profiles": {} });
         assert!(merge_settings_patch(&current, stale.as_object().unwrap()).is_err());
         let switch = serde_json::json!({ "game_profiles_enabled": false });
         assert!(!merge_settings_patch(&current, switch.as_object().unwrap()).unwrap().game_profiles_enabled);
+        current.appearance.inplace.shadow = true;
+        let patch = serde_json::json!({ "appearance.inplace.fill_opacity": 0.4 });
+        let updated = merge_settings_patch(&current, patch.as_object().unwrap()).unwrap();
+        assert!(updated.appearance.inplace.shadow, "a delayed edit keeps a newly changed sibling");
+        assert_eq!(updated.appearance.inplace.fill_opacity, 0.4);
+        for patch in [serde_json::json!({"capture": {"window": null}}), serde_json::json!({"appearance.inplace": {}})] {
+            assert!(merge_settings_patch(&current, patch.as_object().unwrap()).is_err(), "only registered leaves may be patched");
+        }
     }
 
     #[test]
@@ -1473,23 +1500,23 @@ mod display_tests {
         let mut s = Settings::default();
         let caps = |s: &Settings| serde_json::from_str::<serde_json::Value>(&capabilities_json(s)).unwrap();
         let none = caps(&s);
-        assert_eq!((none["window_geometry"].as_bool(), none["inplaceBlocker"].as_str(), none["frameBlocker"].as_str()), (Some(true), Some(""), Some("")), "no window yet: nothing is blocked");
-        s.window = Some(WindowKey { uuid: "portal:window".into(), resource_class: String::new(), caption: String::new() });
+        assert_eq!(none["inplaceTranslation"]["available"], false, "select a capture window first");
+        s.capture.window = Some(WindowKey { uuid: "portal:window".into(), resource_class: String::new(), caption: String::new() });
         let portal = caps(&s);
-        assert_eq!((portal["window_geometry"].as_bool(), portal["inplace_overlay"].as_bool()), (Some(false), Some(false)));
-        assert!(portal["inplaceBlocker"].as_str().unwrap().contains("положение окна"));
+        assert_eq!((portal["window_geometry"].as_bool(), portal["inplace_translation"].as_bool()), (Some(false), Some(false)));
+        assert!(portal["inplaceBlocker"].as_str().unwrap().contains("глобальные координаты"));
         assert!(portal["frameBlocker"].as_str().unwrap().contains("рамка"));
-        s.portal_fills_monitor = true;
-        s.overlay_screen = "DP-1".into();
+        s.capture.portal_fills_monitor = true;
+        s.translation_window.screen = "DP-1".into();
         let fullscreen = caps(&s);
-        assert_eq!((fullscreen["window_geometry"].as_bool(), fullscreen["inplace_overlay"].as_bool()), (Some(true), Some(true)));
+        assert_eq!((fullscreen["window_geometry"].as_bool(), fullscreen["inplace_translation"].as_bool()), (Some(true), Some(true)));
         assert_eq!((fullscreen["inplaceBlocker"].as_str(), fullscreen["frameBlocker"].as_str()), (Some(""), Some("")));
     }
 
     #[test]
     fn translations_without_room_reach_the_translation_window_with_their_region_names() {
         use lipa_core::layout::place::{FallbackText, PlacementOutcome};
-        let regions = vec![lipa_core::settings::RegionProfile { id: "dialogue".into(), name: "Диалоги".into(), ..Default::default() }];
+        let regions = vec![lipa_core::settings::CaptureRegion { id: "dialogue".into(), name: "Диалоги".into(), ..Default::default() }];
         let none = serde_json::from_str::<serde_json::Value>(&fallback_json(&PlacementOutcome::default(), &regions)).unwrap();
         assert_eq!((none["texts"].as_array().map(Vec::len), none["degraded"].as_u64()), (Some(0), Some(0)), "nothing to report: the note stays hidden");
         let outcome = PlacementOutcome { placed: Vec::new(), fallback: vec![FallbackText { region_id: "dialogue".into(), block_id: 3, text: "Привет".into(), original: "Hello".into(), reason: "для перевода нет места поверх игры" }] };
@@ -1498,18 +1525,19 @@ mod display_tests {
     }
 
     #[test]
-    fn inplace_does_not_depend_on_the_window_overlay() {
-        let mut s = Settings { translation_display: TranslationDisplay::Inplace, ..Settings::default() };
+    fn inplace_does_not_depend_on_the_translation_window() {
+        let mut s = { let mut value = Settings::default(); value.display_mode = TranslationDisplayMode::Inplace; value };
+        s.capture.window = Some(WindowKey { uuid: "kwin-game".into(), resource_class: "game".into(), caption: "Game".into() });
         assert_eq!(effective_display(&s), ("inplace", String::new()));
         // Portal capture has no window position: logged fallback to the translation window.
-        s.window = Some(WindowKey { uuid: "portal:window".into(), resource_class: String::new(), caption: String::new() });
+        s.capture.window = Some(WindowKey { uuid: "portal:window".into(), resource_class: String::new(), caption: String::new() });
         let (mode, note) = effective_display(&s);
         assert_eq!(mode, "window");
         assert!(note.contains("portal"));
-        s.portal_fills_monitor = true;
-        s.overlay_screen = "DP-1".into();
+        s.capture.portal_fills_monitor = true;
+        s.translation_window.screen = "DP-1".into();
         assert_eq!(effective_display(&s), ("inplace", String::new()));
-        s.translation_display = TranslationDisplay::Window;
+        s.display_mode = TranslationDisplayMode::Window;
         assert_eq!(effective_display(&s), ("window", String::new()));
     }
 
@@ -1517,11 +1545,11 @@ mod display_tests {
     fn floating_placement_restores_where_the_user_left_it() {
         let mut s = Settings::default();
         assert_eq!(floating_placement(&s), "null", "first start: KWin chooses");
-        s.overlay_screen = "DP-1".into();
-        s.overlay_pos = (40, 50);
+        s.translation_window.screen = "DP-1".into();
+        s.translation_window.position = (40, 50);
         let p: serde_json::Value = serde_json::from_str(&floating_placement(&s)).unwrap();
         assert_eq!((p["output"].as_str(), p["rx"].as_i64(), p["ry"].as_i64()), (Some("DP-1"), Some(40), Some(50)), "where the pinned one was");
-        s.floating_geometry = Some(FloatingGeometry { x: 2140.0, y: 382.0, w: 740.0, h: 240.0, output: "DP-2".into(), output_x: 2560.0, output_y: -200.0 });
+        s.translation_window.floating_geometry = Some(FloatingGeometry { x: 2140.0, y: 382.0, w: 740.0, h: 240.0, output: "DP-2".into(), output_x: 2560.0, output_y: -200.0 });
         let p: serde_json::Value = serde_json::from_str(&floating_placement(&s)).unwrap();
         assert_eq!((p["x"].as_f64(), p["y"].as_f64(), p["output"].as_str()), (Some(2140.0), Some(382.0), Some("DP-2")));
         assert_eq!((p["rx"].as_i64(), p["ry"].as_i64()), (Some(-420), Some(582)), "negative layout offsets are kept");

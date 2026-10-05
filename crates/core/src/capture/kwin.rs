@@ -27,14 +27,18 @@ fn unavailable(e: impl std::fmt::Display) -> CaptureError {
     CaptureError::Unavailable(e.to_string())
 }
 
-/// What a D-Bus error of `CaptureWindow` means for the caller.
-fn method_error(name: &str, error: &dyn std::fmt::Display) -> CaptureError {
-    if name.contains("InvalidArgs") {
-        CaptureError::WindowGone
-    } else if name.contains("NoAuthorized") {
-        CaptureError::NotAuthorized
-    } else {
-        unavailable(error)
+/// Why KWin refused, naming the executable it saw: its permission belongs to that path.
+fn not_authorized_message() -> String {
+    let executable = std::env::current_exe().map(|p| p.display().to_string()).unwrap_or_else(|_| "неизвестен".into());
+    format!("KWin не разрешил захват для {executable} (ScreenShot2.Error.NoAuthorized). Разрешение связано с путём запуска: Exec в desktop-файле должен указывать на этот бинарник и содержать X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2. Для установленной версии запустите /usr/bin/lipax; для локальной сборки используйте packaging/run-local.sh. После обновления пакета полностью перезапустите LipaX; при необходимости обновите кэш командой kbuildsycoca6.")
+}
+
+fn capture_error(error: zbus::Error) -> CaptureError {
+    match &error {
+        zbus::Error::MethodError(name, _, _) if name.as_str().ends_with("NoAuthorized") => CaptureError::NotAuthorized(not_authorized_message()),
+        zbus::Error::MethodError(name, _, _) if matches!(name.as_str(),
+            "org.kde.KWin.ScreenShot2.Error.InvalidWindow" | "org.freedesktop.DBus.Error.InvalidArgs") => CaptureError::WindowGone,
+        _ => unavailable(error),
     }
 }
 
@@ -126,6 +130,9 @@ impl KwinCapture {
 
     /// Пользователь кликает по окну; возвращает его ключ. Отмена (Esc) даёт `None`.
     pub async fn pick_window(&self) -> Result<Option<WindowKey>, CaptureError> {
+        // queryWindowInfo itself is unrestricted. Check the actual capture interface first,
+        // so Auto can offer the portal before asking the user to select a KWin window.
+        self.check_capture_permission().await?;
         let reply = self
             .conn
             .call_method(Some("org.kde.KWin"), "/KWin", Some("org.kde.KWin"), "queryWindowInfo", &())
@@ -148,12 +155,20 @@ impl KwinCapture {
         }))
     }
 
-    /// Does KWin let this process capture windows? Asked with one real capture of `uuid`: the only
-    /// error that matters here is the refusal; a vanished window or a failed frame say nothing about permission.
-    pub async fn check_access(&self, uuid: &str) -> Result<(), CaptureError> {
-        match self.capture_window(uuid).await {
-            Err(CaptureError::NotAuthorized) => Err(CaptureError::NotAuthorized),
-            _ => Ok(()),
+    /// Probe permission without taking an image. KWin checks authorization before looking
+    /// up the window; the null UUID cannot refer to a real window. The expected result is
+    /// InvalidWindow, both on versions with desktop-file checks and newer KWin versions.
+    pub async fn check_capture_permission(&self) -> Result<(), CaptureError> {
+        let sink = std::fs::File::options().write(true).open("/dev/null").map_err(unavailable)?;
+        let options: HashMap<&str, Value> = HashMap::new();
+        let result = tokio::time::timeout(std::time::Duration::from_secs(5), self.conn.call_method(
+            Some("org.kde.KWin"), "/org/kde/KWin/ScreenShot2", Some("org.kde.KWin.ScreenShot2"),
+            "CaptureWindow", &("{00000000-0000-0000-0000-000000000000}", options, Fd::from(&sink)),
+        )).await.map_err(|_| unavailable("KWin не ответил на проверку разрешения захвата за 5 секунд"))?;
+        match result {
+            Err(zbus::Error::MethodError(name, _, _)) if name.as_str() == "org.kde.KWin.ScreenShot2.Error.InvalidWindow" => Ok(()),
+            Err(error) => Err(capture_error(error)),
+            Ok(_) => Err(unavailable("KWin неожиданно принял пустой идентификатор окна при проверке разрешения")),
         }
     }
 
@@ -259,10 +274,7 @@ impl KwinCapture {
             Ok(r) => r,
             Err(e) => {
                 let _ = read.await;
-                return Err(match &e {
-                    zbus::Error::MethodError(n, _, _) => method_error(n.as_str(), &e),
-                    _ => unavailable(e),
-                });
+                return Err(capture_error(e));
             }
         };
         let meta: HashMap<String, OwnedValue> = reply.body().deserialize().map_err(unavailable)?;
@@ -321,19 +333,32 @@ impl Capture for KwinCapture {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn a_refusal_of_kwin_is_told_apart_from_other_errors() {
-        use super::*;
-        assert!(matches!(method_error("org.kde.KWin.ScreenShot2.Error.NoAuthorized", &"x"), CaptureError::NotAuthorized));
-        assert!(matches!(method_error("org.freedesktop.DBus.Error.InvalidArgs", &"x"), CaptureError::WindowGone));
-        assert!(matches!(method_error("org.kde.KWin.ScreenShot2.Error.Cancelled", &"boom"), CaptureError::Unavailable(m) if m == "boom"));
-        let text = CaptureError::NotAuthorized.to_string();
-        for needed in ["NoAuthorized", "/usr/bin/lipax", "packaging/run-local.sh", "kbuildsycoca6"] {
-            assert!(text.contains(needed), "{needed} in {text}");
-        }
+    use super::*;
+
+    fn method_error(name: &str) -> zbus::Error {
+        let message = zbus::Message::method_call("/test", "Test").unwrap().build(&()).unwrap();
+        zbus::Error::MethodError(name.to_owned().try_into().unwrap(), Some("test".into()), message)
     }
 
-    use super::*;
+    #[test]
+    fn capture_permission_error_explains_executable_registration() {
+        let error = capture_error(method_error("org.kde.KWin.ScreenShot2.Error.NoAuthorized"));
+        let message = error.to_string();
+        assert!(matches!(error, CaptureError::NotAuthorized(_)), "a refusal is its own kind of error");
+        assert!(message.contains("NoAuthorized"));
+        assert!(message.contains("packaging/run-local.sh"));
+        assert!(message.contains("/usr/bin/lipax"));
+        assert!(message.contains("X-KDE-DBUS-Restricted-Interfaces"));
+        assert!(message.contains(&std::env::current_exe().unwrap().display().to_string()));
+    }
+
+    #[test]
+    fn only_invalid_windows_are_reported_as_gone() {
+        assert!(matches!(capture_error(method_error("org.kde.KWin.ScreenShot2.Error.InvalidWindow")), CaptureError::WindowGone));
+        assert!(matches!(capture_error(method_error("org.freedesktop.DBus.Error.ServiceUnknown")), CaptureError::Unavailable(_)));
+        // A different refusal-like error is not mistaken for the permission one.
+        assert!(matches!(capture_error(method_error("org.kde.KWin.ScreenShot2.Error.Cancelled")), CaptureError::Unavailable(_)));
+    }
     use image::GenericImageView;
 
     #[test]

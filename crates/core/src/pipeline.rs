@@ -1,6 +1,6 @@
 //! Independent region state, bounded retries and a 60-second operation deadline.
 use crate::{cache::TranslationCache, layout::engine::{InplaceEngine, InplaceFrame}, capture::Capture, detect::ChangeDetector, ocr::Ocr,
-    settings::{Settings, RegionProfile, TranslationDisplay}, tesseract::primary_lang, text, translate::{Translate, TranslateError, tess_to_iso}};
+    settings::{Settings, CaptureRegion, TranslationDisplayMode}, text, translate::{Translate, TranslateError}};
 use futures_util::{FutureExt, StreamExt, stream::FuturesUnordered};
 use std::{collections::HashMap, sync::{Arc, atomic::{AtomicBool, AtomicU64, Ordering}}, time::{Duration, Instant}};
 use tokio::{sync::{mpsc, watch}, time::MissedTickBehavior};
@@ -197,10 +197,10 @@ fn join_messages(first: &str, notes: &[String]) -> String {
 
 /// Which service and which phrase an error is about: every waiter of a shared request gets its own message.
 fn translation_context(s: &Settings, text: &str) -> String {
-    let service = match s.translator {
-        crate::settings::TranslatorKind::Google => "Google Translate",
-        crate::settings::TranslatorKind::Yandex => "Yandex Translate",
-        crate::settings::TranslatorKind::Custom => "свой API",
+    let service = match s.translation.service {
+        crate::settings::TranslationService::Google => "Google Translate",
+        crate::settings::TranslationService::Yandex => "Yandex Translate",
+        crate::settings::TranslationService::Custom => "свой API",
     };
     let mut excerpt: String = text.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(40).collect();
     if text.chars().count() > 40 { excerpt.push('…'); }
@@ -276,7 +276,7 @@ impl RegionState {
         }
         self.phase = phase;
     }
-    fn fail(&mut self, region: &RegionProfile, reason: String, now: Instant, timeout: bool, out: &dyn Sink) {
+    fn fail(&mut self, region: &CaptureRegion, reason: String, now: Instant, timeout: bool, out: &dyn Sink) {
         let first = *self.first_error.get_or_insert(now);
         self.failures += 1;
         self.reason = reason;
@@ -291,7 +291,7 @@ impl RegionState {
         tracing::error!(region = %region.id, terminal = self.halted, "{message}");
         out.send(Event::Error { region_id: region.id.clone(), message, terminal: self.halted });
     }
-    fn settle(&mut self, region: &RegionProfile, out: &dyn Sink) {
+    fn settle(&mut self, region: &CaptureRegion, out: &dyn Sink) {
         if self.failures > 0 { out.send(Event::Cleared { region_id: region.id.clone() }); }
         self.recovered();
     }
@@ -337,7 +337,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
     pub async fn tick(&mut self, s: &Settings, force: bool, now: Instant, out: &dyn Sink) {
         let regions = s.capture_regions();
         let Self { io, states } = self;
-        if s.window.is_none() || regions.is_empty() { io.status("Выберите окно и включите область", out); return; }
+        if s.capture.window.is_none() || regions.is_empty() { io.status("Выберите окно и включите область", out); return; }
         states.retain(|id, _| regions.iter().any(|r| &r.id == id));
         for region in regions {
             // The state stays in the map across every `await`: `run` may cancel this future
@@ -346,11 +346,12 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
             let state = states.entry(region.id.clone()).or_default();
             if force { state.recovered(); }
             let mut effective = s.clone();
-            effective.region = region.rect;
-            effective.debounce_ms = region.debounce_ms;
-            for (value, local) in [(&mut effective.source_lang, &region.source_lang), (&mut effective.target_lang, &region.target_lang), (&mut effective.ocr_engine, &region.ocr_engine)] {
+            effective.capture.region = region.rect;
+            effective.recognition.debounce_ms = region.debounce_ms;
+            for (value, local) in [(&mut effective.recognition.language, &region.recognition_language), (&mut effective.translation.target_language, &region.target_language)] {
                 if !local.is_empty() { *value = local.clone(); }
             }
+            if let Some(engine) = &region.engine { effective.recognition.engine = engine.clone(); }
             io.tick_region(&effective, &region, state, force, now, out).await;
         }
     }
@@ -382,7 +383,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
                 tokio::select! {
                     biased;
                     c = cmds.recv() => match c { Some(c) => c, None => break },
-                    _ = ticker.tick() => { if !*running.borrow() || !settings.borrow().auto_translate { continue; } Cmd::Auto },
+                    _ = ticker.tick() => { if !*running.borrow() || !settings.borrow().translation.auto_translate { continue; } Cmd::Auto },
                 }
             };
             if command == Cmd::Reset { self.reset(); continue; }
@@ -413,7 +414,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     /// request. The error is shared as well, so a rate limit reaches everyone who waited for it.
     async fn translate_shared(&self, s: &Settings, text: &str, src: &str, dst: &str) -> Result<String, Arc<TranslateError>> {
         // The service is part of the key: another translator may answer differently.
-        let service = if s.translator == crate::settings::TranslatorKind::Custom { format!("custom:{}", s.custom_url) } else { format!("{:?}", s.translator) };
+        let service = if s.translation.service == crate::settings::TranslationService::Custom { format!("custom:{}", s.translation.custom_url) } else { format!("{:?}", s.translation.service) };
         let key = format!("{service}\u{1}{src}\u{1}{dst}\u{1}{text}");
         let pending = {
             let mut running = self.inflight.lock().unwrap();
@@ -449,17 +450,17 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn send_preview(&self, region: &RegionProfile, frame: &image::DynamicImage, boxes: Vec<PreviewBox>, original: String, translation: String, phase: Phase, out: &dyn Sink) {
+    fn send_preview(&self, region: &CaptureRegion, frame: &image::DynamicImage, boxes: Vec<PreviewBox>, original: String, translation: String, phase: Phase, out: &dyn Sink) {
         if !self.preview.load(Ordering::Relaxed) { return; }
         let preview = OcrPreview { image: frame.to_rgba8(), boxes, original, translation, phase, timings: self.timings.summary() };
         out.send(Event::OcrPreview { region_id: region.id.clone(), region_name: region.name.clone(), preview: Box::new(preview) });
     }
 
-    async fn tick_region(&mut self, s: &Settings, region: &RegionProfile, state: &mut RegionState, force: bool, now: Instant, out: &dyn Sink) {
+    async fn tick_region(&mut self, s: &Settings, region: &CaptureRegion, state: &mut RegionState, force: bool, now: Instant, out: &dyn Sink) {
         // The backend decides whether the text can be found and drawn over in place; otherwise
         // the region is read as a whole and the translation goes to the translation window.
-        let can_inplace = s.window.as_ref().is_some_and(|w| self.capture.capabilities(w, s).inplace_overlay);
-        let inplace = s.translation_display == TranslationDisplay::Inplace && can_inplace;
+        let can_inplace = s.capture.window.as_ref().is_some_and(|w| self.capture.capabilities(w, s).inplace_translation);
+        let inplace = s.display_mode == TranslationDisplayMode::Inplace && can_inplace;
         if !inplace { state.inplace = None; }
         // Поменяли оформление «поверх оригинала»: перестроить без нового кадра и OCR.
         if let Some(frame) = state.inplace.as_mut().and_then(|e| e.restyle(s)) {
@@ -489,17 +490,17 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             }
         }
         let grabbed = Instant::now();
-        let frame = stage!(self.capture.grab(s.window.as_ref().unwrap(), region.rect.unwrap()), "Ошибка захвата");
+        let frame = stage!(self.capture.grab(s.capture.window.as_ref().unwrap(), region.rect.unwrap()), "Ошибка захвата");
         self.timings.record("capture", grabbed.elapsed());
         if !force && !retry {
             let detecting = Instant::now();
-            let changed = state.detector.changed(&frame, s.sensitivity, now);
+            let changed = state.detector.changed(&frame, s.recognition.sensitivity, now);
             self.timings.record("detect", detecting.elapsed());
             if changed {
                 state.dirty_since = Some(now);
                 state.dirty_first.get_or_insert(now);
             }
-            let settled = !changed && state.dirty_since.is_some_and(|t| now.saturating_duration_since(t) >= Duration::from_millis(s.debounce_ms));
+            let settled = !changed && state.dirty_since.is_some_and(|t| now.saturating_duration_since(t) >= Duration::from_millis(s.recognition.debounce_ms));
             let overdue = state.dirty_first.is_some_and(|t| now.saturating_duration_since(t) >= MAX_UNSTABLE);
             if !settled && !overdue {
                 state.enter(&region.id, if state.dirty_since.is_some() { Phase::Debouncing } else { Phase::WaitingFrame });
@@ -525,27 +526,27 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let result = stage!(self.ocr.recognize_detailed(&frame, s), "Ошибка OCR");
         self.timings.record("ocr", recognizing.elapsed());
         let original = text::normalize(&result.text);
-        let doubt = unsure(result.confidence, s.ocr_min_confidence);
+        let doubt = unsure(result.confidence, s.recognition.minimum_confidence);
         if !text::is_meaningful(&original) || doubt.is_some() {
             state.enter(&region.id, Phase::WaitingFrame);
-            let note = doubt.map(|c| format!("отброшено: уверенность {c:.0}% ниже порога {}%", s.ocr_min_confidence));
+            let note = doubt.map(|c| format!("отброшено: уверенность {c:.0}% ниже порога {}%", s.recognition.minimum_confidence));
             self.send_preview(region, &frame, line_boxes(&result, (0, 0), note.as_deref()), original.clone(), String::new(), Phase::WaitingFrame, out);
             state.settle(region, out);
             match doubt {
-                Some(c) => { tracing::debug!(target: "pipeline.ocr", region = %region.id, confidence = c, min = s.ocr_min_confidence, "OCR ignored: low confidence"); self.status(&format!("OCR: низкая уверенность ({c:.0}%), текст пропущен"), out) }
+                Some(c) => { tracing::debug!(target: "pipeline.ocr", region = %region.id, confidence = c, min = s.recognition.minimum_confidence, "OCR ignored: low confidence"); self.status(&format!("OCR: низкая уверенность ({c:.0}%), текст пропущен"), out) }
                 None => self.status("OCR: текст не обнаружен", out),
             }
             return;
         }
         if !force && text::similarity(&original, &state.last_text) >= SAME_TEXT_RATIO { state.enter(&region.id, Phase::Showing); state.settle(region, out); self.status("Ожидание текста", out); return; }
-        let src = tess_to_iso(primary_lang(&s.source_lang));
-        let translated = match self.cached(src, &s.target_lang, &original) {
+        let src = s.translation_source_language();
+        let translated = match self.cached(src, &s.translation.target_language, &original) {
             Some(t) => t,
             None => {
                 state.enter(&region.id, Phase::Translating);
                 self.status("Перевод…", out);
                 let translating = Instant::now();
-                match tokio::time::timeout_at(deadline, self.translate_shared(s, &original, src, &s.target_lang)).await {
+                match tokio::time::timeout_at(deadline, self.translate_shared(s, &original, src, &s.translation.target_language)).await {
                     Ok(Ok(t)) => { self.timings.record("translate", translating.elapsed()); t },
                     Ok(Err(e)) => {
                         let stop = matches!(&*e, TranslateError::RateLimited { .. });
@@ -570,7 +571,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         out.send(Event::Translation { region_id: region.id.clone(), region_name: region.name.clone(), original, text: translated });
     }
 
-    /// «Поверх оригинала»: каждое поле распознаётся и переводится отдельно, и только если его
+    /// «Поверх исходного текста»: каждое поле распознаётся и переводится отдельно, и только если его
     /// содержимое изменилось. Поля одной сцены обрабатываются конкурентно (не более
     /// `FIELD_CONCURRENCY` одновременно): задержка сцены из имени, реплики и двух кнопок — это
     /// самая медленная операция, а не их сумма. Одинаковые тексты (две кнопки «OK») переводятся один раз.
@@ -579,7 +580,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     /// содержимого поля запоминается только в `complete`, поэтому незавершённое поле на следующем
     /// кадре распознаётся снова.
     #[allow(clippy::too_many_arguments)]
-    async fn inplace_tick(&mut self, s: &Settings, region: &RegionProfile, state: &mut RegionState, frame: image::DynamicImage,
+    async fn inplace_tick(&mut self, s: &Settings, region: &CaptureRegion, state: &mut RegionState, frame: image::DynamicImage,
                           force: bool, now: Instant, out: &dyn Sink) {
         // The engine takes the frame; the preview needs its own copy, made only while it is open.
         let preview_image = self.preview.load(Ordering::Relaxed).then(|| frame.to_rgba8());
@@ -589,7 +590,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         self.timings.record("layout", laying_out.elapsed());
         let budget = state.first_error.map(|first| ERROR_BUDGET.saturating_sub(now.saturating_duration_since(first))).unwrap_or(ERROR_BUDGET);
         let deadline = tokio::time::Instant::now() + budget;
-        let src = tess_to_iso(primary_lang(&s.source_lang)).to_string();
+        let src = s.translation_source_language().to_string();
         // The first failure decides the status; fields that did succeed are still shown.
         let mut failure: Option<(String, bool)> = None;
         // Every distinct error of the scene, not only the first: two fields failing for different
@@ -606,9 +607,9 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             let ocr = &self.ocr;
             let recognizing = Instant::now();
             origins = jobs.iter().map(|j| (j.id, (j.rect, j.origin))).collect();
-            let pinned: HashMap<u64, Settings> = if s.ocr_engine == "auto" {
+            let pinned: HashMap<u64, Settings> = if s.recognition.engine == "auto" {
                 jobs.iter().filter(|j| state.field_engine.get(&j.id) == Some(&"paddleocr"))
-                    .map(|j| (j.id, Settings { ocr_engine: "paddleocr".into(), ..s.clone() })).collect()
+                    .map(|j| (j.id, { let mut value = s.clone(); value.recognition.engine = "paddleocr".into(); value })).collect()
             } else { HashMap::new() };
             let pinned = &pinned;
             let all = bounded(jobs, FIELD_CONCURRENCY, |job| {
@@ -624,7 +625,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let engine = state.inplace.get_or_insert_with(Default::default);
         let mut pending: Vec<(u64, String)> = Vec::new();
         for (id, result) in recognized {
-            if s.ocr_engine == "auto" {
+            if s.recognition.engine == "auto" {
                 match &result {
                     Ok(r) if r.engine == "paddleocr" => {
                         if state.field_engine.len() >= 64 { state.field_engine.clear(); }
@@ -645,10 +646,10 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                 Ok(result) => {
                     let original = text::normalize(&result.text);
                     let (rect, origin) = origins.get(&id).copied().unwrap_or_default();
-                    if let Some(c) = unsure(result.confidence, s.ocr_min_confidence) {
+                    if let Some(c) = unsure(result.confidence, s.recognition.minimum_confidence) {
                         // The engine is not sure what it read: keep the field as it was, do not translate noise.
-                        tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, confidence = c, min = s.ocr_min_confidence, "OCR ignored: low confidence");
-                        let details = vec![format!("OCR ({}) отброшен: уверенность {c:.0}% ниже порога {}%", result.engine, s.ocr_min_confidence)];
+                        tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, confidence = c, min = s.recognition.minimum_confidence, "OCR ignored: low confidence");
+                        let details = vec![format!("OCR ({}) отброшен: уверенность {c:.0}% ниже порога {}%", result.engine, s.recognition.minimum_confidence)];
                         state.ignored.insert(id, (now, PreviewBox { rect, original: original.clone(), translation: String::new(), details }));
                         newly_ignored = true;
                         engine.complete(id, None, s);
@@ -663,7 +664,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                         None => format!("OCR ({}): уверенность не сообщается", if result.engine.is_empty() { "?" } else { result.engine }),
                     });
                     if !text::is_meaningful(&original) { engine.complete(id, None, s); continue; }
-                    match engine.cached_translation(id, &original).or_else(|| self.cached(&src, &s.target_lang, &original)) {
+                    match engine.cached_translation(id, &original).or_else(|| self.cached(&src, &s.translation.target_language, &original)) {
                         Some(t) => engine.complete(id, Some((original, t)), s),
                         None => pending.push((id, original)),
                     }
@@ -679,7 +680,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             distinct.sort_unstable();
             distinct.dedup();
             let io = &*self;
-            let (src_ref, target) = (src.as_str(), s.target_lang.as_str());
+            let (src_ref, target) = (src.as_str(), s.translation.target_language.as_str());
             let all = bounded(distinct, FIELD_CONCURRENCY, |text| async move { (text, io.translate_shared(s, text, src_ref, target).await) });
             let translated: HashMap<String, Result<String, Arc<TranslateError>>> = match tokio::time::timeout_at(deadline, all).await {
                 Ok(done) => { self.timings.record("translate", translating.elapsed()); done.into_iter().map(|(t, r)| (t.to_owned(), r)).collect() },
@@ -775,13 +776,7 @@ mod tests {
     }
 
     fn settings() -> Settings {
-        Settings {
-            window: Some(WindowKey { uuid: "u".into(), resource_class: "g".into(), caption: "g".into() }),
-            region: Some(NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }),
-            debounce_ms: 100,
-            interval_ms: 50,
-            ..Settings::default()
-        }
+        { let mut value = Settings::default(); value.capture.window = Some(WindowKey { uuid: "u".into(), resource_class: "g".into(), caption: "g".into() }); value.capture.region = Some(NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }); value.recognition.debounce_ms = 100; value.recognition.interval_ms = 50; value }
     }
 
     /// Events other than stage statuses.
@@ -886,7 +881,7 @@ mod tests {
         let flag = Arc::new(AtomicBool::new(true));
         let cap = Arc::new(MockCapture(Mutex::new(10)));
         let mut p = Pipeline::new(cap, MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), MockTr(Arc::new(AtomicUsize::new(0)))).with_preview(flag);
-        let s = Settings { translation_display: TranslationDisplay::Inplace, ..settings() };
+        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value };
         let (tx, mut rx) = mpsc::unbounded_channel();
         let t0 = Instant::now();
         p.tick(&s, false, t0, &tx).await;
@@ -957,7 +952,7 @@ mod tests {
         state.enter("r", Phase::Debouncing);
         state.enter("r", Phase::Recognizing);
         assert_eq!(state.phase, Phase::Recognizing);
-        let region = RegionProfile::default();
+        let region = CaptureRegion::default();
         let (tx, _rx) = mpsc::unbounded_channel();
         let now = Instant::now();
         state.fail(&region, "x".into(), now, false, &tx);
@@ -991,7 +986,7 @@ mod tests {
         let flag = Arc::new(AtomicBool::new(true));
         let cap = Arc::new(MockCapture(Mutex::new(10)));
         let mut p = Pipeline::new(cap, SureOcr { text: "Whxre arx yoz".into(), confidence: 18.0 }, MockTr(Arc::new(AtomicUsize::new(0)))).with_preview(flag);
-        let s = Settings { ocr_min_confidence: 30, ..settings() };
+        let s = { let mut value = settings(); value.recognition.minimum_confidence = 30; value };
         let (tx, mut rx) = mpsc::unbounded_channel();
         p.tick(&s, true, Instant::now(), &tx).await;
         let events = drain(&mut rx);
@@ -1022,7 +1017,7 @@ mod tests {
     async fn the_confidence_check_can_be_turned_off() {
         let cap = Arc::new(MockCapture(Mutex::new(10)));
         let mut p = Pipeline::new(cap, SureOcr { text: "Whxre arx yoz".into(), confidence: 18.0 }, MockTr(Arc::new(AtomicUsize::new(0))));
-        let s = Settings { ocr_min_confidence: 0, ..settings() };
+        let s = { let mut value = settings(); value.recognition.minimum_confidence = 0; value };
         let (tx, mut rx) = mpsc::unbounded_channel();
         p.tick(&s, true, Instant::now(), &tx).await;
         assert_eq!(texts_of(&drain(&mut rx)), ["RU:Whxre arx yoz"]);
@@ -1101,7 +1096,7 @@ mod tests {
             }
         }
         let mut p = Pipeline::new(Arc::new(SceneCapture), TwoTexts(AtomicUsize::new(0)), Picky);
-        let s = Settings { translation_display: TranslationDisplay::Inplace, ..settings() };
+        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value };
         let (tx, mut rx) = mpsc::unbounded_channel();
         p.tick(&s, true, Instant::now(), &tx).await;
         let message = drain(&mut rx).into_iter().find_map(|e| match e { Event::Error { message, .. } => Some(message), _ => None }).expect("an error");
@@ -1115,7 +1110,7 @@ mod tests {
         assert_eq!(translation_context(&s, "Where  are\nyou?"), "Google Translate, «Where are you?»");
         let long = translation_context(&s, &"word ".repeat(30));
         assert!(long.ends_with("…»") && long.chars().count() < 70, "{long}");
-        let yandex = Settings { translator: crate::settings::TranslatorKind::Yandex, ..Settings::default() };
+        let yandex = { let mut value = Settings::default(); value.translation.service = crate::settings::TranslationService::Yandex; value };
         assert!(translation_context(&yandex, "Hi").starts_with("Yandex Translate"));
     }
 
@@ -1126,7 +1121,7 @@ mod tests {
             async fn translate(&self, _: &Settings, _: &str, _: &str, _: &str) -> Result<String, TranslateError> { Err(TranslateError::RateLimited { retry_after: 60 }) }
         }
         let mut p = Pipeline::new(Arc::new(SceneCapture), MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), Limited);
-        let s = Settings { translation_display: TranslationDisplay::Inplace, ..settings() };
+        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value };
         let (tx, mut rx) = mpsc::unbounded_channel();
         p.tick(&s, true, Instant::now(), &tx).await;
         let message = drain(&mut rx).into_iter().find_map(|e| match e { Event::Error { message, .. } => Some(message), _ => None }).expect("an error");
@@ -1161,7 +1156,7 @@ mod tests {
         }
         let flag = Arc::new(AtomicBool::new(true));
         let mut p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))), GeoOcr, MockTr(Arc::new(AtomicUsize::new(0)))).with_preview(flag);
-        let s = Settings { translation_display: TranslationDisplay::Inplace, ..settings() };
+        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value };
         let (tx, mut rx) = mpsc::unbounded_channel();
         let t0 = Instant::now();
         p.tick(&s, false, t0, &tx).await;
@@ -1181,14 +1176,14 @@ mod tests {
         impl Ocr for AutoOcr {
             async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok("Hello there".into()) }
             async fn recognize_detailed(&self, _: &DynamicImage, s: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
-                self.0.lock().unwrap().push(s.ocr_engine.clone());
+                self.0.lock().unwrap().push(s.recognition.engine.as_str().to_owned());
                 Ok(crate::ocr::OcrResult { text: "Hello there".into(), lines: Vec::new(), confidence: Some(90.0), engine: "paddleocr" })
             }
         }
         let seen = Arc::new(Mutex::new(Vec::new()));
         let cap = Arc::new(MockCapture(Mutex::new(10)));
         let mut p = Pipeline::new(cap.clone(), AutoOcr(seen.clone()), MockTr(Arc::new(AtomicUsize::new(0))));
-        let s = Settings { translation_display: TranslationDisplay::Inplace, ocr_engine: "auto".into(), ..settings() };
+        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value.recognition.engine = "auto".into(); value };
         let (tx, _rx) = mpsc::unbounded_channel();
         let t0 = Instant::now();
         p.tick(&s, false, t0, &tx).await;
@@ -1198,7 +1193,7 @@ mod tests {
         p.tick(&s, true, t0 + Duration::from_millis(300), &tx).await;
         assert_eq!(*seen.lock().unwrap(), ["auto", "paddleocr"]);
         // Another engine setting is not touched by pins.
-        let plain = Settings { ocr_engine: "tesseract".into(), ..s.clone() };
+        let plain = { let mut value = s.clone(); value.recognition.engine = "tesseract".into(); value };
         p.tick(&plain, true, t0 + Duration::from_millis(500), &tx).await;
         assert_eq!(seen.lock().unwrap().last().map(String::as_str), Some("tesseract"));
     }
@@ -1208,7 +1203,7 @@ mod tests {
         let flag = Arc::new(AtomicBool::new(true));
         let cap = Arc::new(MockCapture(Mutex::new(10)));
         let mut p = Pipeline::new(cap, SureOcr { text: "Whxre arx yoz".into(), confidence: 12.0 }, MockTr(Arc::new(AtomicUsize::new(0)))).with_preview(flag);
-        let s = Settings { translation_display: TranslationDisplay::Inplace, ocr_min_confidence: 30, ..settings() };
+        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value.recognition.minimum_confidence = 30; value };
         let (tx, mut rx) = mpsc::unbounded_channel();
         let t0 = Instant::now();
         p.tick(&s, false, t0, &tx).await;
@@ -1260,6 +1255,32 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn region_language_and_translation_override_use_distinct_cache_entries() {
+        struct Languages(Arc<Mutex<Vec<(String, String)>>>);
+        impl Translate for Languages {
+            async fn translate(&self, s: &Settings, text: &str, src: &str, _: &str) -> Result<String, TranslateError> {
+                self.0.lock().unwrap().push((s.recognition.language.clone(), src.to_owned()));
+                Ok(format!("{src}:{text}"))
+            }
+        }
+        let seen = Arc::new(Mutex::new(Vec::new()));
+        let mut p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))),
+            MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), Languages(seen.clone()));
+        let mut s = settings();
+        s.capture.regions[0].rect = s.capture.region;
+        s.capture.regions[0].recognition_language = "jpn+eng".into();
+        let (tx, _rx) = mpsc::unbounded_channel();
+        p.tick(&s, true, Instant::now(), &tx).await;
+        s.translation.source_language = crate::settings::TranslationSourceLanguage::Explicit("fr".into());
+        p.reset();
+        p.tick(&s, true, Instant::now(), &tx).await;
+        s.translation.source_language = crate::settings::TranslationSourceLanguage::RecognitionLanguage;
+        p.reset();
+        p.tick(&s, true, Instant::now(), &tx).await;
+        assert_eq!(*seen.lock().unwrap(), [("jpn+eng".into(), "ja".into()), ("jpn+eng".into(), "fr".into())]);
+    }
+
+    #[tokio::test]
     async fn changed_text_uses_cache_on_return() {
         let cap = Arc::new(MockCapture(Mutex::new(10)));
         let (ocr_n, tr_n) = (Arc::new(AtomicUsize::new(0)), Arc::new(AtomicUsize::new(0)));
@@ -1283,7 +1304,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn overlay_mode_sends_one_translation_per_region() {
+    async fn window_mode_sends_one_translation_per_region() {
         let cap = Arc::new(MockCapture(Mutex::new(10)));
         let mut p = Pipeline::new(cap, MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), MockTr(Arc::new(AtomicUsize::new(0))));
         let (tx, mut rx) = mpsc::unbounded_channel();
@@ -1304,7 +1325,7 @@ mod tests {
     async fn a_backend_without_inplace_reads_the_region_as_a_whole() {
         let cap = NoInplace(Arc::new(MockCapture(Mutex::new(10))));
         let mut p = Pipeline::new(cap, MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), MockTr(Arc::new(AtomicUsize::new(0))));
-        let s = Settings { translation_display: TranslationDisplay::Inplace, ..settings() };
+        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value };
         let (tx, mut rx) = mpsc::unbounded_channel();
         let t0 = Instant::now();
         p.tick(&s, false, t0, &tx).await;
@@ -1318,7 +1339,7 @@ mod tests {
         let cap = Arc::new(MockCapture(Mutex::new(10)));
         let (ocr_n, tr_n) = (Arc::new(AtomicUsize::new(0)), Arc::new(AtomicUsize::new(0)));
         let mut p = Pipeline::new(cap.clone(), MockOcr(Mutex::new("Hello there".into()), ocr_n.clone()), MockTr(tr_n.clone()));
-        let s = Settings { translation_display: TranslationDisplay::Inplace, ..settings() };
+        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value };
         let (tx, mut rx) = mpsc::unbounded_channel();
         let t0 = Instant::now();
         p.tick(&s, false, t0, &tx).await;
@@ -1359,11 +1380,11 @@ mod tests {
                 Err(TranslateError::RateLimited { retry_after: 120 })
             }
         }
-        for display in [TranslationDisplay::Window, TranslationDisplay::Inplace] {
+        for display in [TranslationDisplayMode::Window, TranslationDisplayMode::Inplace] {
             let count = Arc::new(AtomicUsize::new(0));
             let mut p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))),
                 MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), Limited(count.clone()));
-            let s = Settings { translation_display: display, ..settings() };
+            let s = { let mut value = settings(); value.display_mode = display; value };
             let (tx, mut rx) = mpsc::unbounded_channel();
             let now = Instant::now();
             p.tick(&s, true, now, &tx).await;
@@ -1405,7 +1426,7 @@ mod tests {
         let peak = Arc::new(AtomicUsize::new(0));
         (SlowOcr { delay: Duration::from_millis(delay_ms), active: Arc::new(AtomicUsize::new(0)), peak: peak.clone(), calls: Arc::new(AtomicUsize::new(0)), same_text }, peak)
     }
-    fn inplace_settings() -> Settings { Settings { translation_display: TranslationDisplay::Inplace, ..settings() } }
+    fn inplace_settings() -> Settings { { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value } }
 
     #[tokio::test]
     async fn bounded_runs_everything_with_a_limit() {

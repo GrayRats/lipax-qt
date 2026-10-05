@@ -158,19 +158,19 @@ impl Ocr for PaddleOcr {
     }
 
     async fn recognize_detailed(&self, img: &DynamicImage, settings: &Settings) -> Result<OcrResult, OcrError> {
-        tracing::debug!(engine = "paddleocr", width = img.width(), height = img.height(), language = %settings.source_lang, "Начало OCR");
-        let language = language(&settings.source_lang)?;
+        tracing::debug!(engine = "paddleocr", width = img.width(), height = img.height(), language = %settings.recognition.language, "Начало OCR");
+        let language = language(&settings.recognition.language)?;
         let mut png = Vec::new();
         // Paddle's detector handles resizing; retain colour and original resolution.
         img.write_to(&mut Cursor::new(&mut png), ImageFormat::Png)?;
         let mut slot = self.worker.lock().await;
         if !slot
             .as_ref()
-            .is_some_and(|w| w.language == language && w.python == settings.paddle_python)
+            .is_some_and(|w| w.language == language && w.python == settings.recognition.paddle_python)
         {
             *slot = None;
             *slot = Some(Worker::spawn(
-                &settings.paddle_python,
+                &settings.recognition.paddle_python,
                 language,
                 include_str!("paddle_worker.py"),
             )?);

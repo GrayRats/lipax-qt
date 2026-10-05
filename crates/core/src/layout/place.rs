@@ -434,7 +434,7 @@ mod tests {
         draw_line(&mut img, 100, 100, 8, 14, 4, 22, 3, [255, 200, 60], false);
         draw_line(&mut img, 100, 140, 40, 14, 4, 22, 3, [240, 240, 240], false);
         draw_line(&mut img, 100, 172, 30, 14, 4, 22, 3, [240, 240, 240], false);
-        let s = Settings { target_lang: "ru".into(), translation_display: crate::settings::TranslationDisplay::Inplace, ..Settings::default() };
+        let s = { let mut value = Settings::default(); value.translation.target_language = "ru".into(); value.display_mode = crate::settings::TranslationDisplayMode::Inplace; value };
         let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
         let jobs = e.begin(dynamic(img), &s, Instant::now(), false);
         for j in jobs { e.complete(j.id, Some(("src".into(), "Это перевод, который помещается".into())), &s); }

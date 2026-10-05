@@ -5,23 +5,23 @@ import org.kde.layershell 1.0 as LayerShell
 // so the "on selection" timer and fade are independent per region. Does not take input.
 Window {
     id: win
-    property var settings: ({})
+    property var settings: ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
     property var region: null
     property string gameGeometry: ""
     property bool pinned: false
     // Flash when created (a region was just activated), but not for regions restored at start-up.
     property bool flashOnCreate: true
 
-    readonly property string mode: (region && region.frame_mode) || settings.region_frame_mode || "selection"
+    readonly property string mode: (region && region.frame_mode) || settings.capture.region_frame_mode || "selection"
     readonly property bool persistent: mode === "pattern" || mode === "solid"
-    readonly property int borderWidth: Math.max(1, settings.frame_width || 2)
-    readonly property color frameColor: /^#[0-9a-fA-F]{6}$/.test(settings.frame_color || "") ? settings.frame_color : "#ff0000"
-    readonly property real seconds: Math.max(1, settings.frame_seconds || 3)
+    readonly property int borderWidth: Math.max(1, settings.capture.frame_width || 2)
+    readonly property color frameColor: /^#[0-9a-fA-F]{6}$/.test(settings.capture.frame_color || "") ? settings.capture.frame_color : "#ff0000"
+    readonly property real seconds: Math.max(1, settings.capture.frame_seconds || 3)
     readonly property bool flashing: flashTimer.running
     // Pinned translation: persistent outlines are dimmed or hidden. A fresh selection is always shown.
     readonly property real targetOpacity: mode === "off" ? 0
         : flashing ? 1
-        : persistent ? (pinned ? (settings.region_frame_pinned === "hide" ? 0 : 0.35) : 1)
+        : persistent ? (pinned ? (settings.capture.region_frame_pinned === "hide" ? 0 : 0.35) : 1)
         : 0
 
     // Desktop rectangle: the normalized region inside the client area of the game window.

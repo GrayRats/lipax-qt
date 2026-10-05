@@ -31,15 +31,15 @@ impl FloatingGeometry {
 /// Где показывается перевод. Два независимых рендера со своим состоянием видимости.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum TranslationDisplay {
-    /// Окно перевода (`TranslationOverlay.qml`): закреплённое или свободное.
+pub enum TranslationDisplayMode {
+    /// Окно перевода (`TranslationWindow.qml`): закреплённое или свободное.
     #[default]
     Window,
-    /// Перевод поверх найденных полей текста (`InplaceText.qml`).
+    /// Перевод поверх найденных полей текста (`InplaceTranslation.qml`).
     Inplace,
 }
 
-impl<'de> Deserialize<'de> for TranslationDisplay {
+impl<'de> Deserialize<'de> for TranslationDisplayMode {
     /// Старое значение `"overlay"` и неизвестные строки — окно перевода: одна незнакомая
     /// строка не должна сбрасывать весь конфиг.
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
@@ -69,7 +69,7 @@ impl<T: Clone> PropertyMode<T> {
     }
 }
 
-/// Чем закрывается оригинал под переводом. Не связано с фоном окна перевода (`overlay_style`).
+/// Чем закрывается оригинал под переводом. Не связано с фоном окна перевода (`WindowAppearance::background_style`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum InplaceBackgroundMode {
@@ -205,7 +205,7 @@ pub struct WindowKey {
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum CaptureBackendKind {
+pub enum CaptureSource {
     /// KWin, а если он недоступен — portal.
     Auto,
     Kwin,
@@ -214,45 +214,46 @@ pub enum CaptureBackendKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum TranslatorKind {
+pub enum TranslationService {
     Google,
     Yandex,
     Custom,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum OverlayMode {
-    Overlay,
-    Window,
-}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
-pub struct RegionProfile {
+pub struct CaptureRegion {
     pub id: String,
     pub name: String,
     pub enabled: bool,
     pub rect: Option<NormRect>,
     /// Empty values inherit the global OCR/translation settings.
-    pub source_lang: String,
-    pub target_lang: String,
-    pub ocr_engine: String,
+    #[serde(alias = "source_lang")]
+    pub recognition_language: String,
+    #[serde(alias = "target_lang")]
+    pub target_language: String,
+    #[serde(alias = "ocr_engine", deserialize_with = "optional_ocr_engine")]
+    pub engine: Option<OcrEngine>,
     pub interval_ms: u64,
     pub debounce_ms: u64,
-    /// Outline of this region in the game; empty inherits `Settings::region_frame_mode`.
+    /// Outline of this region in the game; empty inherits `CaptureSettings::region_frame_mode`.
     pub frame_mode: String,
 }
-impl Default for RegionProfile {
+impl Default for CaptureRegion {
     fn default() -> Self {
         Self { id: "subtitles".into(), name: "Субтитры".into(), enabled: true, rect: None,
-            source_lang: String::new(), target_lang: String::new(), ocr_engine: String::new(),
+            recognition_language: String::new(), target_language: String::new(), engine: None,
             interval_ms: 500, debounce_ms: 400, frame_mode: String::new() }
     }
 }
 
-/// How the translation overlay draws its background.
-pub const OVERLAY_STYLES: [&str; 4] = [
+fn optional_ocr_engine<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Option<OcrEngine>, D::Error> {
+    Ok(Option::<String>::deserialize(d)?.filter(|s| !s.is_empty()).map(OcrEngine::from))
+}
+
+/// How the translation window draws its background.
+pub const WINDOW_BACKGROUND_STYLES: [&str; 4] = [
     "blur",        // compositor blur with an adjustable dark tint
     "transparent", // no background: white text with a light shadow
     "dim",         // light dark tint over a faint blur, or its light inverse
@@ -271,13 +272,150 @@ pub const REGION_FRAME_MODES: [&str; 4] = [
 pub const MAX_REGIONS: usize = 3;
 
 /// A single active region; more are added from the settings, up to `MAX_REGIONS`.
-pub fn default_regions() -> Vec<RegionProfile> {
-    vec![RegionProfile::default()]
+pub fn default_regions() -> Vec<CaptureRegion> {
+    vec![CaptureRegion::default()]
+}
+
+/// Explicit user preference. Surface roles remain separate QML objects.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TranslationWindowMode { Pinned, #[default] Floating }
+impl TranslationWindowMode {
+    pub fn is_pinned(self) -> bool { self == Self::Pinned }
+    pub fn from_pinned(pinned: bool) -> Self { if pinned { Self::Pinned } else { Self::Floating } }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "mode", content = "language")]
+pub enum TranslationSourceLanguage { #[default] RecognitionLanguage, Explicit(String) }
+
+/// Unknown engines are retained so diagnostics can explain an invalid configuration.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(from = "String", into = "String")]
+pub enum OcrEngine { Tesseract, PaddleOcr, Auto, Unknown(String) }
+impl OcrEngine {
+    pub fn as_str(&self) -> &str { match self { Self::Tesseract => "tesseract", Self::PaddleOcr => "paddleocr", Self::Auto => "auto", Self::Unknown(name) => name } }
+}
+impl From<&str> for OcrEngine {
+    fn from(name: &str) -> Self { match name { "tesseract" => Self::Tesseract, "paddleocr" => Self::PaddleOcr, "auto" => Self::Auto, _ => Self::Unknown(name.into()) } }
+}
+impl From<String> for OcrEngine { fn from(name: String) -> Self { Self::from(name.as_str()) } }
+impl From<OcrEngine> for String { fn from(engine: OcrEngine) -> Self { engine.as_str().into() } }
+impl PartialEq<str> for OcrEngine { fn eq(&self, other: &str) -> bool { self.as_str() == other } }
+impl PartialEq<&str> for OcrEngine { fn eq(&self, other: &&str) -> bool { self.as_str() == *other } }
+
+/// Legacy key mapping is confined to file migration; the runtime and UI use canonical paths.
+const LEGACY_KEYS: &[(&str, &str)] = &[
+    ("capture_backend", "capture.source"),
+    ("portal_token", "capture.portal_token"),
+    ("portal_fills_monitor", "capture.portal_fills_monitor"),
+    ("regions", "capture.regions"),
+    ("active_region", "capture.active_region"),
+    ("allow_multiple_regions", "capture.allow_multiple_regions"),
+    ("frame_color", "capture.frame_color"),
+    ("frame_width", "capture.frame_width"),
+    ("frame_seconds", "capture.frame_seconds"),
+    ("region_frame_mode", "capture.region_frame_mode"),
+    ("region_frame_pinned", "capture.region_frame_pinned"),
+    ("window", "capture.window"),
+    ("region", "capture.region"),
+    ("source_lang", "recognition.language"),
+    ("ocr_engine", "recognition.engine"),
+    ("paddle_python", "recognition.paddle_python"),
+    ("ocr_min_confidence", "recognition.minimum_confidence"),
+    ("interval_ms", "recognition.interval_ms"),
+    ("sensitivity", "recognition.sensitivity"),
+    ("debounce_ms", "recognition.debounce_ms"),
+    ("target_lang", "translation.target_language"),
+    ("translator", "translation.service"),
+    ("yandex_api_key", "translation.yandex_api_key"),
+    ("yandex_folder_id", "translation.yandex_folder_id"),
+    ("custom_url", "translation.custom_url"),
+    ("custom_api_key", "translation.custom_api_key"),
+    ("auto_translate", "translation.auto_translate"),
+    ("overlay_screen", "translation_window.screen"),
+    ("overlay_pinned", "translation_window.mode"),
+    ("overlay_corner_radius", "translation_window.corner_radius"),
+    ("overlay_pinned_corner_radius", "translation_window.pinned_corner_radius"),
+    ("border_color", "translation_window.border_color"),
+    ("border_opacity", "translation_window.border_opacity"),
+    ("border_width", "translation_window.border_width"),
+    ("border_pattern", "translation_window.border_pattern"),
+    ("border_always", "translation_window.border_always"),
+    ("border_seconds", "translation_window.border_seconds"),
+    ("max_width_enabled", "translation_window.max_width_enabled"),
+    ("overlay_max_width", "translation_window.maximum_width"),
+    ("overlay_auto_shrink", "translation_window.auto_shrink"),
+    ("opacity", "translation_window.opacity"),
+    ("click_through", "translation_window.click_through"),
+    ("overlay_pos", "translation_window.position"),
+    ("floating_geometry", "translation_window.floating_geometry"),
+    ("overlay_size", "translation_window.size"),
+    ("overlay_style", "appearance.window.background_style"),
+    ("blur_enabled", "appearance.window.blur_enabled"),
+    ("blur_tint", "appearance.window.blur_tint"),
+    ("dim_inverse", "appearance.window.dim_inverse"),
+    ("font_family", "appearance.window.font_family"),
+    ("font_bold", "appearance.window.font_bold"),
+    ("font_italic", "appearance.window.font_italic"),
+    ("text_color", "appearance.window.text_color"),
+    ("background_color", "appearance.window.background_color"),
+    ("overlay_padding", "appearance.window.padding"),
+    ("text_alignment", "appearance.window.text_alignment"),
+    ("text_wrap", "appearance.window.text_wrap"),
+    ("text_outline", "appearance.window.text_outline"),
+    ("outline_color", "appearance.window.outline_color"),
+    ("line_spacing", "appearance.window.line_spacing"),
+    ("show_original", "appearance.window.show_original"),
+    ("original_font_family", "appearance.window.original_font_family"),
+    ("original_font_size", "appearance.window.original_font_size"),
+    ("original_color", "appearance.window.original_color"),
+    ("font_size", "appearance.window.font_size"),
+    ("translation_display", "display_mode"),
+    ("inplace", "appearance.inplace"),
+];
+fn insert_legacy(table: &mut toml::Table, path: &str, value: toml::Value) {
+    if let Some((head, tail)) = path.split_once('.') {
+        let entry = table.entry(head).or_insert_with(|| toml::Value::Table(toml::Table::new()));
+        if let Some(child) = entry.as_table_mut() { insert_legacy(child, tail, value); }
+    } else if let Some(existing) = table.get_mut(path).and_then(toml::Value::as_table_mut)
+        && let Some(legacy) = value.as_table() {
+        for (key, value) in legacy { insert_legacy(existing, key, value.clone()); }
+    } else { table.entry(path).or_insert(value); }
+}
+fn migrate_flat_keys(table: &mut toml::Table) {
+    for &(old, path) in LEGACY_KEYS {
+        if let Some(mut value) = table.remove(old) {
+            if old == "overlay_pinned" { value = if value.as_bool() == Some(true) { "pinned" } else { "floating" }.into(); }
+            insert_legacy(table, path, value);
+        }
+    }
+    table.remove("overlay_mode");
+    if let Some(hotkeys) = table.get_mut("hotkeys").and_then(toml::Value::as_table_mut)
+        && let Some(value) = hotkeys.remove("toggle_overlay") {
+        hotkeys.entry("toggle_translation").or_insert(value);
+    }
+    if let Some(regions) = table.get_mut("capture").and_then(toml::Value::as_table_mut)
+        .and_then(|capture| capture.get_mut("regions")).and_then(toml::Value::as_array_mut) {
+        for region in regions.iter_mut().filter_map(toml::Value::as_table_mut) {
+            for (old, new) in [("source_lang", "recognition_language"), ("target_lang", "target_language"), ("ocr_engine", "engine")] {
+                if let Some(value) = region.remove(old) { region.entry(new).or_insert(value); }
+            }
+        }
+    }
+    if let Some(profiles) = table.get_mut("game_profiles").and_then(toml::Value::as_table_mut) {
+        for profile in profiles.iter_mut().map(|(_, v)| v).filter_map(toml::Value::as_table_mut) { migrate_flat_keys(profile); }
+    }
+}
+
+/// Read a canonical settings path, including structured leaves such as property modes.
+pub fn value_at<'a>(value: &'a serde_json::Value, path: &str) -> Option<&'a serde_json::Value> {
+    path.split('.').try_fold(value, |value, key| value.get(key))
 }
 
 /// Version of the config layout. A file without `schema_version` is version 0 (everything
 /// written before versions existed). Each step in [`migrate`] lifts a file by exactly one version.
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
 
 /// Lift a parsed config from `from` to [`SCHEMA_VERSION`], one step at a time, so a file of any age
 /// goes through every step it missed. Steps work on the raw table: they may rename or drop
@@ -292,6 +430,7 @@ fn migrate(table: &mut toml::Table, from: u32) {
                     table.insert("region_frame_mode".into(), "off".into());
                 }
             }
+            1 => migrate_flat_keys(table),
             _ => unreachable!("no migration from schema {version}"),
         }
     }
@@ -321,30 +460,30 @@ pub enum Reaction {
 pub const REACTIONS: &[(&str, Reaction)] = &{
     use Reaction::*;
     [
-        ("schema_version", Managed), ("portal_token", Managed), ("game_profiles", Managed), ("floating_geometry", Managed),
-        ("window", Managed), ("region", Managed),
+        ("schema_version", Managed), ("capture.portal_token", Managed), ("game_profiles", Managed), ("translation_window.floating_geometry", Managed),
+        ("capture.window", Managed), ("capture.region", Managed),
         // Recognition and translation: the pipeline starts over.
-        ("source_lang", Pipeline), ("target_lang", Pipeline), ("ocr_engine", Pipeline), ("paddle_python", Pipeline),
-        ("ocr_min_confidence", Pipeline), ("translator", Pipeline), ("yandex_api_key", Pipeline), ("yandex_folder_id", Pipeline),
-        ("custom_url", Pipeline), ("portal_fills_monitor", Pipeline), ("custom_api_key", Pipeline), ("interval_ms", Pipeline), ("sensitivity", Pipeline),
-        ("debounce_ms", Pipeline), ("translation_display", Pipeline), ("regions", Pipeline),
-        ("inplace", Layout),
-        ("hotkeys", Hotkeys),
+        ("recognition.language", Pipeline), ("translation.target_language", Pipeline), ("translation.source_language", Pipeline), ("recognition.engine", Pipeline), ("recognition.paddle_python", Pipeline),
+        ("recognition.minimum_confidence", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
+        ("translation.custom_url", Pipeline), ("capture.portal_fills_monitor", Pipeline), ("translation.custom_api_key", Pipeline), ("recognition.interval_ms", Pipeline), ("recognition.sensitivity", Pipeline),
+        ("recognition.debounce_ms", Pipeline), ("display_mode", Pipeline), ("capture.regions", Pipeline),
+        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout),
+        ("hotkeys.toggle", Hotkeys), ("hotkeys.select_region", Hotkeys), ("hotkeys.translate_once", Hotkeys), ("hotkeys.toggle_translation", Hotkeys), ("hotkeys.toggle_pin", Hotkeys),
         // The backend is chosen by the window key at selection time.
-        ("capture_backend", Reselect),
-        ("overlay_screen", Immediate), ("overlay_mode", Immediate), ("overlay_pinned", Immediate), ("overlay_style", Immediate),
-        ("blur_enabled", Immediate), ("blur_tint", Immediate), ("dim_inverse", Immediate), ("overlay_corner_radius", Immediate),
-        ("overlay_pinned_corner_radius", Immediate), ("font_family", Immediate), ("font_bold", Immediate), ("font_italic", Immediate),
-        ("text_color", Immediate), ("background_color", Immediate), ("border_color", Immediate), ("border_opacity", Immediate),
-        ("border_width", Immediate), ("border_pattern", Immediate), ("border_always", Immediate), ("border_seconds", Immediate),
-        ("overlay_padding", Immediate), ("text_alignment", Immediate), ("text_wrap", Immediate), ("text_outline", Immediate),
-        ("outline_color", Immediate), ("line_spacing", Immediate), ("show_original", Immediate), ("original_font_family", Immediate),
-        ("original_font_size", Immediate), ("original_color", Immediate), ("max_width_enabled", Immediate), ("overlay_max_width", Immediate),
+        ("capture.source", Reselect),
+        ("translation_window.screen", Pipeline), ("translation_window.mode", Immediate), ("appearance.window.background_style", Immediate),
+        ("appearance.window.blur_enabled", Immediate), ("appearance.window.blur_tint", Immediate), ("appearance.window.dim_inverse", Immediate), ("translation_window.corner_radius", Immediate),
+        ("translation_window.pinned_corner_radius", Immediate), ("appearance.window.font_family", Immediate), ("appearance.window.font_bold", Immediate), ("appearance.window.font_italic", Immediate),
+        ("appearance.window.text_color", Immediate), ("appearance.window.background_color", Immediate), ("translation_window.border_color", Immediate), ("translation_window.border_opacity", Immediate),
+        ("translation_window.border_width", Immediate), ("translation_window.border_pattern", Immediate), ("translation_window.border_always", Immediate), ("translation_window.border_seconds", Immediate),
+        ("appearance.window.padding", Immediate), ("appearance.window.text_alignment", Immediate), ("appearance.window.text_wrap", Immediate), ("appearance.window.text_outline", Immediate),
+        ("appearance.window.outline_color", Immediate), ("appearance.window.line_spacing", Immediate), ("appearance.window.show_original", Immediate), ("appearance.window.original_font_family", Immediate),
+        ("appearance.window.original_font_size", Immediate), ("appearance.window.original_color", Immediate), ("translation_window.max_width_enabled", Immediate), ("translation_window.maximum_width", Immediate),
         ("history_enabled", Immediate), ("history_persist", Immediate), ("history_limit", Immediate), ("close_to_tray", Immediate),
-        ("auto_translate", Immediate), ("active_region", Immediate), ("allow_multiple_regions", Immediate), ("font_size", Immediate),
-        ("overlay_auto_shrink", Immediate), ("opacity", Immediate), ("click_through", Immediate), ("overlay_pos", Immediate),
-        ("overlay_size", Immediate), ("frame_color", Immediate), ("frame_width", Immediate), ("frame_seconds", Immediate),
-        ("region_frame_mode", Immediate), ("region_frame_pinned", Immediate), ("game_profiles_enabled", Immediate),
+        ("translation.auto_translate", Immediate), ("capture.active_region", Immediate), ("capture.allow_multiple_regions", Immediate), ("appearance.window.font_size", Immediate),
+        ("translation_window.auto_shrink", Immediate), ("translation_window.opacity", Immediate), ("translation_window.click_through", Immediate), ("translation_window.position", Immediate),
+        ("translation_window.size", Immediate), ("capture.frame_color", Immediate), ("capture.frame_width", Immediate), ("capture.frame_seconds", Immediate),
+        ("capture.region_frame_mode", Immediate), ("capture.region_frame_pinned", Immediate), ("game_profiles_enabled", Immediate),
     ]
 };
 
@@ -362,20 +501,84 @@ pub const MAX_GAME_PROFILES: usize = 64;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct GameProfile {
-    /// Window title when the profile was last saved: only to recognise it in the list.
     pub caption: String,
-    pub source_lang: String,
-    pub target_lang: String,
-    pub ocr_engine: String,
-    pub regions: Vec<RegionProfile>,
+    pub display_mode: TranslationDisplayMode,
+    pub capture: GameCaptureSettings,
+    pub recognition: GameTextRecognitionSettings,
+    pub translation: GameTranslationSettings,
+    pub translation_window: GameTranslationWindowSettings,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct GameCaptureSettings {
+    pub regions: Vec<CaptureRegion>,
     pub active_region: String,
     pub allow_multiple_regions: bool,
-    pub translation_display: TranslationDisplay,
-    pub overlay_pinned: bool,
-    pub overlay_screen: String,
-    pub overlay_pos: (i32, i32),
-    pub overlay_size: (u32, u32),
+}
+
+impl Default for GameCaptureSettings {
+    fn default() -> Self {
+        Self {
+            regions: default_regions(),
+            active_region: "subtitles".into(),
+            allow_multiple_regions: false,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct GameTextRecognitionSettings {
+    pub language: String,
+    pub engine: OcrEngine,
+}
+
+impl Default for GameTextRecognitionSettings {
+    fn default() -> Self {
+        Self {
+            language: "eng".into(),
+            engine: "tesseract".into(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct GameTranslationSettings {
+    pub target_language: String,
+    pub source_language: TranslationSourceLanguage,
+}
+
+impl Default for GameTranslationSettings {
+    fn default() -> Self {
+        Self {
+            target_language: "ru".into(),
+            source_language: TranslationSourceLanguage::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct GameTranslationWindowSettings {
+    pub mode: TranslationWindowMode,
+    pub screen: String,
+    pub position: (i32, i32),
+    pub size: (u32, u32),
     pub floating_geometry: Option<FloatingGeometry>,
+}
+
+impl Default for GameTranslationWindowSettings {
+    fn default() -> Self {
+        Self {
+            mode: TranslationWindowMode::Floating,
+            screen: String::new(),
+            position: (100, 100),
+            size: (700, 120),
+            floating_geometry: None,
+        }
+    }
 }
 
 impl Default for GameProfile {
@@ -384,185 +587,182 @@ impl Default for GameProfile {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
-pub struct Settings {
-    /// Layout of the config file, see [`SCHEMA_VERSION`]; managed by the backend.
-    pub schema_version: u32,
-    pub source_lang: String,
-    pub target_lang: String,
-    /// "tesseract", "paddleocr" or "auto" (Tesseract first, PaddleOCR when Tesseract is unsure).
-    pub ocr_engine: String,
-    pub paddle_python: String,
-    /// Text the engine itself is less sure about than this (0–100) is ignored instead of translated;
-    /// 0 turns the check off. Applies only to engines that report confidence.
-    pub ocr_min_confidence: u32,
-    /// Empty: follow the selected game; otherwise a Qt screen name.
-    pub overlay_screen: String,
-    pub translator: TranslatorKind,
-    /// Yandex Cloud Translate v2: API-ключ сервисного аккаунта и ID каталога.
-    pub yandex_api_key: String,
-    pub yandex_folder_id: String,
-    /// Свой API (формат LibreTranslate): POST {q, source, target, format, api_key} -> {translatedText}.
-    pub custom_url: String,
-    pub custom_api_key: String,
-    pub capture_backend: CaptureBackendKind,
-    /// Токен восстановления xdg-desktop-portal: повторный запуск без диалога выбора окна.
+pub struct CaptureSettings {
+    pub source: CaptureSource,
     pub portal_token: String,
-    /// The window chosen through the portal fills a whole monitor (a fullscreen game): the portal does not
-    /// say where a window is, so the monitor stands for it, and the translation can go over the original.
     pub portal_fills_monitor: bool,
-    pub interval_ms: u64,
-    /// Чувствительность детектора смены текста: порог контраста краёв букв 40 + 8·value (ниже — чувствительнее).
-    pub sensitivity: f32,
-    pub debounce_ms: u64,
-    pub auto_translate: bool,
-    pub overlay_mode: OverlayMode,
-    pub overlay_pinned: bool,
-    /// "overlay": translation window; "inplace": translation drawn over the original text.
-    pub translation_display: TranslationDisplay,
-    pub inplace: InplaceSettings,
-    /// One of `OVERLAY_STYLES`.
-    pub overlay_style: String,
-    /// "blur" style: compositor blur behind the overlay and the opacity of its dark tint (0–0.8).
-    pub blur_enabled: bool,
-    pub blur_tint: f64,
-    /// "dim" style: light background with dark text instead of dark with white.
-    pub dim_inverse: bool,
-    /// Corner radius of the unpinned (floating) translation window, px.
-    pub overlay_corner_radius: u32,
-    /// Corner radius of the pinned layer-shell translation window, px.
-    pub overlay_pinned_corner_radius: u32,
-    pub font_family: String,
-    pub font_bold: bool,
-    pub font_italic: bool,
-    pub text_color: String,
-    pub background_color: String,
-    pub border_color: String,
-    pub border_opacity: f64,
-    pub border_width: u32,
-    pub border_pattern: bool,
-    /// false: the frame shows for `border_seconds` after a region is selected (and while unpinned).
-    pub border_always: bool,
-    pub border_seconds: u32,
-    pub overlay_padding: u32,
-    pub text_alignment: String,
-    pub text_wrap: bool,
-    pub text_outline: bool,
-    pub outline_color: String,
-    /// Line height multiplier for the translated text.
-    pub line_spacing: f64,
-    /// Show the recognized original above the translation.
-    pub show_original: bool,
-    pub original_font_family: String,
-    pub original_font_size: u32,
-    pub original_color: String,
-    pub max_width_enabled: bool,
-    pub overlay_max_width: u32,
-    pub history_enabled: bool,
-    pub history_persist: bool,
-    pub history_limit: usize,
-    /// Closing the main window hides it to the system tray instead of quitting; the capture
-    /// and translation keep running. Off: closing the main window quits the application.
-    pub close_to_tray: bool,
-    pub regions: Vec<RegionProfile>,
-    /// Region that "select area" targets; without `allow_multiple_regions` it is the only active one.
+    pub regions: Vec<CaptureRegion>,
     pub active_region: String,
-    /// Off: activating a region deactivates the others.
     pub allow_multiple_regions: bool,
-    pub font_size: u32,
-    /// Shrink translated text in the translation window until it fits, but never below 14 px.
-    pub overlay_auto_shrink: bool,
-    pub opacity: f64,
-    pub click_through: bool,
-    /// Закреплённое окно: положение относительно экрана `overlay_screen`.
-    pub overlay_pos: (i32, i32),
-    /// Свободное окно: где пользователь оставил его в последний раз.
-    pub floating_geometry: Option<FloatingGeometry>,
-    pub overlay_size: (u32, u32),
-    pub hotkeys: Hotkeys,
-    /// Рамка вокруг выбранного окна и областей: цвет `#rrggbb` простой обводки, толщина в пикселях
-    /// и время показа в режиме «при выделении».
     pub frame_color: String,
     pub frame_width: u32,
     pub frame_seconds: u32,
-    /// One of `REGION_FRAME_MODES`.
     pub region_frame_mode: String,
-    /// Region outlines while the translation is pinned: "dim" (semi-transparent) or "hide".
     pub region_frame_pinned: String,
     pub window: Option<WindowKey>,
     pub region: Option<NormRect>,
-    /// Remember the areas, languages, engine and translation position of every game and bring
-    /// them back when its window is chosen again.
-    pub game_profiles_enabled: bool,
-    /// Keyed by lower-case window class; managed by the backend (`remember_game`).
-    pub game_profiles: BTreeMap<String, GameProfile>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Hotkeys {
-    pub toggle: String,
-    pub select_region: String,
-    pub translate_once: String,
-    pub toggle_overlay: String,
-    pub toggle_pin: String,
-}
-
-impl Default for Hotkeys {
+impl Default for CaptureSettings {
     fn default() -> Self {
         Self {
-            toggle: "Ctrl+Alt+P".into(),
-            select_region: "Ctrl+Alt+R".into(),
-            translate_once: "Ctrl+Alt+Y".into(),
-            toggle_overlay: "Ctrl+Alt+H".into(),
-            toggle_pin: "Ctrl+Alt+U".into(),
+            source: CaptureSource::Auto,
+            portal_token: String::new(),
+            portal_fills_monitor: false,
+            regions: default_regions(),
+            active_region: "subtitles".into(),
+            allow_multiple_regions: false,
+            frame_color: "#ff0000".into(),
+            frame_width: 2,
+            frame_seconds: 3,
+            region_frame_mode: "selection".into(),
+            region_frame_pinned: "dim".into(),
+            window: None,
+            region: None,
         }
     }
 }
 
-impl Default for Settings {
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TextRecognitionSettings {
+    pub language: String,
+    pub engine: OcrEngine,
+    pub paddle_python: String,
+    pub minimum_confidence: u32,
+    pub interval_ms: u64,
+    pub sensitivity: f32,
+    pub debounce_ms: u64,
+}
+
+impl Default for TextRecognitionSettings {
     fn default() -> Self {
         Self {
-            schema_version: SCHEMA_VERSION,
-            source_lang: "eng".into(),
-            target_lang: "ru".into(),
-            ocr_engine: "tesseract".into(),
-            ocr_min_confidence: 30,
+            language: "eng".into(),
+            engine: "tesseract".into(),
             paddle_python: "python3".into(),
-            overlay_screen: String::new(),
-            translator: TranslatorKind::Google,
+            minimum_confidence: 30,
+            interval_ms: 500,
+            sensitivity: 2.0,
+            debounce_ms: 400,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TranslationSettings {
+    pub target_language: String,
+    pub service: TranslationService,
+    pub yandex_api_key: String,
+    pub yandex_folder_id: String,
+    pub custom_url: String,
+    pub custom_api_key: String,
+    pub auto_translate: bool,
+    pub source_language: TranslationSourceLanguage,
+}
+
+impl Default for TranslationSettings {
+    fn default() -> Self {
+        Self {
+            target_language: "ru".into(),
+            service: TranslationService::Google,
             yandex_api_key: String::new(),
             yandex_folder_id: String::new(),
             custom_url: String::new(),
             custom_api_key: String::new(),
-            capture_backend: CaptureBackendKind::Auto,
-            portal_token: String::new(),
-            portal_fills_monitor: false,
-            interval_ms: 500,
-            sensitivity: 2.0,
-            debounce_ms: 400,
             auto_translate: true,
-            overlay_mode: OverlayMode::Overlay,
-            overlay_pinned: false,
-            translation_display: TranslationDisplay::Window,
-            inplace: InplaceSettings::default(),
-            overlay_style: "solid".into(),
-            blur_enabled: true,
-            blur_tint: 0.3,
-            dim_inverse: false,
-            overlay_corner_radius: 12,
-            overlay_pinned_corner_radius: 0,
-            font_family: "Inter".into(),
-            font_bold: false,
-            font_italic: false,
-            text_color: "#ffffff".into(),
-            background_color: "#181818".into(),
+            source_language: TranslationSourceLanguage::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TranslationWindowSettings {
+    pub screen: String,
+    pub mode: TranslationWindowMode,
+    pub corner_radius: u32,
+    pub pinned_corner_radius: u32,
+    pub border_color: String,
+    pub border_opacity: f64,
+    pub border_width: u32,
+    pub border_pattern: bool,
+    pub border_always: bool,
+    pub border_seconds: u32,
+    pub max_width_enabled: bool,
+    pub maximum_width: u32,
+    pub auto_shrink: bool,
+    pub opacity: f64,
+    pub click_through: bool,
+    pub position: (i32, i32),
+    pub floating_geometry: Option<FloatingGeometry>,
+    pub size: (u32, u32),
+}
+
+impl Default for TranslationWindowSettings {
+    fn default() -> Self {
+        Self {
+            screen: String::new(),
+            mode: TranslationWindowMode::Floating,
+            corner_radius: 12,
+            pinned_corner_radius: 0,
             border_color: "#ff00ff".into(),
             border_opacity: 0.65,
             border_width: 2,
             border_pattern: false,
             border_always: true,
             border_seconds: 5,
-            overlay_padding: 16,
+            max_width_enabled: true,
+            maximum_width: 900,
+            auto_shrink: true,
+            opacity: 0.85,
+            click_through: true,
+            position: (100, 100),
+            floating_geometry: None,
+            size: (700, 120),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct WindowAppearance {
+    pub background_style: String,
+    pub blur_enabled: bool,
+    pub blur_tint: f64,
+    pub dim_inverse: bool,
+    pub font_family: String,
+    pub font_bold: bool,
+    pub font_italic: bool,
+    pub text_color: String,
+    pub background_color: String,
+    pub padding: u32,
+    pub text_alignment: String,
+    pub text_wrap: bool,
+    pub text_outline: bool,
+    pub outline_color: String,
+    pub line_spacing: f64,
+    pub show_original: bool,
+    pub original_font_family: String,
+    pub original_font_size: u32,
+    pub original_color: String,
+    pub font_size: u32,
+}
+
+impl Default for WindowAppearance {
+    fn default() -> Self {
+        Self {
+            background_style: "solid".into(),
+            blur_enabled: true,
+            blur_tint: 0.3,
+            dim_inverse: false,
+            font_family: "Inter".into(),
+            font_bold: false,
+            font_italic: false,
+            text_color: "#ffffff".into(),
+            background_color: "#181818".into(),
+            padding: 16,
             text_alignment: "center".into(),
             text_wrap: true,
             text_outline: true,
@@ -572,32 +772,77 @@ impl Default for Settings {
             original_font_family: String::new(),
             original_font_size: 14,
             original_color: "#b0b0b0".into(),
-            max_width_enabled: true,
-            overlay_max_width: 900,
+            font_size: 20,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TranslationAppearance {
+    pub window: WindowAppearance,
+    pub inplace: InplaceSettings,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Settings {
+    pub schema_version: u32,
+    pub history_enabled: bool,
+    pub history_persist: bool,
+    pub history_limit: usize,
+    pub close_to_tray: bool,
+    pub hotkeys: Hotkeys,
+    pub game_profiles_enabled: bool,
+    pub game_profiles: BTreeMap<String, GameProfile>,
+    pub capture: CaptureSettings,
+    pub recognition: TextRecognitionSettings,
+    pub translation: TranslationSettings,
+    pub translation_window: TranslationWindowSettings,
+    pub display_mode: TranslationDisplayMode,
+    pub appearance: TranslationAppearance,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            schema_version: SCHEMA_VERSION,
             history_enabled: true,
             history_persist: false,
             history_limit: 200,
             close_to_tray: false,
-            regions: default_regions(),
-            active_region: "subtitles".into(),
-            allow_multiple_regions: false,
-            font_size: 20,
-            overlay_auto_shrink: true,
-            opacity: 0.85,
-            click_through: true,
-            overlay_pos: (100, 100),
-            floating_geometry: None,
-            overlay_size: (700, 120),
             hotkeys: Hotkeys::default(),
-            frame_color: "#ff0000".into(),
-            frame_width: 2,
-            frame_seconds: 3,
-            region_frame_mode: "selection".into(),
-            region_frame_pinned: "dim".into(),
-            window: None,
-            region: None,
             game_profiles_enabled: true,
             game_profiles: BTreeMap::new(),
+            capture: CaptureSettings::default(),
+            recognition: TextRecognitionSettings::default(),
+            translation: TranslationSettings::default(),
+            translation_window: TranslationWindowSettings::default(),
+            display_mode: TranslationDisplayMode::Window,
+            appearance: TranslationAppearance::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Hotkeys {
+    pub toggle: String,
+    pub select_region: String,
+    pub translate_once: String,
+    #[serde(alias = "toggle_overlay")]
+    pub toggle_translation: String,
+    pub toggle_pin: String,
+}
+
+impl Default for Hotkeys {
+    fn default() -> Self {
+        Self {
+            toggle: "Ctrl+Alt+P".into(),
+            select_region: "Ctrl+Alt+R".into(),
+            translate_once: "Ctrl+Alt+Y".into(),
+            toggle_translation: "Ctrl+Alt+H".into(),
+            toggle_pin: "Ctrl+Alt+U".into(),
         }
     }
 }
@@ -630,8 +875,8 @@ impl Settings {
         }
         let mut settings = Self::from_toml(&text);
         // Migrate the old single rectangle into the first named region.
-        if settings.regions.iter().all(|r| r.rect.is_none())
-            && let Some(first) = settings.regions.first_mut() { first.rect = settings.region; }
+        if settings.capture.regions.iter().all(|r| r.rect.is_none())
+            && let Some(first) = settings.capture.regions.first_mut() { first.rect = settings.capture.region; }
         settings.sanitize();
         settings
     }
@@ -647,6 +892,7 @@ impl Settings {
             } else {
                 migrate(&mut table, version);
             }
+            migrate_flat_keys(&mut table);
             table.try_into::<Self>().map_err(|e| e.message().to_owned())
         });
         parsed.unwrap_or_else(|reason| {
@@ -662,88 +908,95 @@ impl Settings {
     }
 
     pub fn sanitize(&mut self) {
-        self.font_size = self.font_size.clamp(8, 96);
-        self.ocr_min_confidence = self.ocr_min_confidence.min(95);
+        self.appearance.window.font_size = self.appearance.window.font_size.clamp(8, 96);
+        self.recognition.minimum_confidence = self.recognition.minimum_confidence.min(95);
         // The translation window uses only fonts shipped with LipaX. Old configurations may
         // name a system font, which must never silently resolve through Qt/fontconfig.
         let bundled = crate::layout::font_database::InstalledFontDatabase::bundled();
         let available = bundled.fonts();
-        if !available.iter().any(|font| font.family == self.font_family) {
-            self.font_family = available.first().map(|font| font.family.clone()).unwrap_or_else(|| "Inter".into());
+        if !available.iter().any(|font| font.family == self.appearance.window.font_family) {
+            self.appearance.window.font_family = available.first().map(|font| font.family.clone()).unwrap_or_else(|| "Inter".into());
         }
-        if !self.original_font_family.is_empty()
-            && !available.iter().any(|font| font.family == self.original_font_family) {
-            self.original_font_family.clear();
+        if !self.appearance.window.original_font_family.is_empty()
+            && !available.iter().any(|font| font.family == self.appearance.window.original_font_family) {
+            self.appearance.window.original_font_family.clear();
         }
-        self.original_font_size = self.original_font_size.clamp(8, 96);
-        self.line_spacing = if self.line_spacing.is_finite() { self.line_spacing.clamp(0.8, 2.5) } else { 1.0 };
-        if !["left", "center", "right"].contains(&self.text_alignment.as_str()) { self.text_alignment = "center".into(); }
-        self.border_width = self.border_width.clamp(1, 16);
-        self.border_opacity = self.border_opacity.clamp(0.0, 1.0);
-        self.border_seconds = self.border_seconds.clamp(1, 120);
-        self.frame_seconds = self.frame_seconds.clamp(1, 60);
-        self.inplace.sanitize();
-        if self.floating_geometry.as_ref().is_some_and(|g| !g.is_valid()) { self.floating_geometry = None; }
-        if !OVERLAY_STYLES.contains(&self.overlay_style.as_str()) { self.overlay_style = "solid".into(); }
-        self.overlay_corner_radius = self.overlay_corner_radius.min(32);
-        self.overlay_pinned_corner_radius = self.overlay_pinned_corner_radius.min(32);
-        self.blur_tint = if self.blur_tint.is_finite() { self.blur_tint.clamp(0.0, 0.8) } else { 0.3 };
-        self.frame_width = self.frame_width.clamp(1, 12);
-        if !REGION_FRAME_MODES.contains(&self.region_frame_mode.as_str()) { self.region_frame_mode = "selection".into(); }
-        if !["dim", "hide"].contains(&self.region_frame_pinned.as_str()) { self.region_frame_pinned = "dim".into(); }
-        self.opacity = self.opacity.clamp(0.0, 1.0);
-        self.overlay_padding = self.overlay_padding.min(64);
-        // Only sanity bounds: the overlay itself is clamped to the size of its actual screen.
-        self.overlay_max_width = self.overlay_max_width.clamp(200, MAX_SCREEN_SIDE);
-        self.overlay_size.0 = self.overlay_size.0.clamp(200, MAX_SCREEN_SIDE);
-        self.overlay_size.1 = self.overlay_size.1.clamp(60, MAX_SCREEN_SIDE);
+        self.appearance.window.original_font_size = self.appearance.window.original_font_size.clamp(8, 96);
+        self.appearance.window.line_spacing = if self.appearance.window.line_spacing.is_finite() { self.appearance.window.line_spacing.clamp(0.8, 2.5) } else { 1.0 };
+        if !["left", "center", "right"].contains(&self.appearance.window.text_alignment.as_str()) { self.appearance.window.text_alignment = "center".into(); }
+        self.translation_window.border_width = self.translation_window.border_width.clamp(1, 16);
+        self.translation_window.border_opacity = self.translation_window.border_opacity.clamp(0.0, 1.0);
+        self.translation_window.border_seconds = self.translation_window.border_seconds.clamp(1, 120);
+        self.capture.frame_seconds = self.capture.frame_seconds.clamp(1, 60);
+        self.appearance.inplace.sanitize();
+        if self.translation_window.floating_geometry.as_ref().is_some_and(|g| !g.is_valid()) { self.translation_window.floating_geometry = None; }
+        if !WINDOW_BACKGROUND_STYLES.contains(&self.appearance.window.background_style.as_str()) { self.appearance.window.background_style = "solid".into(); }
+        self.translation_window.corner_radius = self.translation_window.corner_radius.min(32);
+        self.translation_window.pinned_corner_radius = self.translation_window.pinned_corner_radius.min(32);
+        self.appearance.window.blur_tint = if self.appearance.window.blur_tint.is_finite() { self.appearance.window.blur_tint.clamp(0.0, 0.8) } else { 0.3 };
+        self.capture.frame_width = self.capture.frame_width.clamp(1, 12);
+        if !REGION_FRAME_MODES.contains(&self.capture.region_frame_mode.as_str()) { self.capture.region_frame_mode = "selection".into(); }
+        if !["dim", "hide"].contains(&self.capture.region_frame_pinned.as_str()) { self.capture.region_frame_pinned = "dim".into(); }
+        self.translation_window.opacity = self.translation_window.opacity.clamp(0.0, 1.0);
+        self.appearance.window.padding = self.appearance.window.padding.min(64);
+        // Only sanity bounds: the translation window itself is clamped to the size of its actual screen.
+        self.translation_window.maximum_width = self.translation_window.maximum_width.clamp(200, MAX_SCREEN_SIDE);
+        self.translation_window.size.0 = self.translation_window.size.0.clamp(200, MAX_SCREEN_SIDE);
+        self.translation_window.size.1 = self.translation_window.size.1.clamp(60, MAX_SCREEN_SIDE);
         self.history_limit = self.history_limit.clamp(10, 1000);
-        if self.regions.is_empty() { self.regions = default_regions(); }
-        self.regions.truncate(MAX_REGIONS);
+        if self.capture.regions.is_empty() { self.capture.regions = default_regions(); }
+        self.capture.regions.truncate(MAX_REGIONS);
         let mut ids = std::collections::HashSet::new();
-        for (index, r) in self.regions.iter_mut().enumerate() {
+        for (index, r) in self.capture.regions.iter_mut().enumerate() {
             if r.id.is_empty() || !ids.insert(r.id.clone()) { r.id = format!("region-{index}"); ids.insert(r.id.clone()); }
             r.interval_ms = r.interval_ms.clamp(100, 10000);
             r.debounce_ms = r.debounce_ms.min(5000);
             if !r.frame_mode.is_empty() && !REGION_FRAME_MODES.contains(&r.frame_mode.as_str()) { r.frame_mode.clear(); }
             if r.rect.is_some_and(|r| ![r.x, r.y, r.w, r.h].iter().all(|v| v.is_finite()) || r.w <= 0.0 || r.h <= 0.0 || r.x < 0.0 || r.y < 0.0 || r.x+r.w > 1.000001 || r.y+r.h > 1.000001) { r.rect = None; }
         }
-        if !self.regions.iter().any(|r| r.id == self.active_region) { self.active_region = self.regions[0].id.clone(); }
-        if !self.allow_multiple_regions {
+        if !self.capture.regions.iter().any(|r| r.id == self.capture.active_region) { self.capture.active_region = self.capture.regions[0].id.clone(); }
+        if !self.capture.allow_multiple_regions {
             // Keep the active region if it is on, otherwise the first enabled one.
-            let keep = self.regions.iter().position(|r| r.enabled && r.id == self.active_region)
-                .or_else(|| self.regions.iter().position(|r| r.enabled));
-            for (i, r) in self.regions.iter_mut().enumerate() { r.enabled = Some(i) == keep; }
+            let keep = self.capture.regions.iter().position(|r| r.enabled && r.id == self.capture.active_region)
+                .or_else(|| self.capture.regions.iter().position(|r| r.enabled));
+            for (i, r) in self.capture.regions.iter_mut().enumerate() { r.enabled = Some(i) == keep; }
         }
         let defaults = Self::default();
-        for (value, fallback) in [(&mut self.text_color, defaults.text_color), (&mut self.background_color, defaults.background_color), (&mut self.border_color, defaults.border_color), (&mut self.frame_color, defaults.frame_color),
-            (&mut self.outline_color, defaults.outline_color), (&mut self.original_color, defaults.original_color)] {
+        for (value, fallback) in [(&mut self.appearance.window.text_color, defaults.appearance.window.text_color), (&mut self.appearance.window.background_color, defaults.appearance.window.background_color), (&mut self.translation_window.border_color, defaults.translation_window.border_color), (&mut self.capture.frame_color, defaults.capture.frame_color),
+            (&mut self.appearance.window.outline_color, defaults.appearance.window.outline_color), (&mut self.appearance.window.original_color, defaults.appearance.window.original_color)] {
             if value.len() != 7 || !value.starts_with('#') || !value[1..].bytes().all(|b| b.is_ascii_hexdigit()) { *value = fallback; }
         }
     }
 
-    pub fn capture_regions(&self) -> Vec<RegionProfile> {
-        if self.regions.iter().any(|r| r.rect.is_some()) {
-            self.regions.iter().filter(|r| r.enabled && r.rect.is_some()).cloned().collect()
+    pub fn capture_regions(&self) -> Vec<CaptureRegion> {
+        if self.capture.regions.iter().any(|r| r.rect.is_some()) {
+            self.capture.regions.iter().filter(|r| r.enabled && r.rect.is_some()).cloned().collect()
         } else {
-            self.region.map(|rect| vec![RegionProfile { rect: Some(rect), interval_ms: self.interval_ms, debounce_ms: self.debounce_ms, ..Default::default() }]).unwrap_or_default()
+            self.capture.region.map(|rect| vec![CaptureRegion { rect: Some(rect), interval_ms: self.recognition.interval_ms, debounce_ms: self.recognition.debounce_ms, ..Default::default() }]).unwrap_or_default()
         }
     }
 
     /// Everything that makes what was recognised so far stale: the `Pipeline` settings and what the
     /// backend selected (window, area). Display-only edits must not interrupt OCR or reset its retry budget.
+    pub fn translation_source_language(&self) -> &str {
+        match &self.translation.source_language {
+            TranslationSourceLanguage::RecognitionLanguage => crate::translate::tess_to_iso(crate::tesseract::primary_lang(&self.recognition.language)),
+            TranslationSourceLanguage::Explicit(language) => language,
+        }
+    }
+
     pub fn processing_key(&self) -> String {
         let all = serde_json::to_value(self).unwrap_or_default();
         let part: Vec<&serde_json::Value> = REACTIONS.iter()
-            .filter(|(key, reaction)| *reaction == Reaction::Pipeline || *key == "window" || *key == "region")
-            .filter_map(|(key, _)| all.get(*key)).collect();
+            .filter(|(key, reaction)| *reaction == Reaction::Pipeline || *key == "capture.window" || *key == "capture.region")
+            .filter_map(|(key, _)| value_at(&all, key)).collect();
         serde_json::to_string(&part).unwrap_or_default()
     }
 
     /// Top-level settings that differ between two states.
     pub fn changed_keys(&self, other: &Self) -> Vec<String> {
         let (a, b) = (serde_json::to_value(self).unwrap_or_default(), serde_json::to_value(other).unwrap_or_default());
-        REACTIONS.iter().filter(|(key, _)| a.get(*key) != b.get(*key)).map(|(key, _)| (*key).to_owned()).collect()
+        REACTIONS.iter().filter(|(key, _)| value_at(&a, key) != value_at(&b, key)).map(|(key, _)| (*key).to_owned()).collect()
     }
 
     /// What the user has to do for the changes between `self` and `other` to take full effect;
@@ -761,7 +1014,7 @@ impl Settings {
 
     /// Key of the selected game: its window class. Portal windows have no class of their own.
     pub fn game_key(&self) -> Option<String> {
-        let window = self.window.as_ref().filter(|w| !crate::capture::portal::is_portal_window(w))?;
+        let window = self.capture.window.as_ref().filter(|w| !crate::capture::portal::is_portal_window(w))?;
         let class = window.resource_class.trim().to_lowercase();
         (!class.is_empty()).then_some(class)
     }
@@ -769,18 +1022,27 @@ impl Settings {
     fn game_profile(&self, caption: &str) -> GameProfile {
         GameProfile {
             caption: caption.to_owned(),
-            source_lang: self.source_lang.clone(),
-            target_lang: self.target_lang.clone(),
-            ocr_engine: self.ocr_engine.clone(),
-            regions: self.regions.clone(),
-            active_region: self.active_region.clone(),
-            allow_multiple_regions: self.allow_multiple_regions,
-            translation_display: self.translation_display,
-            overlay_pinned: self.overlay_pinned,
-            overlay_screen: self.overlay_screen.clone(),
-            overlay_pos: self.overlay_pos,
-            overlay_size: self.overlay_size,
-            floating_geometry: self.floating_geometry.clone(),
+            display_mode: self.display_mode,
+            capture: GameCaptureSettings {
+                regions: self.capture.regions.clone(),
+                active_region: self.capture.active_region.clone(),
+                allow_multiple_regions: self.capture.allow_multiple_regions,
+            },
+            recognition: GameTextRecognitionSettings {
+                language: self.recognition.language.clone(),
+                engine: self.recognition.engine.clone(),
+            },
+            translation: GameTranslationSettings {
+                target_language: self.translation.target_language.clone(),
+                source_language: self.translation.source_language.clone(),
+            },
+            translation_window: GameTranslationWindowSettings {
+                mode: self.translation_window.mode,
+                screen: self.translation_window.screen.clone(),
+                position: self.translation_window.position,
+                size: self.translation_window.size,
+                floating_geometry: self.translation_window.floating_geometry.clone(),
+            },
         }
     }
 
@@ -792,7 +1054,7 @@ impl Settings {
             tracing::warn!(component = "settings", limit = MAX_GAME_PROFILES, "Слишком много профилей игр: новый не сохранён");
             return;
         }
-        let caption = self.window.as_ref().map(|w| w.caption.clone()).unwrap_or_default();
+        let caption = self.capture.window.as_ref().map(|w| w.caption.clone()).unwrap_or_default();
         let profile = self.game_profile(&caption);
         self.game_profiles.insert(key, profile);
     }
@@ -800,18 +1062,19 @@ impl Settings {
     /// Bring back what was remembered for the selected game. `false`: the game is new.
     pub fn apply_game_profile(&mut self) -> bool {
         let Some(profile) = self.game_key().filter(|_| self.game_profiles_enabled).and_then(|k| self.game_profiles.get(&k)).cloned() else { return false };
-        self.source_lang = profile.source_lang;
-        self.target_lang = profile.target_lang;
-        self.ocr_engine = profile.ocr_engine;
-        self.regions = profile.regions;
-        self.active_region = profile.active_region;
-        self.allow_multiple_regions = profile.allow_multiple_regions;
-        self.translation_display = profile.translation_display;
-        self.overlay_pinned = profile.overlay_pinned;
-        self.overlay_screen = profile.overlay_screen;
-        self.overlay_pos = profile.overlay_pos;
-        self.overlay_size = profile.overlay_size;
-        self.floating_geometry = profile.floating_geometry;
+        self.recognition.language = profile.recognition.language;
+        self.translation.target_language = profile.translation.target_language;
+        self.translation.source_language = profile.translation.source_language;
+        self.recognition.engine = profile.recognition.engine;
+        self.capture.regions = profile.capture.regions;
+        self.capture.active_region = profile.capture.active_region;
+        self.capture.allow_multiple_regions = profile.capture.allow_multiple_regions;
+        self.display_mode = profile.display_mode;
+        self.translation_window.mode = profile.translation_window.mode;
+        self.translation_window.screen = profile.translation_window.screen;
+        self.translation_window.position = profile.translation_window.position;
+        self.translation_window.size = profile.translation_window.size;
+        self.translation_window.floating_geometry = profile.translation_window.floating_geometry;
         true
     }
 
@@ -840,46 +1103,107 @@ impl Settings {
 mod tests {
     use super::*;
 
+    #[test]
+    fn mixed_legacy_settings_and_profiles_keep_new_values_and_legacy_siblings() {
+        let s = Settings::from_toml(r#"
+schema_version = 1
+source_lang = "eng+jpn"
+overlay_pinned = true
+overlay_pos = [20, 30]
+font_size = 25
+[recognition]
+language = "deu"
+[inplace]
+shadow = true
+fill_opacity = 0.4
+[appearance.inplace]
+shadow = false
+[hotkeys]
+toggle_overlay = "Ctrl+Alt+H"
+[[regions]]
+id = "dialogue"
+source_lang = "jpn"
+ocr_engine = "paddleocr"
+[game_profiles.game]
+source_lang = "fra"
+target_lang = "de"
+overlay_pinned = true
+overlay_size = [800, 200]
+"#);
+        assert_eq!(s.recognition.language, "deu");
+        assert_eq!(s.translation_window.mode, TranslationWindowMode::Pinned);
+        assert_eq!(s.translation_window.position, (20, 30));
+        assert_eq!(s.appearance.window.font_size, 25);
+        assert!(!s.appearance.inplace.shadow);
+        assert_eq!(s.appearance.inplace.fill_opacity, 0.4);
+        assert_eq!(s.capture.regions[0].recognition_language, "jpn");
+        assert_eq!(s.capture.regions[0].engine, Some(OcrEngine::PaddleOcr));
+        assert_eq!(s.game_profiles["game"].recognition.language, "fra");
+        assert_eq!(s.game_profiles["game"].translation_window.size, (800, 200));
+        let saved = toml::to_string(&s).unwrap();
+        for old in ["overlay_pinned", "source_lang =", "target_lang =", "ocr_engine", "toggle_overlay"] {
+            assert!(!saved.contains(old), "legacy name written: {old}");
+        }
+        assert_eq!(Settings::from_toml(&saved), s);
+    }
+
+    #[test]
+    fn translation_language_inherits_recognition_or_remembers_an_explicit_override() {
+        let mut s = Settings::default();
+        s.recognition.language = "jpn+eng".into();
+        assert_eq!(s.translation_source_language(), "ja");
+        let inherited = s.processing_key();
+        s.translation.source_language = TranslationSourceLanguage::Explicit("fr".into());
+        assert_eq!(s.translation_source_language(), "fr");
+        assert_ne!(s.processing_key(), inherited);
+        assert_eq!(s.recognition.language, "jpn+eng");
+        s.capture.window = game("game", "u");
+        s.remember_game();
+        s.translation.source_language = TranslationSourceLanguage::RecognitionLanguage;
+        assert!(s.apply_game_profile());
+        assert_eq!(s.translation_source_language(), "fr");
+    }
+
     fn game(class: &str, uuid: &str) -> Option<WindowKey> {
         Some(WindowKey { uuid: uuid.into(), resource_class: class.into(), caption: format!("{class} window") })
     }
 
     #[test]
-    fn a_game_gets_back_its_areas_languages_and_overlay() {
+    fn a_game_gets_back_its_areas_languages_and_window() {
         let rect = NormRect { x: 0.1, y: 0.7, w: 0.8, h: 0.2 };
-        let mut s = Settings { window: game("Witcher3.exe", "u1"), ..Settings::default() };
-        s.regions[0].rect = Some(rect);
-        s.source_lang = "jpn".into();
-        s.overlay_pos = (40, 50);
+        let mut s = { let mut value = Settings::default(); value.capture.window = game("Witcher3.exe", "u1"); value };
+        s.capture.regions[0].rect = Some(rect);
+        s.recognition.language = "jpn".into();
+        s.translation_window.position = (40, 50);
         s.remember_game();
         assert_eq!(s.game_profiles.len(), 1);
         assert_eq!(s.game_profiles["witcher3.exe"].caption, "Witcher3.exe window");
 
         // Another game starts clean...
-        s.window = game("Other", "u2");
-        s.regions[0].rect = None;
-        s.source_lang = "eng".into();
+        s.capture.window = game("Other", "u2");
+        s.capture.regions[0].rect = None;
+        s.recognition.language = "eng".into();
         assert!(!s.apply_game_profile(), "unknown game");
         s.remember_game();
         assert_eq!(s.game_profiles.len(), 2);
 
         // ...and the first one comes back, even from a new window (new UUID, other letter case).
-        s.window = game("witcher3.EXE", "u3");
+        s.capture.window = game("witcher3.EXE", "u3");
         assert!(s.apply_game_profile());
-        assert_eq!((s.regions[0].rect, s.source_lang.as_str(), s.overlay_pos), (Some(rect), "jpn", (40, 50)));
+        assert_eq!((s.capture.regions[0].rect, s.recognition.language.as_str(), s.translation_window.position), (Some(rect), "jpn", (40, 50)));
     }
 
     #[test]
     fn profiles_ignore_portal_windows_and_can_be_turned_off() {
-        let mut s = Settings { window: Some(crate::capture::portal::portal_window_key()), ..Settings::default() };
+        let mut s = { let mut value = Settings::default(); value.capture.window = Some(crate::capture::portal::portal_window_key()); value };
         s.remember_game();
         assert!(s.game_profiles.is_empty(), "a portal window has no class of its own");
-        s.window = game("Game", "u1");
+        s.capture.window = game("Game", "u1");
         s.game_profiles_enabled = false;
         s.remember_game();
         assert!(s.game_profiles.is_empty());
         assert!(!s.apply_game_profile());
-        s.window = game("", "u2");
+        s.capture.window = game("", "u2");
         s.game_profiles_enabled = true;
         s.remember_game();
         assert!(s.game_profiles.is_empty(), "no class, no key");
@@ -889,20 +1213,20 @@ mod tests {
     fn profile_count_is_capped_and_existing_ones_still_update() {
         let mut s = Settings::default();
         for i in 0..MAX_GAME_PROFILES + 5 {
-            s.window = game(&format!("game{i}"), "u");
+            s.capture.window = game(&format!("game{i}"), "u");
             s.remember_game();
         }
         assert_eq!(s.game_profiles.len(), MAX_GAME_PROFILES);
-        s.window = game("game0", "u");
-        s.target_lang = "de".into();
+        s.capture.window = game("game0", "u");
+        s.translation.target_language = "de".into();
         s.remember_game();
-        assert_eq!(s.game_profiles["game0"].target_lang, "de");
+        assert_eq!(s.game_profiles["game0"].translation.target_language, "de");
     }
 
     #[test]
     fn profiles_survive_the_config_file() {
-        let mut s = Settings { window: game("Game", "u1"), ..Settings::default() };
-        s.regions[0].rect = Some(NormRect { x: 0.1, y: 0.6, w: 0.8, h: 0.3 });
+        let mut s = { let mut value = Settings::default(); value.capture.window = game("Game", "u1"); value };
+        s.capture.regions[0].rect = Some(NormRect { x: 0.1, y: 0.6, w: 0.8, h: 0.3 });
         s.remember_game();
         let saved = toml::to_string_pretty(&s).unwrap();
         assert_eq!(Settings::from_toml(&saved).game_profiles, s.game_profiles);
@@ -913,10 +1237,10 @@ mod tests {
     fn an_old_config_is_lifted_step_by_step_and_stamped() {
         // Version 0: no stamp, frame_seconds = 0 meant "never".
         let old = Settings::from_toml("frame_seconds = 0\ntarget_lang = \"de\"");
-        assert_eq!((old.schema_version, old.region_frame_mode.as_str(), old.target_lang.as_str()), (SCHEMA_VERSION, "off", "de"));
+        assert_eq!((old.schema_version, old.capture.region_frame_mode.as_str(), old.translation.target_language.as_str()), (SCHEMA_VERSION, "off", "de"));
         // The same text already stamped with the current version is taken as it is.
         let current = Settings::from_toml("schema_version = 1\nframe_seconds = 0");
-        assert_ne!(current.region_frame_mode, "off");
+        assert_ne!(current.capture.region_frame_mode, "off");
         // A new config always carries its version.
         let saved = toml::to_string_pretty(&Settings::default()).unwrap();
         assert!(saved.contains(&format!("schema_version = {SCHEMA_VERSION}")));
@@ -925,7 +1249,7 @@ mod tests {
     #[test]
     fn a_config_from_a_newer_version_is_read_not_rejected() {
         let s = Settings::from_toml("schema_version = 99\ntarget_lang = \"fr\"\nsome_future_key = true");
-        assert_eq!((s.target_lang.as_str(), s.schema_version), ("fr", SCHEMA_VERSION));
+        assert_eq!((s.translation.target_language.as_str(), s.schema_version), ("fr", SCHEMA_VERSION));
         assert_eq!(Settings::file_schema_version("schema_version = 99"), 99);
         assert_eq!(Settings::file_schema_version("target_lang = \"fr\""), 0);
         assert_eq!(Settings::file_schema_version("not toml ["), 0);
@@ -940,12 +1264,17 @@ mod tests {
     #[test]
     fn every_setting_declares_what_it_needs() {
         let all = serde_json::to_value(Settings::default()).unwrap();
-        let keys: Vec<&str> = all.as_object().unwrap().keys().map(String::as_str).collect();
         let declared: Vec<&str> = REACTIONS.iter().map(|(k, _)| *k).collect();
-        let missing: Vec<&&str> = keys.iter().filter(|k| !declared.contains(k)).collect();
-        let stale: Vec<&&str> = declared.iter().filter(|k| !keys.contains(k)).collect();
-        assert!(missing.is_empty(), "settings without a declared reaction (add them to REACTIONS): {missing:?}");
-        assert!(stale.is_empty(), "REACTIONS names settings that do not exist: {stale:?}");
+        fn visit(value: &serde_json::Value, path: &str, declared: &[&str]) {
+            if declared.contains(&path) { return; }
+            let object = value.as_object().unwrap_or_else(|| panic!("setting without a reaction: {path}"));
+            assert!(!object.is_empty(), "empty setting without a reaction: {path}");
+            for (key, child) in object {
+                visit(child, &if path.is_empty() { key.clone() } else { format!("{path}.{key}") }, declared);
+            }
+        }
+        visit(&all, "", &declared);
+        for path in &declared { assert!(value_at(&all, path).is_some(), "stale reaction: {path}"); }
         let mut sorted = declared.clone();
         sorted.sort_unstable();
         sorted.dedup();
@@ -957,28 +1286,28 @@ mod tests {
         let base = Settings::default();
         let key = base.processing_key();
         for change in [
-            |s: &mut Settings| s.target_lang = "de".into(),
-            |s: &mut Settings| s.source_lang = "jpn".into(),
-            |s: &mut Settings| s.ocr_engine = "auto".into(),
-            |s: &mut Settings| s.ocr_min_confidence = 50,
-            |s: &mut Settings| s.interval_ms += 100,
-            |s: &mut Settings| s.translation_display = TranslationDisplay::Inplace,
-            |s: &mut Settings| s.regions[0].enabled = false,
-            |s: &mut Settings| s.window = Some(WindowKey { uuid: "u".into(), resource_class: "c".into(), caption: "t".into() }),
+            |s: &mut Settings| s.translation.target_language = "de".into(),
+            |s: &mut Settings| s.recognition.language = "jpn".into(),
+            |s: &mut Settings| s.recognition.engine = "auto".into(),
+            |s: &mut Settings| s.recognition.minimum_confidence = 50,
+            |s: &mut Settings| s.recognition.interval_ms += 100,
+            |s: &mut Settings| s.display_mode = TranslationDisplayMode::Inplace,
+            |s: &mut Settings| s.capture.regions[0].enabled = false,
+            |s: &mut Settings| s.capture.window = Some(WindowKey { uuid: "u".into(), resource_class: "c".into(), caption: "t".into() }),
         ] {
             let mut changed = base.clone();
             change(&mut changed);
             assert_ne!(changed.processing_key(), key);
         }
         for change in [
-            |s: &mut Settings| s.font_size += 1,
-            |s: &mut Settings| s.overlay_pinned = !s.overlay_pinned,
+            |s: &mut Settings| s.appearance.window.font_size += 1,
+            |s: &mut Settings| s.translation_window.mode = TranslationWindowMode::from_pinned(!s.translation_window.mode.is_pinned()),
             |s: &mut Settings| s.close_to_tray = true,
             |s: &mut Settings| s.history_limit += 1,
             |s: &mut Settings| s.hotkeys.toggle = "Ctrl+Alt+Q".into(),
-            |s: &mut Settings| s.capture_backend = CaptureBackendKind::Portal,
+            |s: &mut Settings| s.capture.source = CaptureSource::Portal,
             |s: &mut Settings| s.game_profiles_enabled = false,
-            |s: &mut Settings| s.inplace.fill_opacity = 0.5,
+            |s: &mut Settings| s.appearance.inplace.fill_opacity = 0.5,
         ] {
             let mut changed = base.clone();
             change(&mut changed);
@@ -990,46 +1319,46 @@ mod tests {
     fn changed_keys_and_pending_actions() {
         let a = Settings::default();
         let mut b = a.clone();
-        b.font_size += 2;
-        assert_eq!(a.changed_keys(&b), ["font_size"]);
+        b.appearance.window.font_size += 2;
+        assert_eq!(a.changed_keys(&b), ["appearance.window.font_size"]);
         assert!(a.pending_actions(&b).is_empty(), "applies at once");
-        b.capture_backend = CaptureBackendKind::Portal;
-        assert_eq!(a.changed_keys(&b), ["capture_backend", "font_size"]);
+        b.capture.source = CaptureSource::Portal;
+        assert_eq!(a.changed_keys(&b), ["capture.source", "appearance.window.font_size"]);
         assert_eq!(a.pending_actions(&b), ["Способ захвата сменится при следующем выборе окна игры"]);
-        assert_eq!(reaction("hotkeys"), Some(Reaction::Hotkeys));
+        assert_eq!(reaction("hotkeys.toggle"), Some(Reaction::Hotkeys));
         assert_eq!(reaction("nonsense"), None);
     }
 
     #[test]
     fn roundtrip() {
-        let s = Settings { region: Some(NormRect { x: 0.1, y: 0.6, w: 0.8, h: 0.3 }), ..Settings::default() };
+        let s = { let mut value = Settings::default(); value.capture.region = Some(NormRect { x: 0.1, y: 0.6, w: 0.8, h: 0.3 }); value };
         let t = toml::to_string_pretty(&s).unwrap();
         assert_eq!(toml::from_str::<Settings>(&t).unwrap(), s);
     }
 
     #[test]
-    fn pinned_overlay_radius_is_saved_and_bounded() {
-        let mut s = Settings { overlay_pinned_corner_radius: 18, ..Settings::default() };
+    fn pinned_window_radius_is_saved_and_bounded() {
+        let mut s = { let mut value = Settings::default(); value.translation_window.pinned_corner_radius = 18; value };
         let saved = toml::to_string_pretty(&s).unwrap();
-        assert_eq!(Settings::from_toml(&saved).overlay_pinned_corner_radius, 18);
-        s.overlay_pinned_corner_radius = 100;
+        assert_eq!(Settings::from_toml(&saved).translation_window.pinned_corner_radius, 18);
+        s.translation_window.pinned_corner_radius = 100;
         s.sanitize();
-        assert_eq!(s.overlay_pinned_corner_radius, 32);
-        s.overlay_pinned_corner_radius = 0;
+        assert_eq!(s.translation_window.pinned_corner_radius, 32);
+        s.translation_window.pinned_corner_radius = 0;
         s.sanitize();
-        assert_eq!(s.overlay_pinned_corner_radius, 0);
+        assert_eq!(s.translation_window.pinned_corner_radius, 0);
     }
 
     #[test]
     fn old_system_font_falls_back_to_a_bundled_family() {
         let mut settings = Settings::from_toml("font_family = 'DejaVu Sans'\noriginal_font_family = 'Liberation Serif'\noverlay_auto_shrink = false");
         settings.sanitize();
-        assert_eq!(settings.font_family, "Inter");
-        assert!(settings.original_font_family.is_empty(), "original follows the bundled translation font");
-        assert!(!settings.overlay_auto_shrink);
+        assert_eq!(settings.appearance.window.font_family, "Inter");
+        assert!(settings.appearance.window.original_font_family.is_empty(), "original follows the bundled translation font");
+        assert!(!settings.translation_window.auto_shrink);
         let restored = Settings::from_toml(&toml::to_string(&settings).unwrap());
-        assert_eq!(restored.font_family, "Inter");
-        assert!(!restored.overlay_auto_shrink);
+        assert_eq!(restored.appearance.window.font_family, "Inter");
+        assert!(!restored.translation_window.auto_shrink);
     }
 
     #[test]
@@ -1043,90 +1372,90 @@ mod tests {
         }
     }
 
-    fn region(id: &str, enabled: bool) -> RegionProfile {
-        RegionProfile { id: id.into(), name: id.into(), enabled, ..Default::default() }
+    fn region(id: &str, enabled: bool) -> CaptureRegion {
+        CaptureRegion { id: id.into(), name: id.into(), enabled, ..Default::default() }
     }
 
     #[test]
     fn regions_are_limited_and_single_active_by_default() {
         let mut s = Settings::default();
-        assert_eq!(s.regions.len(), 1);
-        s.regions = ["a", "b", "c", "d"].map(|id| region(id, true)).to_vec();
-        s.active_region = "b".into();
+        assert_eq!(s.capture.regions.len(), 1);
+        s.capture.regions = ["a", "b", "c", "d"].map(|id| region(id, true)).to_vec();
+        s.capture.active_region = "b".into();
         s.sanitize();
-        assert_eq!(s.regions.len(), MAX_REGIONS, "a fourth region is dropped");
-        let active: Vec<_> = s.regions.iter().filter(|r| r.enabled).map(|r| r.id.as_str()).collect();
+        assert_eq!(s.capture.regions.len(), MAX_REGIONS, "a fourth region is dropped");
+        let active: Vec<_> = s.capture.regions.iter().filter(|r| r.enabled).map(|r| r.id.as_str()).collect();
         assert_eq!(active, ["b"], "only the active region stays on");
 
-        s.active_region = "c".into();
-        s.regions[2].enabled = false;
-        s.regions[0].enabled = true;
+        s.capture.active_region = "c".into();
+        s.capture.regions[2].enabled = false;
+        s.capture.regions[0].enabled = true;
         s.sanitize();
-        let active: Vec<_> = s.regions.iter().filter(|r| r.enabled).map(|r| r.id.as_str()).collect();
+        let active: Vec<_> = s.capture.regions.iter().filter(|r| r.enabled).map(|r| r.id.as_str()).collect();
         assert_eq!(active, ["a"], "an inactive target falls back to the first enabled region");
     }
 
     #[test]
     fn several_active_regions_when_allowed() {
-        let mut s = Settings { allow_multiple_regions: true, ..Settings::default() };
-        s.regions = ["a", "b", "c"].map(|id| region(id, true)).to_vec();
+        let mut s = { let mut value = Settings::default(); value.capture.allow_multiple_regions = true; value };
+        s.capture.regions = ["a", "b", "c"].map(|id| region(id, true)).to_vec();
         s.sanitize();
-        assert_eq!(s.regions.iter().filter(|r| r.enabled).count(), 3);
+        assert_eq!(s.capture.regions.iter().filter(|r| r.enabled).count(), 3);
     }
 
     #[test]
     fn region_frame_defaults_and_migration() {
         let s = Settings::default();
-        assert!(!s.border_pattern, "the error pattern is off by default");
-        assert_eq!((s.region_frame_mode.as_str(), s.frame_seconds), ("selection", 3));
-        assert_eq!(Settings::from_toml("frame_seconds = 0").region_frame_mode, "off", "old 'never show' is kept");
-        assert_eq!(Settings::from_toml("frame_seconds = 0\nregion_frame_mode = \"solid\"").region_frame_mode, "solid");
-        let mut bad = Settings { region_frame_mode: "blink".into(), ..Settings::default() };
-        bad.regions[0].frame_mode = "blink".into();
+        assert!(!s.translation_window.border_pattern, "the error pattern is off by default");
+        assert_eq!((s.capture.region_frame_mode.as_str(), s.capture.frame_seconds), ("selection", 3));
+        assert_eq!(Settings::from_toml("frame_seconds = 0").capture.region_frame_mode, "off", "old 'never show' is kept");
+        assert_eq!(Settings::from_toml("frame_seconds = 0\nregion_frame_mode = \"solid\"").capture.region_frame_mode, "solid");
+        let mut bad = { let mut value = Settings::default(); value.capture.region_frame_mode = "blink".into(); value };
+        bad.capture.regions[0].frame_mode = "blink".into();
         bad.sanitize();
-        assert_eq!(bad.region_frame_mode, "selection");
-        assert_eq!(bad.regions[0].frame_mode, "", "unknown per-region mode falls back to the global one");
+        assert_eq!(bad.capture.region_frame_mode, "selection");
+        assert_eq!(bad.capture.regions[0].frame_mode, "", "unknown per-region mode falls back to the global one");
     }
 
     #[test]
     fn inplace_properties_are_independent_and_roundtrip() {
         let mut s = Settings::default();
-        assert_eq!(s.inplace.font_family, PropertyMode::Auto);
-        s.inplace.font_family = PropertyMode::Manual("PT Serif".into());
-        s.inplace.letter_spacing = PropertyMode::Manual(1.5);
-        s.inplace.padding = PropertyMode::Manual(crate::layout::Padding::uniform(4.0));
-        s.inplace.background_mode = InplaceBackgroundMode::TextReplacement;
-        s.inplace.font_overrides.insert("serif".into(), "Noto Serif".into());
+        assert_eq!(s.appearance.inplace.font_family, PropertyMode::Auto);
+        s.appearance.inplace.font_family = PropertyMode::Manual("PT Serif".into());
+        s.appearance.inplace.letter_spacing = PropertyMode::Manual(1.5);
+        s.appearance.inplace.padding = PropertyMode::Manual(crate::layout::Padding::uniform(4.0));
+        s.appearance.inplace.background_mode = InplaceBackgroundMode::TextReplacement;
+        s.appearance.inplace.font_overrides.insert("serif".into(), "Noto Serif".into());
         let t = toml::to_string_pretty(&s).unwrap();
         let back: Settings = toml::from_str(&t).unwrap();
-        assert_eq!(back.inplace, s.inplace);
-        assert_eq!(back.inplace.font_size, PropertyMode::Auto, "other properties stay automatic");
-        let json = serde_json::to_value(&s.inplace).unwrap();
+        assert_eq!(back.appearance.inplace, s.appearance.inplace);
+        assert_eq!(back.appearance.inplace.font_size, PropertyMode::Auto, "other properties stay automatic");
+        let json = serde_json::to_value(&s.appearance.inplace).unwrap();
         assert_eq!(json["font_family"], serde_json::json!({"mode": "manual", "value": "PT Serif"}));
         assert_eq!(json["font_size"], serde_json::json!({"mode": "auto"}));
 
         let mut bad = Settings::default();
-        bad.inplace.text_color = PropertyMode::Manual("red".into());
-        bad.inplace.minimum_font_size = 50.0;
-        bad.inplace.maximum_font_size = 10.0;
+        bad.appearance.inplace.text_color = PropertyMode::Manual("red".into());
+        bad.appearance.inplace.minimum_font_size = 50.0;
+        bad.appearance.inplace.maximum_font_size = 10.0;
         bad.sanitize();
-        assert_eq!(bad.inplace.text_color, PropertyMode::Auto);
-        assert!(bad.inplace.maximum_font_size >= bad.inplace.minimum_font_size);
+        assert_eq!(bad.appearance.inplace.text_color, PropertyMode::Auto);
+        assert!(bad.appearance.inplace.maximum_font_size >= bad.appearance.inplace.minimum_font_size);
     }
 
     #[test]
     fn translation_display_reads_old_and_unknown_values() {
-        assert_eq!(Settings::from_toml("translation_display = \"overlay\"").translation_display, TranslationDisplay::Window);
-        assert_eq!(Settings::from_toml("translation_display = \"inplace\"").translation_display, TranslationDisplay::Inplace);
+        assert_eq!(Settings::from_toml("translation_display = \"overlay\"").display_mode, TranslationDisplayMode::Window);
+        assert_eq!(Settings::from_toml("translation_display = \"inplace\"").display_mode, TranslationDisplayMode::Inplace);
         let odd = Settings::from_toml("translation_display = \"hologram\"\ntarget_lang = \"de\"");
-        assert_eq!((odd.translation_display, odd.target_lang.as_str()), (TranslationDisplay::Window, "de"), "the rest of the config survives");
-        assert_eq!(serde_json::to_value(TranslationDisplay::Inplace).unwrap(), "inplace");
+        assert_eq!((odd.display_mode, odd.translation.target_language.as_str()), (TranslationDisplayMode::Window, "de"), "the rest of the config survives");
+        assert_eq!(serde_json::to_value(TranslationDisplayMode::Inplace).unwrap(), "inplace");
     }
 
     #[test]
     fn partial_config_uses_defaults() {
-        let s: Settings = toml::from_str("target_lang = \"de\"").unwrap();
-        assert_eq!(s.target_lang, "de");
-        assert_eq!(s.interval_ms, 500);
+        let s = Settings::from_toml("target_lang = \"de\"");
+        assert_eq!(s.translation.target_language, "de");
+        assert_eq!(s.recognition.interval_ms, 500);
     }
 }

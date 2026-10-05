@@ -59,14 +59,20 @@ if command -v busctl >/dev/null 2>&1 && busctl --user list --no-legend 2>/dev/nu
     fail "another LipaX is running ($bus_name): close it first (lipax --quit)"
 fi
 
-# Desktop Entry spec: quote an Exec path with spaces, double the percent sign.
+# Desktop Entry spec: a percent sign is doubled; a path with reserved characters (space, quote, backslash,
+# $, backtick, shell operators) is quoted, and the quoted string is escaped on two levels.
 exec_path=${binary//%/%%}
-[[ $exec_path != *' '* ]] || exec_path="\"${exec_path//\"/\\\"}\""
+if [[ $exec_path == *[[:space:]\"\'\\\>\<~\|\&\;\$\*\?\#\(\)\`]* ]]; then
+    for character in '\' '"' '`' '$'; do exec_path=${exec_path//"$character"/"\\$character"}; done
+    exec_path="\"$exec_path\""
+    exec_path=${exec_path//\\/\\\\}
+fi
 content="[Desktop Entry]
 Type=Application
 Name=LipaX (local build)
 Exec=$exec_path
 NoDisplay=true
+Icon=io.lipa.Translator
 Terminal=false
 X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2
 "

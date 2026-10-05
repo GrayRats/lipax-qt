@@ -49,7 +49,7 @@ ApplicationWindow {
             RowLayout {
                 Layout.columnSpan: 2; Layout.fillWidth: true; Layout.minimumWidth: 0
                 Label { text: "Записей: " + win.history.length; Layout.fillWidth: true; opacity: 0.7 }
-                Button { objectName: "clearHistory"; text: "Очистить историю"; enabled: win.history.length > 0; onClicked: win.controller.clearHistory() }
+                Button { objectName: "clearHistory"; id: clearTranslationHistory; Accessible.description: clearTranslationHistoryHint.explanation; UnavailableHint { id: clearTranslationHistoryHint; control: clearTranslationHistory; feature: "Очистить историю переводов"; reason: "История переводов пуста."; remedy: "Записи появятся после перевода текста." } text: "Очистить историю"; enabled: win.history.length > 0; onClicked: win.controller.clearHistory() }
             }
             ResetButton { keys: ["history_enabled", "history_persist", "history_limit"] }
             Label {

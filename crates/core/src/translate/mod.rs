@@ -1,6 +1,6 @@
 //! Движки перевода: Google (gtx, без ключа), Yandex Cloud Translate v2, свой API.
 
-use crate::settings::{Settings, TranslatorKind};
+use crate::settings::{Settings, TranslationService};
 use serde_json::{Value, json};
 use std::{collections::HashMap, sync::Mutex, time::{Duration, Instant, SystemTime}};
 
@@ -76,7 +76,7 @@ impl Default for HttpTranslate {
 
 impl Translate for HttpTranslate {
     async fn translate(&self, s: &Settings, text: &str, src: &str, dst: &str) -> Result<String, TranslateError> {
-        tracing::debug!(service = ?s.translator, characters = text.chars().count(), source_language = src, target_language = dst, "Запрос перевода");
+        tracing::debug!(service = ?s.translation.service, characters = text.chars().count(), source_language = src, target_language = dst, "Запрос перевода");
         let translator = Translator::from_settings(s);
         let key = match &translator {
             Translator::Google => "google".to_string(),
@@ -112,15 +112,15 @@ pub enum Translator {
 
 impl Translator {
     pub fn from_settings(s: &Settings) -> Self {
-        match s.translator {
-            TranslatorKind::Google => Self::Google,
-            TranslatorKind::Yandex => Self::Yandex {
-                api_key: s.yandex_api_key.clone(),
-                folder_id: s.yandex_folder_id.clone(),
+        match s.translation.service {
+            TranslationService::Google => Self::Google,
+            TranslationService::Yandex => Self::Yandex {
+                api_key: s.translation.yandex_api_key.clone(),
+                folder_id: s.translation.yandex_folder_id.clone(),
             },
-            TranslatorKind::Custom => Self::Custom {
-                url: s.custom_url.clone(),
-                api_key: s.custom_api_key.clone(),
+            TranslationService::Custom => Self::Custom {
+                url: s.translation.custom_url.clone(),
+                api_key: s.translation.custom_api_key.clone(),
             },
         }
     }
@@ -260,16 +260,16 @@ mod tests {
             stream.write_all(b"HTTP/1.1 429 Too Many Requests\r\nRetry-After: 120\r\nContent-Length: 19\r\nConnection: close\r\n\r\n<html>Sorry!</html> ").unwrap();
         });
         let translator = HttpTranslate { http: reqwest::Client::builder().no_proxy().build().unwrap(), cooldowns: Mutex::new(HashMap::new()) };
-        let mut s = Settings { translator: TranslatorKind::Custom, custom_url: url.clone(), ..Settings::default() };
+        let mut s = { let mut value = Settings::default(); value.translation.service = TranslationService::Custom; value.translation.custom_url = url.clone(); value };
         let first = translator.translate(&s, "First field", "en", "ru").await.unwrap_err();
         assert!(matches!(first, TranslateError::RateLimited { retry_after: 120 }));
         assert!(!first.to_string().contains("<html>"));
         server.join().unwrap(); // The server is gone: subsequent calls must be stopped locally.
         let second = translator.translate(&s, "Another field", "en", "ru").await.unwrap_err();
         assert!(matches!(second, TranslateError::RateLimited { retry_after: 1..=120 }));
-        s.custom_url.clear();
+        s.translation.custom_url.clear();
         assert!(matches!(translator.translate(&s, "Other service", "en", "ru").await, Err(TranslateError::NotConfigured(_))));
-        s.custom_url = url.clone();
+        s.translation.custom_url = url.clone();
         translator.cooldowns.lock().unwrap().insert(format!("custom:{url}"), Instant::now());
         assert!(matches!(translator.translate(&s, "After expiry", "en", "ru").await, Err(TranslateError::Http(_))));
     }

@@ -13,6 +13,20 @@ use image::DynamicImage;
 use serde::Serialize;
 use std::future::Future;
 
+/// Shared contract for a feature selector, its explanation and the effective mode.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct FeatureAvailability {
+    pub available: bool,
+    pub reason: String,
+    pub remedy: String,
+}
+impl FeatureAvailability {
+    pub fn available() -> Self { Self { available: true, reason: String::new(), remedy: String::new() } }
+    pub fn unavailable(reason: impl Into<String>, remedy: impl Into<String>) -> Self {
+        Self { available: false, reason: reason.into(), remedy: remedy.into() }
+    }
+}
+
 /// What a capture backend can do. Every layer asks this instead of checking which backend it is,
 /// so a new backend only has to declare itself and the UI and the pipeline follow.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -25,25 +39,25 @@ pub struct CaptureCapabilities {
     /// The frame holds only the client area: no title bar, border or shadow.
     pub exclude_decorations: bool,
     /// The translation can be drawn over the original text.
-    pub inplace_overlay: bool,
+    pub inplace_translation: bool,
     /// The buffer is pixel-exact, not rescaled by the compositor.
     pub native_resolution: bool,
 }
 
 impl CaptureCapabilities {
     /// KWin ScreenShot2 plus the KWin script that reports client geometry.
-    pub const KWIN: Self = Self { window_geometry: true, global_coordinates: true, exclude_decorations: true, inplace_overlay: true, native_resolution: true };
+    pub const KWIN: Self = Self { window_geometry: true, global_coordinates: true, exclude_decorations: true, inplace_translation: true, native_resolution: true };
     /// ScreenCast through xdg-desktop-portal: the compositor tells neither where the window is nor what is around it.
-    pub const PORTAL: Self = Self { window_geometry: false, global_coordinates: false, exclude_decorations: false, inplace_overlay: false, native_resolution: false };
+    pub const PORTAL: Self = Self { window_geometry: false, global_coordinates: false, exclude_decorations: false, inplace_translation: false, native_resolution: false };
     /// The same, when the user says the window fills a whole monitor (a fullscreen game): the monitor is its
     /// geometry, there is no decoration around a fullscreen window, the stream may still be rescaled.
-    pub const PORTAL_FULLSCREEN: Self = Self { window_geometry: true, global_coordinates: true, exclude_decorations: true, inplace_overlay: true, native_resolution: false };
+    pub const PORTAL_FULLSCREEN: Self = Self { window_geometry: true, global_coordinates: true, exclude_decorations: true, inplace_translation: true, native_resolution: false };
 
     /// Why the translation cannot be drawn over the original text; `None` if it can.
     pub fn inplace_blocker(&self) -> Option<&'static str> {
         if !self.window_geometry || !self.global_coordinates {
-            Some("положение окна на экране неизвестно, перевод показывается в окне перевода")
-        } else if !self.inplace_overlay {
+            Some("Текущий backend захвата не предоставляет глобальные координаты выбранного окна, необходимые для точного размещения перевода.")
+        } else if !self.inplace_translation {
             Some("этот способ захвата не поддерживает перевод поверх оригинала, перевод показывается в окне перевода")
         } else {
             None
@@ -57,9 +71,9 @@ impl CaptureCapabilities {
 }
 
 /// Capabilities of the backend that serves `window` (the key decides, see [`AnyCapture`]); the user's
-/// statement that a portal window fills its monitor (`Settings::portal_fills_monitor`) counts.
+/// statement that a portal window fills its monitor (`CaptureSettings::portal_fills_monitor`) counts.
 pub fn capabilities_for(window: &WindowKey, settings: &Settings) -> CaptureCapabilities {
-    match (portal::is_portal_window(window), settings.portal_fills_monitor && !settings.overlay_screen.is_empty()) {
+    match (portal::is_portal_window(window), settings.capture.portal_fills_monitor && !settings.translation_window.screen.is_empty()) {
         (false, _) => CaptureCapabilities::KWIN,
         (true, false) => CaptureCapabilities::PORTAL,
         (true, true) => CaptureCapabilities::PORTAL_FULLSCREEN,
@@ -78,8 +92,9 @@ pub enum CaptureError {
     #[error("захват недоступен: {0}")]
     Unavailable(String),
     /// KWin refused: its permission belongs to the path of the executable named in a desktop file.
-    #[error("KWin не разрешил захват этому процессу (ScreenShot2.Error.NoAuthorized). Разрешение выдаётся по пути исполняемого файла из .desktop-файла: пакет разрешает /usr/bin/lipax, но не локальную сборку. Локальную сборку запускайте через packaging/run-local.sh; после обновления пакета перезапустите LipaX (при устаревшем кэше — kbuildsycoca6)")]
-    NotAuthorized,
+    /// The message names the executable and the way out.
+    #[error("{0}")]
+    NotAuthorized(String),
 }
 
 pub trait Capture: Send + Sync {
@@ -168,7 +183,7 @@ mod tests {
         assert_eq!(capabilities_for(&kwin, &settings), CaptureCapabilities::KWIN);
         assert_eq!(capabilities_for(&portal::portal_window_key(), &settings), CaptureCapabilities::PORTAL);
         // A fullscreen game through the portal: the monitor is the window, so the translation can go over the text.
-        let fullscreen = Settings { portal_fills_monitor: true, overlay_screen: "DP-1".into(), ..Settings::default() };
+        let fullscreen = { let mut value = Settings::default(); value.capture.portal_fills_monitor = true; value.translation_window.screen = "DP-1".into(); value };
         assert_eq!(capabilities_for(&portal::portal_window_key(), &fullscreen), CaptureCapabilities::PORTAL_FULLSCREEN);
         assert_eq!(CaptureCapabilities::PORTAL_FULLSCREEN.inplace_blocker(), None);
         assert_eq!(CaptureCapabilities::PORTAL_FULLSCREEN.frame_blocker(), None);
@@ -176,10 +191,10 @@ mod tests {
         assert_eq!((backend_name(&kwin), backend_name(&portal::portal_window_key())), ("KWin ScreenShot2", "xdg-desktop-portal"));
         assert_eq!(CaptureCapabilities::KWIN.inplace_blocker(), None);
         assert_eq!(CaptureCapabilities::KWIN.frame_blocker(), None);
-        assert!(CaptureCapabilities::PORTAL.inplace_blocker().unwrap().contains("положение окна"));
+        assert!(CaptureCapabilities::PORTAL.inplace_blocker().unwrap().contains("глобальные координаты"));
         assert!(CaptureCapabilities::PORTAL.frame_blocker().is_some());
         // A backend that knows the geometry but cannot draw over the text says so itself.
-        let no_inplace = CaptureCapabilities { inplace_overlay: false, ..CaptureCapabilities::KWIN };
+        let no_inplace = CaptureCapabilities { inplace_translation: false, ..CaptureCapabilities::KWIN };
         assert!(no_inplace.inplace_blocker().unwrap().contains("не поддерживает"));
         assert_eq!(no_inplace.frame_blocker(), None);
     }

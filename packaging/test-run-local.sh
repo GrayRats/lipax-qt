@@ -34,6 +34,13 @@ run "$scratch/my build/lipax" >/dev/null
 grep -Fxq "Exec=\"$scratch/my build/lipax\"" "$entry"
 [[ $(wc -l < "$scratch/cache.log") == 2 ]]
 
+# 3b. Reserved characters get the two levels of escaping the Desktop Entry spec asks for: \$ in the argument, the
+# backslash doubled in the string. A percent sign is doubled.
+mkdir -p "$scratch"/'we$ird%dir'
+cp "$scratch/fake-lipax" "$scratch"/'we$ird%dir/lipax'
+run "$scratch"/'we$ird%dir/lipax' >/dev/null
+grep -Fxq "Exec=\"$scratch/we\\\\\$ird%%dir/lipax\"" "$entry"
+
 # 4. A symlink is resolved: KWin compares the real path of the process.
 ln -s "$scratch/fake-lipax" "$scratch/link"
 run "$scratch/link" >/dev/null
@@ -48,5 +55,5 @@ grep -Fq 'not an executable file' "$scratch/err"
 # 6. --unregister removes the entry and refreshes the cache.
 "$script" --unregister >/dev/null
 [[ ! -e $entry ]]
-[[ $(wc -l < "$scratch/cache.log") == 4 ]]
+[[ $(wc -l < "$scratch/cache.log") == 5 ]]
 echo "run-local.sh: ok"

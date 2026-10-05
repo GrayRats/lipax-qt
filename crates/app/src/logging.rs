@@ -140,20 +140,16 @@ mod tests {
                 .block_on(async {
                     let mut pipeline =
                         Pipeline::new(BrokenCapture, AnyOcr::default(), HttpTranslate::new());
-                    let settings = Settings {
-                        window: Some(WindowKey {
+                    let settings = { let mut value = Settings::default(); value.capture.window = Some(WindowKey {
                             uuid: "test".into(),
                             caption: "Test".into(),
                             resource_class: "test".into(),
-                        }),
-                        region: Some(NormRect {
+                        }); value.capture.region = Some(NormRect {
                             x: 0.0,
                             y: 0.0,
                             w: 1.0,
                             h: 1.0,
-                        }),
-                        ..Settings::default()
-                    };
+                        }); value };
                     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
                     drop(rx); // No GUI can receive the error.
                     pipeline

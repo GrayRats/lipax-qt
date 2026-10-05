@@ -41,15 +41,41 @@ pub fn screenshot_permission(exe: &std::path::Path, dirs: &[std::path::PathBuf])
             let Ok(text) = std::fs::read_to_string(&path) else { continue };
             let value = |key: &str| text.lines().find_map(|l| l.strip_prefix(key).and_then(|r| r.strip_prefix('=')));
             let allows = value("X-KDE-DBUS-Restricted-Interfaces").is_some_and(|v| v.split(';').any(|i| i.trim() == "org.kde.KWin.ScreenShot2"));
-            // The first word of Exec; a path with spaces is quoted.
-            let program = value("Exec").map(str::trim).and_then(|e| match e.strip_prefix('"') {
-                Some(rest) => rest.split('"').next(),
-                None => e.split_whitespace().next(),
-            });
-            if allows && program.is_some_and(|p| real(std::path::Path::new(&p.replace("%%", "%"))) == exe) { return Some(path); }
+            if allows && value("Exec").and_then(exec_program).is_some_and(|p| real(std::path::Path::new(&p)) == exe) { return Some(path); }
         }
     }
     None
+}
+
+/// The program of an `Exec` line: its first word, with the quoting of the Desktop Entry spec undone.
+/// A quoted word is escaped on two levels (a backslash in the string, then in the argument), and `%%` is a percent sign.
+fn exec_program(exec: &str) -> Option<String> {
+    let exec = exec.trim();
+    let word = match exec.strip_prefix('"') {
+        Some(rest) => {
+            let (mut word, mut chars) = (String::new(), rest.chars());
+            // String level: `\\` is a backslash (a quote closes the word).
+            let mut raw = String::new();
+            while let Some(c) = chars.next() {
+                match c {
+                    '"' => break,
+                    '\\' => match chars.next() { Some('\\') => raw.push('\\'), Some(other) => { raw.push('\\'); raw.push(other) } None => raw.push('\\') },
+                    other => raw.push(other),
+                }
+            }
+            // Argument level: a backslash escapes `"`, backtick, `$` and itself.
+            let mut chars = raw.chars();
+            while let Some(c) = chars.next() {
+                match c {
+                    '\\' => match chars.next() { Some(e @ ('"' | '`' | '$' | '\\')) => word.push(e), Some(other) => { word.push('\\'); word.push(other) } None => word.push('\\') },
+                    other => word.push(other),
+                }
+            }
+            word
+        }
+        None => exec.split_whitespace().next()?.to_owned(),
+    };
+    Some(word.replace("%%", "%"))
 }
 
 /// The directories KDE reads desktop files from.
@@ -71,7 +97,7 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
             }
             rows
         },
-        output(&s.paddle_python, &["-c", include_str!("ocr/paddle_check.py")]),
+        output(&s.recognition.paddle_python, &["-c", include_str!("ocr/paddle_check.py")]),
     );
     let mut rows = vec![tess, gst, pipewire];
     rows.extend(plugins);
@@ -88,8 +114,8 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
         Err(e) => rows.push(row("Python / PaddleOCR", "error", e, "Укажите путь к Python из venv; инструкция: docs/PaddleOCR.md.")),
     }
     let langs = output("tesseract", &["--list-langs"]).await;
-    let missing: Vec<_> = s.source_lang.split('+').filter(|l| !langs.as_ref().is_ok_and(|text| text.lines().any(|line| line.trim() == *l))).collect();
-    rows.push(row("Языки Tesseract", if missing.is_empty() { "ready" } else { "error" }, if missing.is_empty() { format!("Готовы: {}", s.source_lang) } else { format!("Нет языков: {}", missing.join(", ")) }, "Установите языковые пакеты во вкладке «Распознавание». Arch: tesseract-data-<код языка>."));
+    let missing: Vec<_> = s.recognition.language.split('+').filter(|l| !langs.as_ref().is_ok_and(|text| text.lines().any(|line| line.trim() == *l))).collect();
+    rows.push(row("Языки Tesseract", if missing.is_empty() { "ready" } else { "error" }, if missing.is_empty() { format!("Готовы: {}", s.recognition.language) } else { format!("Нет языков: {}", missing.join(", ")) }, "Установите языковые пакеты во вкладке «Распознавание». Arch: tesseract-data-<код языка>."));
     let portal = match zbus::Connection::session().await {
         Ok(conn) => conn.call_method(Some("org.freedesktop.DBus"), "/org/freedesktop/DBus", Some("org.freedesktop.DBus"), "NameHasOwner", &("org.freedesktop.portal.Desktop",)).await.ok().and_then(|r| r.body().deserialize::<bool>().ok()).unwrap_or(false),
         Err(_) => false,
@@ -158,6 +184,16 @@ mod tests {
         assert!(screenshot_permission(&exe, std::slice::from_ref(&dir)).is_some());
         assert!(screenshot_permission(&dir.join("elsewhere"), std::slice::from_ref(&dir)).is_none());
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn exec_quoting_is_undone_on_both_levels() {
+        assert_eq!(exec_program("/usr/bin/lipax --flag %u").as_deref(), Some("/usr/bin/lipax"));
+        assert_eq!(exec_program("\"/my build/lipax\" %u").as_deref(), Some("/my build/lipax"));
+        // What run-local.sh writes for /x/we$ird%dir/lipax: `$` escaped, backslash doubled, percent doubled.
+        assert_eq!(exec_program("\"/x/we\\\\$ird%%dir/lipax\"").as_deref(), Some("/x/we$ird%dir/lipax"));
+        assert_eq!(exec_program("/usr/bin/100%%").as_deref(), Some("/usr/bin/100%"));
+        assert_eq!(exec_program("   "), None);
     }
 
     #[test]

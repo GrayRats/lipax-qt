@@ -3,12 +3,12 @@ import QtQuick
 // Translation window controller: one state (pinned or floating, visibility, content), two
 // surface implementations. A Wayland surface cannot change its shell role, so both windows keep
 // their own role and are reused across pin transitions. Position state lives in settings (Rust): the pinned
-// placement (overlay_screen + overlay_pos) and the last floating geometry are kept separately,
+// placement (translation_window.screen + translation_window.position) and the last floating geometry are kept separately,
 // so pinning never destroys where the floating window was and vice versa.
 Item {
     id: ov
     property var controller
-    property var settings: ({})
+    property var settings: ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
     property string translation: ""
     property string original: ""
     property string gameGeometry: ""
@@ -17,7 +17,7 @@ Item {
     signal pinToggled(bool pinned)
     signal closeRequested()
 
-    readonly property bool pinned: settings.overlay_pinned === true
+    readonly property bool pinned: settings.translation_window.mode === "pinned"
     readonly property bool floating: !pinned
     property bool ready: false
     // The currently shown surface, or null while the translation is hidden.
@@ -31,7 +31,7 @@ Item {
         if (!shown) {
             pinnedSurface.visible = false
             floatingSurface.visible = false
-            if (controller && controller.configureOverlayBlur) controller.configureOverlayBlur(false, 0)
+            if (controller && controller.configureTranslationWindowBlur) controller.configureTranslationWindowBlur(false, 0)
         } else if (pinned) {
             if (!pinnedSurface.visible) {
                 pinnedSurface.place("pin_transition")
@@ -50,7 +50,7 @@ Item {
     onPinnedChanged: syncSurfaces()
     Component.onCompleted: { ready = true; syncSurfaces() }
 
-    PinnedOverlayWindow {
+    PinnedTranslationSurface {
         id: pinnedSurface
         controller: ov.controller
         settings: ov.settings
@@ -59,7 +59,7 @@ Item {
         gameGeometry: ov.gameGeometry
         onPinToggleRequested: ov.pinToggled(false)
     }
-    FloatingOverlayWindow {
+    FloatingTranslationSurface {
         id: floatingSurface
         controller: ov.controller
         settings: ov.settings

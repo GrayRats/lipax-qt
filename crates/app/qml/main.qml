@@ -15,7 +15,7 @@ ApplicationWindow {
     title: "LipaX — переводчик для игр"
     // Two separate things: hiding to the tray (`hideToTray`, everything keeps running) and quitting
     // (`quitApp`, stops everything). Capture, OCR, translation and overlays belong to the
-    // Controller and the overlay windows below, not to this window, so hiding it changes nothing for them.
+    // Controller and the translation windows below, not to this window, so hiding it changes nothing for them.
     property bool closingDown: false
     readonly property bool trayEnabled: settingsWin.current.close_to_tray === true && tray.available
 
@@ -86,7 +86,7 @@ ApplicationWindow {
         objectName: "controller"
         onFrameRequested: (x, y, w, h) => selectionFrame.flash(x, y, w, h)
         onSelectRegionRequested: if (ctl.windowTitle.length > 0) regionWin.begin()
-        onTogglePinRequested: ctl.setOverlayPinned(!overlay.pinned, "hotkey")
+        onTogglePinRequested: ctl.setTranslationWindowPinned(!translationWindow.pinned, "hotkey")
         onActionRequested: (action, token) => root.perform(action, token)
     }
 
@@ -102,7 +102,7 @@ ApplicationWindow {
         menu: Platform.Menu {
             Platform.MenuItem { text: "Открыть LipaX"; onTriggered: root.perform("show", "") }
             Platform.MenuItem { text: "Настройки"; onTriggered: root.perform("settings", "") }
-            Platform.MenuItem { text: "Захватить окно"; onTriggered: root.perform("capture", "") }
+            Platform.MenuItem { text: "Выбрать окно для захвата"; onTriggered: root.perform("capture", "") }
             Platform.MenuItem {
                 text: "Запустить автоперевод"
                 visible: !ctl.running
@@ -126,9 +126,9 @@ ApplicationWindow {
     readonly property bool windowActive: ctl.effectiveDisplay === "window"
     readonly property string portalMonitorGeometry: {
         const s = settingsWin.current
-        if (!s || !s.portal_fills_monitor || !s.window || s.window.uuid !== "portal:window" || !s.overlay_screen)
+        if (!s || !s.capture.portal_fills_monitor || !s.capture.window || s.capture.window.uuid !== "portal:window" || !s.translation_window.screen)
             return ""
-        const screen = Qt.application.screens.find(item => item.name === s.overlay_screen)
+        const screen = Qt.application.screens.find(item => item.name === s.translation_window.screen)
         return screen ? JSON.stringify([screen.virtualX, screen.virtualY, screen.width, screen.height]) : ""
     }
     onPortalMonitorGeometryChanged: ctl.reportPortalMonitorGeometry(portalMonitorGeometry)
@@ -138,7 +138,7 @@ ApplicationWindow {
     readonly property string inplaceKeys: JSON.stringify(closingDown ? [] : inplaceEntries.map(e => e.key))
     Instantiator {
         model: JSON.parse(root.inplaceKeys)
-        delegate: InplaceText {
+        delegate: InplaceTranslation {
             required property string modelData
             settings: settingsWin.current
             entry: root.inplaceEntries.find(e => e.key === modelData) || null
@@ -153,15 +153,15 @@ ApplicationWindow {
     property bool started: false
     Timer { interval: 1500; running: true; onTriggered: root.started = true }
     readonly property string frameRegionIds:
-        JSON.stringify(closingDown ? [] : (settingsWin.current.regions || []).filter(r => r.enabled && r.rect).map(r => r.id))
+        JSON.stringify(closingDown ? [] : (settingsWin.current.capture.regions || []).filter(r => r.enabled && r.rect).map(r => r.id))
     Instantiator {
         model: JSON.parse(root.frameRegionIds)
         delegate: RegionFrame {
             required property string modelData
             settings: settingsWin.current
-            region: (settingsWin.current.regions || []).find(r => r.id === modelData) || null
+            region: (settingsWin.current.capture.regions || []).find(r => r.id === modelData) || null
             gameGeometry: ctl.gameGeometry
-            pinned: settingsWin.current.overlay_pinned === true
+            pinned: settingsWin.current.translation_window.mode === "pinned"
             flashOnCreate: root.started
         }
     }
@@ -174,20 +174,20 @@ ApplicationWindow {
     readonly property int degradedFields: inplaceFallback.degraded || 0
     readonly property string fallbackText: fallbackTexts.map(f => fallbackTexts.length > 1 ? f.region + ": " + f.text : f.text).join("\n\n")
     readonly property bool fallbackShown: inplaceActive && ctl.inplaceVisible && fallbackText.length > 0
-    TranslationOverlay {
-        id: overlay
+    TranslationWindow {
+        id: translationWindow
         controller: ctl
         translation: root.windowActive ? ctl.translation : root.fallbackText
         original: root.windowActive ? ctl.original : ""
         gameGeometry: ctl.gameGeometry
-        shown: !root.closingDown && ((root.windowActive && ctl.windowOverlayVisible && ctl.translation.length > 0) || root.fallbackShown)
+        shown: !root.closingDown && ((root.windowActive && ctl.translationWindowVisible && ctl.translation.length > 0) || root.fallbackShown)
         settings: settingsWin.current
         // Pin state and the pinned placement are decided in Rust (pinned lands where floating was).
-        onPinToggled: (p) => ctl.setOverlayPinned(p, "mmb")
-        // Closing hides only the translation window; "Поверх игры" or Ctrl+Alt+H shows it again.
-        onCloseRequested: root.windowActive ? ctl.setWindowOverlayVisibility(false, "close_button") : ctl.setInplaceVisibility(false, "fallback_close")
+        onPinToggled: (p) => ctl.setTranslationWindowPinned(p, "mmb")
+        // Closing hides only the translation window; "Отдельное окно перевода" or Ctrl+Alt+H shows it again.
+        onCloseRequested: root.windowActive ? ctl.setTranslationWindowVisibility(false, "close_button") : ctl.setInplaceVisibility(false, "fallback_close")
         // Any change of the selected areas (KWin or portal) briefly reveals a hidden frame.
-        readonly property string areasKey: JSON.stringify((settingsWin.current.regions || []).map(r => [r.enabled, r.rect]))
+        readonly property string areasKey: JSON.stringify((settingsWin.current.capture.regions || []).map(r => [r.enabled, r.rect]))
         onAreasKeyChanged: flashFrame()
     }
 
@@ -203,7 +203,7 @@ ApplicationWindow {
             Layout.fillWidth: true
 
             Button {
-                text: "Выбрать окно"
+                text: "Выбрать окно для захвата"
                 Layout.fillWidth: true
                 onClicked: ctl.pickWindow()
             }
@@ -217,50 +217,61 @@ ApplicationWindow {
                 ComboBox {
                     id: regionBox
                     Layout.preferredWidth: 140
-                    readonly property var regions: settingsWin.current.regions || []
+                    readonly property var regions: settingsWin.current.capture.regions || []
                     model: regions.map(r => (r.rect ? "" : "○ ") + r.name + (r.enabled ? "" : " (выкл.)"))
-                    currentIndex: Math.max(0, regions.findIndex(r => r.id === settingsWin.current.active_region))
+                    currentIndex: Math.max(0, regions.findIndex(r => r.id === settingsWin.current.capture.active_region))
                     // Choosing a region activates it (and, by default, deactivates the others).
                     onActivated: { settingsWin.activateRegion(currentIndex, true); settingsWin.apply() }
                 }
                 Button {
-                    text: "Выбрать область"
+                    id: selectCaptureRegion
+                    text: "Выбрать область захвата"
                     Layout.fillWidth: true
                     enabled: ctl.windowTitle.length > 0
                     onClicked: regionWin.begin()
+                    Accessible.description: selectRegionHint.explanation
+                    UnavailableHint { id: selectRegionHint; control: selectCaptureRegion; feature: "Выбрать область захвата"; reason: "Окно для захвата ещё не выбрано."; remedy: "Выберите окно для захвата." }
                 }
             }
             RowLayout {
                 Label { text: ctl.hasRegion ? "область задана" : "область не задана"; Layout.fillWidth: true }
-                Button { text: "Сбросить"; enabled: ctl.hasRegion; onClicked: ctl.resetRegion() }
+                Button {
+                    id: resetCaptureRegion
+                    text: "Сбросить область захвата"; enabled: ctl.hasRegion; onClicked: ctl.resetRegion()
+                    Accessible.description: resetRegionHint.explanation
+                    UnavailableHint { id: resetRegionHint; control: resetCaptureRegion; feature: "Сбросить область захвата"; reason: "Область захвата ещё не задана."; remedy: "Сначала выделите область с текстом." }
+                }
             }
         }
 
         RowLayout {
             Button {
+                id: startTranslation
                 text: ctl.running ? "Остановить" : "Запустить"
                 highlighted: ctl.running
                 enabled: ctl.hasRegion
+                Accessible.description: startTranslationHint.explanation
+                UnavailableHint { id: startTranslationHint; control: startTranslation; feature: "Запустить автоперевод"; reason: "Нет выделенной области захвата."; remedy: "Выберите окно и область с текстом." }
                 onClicked: ctl.running ? ctl.stop() : ctl.start()
             }
             // Each renderer has its own switch; only the active one is shown.
             CheckBox {
-                objectName: "windowOverlayToggle"
+                objectName: "translationWindowToggle"
                 visible: root.windowActive
-                text: "Поверх игры"
-                checked: ctl.windowOverlayVisible
-                onToggled: ctl.setWindowOverlayVisibility(checked, "checkbox")
+                text: "Отдельное окно перевода"
+                checked: ctl.translationWindowVisible
+                onToggled: ctl.setTranslationWindowVisibility(checked, "checkbox")
             }
             CheckBox {
                 objectName: "inplaceToggle"
                 visible: root.inplaceActive
-                text: "Перевод поверх оригинала"
+                text: "Поверх исходного текста"
                 checked: ctl.inplaceVisible
                 onToggled: ctl.setInplaceVisibility(checked, "checkbox")
             }
             Item { Layout.fillWidth: true }
-            Button { objectName: "ocrPreviewButton"; text: "Просмотр OCR"; onClicked: ocrWin.openWindow() }
-            Button { objectName: "historyButton"; text: "История"; onClicked: historyWin.openWindow() }
+            Button { objectName: "ocrPreviewButton"; text: "Предпросмотр распознавания"; onClicked: ocrWin.openWindow() }
+            Button { objectName: "historyButton"; text: "История переводов"; onClicked: historyWin.openWindow() }
             Button { text: "Настройки"; onClicked: settingsWin.openWindow() }
         }
 
@@ -269,7 +280,7 @@ ApplicationWindow {
             objectName: "displayNote"
             Layout.fillWidth: true
             visible: ctl.displayNote.length > 0
-            text: "Перевод поверх оригинала недоступен: " + ctl.displayNote
+            text: "Поверх исходного текста недоступен: " + ctl.displayNote
             wrapMode: Text.Wrap
             color: "#ffc23d"
             font.pixelSize: 12
@@ -282,7 +293,7 @@ ApplicationWindow {
             wrapMode: Text.Wrap
             color: "#ffc23d"
             font.pixelSize: 12
-            text: "Не все поля удалось показать поверх оригинала"
+            text: "Не все поля удалось показать поверх исходного текста"
                 + (root.degradedFields > 0 ? ": упрощено — " + root.degradedFields : "")
                 + (root.fallbackTexts.length > 0 ? (root.degradedFields > 0 ? ", " : ": ") + "в окне перевода — " + root.fallbackTexts.length : "")
                 + ". Причина — нет места без перекрытия соседнего текста."
@@ -301,8 +312,8 @@ ApplicationWindow {
                 text: ctl.translation
                 readOnly: true
                 wrapMode: Text.Wrap
-                font.family: settingsWin.current.font_family || "Inter"
-                font.pixelSize: settingsWin.current.font_size || 20
+                font.family: settingsWin.current.appearance.window.font_family || "Inter"
+                font.pixelSize: settingsWin.current.appearance.window.font_size || 20
             }
         }
         // Compact status line: one elided row, full text in the tooltip.
