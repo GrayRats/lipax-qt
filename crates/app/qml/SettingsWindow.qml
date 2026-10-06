@@ -99,7 +99,13 @@ ApplicationWindow {
             label: "Сплошной фон"
         }
     ]
-    property string appearanceMode: "window"
+    readonly property string windowModeDescription: "Перевод показывается в отдельном окне: его можно закрепить поверх игры или перетащить, "
+        + "оформить фон, шрифт и рамку. Работает при любом способе захвата; закрепить или скрыть окно можно средней кнопкой мыши."
+    readonly property string inplaceModeDescription: "Перевод рисуется прямо поверх исходного текста в каждой активной области: цвет фона, размер и начертание "
+        + "оцениваются по кадру, длинный перевод уменьшается. Нужна геометрия окна (KWin или portal с «окно занимает весь монитор»). "
+        + "Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Поверх исходного текста»."
+    // The appearance tab edits the way chosen in "Отображение перевода": there is one choice, not two.
+    readonly property string appearanceMode: current.display_mode === "inplace" ? "inplace" : "window"
     readonly property bool solidStyle: (current.appearance.window.background_style || "solid") === "solid"
     // Largest connected screen in logical pixels: bounds for window position and size.
     readonly property int screenMaxWidth: Math.max(200, ...Qt.application.screens.map(s => s.width))
@@ -1528,7 +1534,19 @@ ApplicationWindow {
                         objectName: "displayWindow"
                         text: "В отдельном окне"
                         checked: win.current.display_mode !== "inplace"
+                        ToolTip.visible: hovered
+                        ToolTip.delay: 400
+                        ToolTip.text: win.windowModeDescription
                         onClicked: win.set("display_mode", "window")
+                    }
+                    Label {
+                        objectName: "displayWindowDescription"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        Layout.leftMargin: 28
+                        wrapMode: Text.Wrap
+                        opacity: 0.7
+                        text: win.windowModeDescription
                     }
                     RadioButton {
                         id: inplaceChoice
@@ -1537,6 +1555,10 @@ ApplicationWindow {
                         checked: win.current.display_mode === "inplace"
                         enabled: win.inplaceAvailability.available
                         Accessible.description: inplaceHint.explanation
+                        // A disabled control gets no hover: then the hint below explains why it is unavailable.
+                        ToolTip.visible: hovered
+                        ToolTip.delay: 400
+                        ToolTip.text: win.inplaceModeDescription
                         onClicked: win.set("display_mode", "inplace")
                         UnavailableHint {
                             id: inplaceHint
@@ -1547,15 +1569,15 @@ ApplicationWindow {
                             remedy: win.inplaceAvailability.remedy
                         }
                     }
-                }
-                Label {
-                    Layout.columnSpan: 2
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: 0
-                    wrapMode: Text.Wrap
-                    opacity: 0.7
-                    visible: win.current.display_mode === "inplace"
-                    text: "Перевод закрывает исходный текст в каждой активной области: размытая заливка цвета фона, " + "цвет, размер и начертание оцениваются по кадру; длинный перевод уменьшается. " + "Можно выбрать свой шрифт ниже. Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Поверх исходного текста»."
+                    Label {
+                        objectName: "displayInplaceDescription"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        Layout.leftMargin: 28
+                        wrapMode: Text.Wrap
+                        opacity: 0.7
+                        text: win.inplaceModeDescription
+                    }
                 }
                 Label {
                     objectName: "inplaceBlockerNote"
@@ -1907,15 +1929,27 @@ ApplicationWindow {
                     wrapMode: Text.Wrap
                     text: "Прозрачность: 100 % — непрозрачно, 0 % — полностью прозрачно."
                 }
-                FieldLabel {
-                    text: "Оформление режима"
-                }
-                ComboBox {
-                    objectName: "appearanceContext"
+                // The way is chosen once, in "Отображение перевода"; this tab shows the parameters of that way.
+                RowLayout {
+                    Layout.columnSpan: 2
                     Layout.fillWidth: true
-                    model: ["Отдельное окно перевода", "Поверх исходного текста"]
-                    currentIndex: win.appearanceMode === "inplace" ? 1 : 0
-                    onActivated: win.appearanceMode = currentIndex === 1 ? "inplace" : "window"
+                    Label {
+                        objectName: "appearanceModeNote"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        font.bold: true
+                        text: "Параметры способа: " + (win.appearanceMode === "inplace" ? "«Поверх исходного текста»" : "«В отдельном окне»")
+                            + ". Способ выбирается во вкладке «Отображение перевода»."
+                    }
+                    Button {
+                        objectName: "appearanceChangeMode"
+                        text: "Сменить способ"
+                        ToolTip.visible: hovered
+                        ToolTip.delay: 400
+                        ToolTip.text: "Перейти во вкладку «Отображение перевода»"
+                        onClicked: tabs.currentIndex = 3
+                    }
                 }
                 GridLayout {
                     objectName: "inplaceSettings"

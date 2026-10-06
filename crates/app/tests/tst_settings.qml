@@ -129,7 +129,7 @@ TestCase {
     function test_manualInplacePropertyUsesOnlyItsOwnAppearance() {
         settings.show()
         findChild(settings, "settingsTabs").currentIndex = 5
-        settings.appearanceMode = "inplace"
+        settings.set("display_mode", "inplace")
         settings.setProp("font_size", false, 20)
         const editor = findChild(settings, "inplaceSettings")
         function findRow(item) {
@@ -145,7 +145,7 @@ TestCase {
         verify(settings.propManual("font_size"))
         compare(settings.current.appearance.inplace.font_size.value, 20)
         verify(settings.pendingPatch()["appearance.inplace.font_size"] !== undefined)
-        settings.appearanceMode = "window"
+        settings.set("display_mode", "window")
         settings.apply()
     }
 
@@ -221,16 +221,75 @@ TestCase {
         settings.close()
     }
 
+    function visualFind(item, name) {
+        if (item.objectName === name) return item
+        for (const child of item.children || []) { const f = visualFind(child, name); if (f) return f }
+        return null
+    }
+
+    function test_appearanceFollowsTheChosenDisplayWayWithoutASecondChoice() {
+        settings.reload()
+        settings.show()
+        const tabs = findChild(settings, "settingsTabs")
+        tabs.currentIndex = 5
+        const page = findChild(settings, "settingsPage5")
+        // The duplicate selector is gone: the way is chosen once, in "Отображение перевода".
+        verify(visualFind(page.contentItem, "appearanceContext") === null)
+        settings.set("display_mode", "window")
+        compare(settings.appearanceMode, "window")
+        const note = visualFind(page.contentItem, "appearanceModeNote")
+        verify(note !== null)
+        verify(note.text.indexOf("«В отдельном окне»") >= 0 && note.text.indexOf("«Отображение перевода»") >= 0, note.text)
+        settings.set("display_mode", "inplace")
+        compare(settings.appearanceMode, "inplace")
+        verify(note.text.indexOf("«Поверх исходного текста»") >= 0, note.text)
+        wait(50)
+        verify(findChild(settings, "inplaceSettings").visible)
+        verify(!findChild(settings, "windowBackgroundStyle").visible)
+        // The way can be changed from here: the button leads to the tab where it is chosen.
+        const change = visualFind(page.contentItem, "appearanceChangeMode")
+        verify(change !== null)
+        change.clicked()
+        compare(tabs.currentIndex, 3)
+        settings.set("display_mode", "window")
+        settings.apply()
+    }
+
+    function test_bothDisplayWaysAreDescribedAndHaveHints() {
+        settings.reload()
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 3
+        const page = findChild(settings, "settingsPage3")
+        const windowDescription = visualFind(page.contentItem, "displayWindowDescription")
+        const inplaceDescription = visualFind(page.contentItem, "displayInplaceDescription")
+        verify(windowDescription !== null && inplaceDescription !== null)
+        // Both are always on screen, whichever way is chosen: one can compare them before choosing.
+        for (const mode of ["window", "inplace"]) {
+            settings.set("display_mode", mode)
+            wait(30)
+            verify(windowDescription.visible && inplaceDescription.visible, mode)
+        }
+        verify(windowDescription.text.indexOf("отдельном окне") >= 0, windowDescription.text)
+        verify(inplaceDescription.text.indexOf("поверх исходного текста") >= 0, inplaceDescription.text)
+        // The same words are the hover hints of the choices.
+        const windowChoice = visualFind(page.contentItem, "displayWindow")
+        const inplaceChoice = visualFind(page.contentItem, "displayInplace")
+        compare(windowChoice.ToolTip.text, windowDescription.text)
+        compare(inplaceChoice.ToolTip.text, inplaceDescription.text)
+        settings.set("display_mode", "window")
+        settings.apply()
+    }
+
     function test_inplaceSettingsDoNotShowWindowControls() {
         settings.reload()
         settings.show()
         findChild(settings, "settingsTabs").currentIndex = 5
         compare(settings.inplaceBackgrounds.length, 4)
-        settings.appearanceMode = "inplace"
+        settings.set("display_mode", "inplace")
         wait(50)
         verify(findChild(settings, "inplaceSettings").visible)
         verify(!findChild(settings, "windowBackgroundStyle").visible)
-        settings.appearanceMode = "window"
+        settings.set("display_mode", "window")
         wait(50)
         verify(!findChild(settings, "inplaceSettings").visible)
         verify(findChild(settings, "windowBackgroundStyle").visible)
