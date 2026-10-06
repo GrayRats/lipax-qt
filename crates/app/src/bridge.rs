@@ -873,6 +873,8 @@ impl qobject::Controller {
             }
             None => Default::default(),
         };
+        tracing::debug!(target: "inplace.render", geometry = window.is_some(), regions = frames.len(), placed = placed.placed.len(),
+            fallback = placed.fallback.len(), degraded = placed.placed.iter().filter(|p| p.degraded.is_some()).count(), "in-place fields published");
         let fallback = fallback_json(&placed, &regions);
         if self.inplace_fallback_json().to_string() != fallback {
             self.as_mut().set_inplace_fallback_json(QString::from(fallback.as_str()));

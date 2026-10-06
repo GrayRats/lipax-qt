@@ -45,6 +45,10 @@ fn main() {
         engine.load(&QUrl::from("qrc:/qt/qml/io/lipa/qml/main.qml"));
     }
     #[cfg(feature = "lifecycle-test")]
+    if let (Some(delay), Ok(patch)) = (std::env::var("LIPAX_TEST_SWITCH_AFTER_MS").ok().and_then(|v| v.parse::<i32>().ok()), std::env::var("LIPAX_TEST_SWITCH_PATCH")) {
+        icon::test_switch_after(delay, &patch);
+    }
+    #[cfg(feature = "lifecycle-test")]
     if let Some(delay_ms) = std::env::var("LIPAX_TEST_CLOSE_AFTER_MS").ok()
         .and_then(|value| value.parse::<i32>().ok())
         .filter(|delay| (1..=30_000).contains(delay)) {

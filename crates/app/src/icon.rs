@@ -15,6 +15,8 @@ mod ffi {
         fn activateLipaWindow(object_name: &QString, token: &QString);
         #[allow(dead_code)]
         fn scheduleLipaTestClose(delay_ms: i32);
+        #[allow(dead_code)]
+        fn scheduleLipaTestSwitch(delay_ms: i32, patch: &QString);
         #[allow(clippy::too_many_arguments)]
         fn measureLipaText(family: &str, weight: i32, italic: bool, px: f64, letter_spacing: f64, width: f64, wrap: i32, text: &str, out: &mut [f64]);
         fn lipaCapRatio(family: &str, weight: i32, italic: bool) -> f64;
@@ -65,3 +67,5 @@ pub fn activate_window(object_name: &cxx_qt_lib::QString, token: &cxx_qt_lib::QS
 
 #[cfg(feature = "lifecycle-test")]
 pub fn test_close_after(delay_ms: i32) { ffi::scheduleLipaTestClose(delay_ms); }
+#[cfg(feature = "lifecycle-test")]
+pub fn test_switch_after(delay_ms: i32, patch: &str) { ffi::scheduleLipaTestSwitch(delay_ms, &cxx_qt_lib::QString::from(patch)); }

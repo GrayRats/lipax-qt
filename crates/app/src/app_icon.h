@@ -135,6 +135,27 @@ inline void scheduleLipaTestClose(int delayMs) {
     });
 }
 
+// Debug-build lifecycle test: switch the display way of the running application as the settings form would
+// (the same invokable), then list the windows that are visible a while later.
+inline void scheduleLipaTestSwitch(int delayMs, const QString &patch) {
+    QTimer::singleShot(delayMs, [patch] {
+        for (QWindow *window : QGuiApplication::allWindows()) {
+            if (window->objectName() != QStringLiteral("mainWindow")) continue;
+            if (QObject *controller = window->findChild<QObject *>(QStringLiteral("controller")))
+                QMetaObject::invokeMethod(controller, "applySettingsPatch", Q_ARG(QString, patch));
+            break;
+        }
+        qInfo().noquote() << "lipax.test: patch applied" << patch;
+    });
+    QTimer::singleShot(delayMs + 6000, [] {
+        for (QWindow *window : QGuiApplication::allWindows())
+            if (window->isVisible())
+                qInfo().noquote() << "lipax.test: visible window name=" << window->objectName() << "title=" << window->title()
+                                  << "size=" << window->width() << "x" << window->height();
+        qInfo().noquote() << "lipax.test: window list done";
+    });
+}
+
 // ── Font metrics for fitting the in-place translation (layout::fit::TextMeasure) ──
 #include <QFont>
 #include <QFontMetricsF>

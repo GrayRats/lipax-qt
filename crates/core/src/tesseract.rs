@@ -46,7 +46,8 @@ fn downloaded_languages(dir: &Path) -> Vec<String> {
     codes
 }
 
-/// Ссылки на системные модели в `user`: рядом со скачанными они все видны Tesseract. Существующее не трогается;
+/// Ссылки на всё, что лежит в системном каталоге, в `user`: модели, но и `configs` с `tessconfigs` (без них не
+/// находятся конфигурации вроде `tsv`, и Tesseract молча ничего не выводит). Существующее не трогается;
 /// ссылка, ставшая битой (модель удалили из системы), убирается.
 fn link_system_languages(user: &Path, system: &Path) -> std::io::Result<()> {
     std::fs::create_dir_all(user)?;
@@ -55,7 +56,7 @@ fn link_system_languages(user: &Path, system: &Path) -> std::io::Result<()> {
     }
     for entry in std::fs::read_dir(system)?.flatten() {
         let name = entry.file_name();
-        if name.to_str().is_some_and(|n| n.ends_with(".traineddata")) && std::fs::symlink_metadata(user.join(&name)).is_err() {
+        if std::fs::symlink_metadata(user.join(&name)).is_err() {
             std::os::unix::fs::symlink(entry.path(), user.join(&name))?;
         }
     }
@@ -765,17 +766,20 @@ mod tests {
         let (user, system) = (scratch("u1"), scratch("s1"));
         for c in ["eng", "rus", "osd"] { std::fs::write(system.join(format!("{c}.traineddata")), b"system").unwrap(); }
         std::fs::write(system.join("pdf.ttf"), b"font").unwrap();
+        std::fs::create_dir_all(system.join("configs")).unwrap();
+        std::fs::write(system.join("configs/tsv"), b"tessedit_create_tsv 1\n").unwrap();
         std::fs::write(user.join("deu.traineddata"), b"downloaded").unwrap();
         assert_eq!(tessdata_arg_in(&user, Some(&system)), Some(user.clone()));
         let listed = |dir: &Path| { let mut v: Vec<String> = std::fs::read_dir(dir).unwrap().flatten().map(|e| e.file_name().to_string_lossy().into_owned()).collect(); v.sort(); v };
-        assert_eq!(listed(&user), ["deu.traineddata", "eng.traineddata", "osd.traineddata", "rus.traineddata"], "only models are linked");
+        assert_eq!(listed(&user), ["configs", "deu.traineddata", "eng.traineddata", "osd.traineddata", "pdf.ttf", "rus.traineddata"], "models and the rest of the directory");
+        assert!(user.join("configs/tsv").exists(), "the configurations are reachable: without them `tsv` is not found");
         assert_eq!(std::fs::read(user.join("rus.traineddata")).unwrap(), b"system");
         assert_eq!(downloaded_languages(&user), ["deu"], "links are not downloads");
         // A model the user got later does not collide with a link; one removed from the system loses its link.
         std::fs::remove_file(system.join("rus.traineddata")).unwrap();
         std::fs::write(system.join("fra.traineddata"), b"new").unwrap();
         assert!(tessdata_arg_in(&user, Some(&system)).is_some());
-        assert_eq!(listed(&user), ["deu.traineddata", "eng.traineddata", "fra.traineddata", "osd.traineddata"]);
+        assert_eq!(listed(&user), ["configs", "deu.traineddata", "eng.traineddata", "fra.traineddata", "osd.traineddata", "pdf.ttf"]);
         assert_eq!(std::fs::read(user.join("deu.traineddata")).unwrap(), b"downloaded");
     }
 
@@ -849,6 +853,24 @@ mod tests {
         let text = String::from_utf8_lossy(&listed.stdout);
         let (_, langs) = parse_list_langs(&text);
         assert!(langs.contains(&"deu".to_string()) && langs.contains(&"eng".to_string()), "downloaded and system languages together: {langs:?}");
+        let _ = std::fs::remove_dir_all(&user);
+    }
+
+    /// The regression: with downloaded languages Tesseract is given the user's directory, and the `tsv` configuration
+    /// has to be found there too, or it prints nothing at all ("Can't open tsv") and nothing is ever recognised.
+    #[test]
+    fn tesseract_finds_its_configurations_in_the_merged_directory() {
+        let Some(system) = system_tessdata_dir().filter(|s| s.join("configs").exists()) else { eprintln!("skipped: no system tessdata"); return };
+        if Command::new("tesseract").arg("--version").output().is_err() { eprintln!("skipped: no tesseract"); return; }
+        let user = scratch("merged-real");
+        std::fs::copy(system.join("eng.traineddata"), user.join("deu.traineddata")).unwrap();
+        let dir = tessdata_arg_in(&user, Some(&system)).expect("merged directory");
+        let png = user.join("blank.png");
+        image::RgbaImage::from_pixel(60, 30, image::Rgba([255, 255, 255, 255])).save(&png).unwrap();
+        let out = Command::new("tesseract").arg(&png).arg("stdout").args(["-l", "deu", "--tessdata-dir"]).arg(&dir).arg("tsv").output().unwrap();
+        let (stdout, stderr) = (String::from_utf8_lossy(&out.stdout), String::from_utf8_lossy(&out.stderr));
+        assert!(!stderr.contains("Can't open"), "{stderr}");
+        assert!(stdout.starts_with("level\tpage_num"), "the TSV header at least: {stdout:?}");
         let _ = std::fs::remove_dir_all(&user);
     }
 }
