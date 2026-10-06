@@ -99,7 +99,8 @@ ApplicationWindow {
             label: "Сплошной фон"
         }
     ]
-    property string appearanceMode: "window"
+    readonly property string windowDisplayDescription: "Показывает перевод в отдельном окне. Его можно закрепить поверх игры или сделать свободным и перемещать мышью. Положение и размер задаются на вкладке «Окно перевода»."
+    readonly property string inplaceDisplayDescription: "Размещает перевод на месте исходного текста в области захвата. Требуются точные координаты окна и шрифт для языка перевода. Если способ недоступен, причина указана в подсказке."
     readonly property bool solidStyle: (current.appearance.window.background_style || "solid") === "solid"
     // Largest connected screen in logical pixels: bounds for window position and size.
     readonly property int screenMaxWidth: Math.max(200, ...Qt.application.screens.map(s => s.width))
@@ -1530,11 +1531,20 @@ ApplicationWindow {
                         HoverHint {
                             control: windowChoice
                             feature: "Отдельное окно перевода"
-                            explanation: "Отдельное окно перевода\n\nПоказывает результат в окне, которое можно закрепить или сделать свободным."
+                            objectName: "windowDisplayHint"
+                            explanation: feature + "\n\n" + win.windowDisplayDescription
                         }
                         text: "В отдельном окне"
+                        Accessible.description: win.windowDisplayDescription
                         checked: win.current.display_mode !== "inplace"
                         onClicked: win.set("display_mode", "window")
+                    }
+                    Label {
+                        objectName: "windowDisplayDescription"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        text: win.windowDisplayDescription
                     }
                     RadioButton {
                         id: inplaceChoice
@@ -1545,10 +1555,11 @@ ApplicationWindow {
                         HoverHint {
                             control: inplaceChoice
                             feature: "Поверх исходного текста"
-                            explanation: "Поверх исходного текста\n\nРазмещает перевод на месте распознанных строк в игре. Требуются точные координаты окна."
+                            objectName: "inplaceDisplayHint"
+                            explanation: feature + "\n\n" + win.inplaceDisplayDescription
                             active: inplaceChoice.enabled
                         }
-                        Accessible.description: inplaceHint.accessibleExplanation
+                        Accessible.description: enabled ? win.inplaceDisplayDescription : inplaceHint.explanation
                         onClicked: win.set("display_mode", "inplace")
                         UnavailableHint {
                             id: inplaceHint
@@ -1558,6 +1569,13 @@ ApplicationWindow {
                             reason: win.inplaceAvailability.reason
                             remedy: win.inplaceAvailability.remedy
                         }
+                    }
+                    Label {
+                        objectName: "inplaceDisplayDescription"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        text: win.inplaceDisplayDescription
                     }
                 }
                 Label {
@@ -1928,22 +1946,13 @@ ApplicationWindow {
                     wrapMode: Text.Wrap
                     text: "Прозрачность: 100 % — непрозрачно, 0 % — полностью прозрачно."
                 }
-                FieldLabel {
-                    helpText: "Выберите, оформление какого способа отображения изменить. Эта настройка не переключает сам способ отображения."
-                    text: "Оформление режима"
-                    helpControl: translationSettingHelpTarget3
-                }
-                ComboBox {
-                    id: translationSettingHelpTarget3
-                    objectName: "appearanceContext"
-                    Layout.fillWidth: true
-                    model: ["Отдельное окно перевода", "Поверх исходного текста"]
-                    currentIndex: win.appearanceMode === "inplace" ? 1 : 0
-                    onActivated: win.appearanceMode = currentIndex === 1 ? "inplace" : "window"
+                SectionTitle {
+                    objectName: "appearanceModeTitle"
+                    text: win.current.display_mode === "inplace" ? "Поверх исходного текста" : "Отдельное окно перевода"
                 }
                 GridLayout {
                     objectName: "inplaceSettings"
-                    visible: win.appearanceMode === "inplace"
+                    visible: win.current.display_mode === "inplace"
                     Layout.columnSpan: 2
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
@@ -2414,7 +2423,7 @@ ApplicationWindow {
                     }
                 }
                 GridLayout {
-                    visible: win.appearanceMode === "window"
+                    visible: win.current.display_mode !== "inplace"
                     Layout.columnSpan: 2
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
@@ -2684,7 +2693,7 @@ ApplicationWindow {
                     }
                 }
                 ResetButton {
-                    keys: win.appearanceMode === "inplace" ? ["appearance.inplace"] : ["appearance.window"]
+                    keys: win.current.display_mode === "inplace" ? ["appearance.inplace"] : ["appearance.window"]
                 }
             }
         }

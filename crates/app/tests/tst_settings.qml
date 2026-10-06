@@ -89,6 +89,47 @@ TestCase {
         settings.apply()
     }
 
+    function test_displayChoiceControlsAppearanceAndExplainsBothModes() {
+        settings.show()
+        settings.width = 880
+        settings.height = 740
+        const tabs = findChild(settings, "settingsTabs")
+        tabs.currentIndex = 3
+        controller.captureCapabilities = JSON.stringify({inplaceTranslation: {available: true, reason: "", remedy: ""}})
+        verify(findChild(settings, "appearanceContext") === null)
+        const windowChoice = findChild(settings, "displayWindow")
+        const inplaceChoice = findChild(settings, "displayInplace")
+        const windowDescription = findChild(settings, "windowDisplayDescription")
+        const inplaceDescription = findChild(settings, "inplaceDisplayDescription")
+        verify(windowDescription.visible && windowDescription.text.includes("перемещать мышью"))
+        verify(inplaceDescription.visible && inplaceDescription.text.includes("координаты"))
+        for (const entry of [
+            {choice: windowChoice, hint: "windowDisplayHint", mode: "window"},
+            {choice: inplaceChoice, hint: "inplaceDisplayHint", mode: "inplace"}
+        ]) {
+            tabs.currentIndex = 3
+            wait(80)
+            mouseMove(settings.contentItem, 1, 1)
+            const point = entry.choice.mapToItem(settings.contentItem, entry.choice.width / 2, entry.choice.height / 2)
+            mouseMove(settings.contentItem, point.x, point.y)
+            const hint = findChild(settings.contentItem, entry.hint)
+            tryVerify(() => hint.popupVisible, 2000)
+            mouseClick(entry.choice, entry.choice.width / 2, entry.choice.height / 2)
+            compare(settings.current.display_mode, entry.mode)
+            tabs.currentIndex = 5
+            compare(findChild(settings, "inplaceSettings").visible, entry.mode === "inplace")
+            compare(findChild(settings, "appearanceModeTitle").text,
+                    entry.mode === "inplace" ? "Поверх исходного текста" : "Отдельное окно перевода")
+        }
+        // A temporary backend limitation must not switch the saved mode or the style being edited.
+        controller.captureCapabilities = JSON.stringify({inplaceTranslation: {available: false, reason: "Нет координат", remedy: "Выберите KWin"}})
+        verify(findChild(settings, "inplaceSettings").visible)
+        compare(settings.current.display_mode, "inplace")
+        controller.captureCapabilities = JSON.stringify({inplaceTranslation: {available: true, reason: "", remedy: ""}})
+        settings.set("display_mode", "window")
+        settings.apply()
+    }
+
     function test_captureActionsFitNarrowSettingsWindow() {
         settings.show()
         settings.width = 740
@@ -181,7 +222,7 @@ TestCase {
     function test_manualInplacePropertyUsesOnlyItsOwnAppearance() {
         settings.show()
         findChild(settings, "settingsTabs").currentIndex = 5
-        settings.appearanceMode = "inplace"
+        settings.set("display_mode", "inplace")
         settings.setProp("font_size", false, 20)
         const editor = findChild(settings, "inplaceSettings")
         function findRow(item) {
@@ -197,7 +238,7 @@ TestCase {
         verify(settings.propManual("font_size"))
         compare(settings.current.appearance.inplace.font_size.value, 20)
         verify(settings.pendingPatch()["appearance.inplace.font_size"] !== undefined)
-        settings.appearanceMode = "window"
+        settings.set("display_mode", "window")
         settings.apply()
     }
 
@@ -278,11 +319,11 @@ TestCase {
         settings.show()
         findChild(settings, "settingsTabs").currentIndex = 5
         compare(settings.inplaceBackgrounds.length, 4)
-        settings.appearanceMode = "inplace"
+        settings.set("display_mode", "inplace")
         wait(50)
         verify(findChild(settings, "inplaceSettings").visible)
         verify(!findChild(settings, "windowBackgroundStyle").visible)
-        settings.appearanceMode = "window"
+        settings.set("display_mode", "window")
         wait(50)
         verify(!findChild(settings, "inplaceSettings").visible)
         verify(findChild(settings, "windowBackgroundStyle").visible)
