@@ -33,6 +33,7 @@ fn main() {
         "qml/main.qml",
         "qml/SettingsWindow.qml",
         "qml/UnavailableHint.qml",
+        "qml/HoverHint.qml",
         "qml/RegionSelector.qml",
         "qml/TranslationWindow.qml",
         "qml/TranslationWindowContent.qml",

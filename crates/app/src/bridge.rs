@@ -1019,15 +1019,15 @@ impl qobject::Controller {
                         o.as_mut().publish_settings();
                         o.as_mut().publish_translation();
                         o.as_mut().set_status(QString::from(match (restored, has_region) {
-                            (true, true) => "Окно выбрано. Области и настройки игры восстановлены",
-                            (true, false) => "Окно выбрано. Профиль игры восстановлен, область не задана",
-                            _ => "Окно выбрано. Теперь выберите область перевода",
+                            (true, true) => "Окно выбрано. Области захвата и настройки игры восстановлены",
+                            (true, false) => "Окно выбрано. Профиль игры восстановлен, область захвата не задана",
+                            _ => "Окно выбрано. Теперь выберите область захвата",
                         }));
                     });
                 }
                 Ok(None) => {
                     let _ = qt
-                        .queue(|mut o| o.as_mut().set_status(QString::from("Выбор окна отменён")));
+                        .queue(|mut o| o.as_mut().set_status(QString::from("Выбор окна для захвата отменён")));
                 }
                 Err(e) => {
                     tracing::error!(component = "capture", error = %e, "Не удалось выбрать окно");
@@ -1108,7 +1108,7 @@ impl qobject::Controller {
         // The region outline (RegionFrame) flashes by itself when the area changes.
         self.as_mut().publish_settings();
         self.as_mut().set_has_region(true);
-        self.as_mut().set_status(QString::from("Область сохранена"));
+        self.as_mut().set_status(QString::from("Область захвата сохранена"));
     }
 
     fn reset_region(mut self: Pin<&mut Self>) {
@@ -1118,7 +1118,7 @@ impl qobject::Controller {
         });
         self.as_mut().publish_settings();
         self.as_mut().publish_translation();
-        self.as_mut().set_status(QString::from("Область сброшена"));
+        self.as_mut().set_status(QString::from("Область захвата сброшена"));
     }
 
     fn start(mut self: Pin<&mut Self>) {
@@ -1282,7 +1282,7 @@ fn inplace_availability(s: &Settings) -> lipa_core::capture::FeatureAvailability
     };
     if let Some(reason) = capabilities_for(window, s).inplace_blocker() {
         return FeatureAvailability::unavailable(format!("{}: {reason}", backend_name(window)),
-            "Выберите захват KWin либо укажите монитор и подтвердите, что portal захватывает полноэкранное окно на этом мониторе.");
+            "Выберите захват KWin либо укажите экран и подтвердите, что portal захватывает полноэкранное окно на этом экране.");
     }
     let db = lipa_core::layout::font_database::InstalledFontDatabase::bundled();
     let regions = s.capture_regions();

@@ -77,7 +77,7 @@ TestCase {
         wait(60)
         const point = choice.mapToItem(settings.contentItem, choice.width / 2, choice.height / 2)
         mouseMove(settings.contentItem, point.x, point.y)
-        tryVerify(() => hint.tooltipVisible)
+        tryVerify(() => hint.popupVisible, 2000, "the tooltip popup actually opens after hovering")
         verify(hint.explanation.includes("Нет глобальных координат окна"))
         verify(hint.explanation.includes("Выберите KWin"))
         controller.captureCapabilities = JSON.stringify({inplaceTranslation: {
@@ -87,6 +87,58 @@ TestCase {
         tryVerify(() => choice.enabled && !hint.visible)
         settings.set("display_mode", "window")
         settings.apply()
+    }
+
+    function test_captureActionsFitNarrowSettingsWindow() {
+        settings.show()
+        settings.width = 740
+        settings.height = 540
+        findChild(settings, "settingsTabs").currentIndex = 0
+        function findActions(item) {
+            if (item.objectName === "captureRegionActions") return item
+            for (const child of item.children || []) {
+                const found = findActions(child)
+                if (found) return found
+            }
+            return null
+        }
+        const actions = findActions(settings.contentItem)
+        verify(actions !== null)
+        wait(100)
+        verify(actions.width > 0)
+        for (const button of actions.children) {
+            if (button.visible && button.width > 0)
+                verify(button.x >= 0 && button.x + button.width <= actions.width + 1,
+                    "capture action fits the available width: " + button.text)
+        }
+    }
+
+    function test_enabledSettingTooltipAndClicks() {
+        settings.show()
+        settings.width = 880
+        settings.height = 740
+        const tabs = findChild(settings, "settingsTabs")
+        tabs.currentIndex = 1
+        const page = findChild(settings, "settingsPage1")
+        page.contentItem.contentY = 0
+        const editor = findChild(settings, "ocrEngineBox")
+        const hint = settings.contentItem.children.find(item => item.control === editor && item.active)
+        verify(hint !== undefined)
+        wait(80)
+        mouseMove(settings.contentItem, 1, 1)
+        const point = editor.mapToItem(settings.contentItem, editor.width / 2, editor.height / 2)
+        mouseMove(settings.contentItem, point.x, point.y)
+        tryVerify(() => hint.popupVisible, 2000)
+        verify(hint.explanation.includes("Tesseract"))
+        verify(hint.explanation.includes("PaddleOCR"))
+        mouseClick(editor, editor.width / 2, editor.height / 2)
+        tryVerify(() => editor.popup.visible, 2000, "hover help does not intercept clicks")
+        keyClick(Qt.Key_Escape)
+        page.contentItem.contentY = page.contentItem.contentHeight - page.availableHeight
+        tryVerify(() => !hint.visible && !hint.popupVisible, 2000, "a scrolled-out control has no hover target")
+        page.contentItem.contentY = 0
+        tabs.currentIndex = 0
+        tryVerify(() => !hint.visible && !hint.popupVisible)
     }
 
     function test_appearanceResetAndSourceLanguageAreIndependent() {

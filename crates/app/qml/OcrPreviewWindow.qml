@@ -47,7 +47,7 @@ ApplicationWindow {
             visible: !win.region
             wrapMode: Text.Wrap
             opacity: 0.75
-            text: "Кадра пока нет. Запустите слежение или нажмите «Распознать сейчас»: здесь появится кадр области, найденные блоки текста и результат распознавания."
+            text: "Кадра пока нет. Запустите слежение или нажмите «Распознать сейчас»: здесь появится кадр области захвата, найденные блоки текста и результат распознавания."
         }
 
         Rectangle {
@@ -109,7 +109,7 @@ ApplicationWindow {
             wrapMode: Text.Wrap
             font.pixelSize: 12
             opacity: 0.8
-            text: !win.region ? "" : "Состояние области: " + win.region.phase + "\n" + (win.region.timings.length === 0 ? "Времена этапов пока не измерены"
+            text: !win.region ? "" : "Состояние области захвата: " + win.region.phase + "\n" + (win.region.timings.length === 0 ? "Времена этапов пока не измерены"
                 : "Этапы (последний / p50 / p95, мс): " + win.region.timings.map(t => win.stageName(t.stage) + " "
                     + t.last_ms.toFixed(0) + " / " + t.p50_ms.toFixed(0) + " / " + t.p95_ms.toFixed(0)).join(" · "))
         }
@@ -149,7 +149,7 @@ ApplicationWindow {
             visible: !!win.region && win.region.translation.length > 0 && win.boxes.every(b => !b.translation)
             wrapMode: Text.Wrap
             textFormat: Text.PlainText
-            text: win.region ? "Перевод области:  " + win.region.translation : ""
+            text: win.region ? "Перевод текста области захвата:  " + win.region.translation : ""
         }
         RowLayout {
             Button {
@@ -161,8 +161,8 @@ ApplicationWindow {
                 text: "Копировать оригинал"
                 id: copyRecognizedText
                 enabled: !!win.region && win.region.original.length > 0
-                Accessible.description: copyRecognizedTextHint.explanation
-                UnavailableHint { id: copyRecognizedTextHint; control: copyRecognizedText; feature: "Копировать распознанный текст"; reason: "Нет распознанного текста выбранной области."; remedy: "Выберите область с результатом распознавания." }
+                Accessible.description: copyRecognizedTextHint.accessibleExplanation
+                UnavailableHint { id: copyRecognizedTextHint; control: copyRecognizedText; feature: "Копировать распознанный текст"; reason: "Нет распознанного текста выбранной области захвата."; remedy: "Выберите область с результатом распознавания." }
                 onClicked: win.controller.copyText(win.region.original)
             }
             Item { Layout.fillWidth: true }
