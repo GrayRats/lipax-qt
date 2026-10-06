@@ -925,7 +925,7 @@ checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
 
 [[package]]
 name = "lipa"
-version = "1.0.6"
+version = "1.0.7"
 dependencies = [
  "cxx",
  "cxx-qt",
@@ -944,7 +944,7 @@ dependencies = [
 
 [[package]]
 name = "lipa-core"
-version = "1.0.6"
+version = "1.0.7"
 dependencies = [
  "dirs",
  "futures-util",

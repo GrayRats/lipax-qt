@@ -255,6 +255,9 @@ struct RegionState {
     phase: Phase,
     /// Transitions the state machine does not allow (always 0 unless the pipeline has a bug).
     illegal: u32,
+    /// The OCR lines showed fields glued together: read the region again at once (without waiting for the
+    /// picture to change), now that the detector divides the block. Consumed by the next tick.
+    rescan: bool,
     /// `auto` engine: fields for which Tesseract was not enough read straight with PaddleOCR from
     /// then on (the second engine costs time only once, not on every change of the text).
     field_engine: HashMap<u64, &'static str>,
@@ -471,7 +474,9 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         if let Some(frame) = state.inplace.as_mut().and_then(|e| e.restyle(s)) {
             out.send(Event::Inplace { region_id: region.id.clone(), region_name: region.name.clone(), frame: Box::new(frame) });
         }
-        if !force {
+        // Taken at once: it is for exactly one tick.
+        let rescan = std::mem::take(&mut state.rescan);
+        if !force && !rescan {
             if state.halted { return; }
             if let Some(first) = state.first_error
                 && now.saturating_duration_since(first) >= ERROR_BUDGET {
@@ -497,7 +502,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let grabbed = Instant::now();
         let frame = stage!(self.capture.grab(s.capture.window.as_ref().unwrap(), region.rect.unwrap()), "Ошибка захвата");
         self.timings.record("capture", grabbed.elapsed());
-        if !force && !retry {
+        if !force && !retry && !rescan {
             let detecting = Instant::now();
             let changed = state.detector.changed(&frame, s.recognition.sensitivity, now);
             self.timings.record("detect", detecting.elapsed());
@@ -663,7 +668,12 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                     state.ignored.remove(&id);
                     // The lines the engine found describe the structure of the field better than the picture does.
                     let lines: Vec<crate::layout::Rect> = result.lines.iter().map(|l| l.rect.in_frame(origin)).collect();
-                    engine.observe_ocr_lines(id, &lines, s);
+                    if engine.observe_ocr_lines(id, &lines, s) == crate::layout::engine::LinesVerdict::Split {
+                        // Not published as one field: it is read again as its parts on the very next tick.
+                        state.rescan = true;
+                        state.field_ocr.remove(&id);
+                        continue;
+                    }
                     state.field_lines.insert(id, (origin, result.lines.clone()));
                     state.field_ocr.insert(id, match result.confidence {
                         Some(c) => format!("OCR ({}): уверенность {c:.0}%, строк {}", result.engine, result.lines.len().max(1)),
@@ -1182,6 +1192,53 @@ mod tests {
         assert_eq!(dto.block_type, block.block_type);
         // The line the engine found lies inside the field's box in the same crop (both are relative to the crop's corner).
         assert!(dto.bbox.x <= dto.lines[0].bbox.x + 4.0 && dto.bbox.y <= dto.lines[0].bbox.y + 4.0, "{:?} vs {:?}", dto.bbox, dto.lines[0].bbox);
+    }
+
+    /// One block of three evenly spaced lines.
+    struct BlockCapture;
+    impl Capture for BlockCapture {
+        fn capabilities(&self, _: &WindowKey, _: &Settings) -> crate::capture::CaptureCapabilities { crate::capture::CaptureCapabilities::KWIN }
+        async fn grab(&self, _: &WindowKey, _: NormRect) -> Result<DynamicImage, CaptureError> {
+            let mut img = canvas(1000, 300, [25, 30, 40]);
+            for y in [100u32, 134, 168] { draw_line(&mut img, 100, y, 30, 14, 4, 22, 3, [240, 240, 240], false); }
+            Ok(DynamicImage::ImageRgba8(img))
+        }
+    }
+
+    /// Reads a tall crop as a title and a body set far apart (two lines with a big gap), a short one as a single line.
+    struct GapOcr(Arc<AtomicUsize>);
+    impl Ocr for GapOcr {
+        async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok("text".into()) }
+        async fn recognize_detailed(&self, img: &DynamicImage, _: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
+            self.0.fetch_add(1, Ordering::SeqCst);
+            let (w, h) = (img.width() as f32, img.height() as f32);
+            let line = |y: f32, h: f32, text: &str| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(3.0, y, w - 6.0, h), text: text.into(), confidence: 90.0 };
+            let (text, lines) = if h > 60.0 { ("Title\nBody text".to_string(), vec![line(3.0, 22.0, "Title"), line(h - 25.0, 22.0, "Body text")]) }
+                else { ("One part".to_string(), vec![line(3.0, h - 6.0, "One part")]) };
+            Ok(crate::ocr::OcrResult { text, lines, confidence: Some(90.0), engine: "mock" })
+        }
+    }
+
+    #[tokio::test]
+    async fn a_field_that_ocr_shows_to_be_two_is_read_again_as_two_without_a_new_picture() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let mut p = Pipeline::new(Arc::new(BlockCapture), GapOcr(calls.clone()), MockTr(Arc::new(AtomicUsize::new(0))));
+        let s = inplace_settings();
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let t0 = Instant::now();
+        p.tick(&s, false, t0, &tx).await;
+        p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
+        assert_eq!(calls.load(Ordering::SeqCst), 1, "the merged block was read once");
+        let drawn = |events: &[Event]| events.iter().filter_map(|e| match e { Event::Inplace { frame, .. } => Some(frame.blocks.len()), _ => None }).max().unwrap_or(0);
+        assert_eq!(drawn(&drain(&mut rx)), 0, "nothing is drawn for a field that is about to be divided");
+        // The picture has not changed and the region interval has not passed: the region is read again all the same.
+        p.tick(&s, false, t0 + Duration::from_millis(160), &tx).await;
+        assert_eq!(calls.load(Ordering::SeqCst), 3, "one read for each part");
+        assert_eq!(drawn(&drain(&mut rx)), 2, "the title and the body are two fields");
+        // That was for one tick: a quiet picture is left alone afterwards.
+        p.tick(&s, false, t0 + Duration::from_millis(200), &tx).await;
+        assert_eq!(calls.load(Ordering::SeqCst), 3);
+        assert_eq!(p.illegal_transitions(), 0);
     }
 
     #[tokio::test]

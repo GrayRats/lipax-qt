@@ -2,6 +2,7 @@
 //! без временных файлов и гонок между запусками.
 
 pub mod paddle;
+pub mod paddle_env;
 
 use crate::layout::CropRect;
 use crate::settings::Settings;
@@ -158,6 +159,8 @@ impl Tesseract {
         let lang = lang.to_owned();
         let mut child = Command::new("tesseract")
             .args(["stdin", "stdout", "-l", &lang, "--psm", "6"])
+            // Скачанные модели лежат в каталоге пользователя (рядом со ссылками на системные).
+            .args(crate::tesseract::tessdata_arg().iter().flat_map(|dir| ["--tessdata-dir".to_string(), dir.display().to_string()]))
             .args(extra)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())

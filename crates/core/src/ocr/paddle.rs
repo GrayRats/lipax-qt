@@ -41,7 +41,7 @@ fn setup(message: impl std::fmt::Display) -> OcrError {
     ))
 }
 
-fn language(source: &str) -> Result<&'static str, OcrError> {
+pub(crate) fn language(source: &str) -> Result<&'static str, OcrError> {
     match crate::tesseract::primary_lang(source) {
         "eng" => Ok("en"),
         "rus" => Ok("ru"),

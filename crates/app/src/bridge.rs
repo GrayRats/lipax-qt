@@ -33,6 +33,9 @@ pub mod qobject {
         #[qproperty(i32, preview_title_bar, cxx_name = "previewTitleBar")]
         #[qproperty(QString, tesseract_json, cxx_name = "tesseractJson")]
         #[qproperty(bool, tesseract_busy, cxx_name = "tesseractBusy")]
+        /// Состояние окружения PaddleOCR для выбранного Python и языка (JSON `PaddleEnv`); пусто — ещё не проверялось.
+        #[qproperty(QString, paddle_json, cxx_name = "paddleJson")]
+        #[qproperty(bool, paddle_busy, cxx_name = "paddleBusy")]
         #[qproperty(QString, game_geometry, cxx_name = "gameGeometry")]
         #[qproperty(bool, running)]
         #[qproperty(bool, has_region, cxx_name = "hasRegion")]
@@ -152,10 +155,24 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "refreshTesseract"]
         fn refresh_tesseract(self: Pin<&mut Controller>);
+        /// Версия приложения (для вкладки «О программе»).
+        #[qinvokable]
+        #[cxx_name = "appVersion"]
+        fn app_version(self: &Controller) -> QString;
+        /// Проверить окружение PaddleOCR (пакеты, версии, способ установки, язык, модели); результат — в `paddleJson`.
+        /// Ничего не устанавливает: инструкции показывает интерфейс.
+        #[qinvokable]
+        #[cxx_name = "refreshPaddle"]
+        fn refresh_paddle(self: Pin<&mut Controller>);
         /// Установить языковой пакет. Вызывается только после подтверждения пользователя в GUI.
         #[qinvokable]
         #[cxx_name = "installPackage"]
         fn install_package(self: Pin<&mut Controller>, package: &QString);
+        /// Скачать языковую модель Tesseract в каталог пользователя (там, где пакета в репозитории нет); пароль не нужен.
+        /// Вызывается только после подтверждения пользователя в GUI.
+        #[qinvokable]
+        #[cxx_name = "installLanguage"]
+        fn install_language(self: Pin<&mut Controller>, code: &QString);
         /// Сообщения о недостающих языках из строки вида `jpn+eng` (JSON-массив).
         #[qinvokable]
         #[cxx_name = "missingLanguages"]
@@ -346,6 +363,8 @@ pub struct ControllerRust {
     translation: QString,
     tesseract_json: QString,
     tesseract_busy: bool,
+    paddle_json: QString,
+    paddle_busy: bool,
     window_title: QString,
     preview_source: QString,
     preview_title_bar: i32,
@@ -391,6 +410,8 @@ impl Default for ControllerRust {
             translation: QString::default(),
             tesseract_json: QString::default(),
             tesseract_busy: false,
+            paddle_json: QString::default(),
+            paddle_busy: false,
             window_title: QString::from(
                 settings
                     .capture.window
@@ -1343,6 +1364,25 @@ fn tesseract_snapshot() -> TesseractInfo {
 }
 
 impl qobject::Controller {
+    fn app_version(&self) -> QString { QString::from(env!("CARGO_PKG_VERSION")) }
+
+    fn refresh_paddle(mut self: Pin<&mut Self>) {
+        if *self.paddle_busy() { return; }
+        self.as_mut().set_paddle_busy(true);
+        let (python, language) = { let s = self.rust().shared.settings.borrow(); (s.recognition.paddle_python.clone(), s.recognition.language.clone()) };
+        let python = if python.trim().is_empty() { "python3".to_owned() } else { python.trim().to_owned() };
+        let qt = self.qt_thread();
+        spawn_service(async move {
+            let env = lipa_core::ocr::paddle_env::inspect(&python, &language).await;
+            tracing::debug!(component = "paddleocr", ready = env.ready, summary = %env.summary, "PaddleOCR environment");
+            let json = serde_json::to_string(&env).unwrap_or_default();
+            let _ = qt.queue(move |mut o| {
+                o.as_mut().set_paddle_json(QString::from(json.as_str()));
+                o.as_mut().set_paddle_busy(false);
+            });
+        });
+    }
+
     fn refresh_tesseract(mut self: Pin<&mut Self>) {
         if *self.tesseract_busy() {
             return;
@@ -1430,6 +1470,35 @@ impl qobject::Controller {
                     o.as_mut().set_tesseract_json(QString::from(
                         serde_json::to_string(&info).unwrap_or_default().as_str(),
                     ));
+                }
+                o.as_mut().set_tesseract_busy(false);
+            });
+        });
+    }
+
+    fn install_language(mut self: Pin<&mut Self>, code: &QString) {
+        let code = code.to_string();
+        if *self.tesseract_busy() { return; }
+        self.as_mut().set_tesseract_busy(true);
+        self.as_mut().set_status(QString::from(format!("Загрузка языковой модели {code}…").as_str()));
+        let qt = self.qt_thread();
+        spawn_service(async move {
+            let res = lipa_core::tesseract::download_language(&code).await;
+            match &res {
+                Ok(path) => tracing::info!(component = "tesseract", %code, path = %path.display(), "Языковая модель скачана"),
+                Err(e) => tracing::error!(component = "tesseract", %code, error = %e, "Не удалось скачать языковую модель"),
+            }
+            // The list of languages is read again either way: it is what the user sees.
+            let info = tokio::task::spawn_blocking(tesseract_snapshot).await.ok();
+            let _ = qt.queue(move |mut o| {
+                let status = match &res {
+                    Ok(_) => format!("Языковая модель {code} скачана"),
+                    Err(e) => format!("Не удалось скачать языковую модель {code}: {e}"),
+                };
+                o.as_mut().set_status(QString::from(status.as_str()));
+                o.as_mut().set_status_kind(QString::from(if res.is_ok() { "info" } else { "error" }));
+                if let Some(info) = info {
+                    o.as_mut().set_tesseract_json(QString::from(serde_json::to_string(&info).unwrap_or_default().as_str()));
                 }
                 o.as_mut().set_tesseract_busy(false);
             });

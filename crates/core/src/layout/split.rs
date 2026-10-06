@@ -127,12 +127,46 @@ pub fn split_by_line_gaps(lines: Vec<TextLine>, k: f32) -> Vec<Vec<TextLine>> {
 }
 
 /// Checks one candidate against its own average height; recurses on the two sides of the first cut.
-fn cut(candidate: &[(f32, f32, TextLine)], k: f32, out: &mut Vec<Vec<TextLine>>) {
+/// Generic over what the lines carry: detector lines here, indices of OCR lines in [`split_rects`].
+fn cut<T: Clone>(candidate: &[(f32, f32, T)], k: f32, out: &mut Vec<Vec<T>>) {
     let average = candidate.iter().map(|l| l.1).sum::<f32>() / candidate.len().max(1) as f32;
     match candidate.windows(2).position(|w| w[1].0 - w[0].0 > k * average) {
         Some(i) => { cut(&candidate[..=i], k, out); cut(&candidate[i + 1..], k, out); }
         None => out.push(candidate.iter().map(|l| l.2.clone()).collect()),
     }
+}
+
+/// The same rule for the lines an OCR engine found (their boxes only: the engine gives no glyphs).
+/// `theta` is the direction of the text (from the detector's lines, see [`text_angle`]) and `glyph` the
+/// typical glyph height there, which sets the floor for text in capitals just as in [`line_height`].
+/// Returns the indices of `rects` in groups, in order across the text; one group if nothing is cut.
+pub fn split_rects(rects: &[Rect], theta: f32, glyph: f32, k: f32) -> Vec<Vec<usize>> {
+    let whole = vec![(0..rects.len()).collect::<Vec<_>>()];
+    if rects.len() < 2 || !k.is_finite() || k <= 0.0 { return whole; }
+    let normal = (-theta.sin(), theta.cos());
+    let mut placed: Vec<(f32, f32, usize)> = rects.iter().enumerate().map(|(i, r)| {
+        let (cx, cy) = r.center();
+        (cx * normal.0 + cy * normal.1, r.h.max(CAPITALS_FLOOR * glyph), i)
+    }).collect();
+    placed.sort_by(|a, b| a.0.total_cmp(&b.0));
+    let mut out = Vec::new();
+    cut(&placed, k, &mut out);
+    out
+}
+
+/// Distributes the detector's lines among partitions that were found elsewhere (by the OCR engine): each
+/// line goes to the partition whose vertical extent is nearest to its centre. Groups come in the order of
+/// the partitions; empty ones are dropped.
+pub fn split_by_partitions(lines: Vec<TextLine>, partitions: &[Rect]) -> Vec<Vec<TextLine>> {
+    let mut groups: Vec<Vec<TextLine>> = vec![Vec::new(); partitions.len()];
+    for line in lines {
+        let cy = centre(&line).1;
+        let distance = |p: &Rect| if cy < p.y { p.y - cy } else if cy > p.bottom() { cy - p.bottom() } else { 0.0 };
+        let nearest = partitions.iter().enumerate().min_by(|a, b| distance(a.1).total_cmp(&distance(b.1))).map(|(i, _)| i);
+        if let Some(i) = nearest { groups[i].push(line); }
+    }
+    groups.retain(|g| !g.is_empty());
+    groups
 }
 
 #[cfg(test)]
@@ -243,6 +277,33 @@ mod tests {
         // Down the page the first pair is further apart than the limit, yet it is one field.
         let straight = |lines: &[TextLine]| lines[1].rect.center().1 - lines[0].rect.center().1;
         assert!(straight(&across(31.0)) > 1.8 * 22.0 * 0.9, "{}", straight(&across(31.0)));
+    }
+
+    #[test]
+    fn the_rule_works_on_the_boxes_an_ocr_engine_gives() {
+        let boxes = |ys: &[f32]| ys.iter().map(|y| Rect::new(10.0, *y, 200.0, 30.0)).collect::<Vec<_>>();
+        // Lines 30 px tall, 46 px apart: a paragraph.
+        assert_eq!(split_rects(&boxes(&[0.0, 46.0, 92.0]), 0.0, 20.0, 1.8), vec![vec![0, 1, 2]]);
+        // A title, then two lines set well apart from it (pitch 90 = 3 h).
+        assert_eq!(split_rects(&boxes(&[0.0, 90.0, 136.0]), 0.0, 20.0, 1.8), vec![vec![0], vec![1, 2]]);
+        // Capitals: boxes 22 px tall, 41 px apart; the floor from the glyph height (22 * 1.35) keeps them together.
+        let caps: Vec<Rect> = [0.0, 41.0, 82.0].iter().map(|y| Rect::new(10.0, *y, 200.0, 22.0)).collect();
+        assert_eq!(split_rects(&caps, 0.0, 22.0, 1.8), vec![vec![0, 1, 2]]);
+        // One box, no boxes, a broken factor.
+        assert_eq!(split_rects(&boxes(&[0.0]), 0.0, 20.0, 1.8), vec![vec![0]]);
+        assert_eq!(split_rects(&[], 0.0, 20.0, 1.8), vec![Vec::<usize>::new()]);
+        assert_eq!(split_rects(&boxes(&[0.0, 300.0]), 0.0, 20.0, f32::NAN), vec![vec![0, 1]]);
+    }
+
+    #[test]
+    fn detector_lines_are_distributed_among_remembered_partitions() {
+        let lines = vec![prose(0.0, 0.0, 9, 20.0), prose(0.0, 30.0, 9, 20.0), prose(0.0, 100.0, 9, 20.0)];
+        let partitions = [Rect::new(0.0, 0.0, 100.0, 50.0), Rect::new(0.0, 95.0, 100.0, 30.0)];
+        assert_eq!(y_of(&split_by_partitions(lines.clone(), &partitions)), vec![vec![0, 30], vec![100]]);
+        // A line between the partitions goes to the nearer one; an unused partition leaves no empty group.
+        let between = vec![prose(0.0, 60.0, 9, 20.0)];
+        assert_eq!(y_of(&split_by_partitions(between, &partitions)), vec![vec![60]]);
+        assert!(split_by_partitions(lines, &[]).is_empty());
     }
 
     #[test]

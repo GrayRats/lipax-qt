@@ -339,6 +339,18 @@ ApplicationWindow {
         onAccepted: win.set(key, selectedColor.toString().slice(0, 7))
     }
     // ── Tesseract ───────────────────────────────────────────────────────
+    // The PaddleOCR environment of the chosen Python and language (see Controller.refreshPaddle): checked by itself
+    // when PaddleOCR is chosen and whenever the Python or the language changes.
+    readonly property var paddle: { try { return JSON.parse(controller.paddleJson || "{}") } catch (e) { return ({}) } }
+    readonly property string paddleKey: usesPaddle ? (current.recognition.paddle_python || "") + "|" + (current.recognition.language || "") : ""
+    onPaddleKeyChanged: if (paddleKey.length > 0) paddleTimer.restart()
+    Timer {
+        id: paddleTimer
+        interval: 700
+        onTriggered: if (win.usesPaddle) win.controller.refreshPaddle()
+    }
+    onVisibleChanged: if (visible && usesPaddle) paddleTimer.restart()
+
     readonly property var tess: {
         try {
             return JSON.parse(controller.tesseractJson || "{}");
@@ -377,12 +389,15 @@ ApplicationWindow {
             });
         return have;
     }
+    // Languages that can be added: from the distribution's repository (administrator password) or, where the
+    // repository has no package (Arch: only AUR), downloaded as a model into the user's directory (no password).
     readonly property var installable: (tess.installable || []).filter(l => l.available).map(l => ({
                 code: l.code,
                 package: l.package,
                 name: l.name,
                 command: l.command,
-                label: l.code + " — " + l.name + " (" + l.package + ")"
+                method: l.method || "package",
+                label: l.code + " — " + l.name + ((l.method || "package") === "download" ? " (скачать модель)" : " (" + l.package + ")")
             }))
     readonly property var missing: {
         // Зависимость от tesseractJson обновляет сообщения после установки пакета.
@@ -454,17 +469,25 @@ ApplicationWindow {
 
     property string pendingPackage: ""
     property string pendingCommand: ""
-    function askInstall(pkg, name) {
-        const info = (tess.installable || []).find(l => l.package === pkg);
-        pendingPackage = pkg;
-        pendingCommand = info ? info.command : pkg;
-        installDialog.text = "Установить языковой пакет «" + name + "»?\n\nБудет выполнена команда:\n" + pendingCommand + "\n\nСистема запросит пароль администратора.";
+    property string pendingCode: ""
+    property string pendingMethod: "package"
+    function askInstall(code, name) {
+        const info = installable.find(l => l.code === code);
+        if (!info) return;
+        pendingCode = code;
+        pendingPackage = info.package;
+        pendingMethod = info.method;
+        pendingCommand = info.command;
+        installDialog.text = info.method === "download"
+            ? "Скачать языковую модель «" + name + "»?\n\n" + info.command + "\n\nФайл берётся из официального репозитория Tesseract. Пароль администратора не нужен; модель сразу появится в списке языков."
+            : "Установить языковой пакет «" + name + "»?\n\nБудет выполнена команда:\n" + info.command + "\n\nСистема запросит пароль администратора.";
         installDialog.open();
     }
     Dialog {
         id: installDialog
+        objectName: "installDialog"
         property string text: ""
-        title: "Установка языкового пакета"
+        title: win.pendingMethod === "download" ? "Загрузка языковой модели" : "Установка языкового пакета"
         modal: true
         anchors.centerIn: parent
         width: Math.min(parent.width - 40, 460)
@@ -474,7 +497,7 @@ ApplicationWindow {
             wrapMode: Text.Wrap
             text: installDialog.text
         }
-        onAccepted: win.controller.installPackage(win.pendingPackage)
+        onAccepted: win.pendingMethod === "download" ? win.controller.installLanguage(win.pendingCode) : win.controller.installPackage(win.pendingPackage)
     }
 
     readonly property var settingPaths: JSON.parse(controller.editableSettingsPaths())
@@ -1135,6 +1158,101 @@ ApplicationWindow {
                     visible: win.usesPaddle
                     text: win.current.recognition.engine === "auto" ? "Сначала читает Tesseract; если он сам не уверен в результате (ниже 60 %), текст перечитывает PaddleOCR. Если PaddleOCR не установлен, остаётся результат Tesseract, и повторная попытка будет через несколько минут. Установка: docs/PaddleOCR.md." : "PaddleOCR использует основной язык; дополнительные языки относятся к Tesseract. При первом запуске загружаются модели. Установка: docs/PaddleOCR.md."
                 }
+                ColumnLayout {
+                    objectName: "paddleCheck"
+                    visible: win.usesPaddle
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    spacing: 8
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            objectName: "paddleSummary"
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            wrapMode: Text.Wrap
+                            font.bold: true
+                            color: win.controller.paddleBusy || win.paddle.ready === undefined ? palette.text : win.paddle.ready ? "#7bd88f" : "#ff6b6b"
+                            text: win.controller.paddleBusy ? "Проверка окружения PaddleOCR…" : (win.paddle.ready === undefined ? "Окружение PaddleOCR ещё не проверено" : (win.paddle.ready ? "✓ " : "✗ ") + win.paddle.summary)
+                        }
+                        Button {
+                            objectName: "paddleRecheck"
+                            text: "Проверить снова"
+                            enabled: !win.controller.paddleBusy
+                            ToolTip.visible: hovered
+                            ToolTip.delay: 400
+                            ToolTip.text: "Заново проверить Python, пакеты paddleocr и paddlepaddle, язык и модели"
+                            onClicked: win.controller.refreshPaddle()
+                        }
+                    }
+                    Repeater {
+                        model: win.paddle.problems || []
+                        delegate: ColumnLayout {
+                            id: problem
+                            required property var modelData
+                            objectName: "paddleProblem_" + modelData.id
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            spacing: 4
+                            Label {
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: 0
+                                wrapMode: Text.Wrap
+                                font.bold: true
+                                color: problem.modelData.severity === "error" ? "#ff6b6b" : problem.modelData.severity === "warning" ? "#ffc23d" : "#9ecbff"
+                                text: (problem.modelData.severity === "error" ? "Ошибка: " : problem.modelData.severity === "warning" ? "Внимание: " : "Заметка: ") + problem.modelData.title
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: 0
+                                wrapMode: Text.Wrap
+                                opacity: 0.8
+                                text: problem.modelData.detail
+                            }
+                            Repeater {
+                                model: problem.modelData.options || []
+                                delegate: ColumnLayout {
+                                    id: installOption
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    Layout.minimumWidth: 0
+                                    spacing: 2
+                                    Label {
+                                        text: "• " + installOption.modelData.title
+                                        font.bold: true
+                                    }
+                                    TextArea {
+                                        objectName: "paddleCommands"
+                                        Layout.fillWidth: true
+                                        Layout.minimumWidth: 0
+                                        visible: installOption.modelData.commands.length > 0
+                                        readOnly: true
+                                        selectByMouse: true
+                                        wrapMode: Text.WrapAnywhere
+                                        font.family: "monospace"
+                                        font.pixelSize: 12
+                                        text: installOption.modelData.commands.join("\n")
+                                    }
+                                    Button {
+                                        objectName: "paddleCopy"
+                                        visible: installOption.modelData.commands.length > 0
+                                        text: "Копировать команды"
+                                        onClicked: win.controller.copyText(installOption.modelData.commands.join("\n"))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        opacity: 0.6
+                        font.pixelSize: 12
+                        text: "Команды только показываются: LipaX ничего не устанавливает сам. Выполните их в терминале от своего пользователя (не root), затем укажите Python окружения выше; проверка запустится сама."
+                    }
+                }
                 Label {
                     wrapMode: Text.Wrap
                     Layout.preferredWidth: 230
@@ -1244,10 +1362,10 @@ ApplicationWindow {
                         }
                         Button {
                             id: unavailableControl7
-                            visible: modelData.package !== null && win.tess.package_manager !== "unknown"
-                            text: "Установить языковой пакет"
+                            visible: win.installable.some(l => l.code === modelData.code)
+                            text: "Установить язык"
                             enabled: !win.controller.tesseractBusy
-                            onClicked: win.askInstall(modelData.package, modelData.name)
+                            onClicked: win.askInstall(modelData.code, modelData.name)
 
                             Accessible.description: unavailableHint7.explanation
                             UnavailableHint {
@@ -1293,7 +1411,7 @@ ApplicationWindow {
                         id: unavailableControl9
                         text: "Установить"
                         enabled: installBox.currentIndex >= 0 && win.installable.length > 0 && !win.controller.tesseractBusy
-                        onClicked: win.askInstall(win.installable[installBox.currentIndex].package, win.installable[installBox.currentIndex].name)
+                        onClicked: win.askInstall(win.installable[installBox.currentIndex].code, win.installable[installBox.currentIndex].name)
 
                         Accessible.description: unavailableHint9.explanation
                         UnavailableHint {
@@ -2848,104 +2966,152 @@ ApplicationWindow {
             contentWidth: availableWidth
             clip: true
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-            GridLayout {
+            ColumnLayout {
+                id: about
+                objectName: "aboutPage"
                 width: page8.availableWidth - 16
-                columns: 2
-                columnSpacing: 24
-                rowSpacing: 14
+                spacing: 10
+                // The animations run only while the tab is on screen (the tab index is that of the tab bar above).
+                readonly property bool active: win.visible && tabs.currentIndex === 8
+                readonly property string version: win.controller.appVersion ? win.controller.appVersion() : ""
+
                 Item {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 155
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 160
+                    Layout.preferredHeight: 170
                     Image {
                         id: aboutIcon
                         objectName: "aboutIcon"
-                        anchors.horizontalCenter: parent.horizontalCenter
+                        x: 10
                         width: 140
                         height: 140
+                        smooth: true
                         source: Qt.resolvedUrl(".").toString().indexOf("qrc:") === 0 ? "qrc:/lipa/icon.svg" : "../assets/lipa.svg"
                         sourceSize.width: 280
                         sourceSize.height: 280
-                        SequentialAnimation on y {
-                            running: win.visible && tabs.currentIndex === 7
+                        transformOrigin: Item.Center
+                        y: 24
+                        // A gentle float with a slight sway; at rest the icon sits in the middle.
+                        SequentialAnimation {
+                            running: about.active
                             loops: Animation.Infinite
-                            NumberAnimation {
-                                from: 10
-                                to: 2
-                                duration: 850
-                                easing.type: Easing.InOutSine
+                            onRunningChanged: if (!running) { aboutIcon.y = 24; aboutIcon.rotation = 0 }
+                            ParallelAnimation {
+                                NumberAnimation { target: aboutIcon; property: "y"; from: 24; to: 6; duration: 1100; easing.type: Easing.InOutSine }
+                                NumberAnimation { target: aboutIcon; property: "rotation"; from: -2.5; to: 2.5; duration: 1100; easing.type: Easing.InOutSine }
                             }
-                            NumberAnimation {
-                                from: 2
-                                to: 10
-                                duration: 850
-                                easing.type: Easing.InOutSine
+                            ParallelAnimation {
+                                NumberAnimation { target: aboutIcon; property: "y"; from: 6; to: 24; duration: 1100; easing.type: Easing.InOutSine }
+                                NumberAnimation { target: aboutIcon; property: "rotation"; from: 2.5; to: -2.5; duration: 1100; easing.type: Easing.InOutSine }
                             }
                         }
                     }
+                    // The shadow breathes with the float.
+                    Rectangle {
+                        objectName: "aboutShadow"
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        y: 162
+                        width: 90 - (24 - aboutIcon.y) * 1.6
+                        height: 6
+                        radius: 3
+                        color: "#000000"
+                        opacity: 0.18 - (24 - aboutIcon.y) * 0.004
+                    }
+                }
+                Label {
+                    objectName: "aboutTitle"
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "LipaX"
+                    font.pixelSize: 30
+                    font.bold: true
+                }
+                Label {
+                    objectName: "aboutVersion"
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: about.version.length > 0
+                    text: "Версия " + about.version
+                    opacity: 0.7
+                }
+                Label {
+                    objectName: "aboutDescription"
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.Wrap
+                    text: "Переводчик игрового текста в реальном времени для KDE Plasma 6 (KWin, Wayland). Распознаёт текст в выбранном окне "
+                        + "(Tesseract или PaddleOCR), переводит и показывает поверх оригинала или в отдельном окне."
                 }
                 Item {
                     id: tickerViewport
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 32
+                    Layout.preferredHeight: 28
                     clip: true
                     Label {
                         id: tickerText
                         objectName: "aboutTicker"
-                        text: "LipaX — распознавание и перевод игрового текста · Qt / KDE / Wayland"
-                        font.pixelSize: 16
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "LipaX — распознавание и перевод игрового текста  ·  Qt 6 / QML  ·  KDE Plasma  ·  Wayland  ·  Tesseract  ·  PaddleOCR"
+                        font.pixelSize: 15
+                        opacity: 0.85
                         NumberAnimation on x {
-                            running: win.visible && tabs.currentIndex === 7
+                            running: about.active
                             from: tickerViewport.width
                             to: -tickerText.implicitWidth
-                            duration: 18000
+                            duration: 20000
                             loops: Animation.Infinite
                         }
                     }
                 }
-                Label {
-                    text: "Автор: GrayRat"
-                    font.bold: true
-                    font.pixelSize: 18
-                }
-                Label {
+                Rectangle {
                     Layout.fillWidth: true
-                    Layout.minimumWidth: 0
-                    wrapMode: Text.Wrap
-                    textFormat: Text.RichText
-                    text: 'Репозиторий проекта: <a href="https://github.com/GrayRats/lipax-qt">https://github.com/GrayRats/lipax-qt</a>'
-                    onLinkActivated: url => Qt.openUrlExternally(url)
+                    Layout.preferredHeight: 1
+                    color: palette.mid
+                    opacity: 0.5
+                }
+                GridLayout {
+                    Layout.fillWidth: true
+                    columns: 2
+                    columnSpacing: 24
+                    rowSpacing: 8
+                    Label { text: "Автор"; font.bold: true }
+                    Label { text: "GrayRat" }
+                    Label { text: "Лицензия"; font.bold: true }
+                    Label { text: "MIT; встроенные шрифты — OFL-1.1 и Apache-2.0" }
+                    Label { text: "Репозиторий"; font.bold: true }
+                    Label {
+                        objectName: "aboutRepository"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        textFormat: Text.RichText
+                        text: '<a href="https://github.com/GrayRats/lipax-qt">https://github.com/GrayRats/lipax-qt</a>'
+                        onLinkActivated: url => Qt.openUrlExternally(url)
+                        HoverHandler { cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor }
+                    }
                 }
                 Label {
-                    text: "Другие исходники проекта:"
+                    text: "Основа и зависимости"
                     font.bold: true
+                    Layout.topMargin: 6
                 }
                 Repeater {
+                    objectName: "aboutLinks"
                     model: [
-                        {
-                            url: "https://github.com/satix-one/lipa.git",
-                            role: "форк"
-                        },
-                        {
-                            url: "https://github.com/rtr46/meikipop",
-                            role: "зависимость"
-                        },
-                        {
-                            url: "https://github.com/tesseract-ocr/tesseract",
-                            role: "зависимость"
-                        },
-                        {
-                            url: "https://github.com/tesseract-ocr/tessdata",
-                            role: "зависимость"
-                        }
+                        { url: "https://github.com/satix-one/lipa.git", role: "исходный проект (форк)" },
+                        { url: "https://github.com/rtr46/meikipop", role: "зависимость" },
+                        { url: "https://github.com/tesseract-ocr/tesseract", role: "распознавание: Tesseract OCR" },
+                        { url: "https://github.com/tesseract-ocr/tessdata_fast", role: "языковые модели Tesseract" },
+                        { url: "https://github.com/PaddlePaddle/PaddleOCR", role: "распознавание: PaddleOCR" }
                     ]
-                    Label {
+                    delegate: Label {
                         required property var modelData
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         wrapMode: Text.Wrap
                         textFormat: Text.RichText
-                        text: '<a href="' + modelData.url + '">' + modelData.url + '</a> (' + modelData.role + ')'
+                        text: '<a href="' + modelData.url + '">' + modelData.url + '</a> — ' + modelData.role
                         onLinkActivated: url => Qt.openUrlExternally(url)
+                        HoverHandler { cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor }
                     }
                 }
             }

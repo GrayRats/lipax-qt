@@ -41,6 +41,8 @@ pub struct TrackedTextBlock {
     /// `ocr_bounds` while it still lies on the detected block, else `None`: set on every scan.
     pub refined_rect: Option<Rect>,
     pub background: Option<BackgroundResult>,
+    /// The glyph rectangle the background was built for: it is built again when the field's boundary changes.
+    pub background_for: Rect,
     /// Уменьшенная яркость содержимого: по ней видно, менялся ли текст поля.
     pub content_signature: Vec<u8>,
     /// Средний цвет кольца вокруг поля: по нему видно, менялся ли фон.
@@ -78,6 +80,7 @@ impl TrackedTextBlock {
             ocr_bounds: None,
             refined_rect: None,
             background: None,
+            background_for: Rect::default(),
             content_signature: Vec::new(),
             background_signature: None,
             typography_rect: Rect::default(),

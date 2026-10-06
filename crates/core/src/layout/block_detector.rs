@@ -263,6 +263,11 @@ impl BlockDetector {
     }
 }
 
+/// The type of every block again, after the set of blocks changed (a block was split elsewhere).
+pub fn classify_blocks(blocks: &mut [DetectedTextBlock], frame_w: f32, frame_h: f32) {
+    classify(blocks, frame_w, frame_h);
+}
+
 /// Тип блока по геометрии. Только уверенные случаи, иначе `Unknown`.
 fn classify(blocks: &mut [DetectedTextBlock], fw: f32, fh: f32) {
     let rects: Vec<(Rect, usize)> = blocks.iter().map(|b| (b.rect, b.lines.len())).collect();

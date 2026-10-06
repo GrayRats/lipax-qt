@@ -11,6 +11,93 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+// ───────────────────────── скачанные языки ─────────────────────────
+//
+// Не у каждого дистрибутива языковые модели есть в репозитории: в Arch/CachyOS пакетов
+// `tesseract-data-*` в официальных репозиториях нет (только AUR). Тогда модель скачивается
+// из официального `tessdata_fast` в пользовательский каталог — без прав администратора. Tesseract
+// принимает один каталог данных, поэтому в нём лежат ссылки на системные модели рядом со скачанными.
+
+/// Официальные быстрые модели Tesseract.
+const TESSDATA_URL: &str = "https://github.com/tesseract-ocr/tessdata_fast/raw/main";
+/// Меньше этого — не модель (страница ошибки, обрыв).
+const MIN_MODEL_BYTES: u64 = 50_000;
+const MAX_MODEL_BYTES: u64 = 200 * 1024 * 1024;
+
+/// Каталог скачанных моделей.
+pub fn user_tessdata_dir() -> PathBuf {
+    dirs::data_dir().unwrap_or_default().join("lipa/tessdata")
+}
+
+/// Системный каталог данных Tesseract.
+pub fn system_tessdata_dir() -> Option<PathBuf> {
+    let mut candidates: Vec<PathBuf> = std::env::var_os("TESSDATA_PREFIX").map(PathBuf::from).into_iter().collect();
+    candidates.extend(["/usr/share/tessdata", "/usr/share/tesseract-ocr/5/tessdata", "/usr/share/tesseract-ocr/4.00/tessdata", "/usr/local/share/tessdata"].map(PathBuf::from));
+    candidates.into_iter().find(|d| d.join("eng.traineddata").exists() || d.join("osd.traineddata").exists())
+}
+
+/// Коды скачанных (не ссылок) моделей в каталоге.
+fn downloaded_languages(dir: &Path) -> Vec<String> {
+    let Ok(entries) = std::fs::read_dir(dir) else { return Vec::new() };
+    let mut codes: Vec<String> = entries.flatten()
+        .filter(|e| e.file_type().is_ok_and(|t| t.is_file()))
+        .filter_map(|e| e.file_name().to_str()?.strip_suffix(".traineddata").map(String::from)).collect();
+    codes.sort();
+    codes
+}
+
+/// Ссылки на системные модели в `user`: рядом со скачанными они все видны Tesseract. Существующее не трогается;
+/// ссылка, ставшая битой (модель удалили из системы), убирается.
+fn link_system_languages(user: &Path, system: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(user)?;
+    for entry in std::fs::read_dir(user)?.flatten() {
+        if entry.file_type().is_ok_and(|t| t.is_symlink()) && !entry.path().exists() { let _ = std::fs::remove_file(entry.path()); }
+    }
+    for entry in std::fs::read_dir(system)?.flatten() {
+        let name = entry.file_name();
+        if name.to_str().is_some_and(|n| n.ends_with(".traineddata")) && std::fs::symlink_metadata(user.join(&name)).is_err() {
+            std::os::unix::fs::symlink(entry.path(), user.join(&name))?;
+        }
+    }
+    Ok(())
+}
+
+/// Каталог, который надо передать Tesseract (`--tessdata-dir`), если есть скачанные модели; он же обновляется.
+pub fn tessdata_arg_in(user: &Path, system: Option<&Path>) -> Option<PathBuf> {
+    if downloaded_languages(user).is_empty() { return None; }
+    if let Some(system) = system { let _ = link_system_languages(user, system); }
+    Some(user.to_path_buf())
+}
+
+/// То же для текущего пользователя.
+pub fn tessdata_arg() -> Option<PathBuf> {
+    tessdata_arg_in(&user_tessdata_dir(), system_tessdata_dir().as_deref())
+}
+
+/// Скачивает модель `code` из `tessdata_fast` в пользовательский каталог.
+pub async fn download_language(code: &str) -> Result<PathBuf, String> {
+    download_language_from(TESSDATA_URL, code, &user_tessdata_dir()).await
+}
+
+/// Скачивание с проверкой: только известный код языка, разумный размер, запись через временный файл.
+pub async fn download_language_from(base_url: &str, code: &str, dir: &Path) -> Result<PathBuf, String> {
+    if !KNOWN_LANGS.iter().any(|(c, _)| *c == code) { return Err(format!("неизвестный язык: {code}")); }
+    let url = format!("{}/{code}.traineddata", base_url.trim_end_matches('/'));
+    let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(180)).build().map_err(|e| e.to_string())?;
+    let response = client.get(&url).send().await.map_err(|e| format!("не удалось скачать {url}: {e}"))?;
+    if !response.status().is_success() { return Err(format!("{url}: сервер ответил {}", response.status())); }
+    if response.content_length().is_some_and(|n| n > MAX_MODEL_BYTES) { return Err(format!("{url}: файл слишком большой")); }
+    let bytes = response.bytes().await.map_err(|e| format!("обрыв загрузки {url}: {e}"))?;
+    if (bytes.len() as u64) < MIN_MODEL_BYTES || bytes.len() as u64 > MAX_MODEL_BYTES {
+        return Err(format!("{url}: получено {} байт — это не языковая модель", bytes.len()));
+    }
+    std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+    let (target, partial) = (dir.join(format!("{code}.traineddata")), dir.join(format!("{code}.traineddata.part")));
+    std::fs::write(&partial, &bytes).map_err(|e| format!("{}: {e}", partial.display()))?;
+    std::fs::rename(&partial, &target).map_err(|e| format!("{}: {e}", target.display()))?;
+    Ok(target)
+}
+
 // ───────────────────────── запуск команд ─────────────────────────
 
 #[derive(Debug, Clone, Default)]
@@ -289,6 +376,10 @@ pub struct Installable {
     pub available: bool,
     /// Готовая команда для показа пользователю перед установкой.
     pub command: String,
+    /// `package` — пакет дистрибутива (пароль администратора), `download` — модель скачивается
+    /// в каталог пользователя (пароль не нужен). Второй способ — когда пакета в репозитории нет.
+    #[serde(default)]
+    pub method: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -325,17 +416,19 @@ fn shell_join(argv: &[String]) -> String {
 pub struct TesseractManager<R: Runner = SystemRunner> {
     runner: R,
     os_release: String,
+    /// Каталог скачанных моделей; `None` — их нет (так в тестах).
+    user_dir: Option<PathBuf>,
 }
 
 impl TesseractManager {
     pub fn system() -> Self {
-        Self::new(SystemRunner, std::fs::read_to_string("/etc/os-release").unwrap_or_default())
+        Self { user_dir: Some(user_tessdata_dir()), ..Self::new(SystemRunner, std::fs::read_to_string("/etc/os-release").unwrap_or_default()) }
     }
 }
 
 impl<R: Runner> TesseractManager<R> {
     pub fn new(runner: R, os_release: String) -> Self {
-        Self { runner, os_release }
+        Self { runner, os_release, user_dir: None }
     }
 
     fn pm(&self) -> (Distro, PackageManager) {
@@ -367,7 +460,13 @@ impl<R: Runner> TesseractManager<R> {
             info.version = parse_version(&o.stdout).or_else(|| parse_version(&o.stderr));
         }
         let mut langs = vec![];
-        if let Some(o) = self.runner.run(&bin_s, &["--list-langs"]) {
+        // Скачанные модели лежат в своём каталоге; Tesseract видит один каталог, поэтому спрашиваем его о нём.
+        let data_dir = self.user_dir.as_ref().and_then(|u| tessdata_arg_in(u, system_tessdata_dir().as_deref()));
+        let list_args: Vec<String> = match &data_dir {
+            Some(dir) => vec!["--list-langs".into(), "--tessdata-dir".into(), dir.display().to_string()],
+            None => vec!["--list-langs".into()],
+        };
+        if let Some(o) = self.runner.run(&bin_s, &list_args.iter().map(String::as_str).collect::<Vec<_>>()) {
             // Старые версии пишут список в stderr.
             let text = if o.stdout.trim().is_empty() { &o.stderr } else { &o.stdout };
             let (dir, l) = parse_list_langs(text);
@@ -384,13 +483,19 @@ impl<R: Runner> TesseractManager<R> {
         }
 
         let repo = pm.repo_lang_packages(&self.runner);
+        let target = self.user_dir.clone().unwrap_or_else(user_tessdata_dir);
         info.installable = KNOWN_LANGS
             .iter()
             .filter(|(c, _)| !langs.iter().any(|l| l == c))
-            .filter_map(|(c, n)| {
-                let package = pm.lang_package(c)?;
-                let command = shell_join(&pm.install_argv(&package)?);
-                Some(Installable { code: c.to_string(), name: n.to_string(), available: repo.contains(&package), package, command })
+            .map(|(c, n)| {
+                let package = pm.lang_package(c).unwrap_or_default();
+                let in_repo = !package.is_empty() && repo.contains(&package);
+                match pm.install_argv(&package).filter(|_| in_repo) {
+                    Some(argv) => Installable { code: c.to_string(), name: n.to_string(), available: true, package, command: shell_join(&argv), method: "package".into() },
+                    // Нет пакета в репозитории (Arch: только AUR) или неизвестный менеджер: скачивание модели.
+                    None => Installable { code: c.to_string(), name: n.to_string(), available: true, package,
+                        command: format!("Скачать {TESSDATA_URL}/{c}.traineddata в {}", target.display()), method: "download".into() },
+                }
             })
             .collect();
         info
@@ -548,8 +653,11 @@ mod tests {
         assert!(deu.available);
         assert_eq!(deu.package, "tesseract-data-deu");
         assert_eq!(deu.command, "pkexec pacman -S --needed --noconfirm tesseract-data-deu");
-        // Пакета нет в репозитории — помечается недоступным, автоустановка не предлагается.
-        assert!(!i.installable.iter().find(|l| l.code == "ara").unwrap().available);
+        assert_eq!(deu.method, "package");
+        // Пакета нет в репозитории (так в Arch для большинства языков) — модель скачивается без пароля.
+        let ara = i.installable.iter().find(|l| l.code == "ara").unwrap();
+        assert!(ara.available && ara.method == "download", "{ara:?}");
+        assert!(ara.command.contains("tessdata_fast/raw/main/ara.traineddata"), "{}", ara.command);
         assert!(i.installable.iter().all(|l| l.code != "eng"));
     }
 
@@ -633,5 +741,99 @@ mod tests {
         assert!(!m.is_allowed_package("tesseract-data-"));
         assert!(ubuntu().is_allowed_package("tesseract-ocr-jpn-vert"));
         assert!(!ubuntu().is_allowed_package("tesseract-data-jpn"));
+    }
+
+    // ── Скачанные языки ──
+
+    fn scratch(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("lipax-tess-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn with_nothing_downloaded_the_system_data_is_used_as_it_is() {
+        let (user, system) = (scratch("u0"), scratch("s0"));
+        std::fs::write(system.join("eng.traineddata"), b"x").unwrap();
+        assert_eq!(tessdata_arg_in(&user, Some(&system)), None);
+        assert!(std::fs::read_dir(&user).unwrap().next().is_none(), "nothing is linked when nothing was downloaded");
+    }
+
+    #[test]
+    fn a_downloaded_model_sits_beside_links_to_the_system_ones() {
+        let (user, system) = (scratch("u1"), scratch("s1"));
+        for c in ["eng", "rus", "osd"] { std::fs::write(system.join(format!("{c}.traineddata")), b"system").unwrap(); }
+        std::fs::write(system.join("pdf.ttf"), b"font").unwrap();
+        std::fs::write(user.join("deu.traineddata"), b"downloaded").unwrap();
+        assert_eq!(tessdata_arg_in(&user, Some(&system)), Some(user.clone()));
+        let listed = |dir: &Path| { let mut v: Vec<String> = std::fs::read_dir(dir).unwrap().flatten().map(|e| e.file_name().to_string_lossy().into_owned()).collect(); v.sort(); v };
+        assert_eq!(listed(&user), ["deu.traineddata", "eng.traineddata", "osd.traineddata", "rus.traineddata"], "only models are linked");
+        assert_eq!(std::fs::read(user.join("rus.traineddata")).unwrap(), b"system");
+        assert_eq!(downloaded_languages(&user), ["deu"], "links are not downloads");
+        // A model the user got later does not collide with a link; one removed from the system loses its link.
+        std::fs::remove_file(system.join("rus.traineddata")).unwrap();
+        std::fs::write(system.join("fra.traineddata"), b"new").unwrap();
+        assert!(tessdata_arg_in(&user, Some(&system)).is_some());
+        assert_eq!(listed(&user), ["deu.traineddata", "eng.traineddata", "fra.traineddata", "osd.traineddata"]);
+        assert_eq!(std::fs::read(user.join("deu.traineddata")).unwrap(), b"downloaded");
+    }
+
+    #[test]
+    fn a_manager_with_downloads_asks_tesseract_about_the_merged_directory() {
+        let (user, system) = (scratch("u2"), scratch("s2"));
+        std::fs::write(user.join("deu.traineddata"), b"downloaded").unwrap();
+        let r = Fake { bins: vec!["tesseract", "pacman"], ..Default::default() }
+            .on(&format!("/usr/bin/tesseract --list-langs --tessdata-dir {}", user.display()), true,
+                &format!("List of available languages in \"{}\" (3):\neng\ndeu\nosd\n", user.display()))
+            .on("pacman -Ssq ^tesseract-data-", true, "");
+        let manager = TesseractManager { user_dir: Some(user.clone()), ..TesseractManager::new(r, "ID=arch\nID_LIKE=\"\"\n".into()) };
+        let _ = system;
+        let info = manager.detect();
+        assert_eq!(info.languages.iter().map(|l| l.code.as_str()).collect::<Vec<_>>(), ["deu", "eng"]);
+        assert_eq!(info.tessdata.as_deref(), Some(user.to_str().unwrap()));
+        assert!(info.installable.iter().all(|l| l.code != "deu"), "an installed language is not offered again");
+    }
+
+    /// Answers one HTTP request with `status` and `body`.
+    async fn serve_once(status: &'static str, body: Vec<u8>) -> String {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            let mut request = [0u8; 2048];
+            let _ = socket.read(&mut request).await;
+            let head = format!("HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n", body.len());
+            let _ = socket.write_all(head.as_bytes()).await;
+            let _ = socket.write_all(&body).await;
+        });
+        format!("http://{address}")
+    }
+
+    #[tokio::test]
+    async fn a_model_is_downloaded_into_the_users_directory() {
+        let dir = scratch("dl-ok");
+        let base = serve_once("200 OK", vec![7u8; 120_000]).await;
+        let path = download_language_from(&base, "deu", &dir).await.unwrap();
+        assert_eq!(path, dir.join("deu.traineddata"));
+        assert_eq!(std::fs::metadata(&path).unwrap().len(), 120_000);
+        assert!(!dir.join("deu.traineddata.part").exists(), "written through a temporary file");
+    }
+
+    #[tokio::test]
+    async fn bad_downloads_leave_nothing_behind() {
+        let dir = scratch("dl-bad");
+        // An error page, a truncated file and an unknown language are all refused.
+        let missing = serve_once("404 Not Found", b"not found".to_vec()).await;
+        assert!(download_language_from(&missing, "deu", &dir).await.unwrap_err().contains("404"));
+        let tiny = serve_once("200 OK", b"<html>oops</html>".to_vec()).await;
+        assert!(download_language_from(&tiny, "deu", &dir).await.unwrap_err().contains("не языковая модель"));
+        // No request is made for a code that is not a known language (nothing listens on this address).
+        assert!(download_language_from("http://127.0.0.1:1", "../../etc/passwd", &dir).await.unwrap_err().contains("неизвестный язык"));
+        assert!(download_language_from("http://127.0.0.1:1", "xyz", &dir).await.unwrap_err().contains("неизвестный язык"));
+        assert!(!dir.join("deu.traineddata").exists());
+        let unreachable = download_language_from("http://127.0.0.1:1", "deu", &dir).await.unwrap_err();
+        assert!(unreachable.contains("не удалось скачать"), "{unreachable}");
     }
 }

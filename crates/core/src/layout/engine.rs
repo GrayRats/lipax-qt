@@ -131,6 +131,39 @@ pub struct InplaceEngine {
     missing_font_warned: HashSet<u64>,
     /// Content signatures of the fields handed out by the last `begin`, applied by `complete`.
     pending_signatures: HashMap<u64, Vec<u8>>,
+    /// Where the OCR engine found fields glued together that the detector did not tell apart.
+    cuts: Vec<CutMemory>,
+    /// When the last `begin` ran: the age of `cuts`.
+    last_scan: Option<Instant>,
+}
+
+/// A block the detector keeps seeing as one that the OCR engine showed to be several fields: the parts
+/// (frame pixels, in order across the text) are applied to the detector's lines on every later scan, so
+/// the fields exist from the next frame on with ids the tracker can follow.
+struct CutMemory {
+    parent: Rect,
+    partitions: Vec<Rect>,
+    seen: Instant,
+}
+
+/// A memory not applied for this long is forgotten: the scene it described is gone.
+const CUT_TTL: std::time::Duration = std::time::Duration::from_secs(3);
+
+/// What the OCR engine's lines mean for the field they were read from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LinesVerdict {
+    /// The field stands: its structure is settled by the lines (or by the detector).
+    Normal,
+    /// The lines show several fields where the detector saw one. The parts are remembered and appear on the
+    /// next scan; the field must not be published as it is and has to be read again.
+    Split,
+}
+
+/// Typical glyph height of a detected block: the floor of the line-pitch rule for text in capitals.
+fn typical_glyph_height(block: &DetectedTextBlock) -> f32 {
+    let mut heights: Vec<f32> = block.lines.iter().flat_map(|l| l.glyphs.iter().map(|g| g.h)).collect();
+    heights.sort_by(f32::total_cmp);
+    heights.get(heights.len() / 2).copied().unwrap_or_else(|| block.line_height())
 }
 
 impl Default for InplaceEngine {
@@ -181,7 +214,8 @@ impl InplaceEngine {
     /// Встроенный реестр создаётся при первом выборе шрифта и кешируется на сеанс.
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
-            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new() }
+            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new(),
+            cuts: Vec::new(), last_scan: None }
     }
 
     pub fn with_fonts(db: impl Into<Arc<InstalledFontDatabase>>) -> Self {
@@ -197,6 +231,7 @@ impl InplaceEngine {
         self.tracker.reset();
         self.snapshot = None;
         self.published.clear();
+        self.cuts.clear();
         self.missing_font_warned.clear();
     }
 
@@ -219,6 +254,8 @@ impl InplaceEngine {
         let mask = BlockDetector::ink_mask(&image);
         self.detector.line_gap_factor = s.appearance.inplace.line_gap_factor;
         let detected = self.detector.detect_text_blocks(&image, &mask);
+        self.last_scan = Some(now);
+        let detected = self.apply_cuts(detected, now, (image.width() as f32, image.height() as f32));
         let assignments = self.tracker.update(&detected, now);
         self.missing_font_warned.retain(|id| self.tracker.get(*id).is_some());
         let (fw, fh) = (image.width() as f32, image.height() as f32);
@@ -249,9 +286,14 @@ impl InplaceEngine {
             let margin = BackgroundAnalyzer::margin(lh);
             let bg_sig = BackgroundAnalyzer::signature(&image, &rect, margin);
             let moved = (t.previous_rect.x - t.current_rect.x).abs() > 3.0 || (t.previous_rect.y - t.current_rect.y).abs() > 3.0;
-            if t.background.is_none() || bg_changed || moved || t.background_signature.is_none_or(|old| color_distance(old, bg_sig) > 18.0) {
+            // A field that grew, shrank or was divided in place needs a plate of its new size, even if it did not move
+            // and its surroundings look the same.
+            let reshaped = [(t.background_for.x, rect.x), (t.background_for.y, rect.y), (t.background_for.w, rect.w), (t.background_for.h, rect.h)]
+                .iter().any(|(old, new)| (old - new).abs() > 3.0);
+            if t.background.is_none() || bg_changed || moved || reshaped || t.background_signature.is_none_or(|old| color_distance(old, bg_sig) > 18.0) {
                 let analysis = BackgroundAnalyzer.analyze(&image, &mask, &rect, margin);
                 t.background = Some(BackgroundInpainter.render(&image, &mask, &rect, lh, analysis, &s.appearance.inplace, d.block_type));
+                t.background_for = rect;
                 t.background_signature = Some(bg_sig);
                 t.revision += 1;
             }
@@ -284,25 +326,62 @@ impl InplaceEngine {
         jobs
     }
 
+    /// Applies what the OCR engine showed earlier: a detected block that matches a remembered one is divided
+    /// into the remembered parts, the types of all blocks are decided again, and the rest is as if the
+    /// detector itself had found the parts.
+    fn apply_cuts(&mut self, detected: Vec<DetectedTextBlock>, now: Instant, frame: (f32, f32)) -> Vec<DetectedTextBlock> {
+        self.cuts.retain(|m| now.saturating_duration_since(m.seen) <= CUT_TTL);
+        if self.cuts.is_empty() { return detected; }
+        let mut changed = false;
+        let mut out = Vec::with_capacity(detected.len() + 2);
+        for block in detected {
+            let Some(memory) = self.cuts.iter_mut().find(|m| m.parent.iou(&block.rect) >= LINES_AGREE_IOU) else { out.push(block); continue };
+            memory.seen = now;
+            let groups = super::split::split_by_partitions(block.lines.clone(), &memory.partitions);
+            if groups.len() < 2 { out.push(block); continue; }
+            changed = true;
+            for lines in groups {
+                let rect = lines.iter().skip(1).fold(lines[0].rect, |u, l| u.union(&l.rect));
+                out.push(DetectedTextBlock { rect, lines, block_type: super::TextBlockType::Unknown, ink_color: block.ink_color });
+            }
+        }
+        if changed {
+            out.sort_by(|a, b| (a.rect.y, a.rect.x).partial_cmp(&(b.rect.y, b.rect.x)).unwrap_or(std::cmp::Ordering::Equal));
+            super::block_detector::classify_blocks(&mut out, frame.0, frame.1);
+        }
+        out
+    }
+
     /// What the OCR engine says about the lines of a field it has just read (`lines` in frame pixels,
     /// top to bottom). If they lie on the detected block, they decide the line structure — how many
     /// lines, the step between them, the alignment — and the typography is estimated again; if they
     /// do not, the detector's lines stay and the inspector says why. No lines (an engine without
     /// geometry) changes nothing.
-    pub fn observe_ocr_lines(&mut self, id: u64, lines: &[Rect], s: &Settings) {
-        if lines.is_empty() { return; }
-        let Some(snapshot) = &self.snapshot else { return };
-        let Some(d) = snapshot.blocks.get(&id) else { return };
+    pub fn observe_ocr_lines(&mut self, id: u64, lines: &[Rect], s: &Settings) -> LinesVerdict {
+        if lines.is_empty() { return LinesVerdict::Normal; }
+        let Some(snapshot) = &self.snapshot else { return LinesVerdict::Normal };
+        let Some(d) = snapshot.blocks.get(&id) else { return LinesVerdict::Normal };
         let frame_w = snapshot.image.width() as f32;
         let agree = lines_agree(lines, &d.rect);
-        let Some(t) = self.tracker.get_mut(id) else { return };
+        // The same pitch rule as the detector's, on the engine's own lines: a gap the detector did not see.
+        // Once per scene: a memory that matches this block means the parts did not appear (nothing to retry).
+        if agree {
+            let groups = super::split::split_rects(lines, super::split::text_angle(&d.lines), typical_glyph_height(d), s.appearance.inplace.line_gap_factor);
+            if groups.len() > 1 && !self.cuts.iter().any(|m| m.parent.iou(&d.rect) >= LINES_AGREE_IOU) {
+                let partitions: Vec<Rect> = groups.iter().map(|g| g.iter().skip(1).fold(lines[g[0]], |u, &i| u.union(&lines[i]))).collect();
+                tracing::info!(target: "inplace.lines", block_id = id, parts = partitions.len(), "OCR lines show several fields in one block: split on the next scan");
+                self.cuts.push(CutMemory { parent: d.rect, partitions, seen: self.last_scan.unwrap_or_else(Instant::now) });
+                return LinesVerdict::Split;
+            }
+        }
+        let Some(t) = self.tracker.get_mut(id) else { return LinesVerdict::Normal };
         if !agree {
             t.ocr_lines = None;
             if t.ocr_bounds.take().is_some() || t.refined_rect.take().is_some() { t.background_signature = None; }
             let on = lines.iter().skip(1).fold(lines[0], |u, l| u.union(l));
             t.lines_note = format!("строки по детектору: геометрия OCR ({} стр.) не совпала с блоком (IoU {:.2})", lines.len(), on.iou(&d.rect));
             tracing::debug!(target: "inplace.lines", block_id = id, ocr_lines = lines.len(), detected = d.lines.len(), "OCR geometry does not match the block; detector lines kept");
-            return;
+            return LinesVerdict::Normal;
         }
         t.ocr_lines = Some(lines.to_vec());
         t.lines_note = if lines.len() == d.lines.len() { format!("строк: {} (OCR и детектор согласны)", lines.len()) }
@@ -322,6 +401,7 @@ impl InplaceEngine {
             let analysis = BackgroundAnalyzer.analyze(&snapshot.image, &snapshot.mask, &rect, margin);
             t.background = Some(BackgroundInpainter.render(&snapshot.image, &snapshot.mask, &rect, d.line_height(), analysis, &s.appearance.inplace, d.block_type));
             t.background_signature = Some(BackgroundAnalyzer::signature(&snapshot.image, &rect, margin));
+            t.background_for = rect;
             t.revision += 1;
             if refined.is_some() { t.lines_note.push_str("; граница блока по OCR"); }
         }
@@ -334,6 +414,7 @@ impl InplaceEngine {
                 t.revision += 1;
             }
         }
+        LinesVerdict::Normal
     }
 
     /// Однократный выбор шрифта поля по признакам первого анализа.
@@ -670,6 +751,76 @@ mod tests {
         e.complete(again.id, Some(("a".into(), "б".into())), &s);
         let second = e.finish(&s).map_or(first.clone(), |f| f.blocks[0].clone());
         assert_eq!((second.text_rect, second.background.rect), (first.text_rect, first.background.rect));
+    }
+
+    #[test]
+    fn a_field_that_grows_in_place_gets_a_plate_of_its_new_size() {
+        let s = settings();
+        let (mut e, t0) = (InplaceEngine::with_fonts(InstalledFontDatabase::bundled()), Instant::now());
+        let (_, first) = read_all(&mut e, glued(2, false, 0), &s, t0);
+        let before = first.expect("the field").blocks.remove(0);
+        // A third line appears under the same top-left corner: the field does not move, its surroundings look the
+        // same, but the plate that covered two lines must now cover three.
+        let (jobs, frame) = read_all(&mut e, glued(3, false, 0), &s, t0 + Duration::from_millis(300));
+        assert_eq!(jobs.len(), 1);
+        let after = frame.expect("the field changed").blocks.remove(0);
+        assert!(after.text_rect.h > before.text_rect.h + 20.0, "{:?} vs {:?}", after.text_rect, before.text_rect);
+        assert!(after.background.rect.bottom() >= after.text_rect.bottom(), "the plate covers the whole text: {:?} / {:?}", after.background.rect, after.text_rect);
+        assert!(after.background.rect.h > before.background.rect.h + 20.0, "and it was built again, not kept: {:?} vs {:?}", after.background.rect, before.background.rect);
+    }
+
+    /// What the OCR engine would report for the three-line block if it saw a title and a body set well apart:
+    /// two boxes 22 px tall at the top and the bottom of the block (a pitch of 3 line heights).
+    fn far_apart(rect: &Rect) -> Vec<Rect> {
+        vec![Rect::new(rect.x, rect.y, rect.w, 22.0), Rect::new(rect.x, rect.bottom() - 22.0, rect.w, 22.0)]
+    }
+
+    #[test]
+    fn a_gap_only_the_ocr_engine_saw_splits_the_field_on_the_next_scan() {
+        let s = settings();
+        let (frame, t0) = (three_lines(), Instant::now());
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        // The detector sees one block of three lines (evenly spaced, nothing to cut)...
+        let job = e.begin(frame.clone(), &s, t0, false).remove(0);
+        // ...the engine's own lines show a title and a body far apart: the field is not to be published as it is.
+        assert_eq!(e.observe_ocr_lines(job.id, &far_apart(&job.rect), &s), LinesVerdict::Split);
+        // Not completed: the next scan hands the field out again, now divided at the remembered cut.
+        let jobs = e.begin(frame.clone(), &s, t0 + Duration::from_millis(100), false);
+        assert_eq!(jobs.len(), 2, "two fields where there was one");
+        assert!(jobs[0].rect.bottom() <= jobs[1].rect.y, "the parts do not overlap: {:?} / {:?}", jobs[0].rect, jobs[1].rect);
+        for j in &jobs { e.complete(j.id, Some((format!("t{}", j.id), format!("п{}", j.id))), &s); }
+        let blocks = e.finish(&s).expect("both parts").blocks;
+        assert_eq!(blocks.len(), 2);
+        // Each part has its plate of its own boundary and the picture goes on being divided the same way.
+        assert!(blocks[0].background.rect.bottom() <= blocks[1].text_rect.y, "{:?} / {:?}", blocks[0].background.rect, blocks[1].text_rect);
+        assert!(e.begin(frame, &s, t0 + Duration::from_millis(300), false).is_empty(), "stable: nothing is read again");
+        assert!(e.finish(&s).is_none(), "and nothing flickers");
+    }
+
+    #[test]
+    fn a_split_is_planned_once_and_forgotten_with_the_scene() {
+        let s = settings();
+        let (frame, t0) = (three_lines(), Instant::now());
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let job = e.begin(frame.clone(), &s, t0, false).remove(0);
+        assert_eq!(e.observe_ocr_lines(job.id, &far_apart(&job.rect), &s), LinesVerdict::Split);
+        // The same merged block shown to the engine again while the memory stands: no second plan, no loop.
+        assert_eq!(e.observe_ocr_lines(job.id, &far_apart(&job.rect), &s), LinesVerdict::Normal);
+        // Long after, the scene is new: the memory is gone and the block is whole again.
+        let jobs = e.begin(frame, &s, t0 + CUT_TTL + Duration::from_secs(1), false);
+        assert_eq!(jobs.len(), 1, "forgotten");
+        assert_eq!(jobs[0].rect, job.rect);
+    }
+
+    #[test]
+    fn evenly_spaced_ocr_lines_never_plan_a_split() {
+        let s = settings();
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let job = e.begin(three_lines(), &s, Instant::now(), false).remove(0);
+        let third = job.rect.h / 3.0;
+        let lines: Vec<Rect> = (0..3).map(|i| Rect::new(job.rect.x, job.rect.y + third * i as f32, job.rect.w, third - 2.0)).collect();
+        assert_eq!(e.observe_ocr_lines(job.id, &lines, &s), LinesVerdict::Normal);
+        assert_eq!(e.observe_ocr_lines(job.id, &[], &s), LinesVerdict::Normal, "no geometry, no verdict");
     }
 
     #[test]

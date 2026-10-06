@@ -48,6 +48,14 @@ TestCase {
         property string captureCapabilities: "{}"
         property var forgotten: []
         function forgetGameProfile(key) { forgotten = forgotten.concat([key]) }
+        function appVersion() { return "9.9.9" }
+        property string paddleJson: ""
+        property bool paddleBusy: false
+        property int paddleChecks: 0
+        function refreshPaddle() { paddleChecks++ }
+        property var installCalls: []
+        function installLanguage(code) { installCalls = installCalls.concat([["download", code]]) }
+        function installPackage(pkg) { installCalls = installCalls.concat([["package", pkg]]) }
         function refreshTesseract() {}
         function bundledFonts() { return JSON.stringify(["Inter", "PT Serif", "Roboto Slab", "JetBrains Mono", "Noto Sans CJK SC"]) }
     }
@@ -253,6 +261,127 @@ TestCase {
         compare(tabs.currentIndex, 3)
         settings.set("display_mode", "window")
         settings.apply()
+    }
+
+    function paddleReport(ready, problems) {
+        return JSON.stringify({ready: ready, summary: ready ? "PaddleOCR 3.0.1 · PaddlePaddle 3.0.0 · виртуальное окружение uv · язык «eng»" : "PaddleOCR не установлен в /usr/bin/python3",
+            problems: problems})
+    }
+
+    function test_aboutTabAnimatesOnlyWhileShownAndTellsWhatLipaXIs() {
+        settings.reload()
+        settings.show()
+        const tabs = findChild(settings, "settingsTabs")
+        tabs.currentIndex = 0
+        const page = findChild(settings, "settingsPage8")
+        const icon = visualFind(page.contentItem, "aboutIcon")
+        const ticker = visualFind(page.contentItem, "aboutTicker")
+        verify(icon !== null && ticker !== null)
+        // On another tab nothing moves: the icon rests in the middle.
+        wait(200)
+        compare(icon.y, 24)
+        compare(icon.rotation, 0)
+        // On its own tab the icon floats and sways and the line runs (the tab index is that of "О программе").
+        tabs.currentIndex = 8
+        tryVerify(() => icon.y < 20, 3000, "the icon floats")
+        tryVerify(() => icon.rotation !== 0, 3000, "and sways")
+        const x = ticker.x
+        wait(300)
+        verify(ticker.x < x, "the line runs: " + x + " -> " + ticker.x)
+        // Leaving the tab stops it and puts the icon back.
+        tabs.currentIndex = 0
+        tryCompare(icon, "y", 24, 3000)
+        tryCompare(icon, "rotation", 0, 3000)
+        // What the program is, its version, author, licence and what it stands on.
+        compare(visualFind(page.contentItem, "aboutVersion").text, "Версия 9.9.9")
+        verify(visualFind(page.contentItem, "aboutDescription").text.indexOf("Переводчик игрового текста") >= 0)
+        verify(visualFind(page.contentItem, "aboutDescription").text.indexOf("PaddleOCR") >= 0)
+        verify(visualFind(page.contentItem, "aboutRepository").text.indexOf("github.com/GrayRats/lipax-qt") >= 0)
+        const links = visualFind(page.contentItem, "aboutLinks")
+        verify(links.count === 5, "five sources")
+        let all = ""
+        for (let i = 0; i < links.count; i++) all += links.itemAt(i).text
+        for (const needed of ["tesseract-ocr/tesseract", "tessdata_fast", "PaddlePaddle/PaddleOCR", "meikipop", "satix-one/lipa"])
+            verify(all.indexOf(needed) >= 0, needed)
+    }
+
+    function test_paddleIsCheckedByItselfAndTheFixesAreShown() {
+        settings.reload()
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 1
+        settings.set("recognition.engine", "tesseract")
+        const panel = visualFind(findChild(settings, "settingsPage1").contentItem, "paddleCheck")
+        verify(panel !== null)
+        verify(!panel.visible, "Tesseract needs no check of PaddleOCR")
+        controller.paddleChecks = 0
+        settings.set("recognition.engine", "paddleocr")
+        verify(panel.visible)
+        tryVerify(() => controller.paddleChecks === 1, 3000, "choosing PaddleOCR starts the check")
+        // A change of the Python or of the language checks again.
+        settings.set("recognition.paddle_python", "/home/u/.local/share/lipa/paddle-venv/bin/python")
+        tryVerify(() => controller.paddleChecks === 2, 3000)
+        settings.set("recognition.language", "jpn")
+        tryVerify(() => controller.paddleChecks === 3, 3000)
+        // What is missing, in words, with the ways to fix it as commands that can be copied.
+        controller.paddleJson = paddleReport(false, [{id: "paddleocr-missing", severity: "error", title: "PaddleOCR не установлен в /usr/bin/python3",
+            detail: "Пакет paddleocr (3.x) не найден в этом Python. Выберите способ установки:", options: [
+            {title: "uv (быстро, рекомендуется)", commands: ["uv venv ~/.local/share/lipa/paddle-venv", "uv pip install --python ~/.local/share/lipa/paddle-venv/bin/python 'paddlepaddle>=3,<4' 'paddleocr>=3,<4'"]},
+            {title: "системные пакеты (deb, AUR, pkg)", commands: []}]},
+            {id: "models-missing", severity: "info", title: "Моделей нет в кэше", detail: "Скачаются при первом запуске.", options: []}])
+        const summary = visualFind(panel, "paddleSummary")
+        verify(summary.text.indexOf("✗ ") === 0 && summary.text.indexOf("не установлен") >= 0, summary.text)
+        tryVerify(() => visualFind(panel, "paddleProblem_paddleocr-missing") !== null)
+        verify(visualFind(panel, "paddleProblem_models-missing") !== null)
+        const copy = visualFind(panel, "paddleCopy")
+        verify(copy.visible, "an option with commands can be copied")
+        controller.copied = ""
+        copy.clicked()
+        verify(controller.copied.indexOf("uv venv ~/.local/share/lipa/paddle-venv\nuv pip install") === 0, controller.copied)
+        // A working environment says so.
+        controller.paddleJson = paddleReport(true, [])
+        verify(summary.text.indexOf("✓ PaddleOCR 3.0.1") === 0, summary.text)
+        // The button checks on demand; a check in progress says so.
+        const before = controller.paddleChecks
+        visualFind(panel, "paddleRecheck").clicked()
+        compare(controller.paddleChecks, before + 1)
+        controller.paddleBusy = true
+        verify(summary.text.indexOf("Проверка окружения") === 0)
+        controller.paddleBusy = false
+        controller.paddleJson = ""
+        settings.set("recognition.engine", "tesseract")
+        settings.set("recognition.language", "eng")
+        settings.set("recognition.paddle_python", "")
+    }
+
+    function test_languagesWithoutAPackageAreDownloadedWithoutAPassword() {
+        const before = controller.tesseractJson
+        controller.tesseractJson = JSON.stringify({installed: true, distro: {name: "CachyOS", family: "arch"}, package_manager: "pacman", version: "5.5",
+            path: "/usr/bin/tesseract", languages: [{code: "eng", name: "English"}], installable: [
+            {code: "deu", name: "German", package: "tesseract-data-deu", available: true, command: "pkexec pacman -S --needed --noconfirm tesseract-data-deu", method: "package"},
+            {code: "ara", name: "Arabic", package: "tesseract-data-ara", available: true, command: "Скачать https://example.org/ara.traineddata в /home/u/.local/share/lipa/tessdata", method: "download"}]})
+        compare(settings.installable.length, 2)
+        compare(settings.installable[0].label, "deu — German (tesseract-data-deu)")
+        compare(settings.installable[1].label, "ara — Arabic (скачать модель)")
+        const dialog = findChild(settings, "installDialog")
+        controller.installCalls = []
+        // A repository package asks for the administrator password.
+        settings.askInstall("deu", "German")
+        verify(dialog.text.indexOf("пароль администратора") >= 0, dialog.text)
+        dialog.accepted()
+        dialog.close()
+        compare(JSON.stringify(controller.installCalls), JSON.stringify([["package", "tesseract-data-deu"]]))
+        // A model without a package is downloaded: no password, and the dialog says where from.
+        settings.askInstall("ara", "Arabic")
+        compare(settings.pendingMethod, "download")
+        verify(dialog.text.indexOf("Пароль администратора не нужен") >= 0 && dialog.text.indexOf("ara.traineddata") >= 0, dialog.text)
+        dialog.accepted()
+        dialog.close()
+        compare(JSON.stringify(controller.installCalls[1]), JSON.stringify(["download", "ara"]))
+        // Something that is not on offer is ignored.
+        settings.askInstall("xyz", "Nothing")
+        compare(settings.pendingCode, "ara")
+        verify(!dialog.visible, "no dialog for a language that is not on offer")
+        controller.tesseractJson = before
     }
 
     function test_lineGapFactorIsEditableAndSaved() {
