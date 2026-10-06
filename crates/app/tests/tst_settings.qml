@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Universal
 import QtTest
 import "../qml" as Lipa
 import "SettingsFixture.js" as Fixture
@@ -27,7 +28,7 @@ TestCase {
         property int patchCalls: 0
         property string pickedSource: ""
         function pickWindow() { pickedSource = JSON.parse(saved).capture.source }
-        function defaultSettingsJson() { return JSON.stringify(Fixture.make({"appearance.window.font_size": 20, "translation_window.border_color": "#ff00ff", "translation_window.pinned_corner_radius": 0, hotkeys: {toggle: "Ctrl+Alt+P"},
+        function defaultSettingsJson() { return JSON.stringify(Fixture.make({"general.log_level": "info", "general.autostart": false, "general.theme": "dark", "appearance.main_window.font_size": 16, "appearance.main_window.background": "gray", "appearance.main_window.font_family": "Inter", "appearance.main_window.cjk_font_family": "", "appearance.window.font_size": 20, "translation_window.border_color": "#ff00ff", "translation_window.pinned_corner_radius": 0, hotkeys: {toggle: "Ctrl+Alt+P"},
             "capture.regions": [{id: "subtitles", name: "Субтитры", enabled: true, rect: null, recognition_language: "", target_language: "", engine: null, interval_ms: 500, debounce_ms: 400}]})) }
         function editableSettingsPaths() { return JSON.stringify(Fixture.paths()) }
         function refreshDiagnostics() {}
@@ -222,7 +223,7 @@ TestCase {
         tabs.itemAt(0).forceActiveFocus()
         keyClick(Qt.Key_Right)
         tryCompare(tabs, "currentIndex", 1)
-        tabs.currentIndex = 8
+        tabs.currentIndex = 10
         tryVerify(() => tabs.contentItem.contentX > 0, 2000, "the last tab scrolls into view")
         tabs.currentIndex = 0
     }
@@ -286,8 +287,10 @@ TestCase {
         compare(tabs.itemAt(0).text, "Источник изображения")
         compare(tabs.itemAt(6).text, "Клавиши")
         compare(tabs.itemAt(7).text, "Статус")
-        compare(tabs.itemAt(8).text, "О программе")
-        for (let i = 0; i < 9; ++i) {
+        compare(tabs.itemAt(8).text, "Общие")
+        compare(tabs.itemAt(9).text, "Приложение")
+        compare(tabs.itemAt(10).text, "О программе")
+        for (let i = 0; i < 11; ++i) {
             tabs.currentIndex = i
             wait(100)
             const page = findChild(settings, "settingsPage" + i)
@@ -338,7 +341,7 @@ TestCase {
         settings.show()
         const tabs = findChild(settings, "settingsTabs")
         tabs.currentIndex = 0
-        const page = findChild(settings, "settingsPage8")
+        const page = findChild(settings, "settingsPage10")
         const icon = visualFind(page.contentItem, "aboutIcon")
         const ticker = visualFind(page.contentItem, "aboutTicker")
         verify(icon !== null && ticker !== null)
@@ -347,7 +350,7 @@ TestCase {
         compare(icon.y, 24)
         compare(icon.rotation, 0)
         // On its own tab the icon floats and sways and the line runs (the tab index is that of "О программе").
-        tabs.currentIndex = 8
+        tabs.currentIndex = 10
         tryVerify(() => icon.y < 20, 3000, "the icon floats")
         tryVerify(() => icon.rotation !== 0, 3000, "and sways")
         const x = ticker.x
@@ -635,6 +638,145 @@ TestCase {
         settings.apply()
         compare(JSON.parse(controller.saved).recognition.minimum_confidence, 55)
         settings.set("recognition.minimum_confidence", 30)
+        settings.apply()
+    }
+
+    function test_filtersAndOverlayOptionsAreInTheSettings() {
+        settings.show()
+        settings.reload()
+        for (const [name, key] of [["filterBinarize", "recognition.binarize"], ["filterInvert", "recognition.auto_invert"], ["filterSharpen", "recognition.sharpen"]]) {
+            const toggle = findChild(settings, name)
+            verify(toggle !== null, name)
+            verify(!toggle.checked, name + " is off by default")
+            toggle.checked = true
+            toggle.toggled()
+            const [group, field] = key.split(".")
+            compare(settings.current[group][field], true, key)
+            settings.set(key, false)
+        }
+        verify(findChild(settings, "filterNoise").checked, "noise removal is on by default")
+        const contrast = findChild(settings, "filterContrast")
+        contrast.value = 40
+        contrast.valueModified()
+        compare(settings.current.recognition.contrast, 40)
+        settings.set("recognition.contrast", 0)
+        const active = findChild(settings, "onlyWhenActive")
+        verify(active !== null && !active.checked)
+        active.checked = true
+        active.toggled()
+        compare(settings.current.appearance.inplace.only_when_active, true)
+        settings.set("appearance.inplace.only_when_active", false)
+        const changes = findChild(settings, "changesOnly")
+        verify(changes !== null && !changes.checked)
+        changes.checked = true
+        changes.toggled()
+        compare(settings.current.translation.changes_only, true)
+        settings.set("translation.changes_only", false)
+        settings.apply()
+    }
+
+    function test_windowSettingsAreOffInTheInplaceMode() {
+        settings.show()
+        settings.reload()
+        findChild(settings, "settingsTabs").currentIndex = 4
+        const page = findChild(settings, "settingsPage4")
+        const note = findChild(settings, "windowSettingsDisabledNote")
+        settings.set("display_mode", "window")
+        verify(page.enabled && !note.visible)
+        compare(page.opacity, 1)
+        settings.set("display_mode", "inplace")
+        verify(!page.enabled && note.visible, "the window has no effect over the original text")
+        verify(page.opacity < 1, "and it looks so")
+        settings.set("display_mode", "window")
+        verify(page.enabled, "a separate window brings them back")
+        // The overlay option lives with the display mode, not with the appearance.
+        const active = findChild(settings, "onlyWhenActive")
+        verify(findChild(findChild(settings, "settingsPage3"), "onlyWhenActive") === active)
+        // The same option is on the appearance tab too; both switches are one setting and each points to the other.
+        const twin = findChild(settings, "onlyWhenActiveAppearance")
+        verify(twin !== null && !twin.checked)
+        settings.set("appearance.inplace.only_when_active", true)
+        verify(active.checked && twin.checked)
+        settings.set("appearance.inplace.only_when_active", false)
+        findChild(settings, "onlyWhenActiveLinkDisplay").linkActivated("appearance")
+        compare(findChild(settings, "settingsTabs").currentIndex, 5)
+        findChild(settings, "onlyWhenActiveLinkAppearance").linkActivated("display")
+        compare(findChild(settings, "settingsTabs").currentIndex, 3)
+    }
+
+    function test_generalTabHoldsOnlyTheMainWindowText() {
+        settings.show()
+        settings.reload()
+        const tabs = findChild(settings, "settingsTabs")
+        compare(tabs.itemAt(8).text, "Общие")
+        tabs.currentIndex = 8
+        const page = findChild(settings, "settingsPage8")
+        // Nothing of the application, the tray or the floating window is here.
+        for (const name of ["generalTheme", "closeToTraySwitch", "generalAutostart", "generalNotifyErrors", "generalLogLevel", "translationFontFamily"])
+            verify(findChild(page, name) === null, name + " does not belong to «General»")
+        const font = findChild(page, "mainWindowFont")
+        compare(font.currentText, "Inter")
+        font.currentIndex = font.find("PT Serif")
+        font.activated(font.currentIndex)
+        compare(settings.current.appearance.main_window.font_family, "PT Serif")
+        const cjk = findChild(page, "mainWindowCjkFont")
+        compare(cjk.currentIndex, 0, "automatic")
+        cjk.currentIndex = 1
+        cjk.activated(1)
+        verify(settings.current.appearance.main_window.cjk_font_family.length > 0)
+        const size = findChild(page, "mainWindowFontSize")
+        compare(size.value, 16)
+        size.value = 24
+        size.valueModified()
+        compare(settings.current.appearance.main_window.font_size, 24)
+        const background = findChild(page, "mainWindowBackground")
+        compare(background.currentIndex, 0, "grey by default")
+        background.currentIndex = 1
+        background.activated(1)
+        compare(settings.current.appearance.main_window.background, "system")
+        // The floating translation window keeps its own font: it is not touched.
+        compare(settings.current.appearance.window.font_size, 20)
+        settings.resetKeys(["appearance.main_window"])
+        compare(settings.current.appearance.main_window.font_size, 16)
+        compare(settings.current.appearance.main_window.background, "gray")
+        settings.apply()
+    }
+
+    function test_applicationTabHoldsThemeTrayAutostartNotificationsAndLog() {
+        settings.show()
+        settings.reload()
+        const tabs = findChild(settings, "settingsTabs")
+        compare(tabs.itemAt(9).text, "Приложение")
+        tabs.currentIndex = 9
+        const page = findChild(settings, "settingsPage9")
+        verify(findChild(page, "closeToTraySwitch") !== null, "the tray option moved here")
+        const theme = findChild(settings, "generalTheme")
+        compare(theme.currentIndex, 3, "dark by default")
+        theme.currentIndex = 4
+        theme.activated(4)
+        compare(settings.current.general.theme, "light")
+        compare(settings.universalTheme, Universal.Light, "light applies at once")
+        verify(findChild(settings, "generalThemeNote").text.indexOf("сразу") >= 0)
+        theme.currentIndex = 2
+        theme.activated(2)
+        compare(settings.current.general.theme, "fusion")
+        verify(findChild(settings, "generalThemeNote").text.indexOf("перезапуска") >= 0, "other styles need a restart")
+        settings.set("general.theme", "dark")
+        for (const [name, key] of [["generalAutostart", "autostart"], ["generalNotifyErrors", "notify_errors"], ["generalNotifyRetries", "notify_retries"]]) {
+            const toggle = findChild(settings, name)
+            verify(!toggle.checked, name)
+            toggle.checked = true
+            toggle.toggled()
+            compare(settings.current.general[key], true, key)
+        }
+        const level = findChild(settings, "generalLogLevel")
+        compare(level.currentIndex, 2, "info by default")
+        level.currentIndex = 3
+        level.activated(3)
+        compare(settings.current.general.log_level, "debug")
+        settings.resetKeys(["general"])
+        compare(settings.current.general.log_level, "info")
+        compare(settings.current.general.autostart, false)
         settings.apply()
     }
 

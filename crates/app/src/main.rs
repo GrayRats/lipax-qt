@@ -2,21 +2,40 @@ mod bridge;
 mod icon;
 mod instance;
 mod logging;
+mod notify;
 
 use cxx_qt_lib::{QQmlApplicationEngine, QUrl};
 
-/// Тёмное оформление всех окон: стиль Universal с тёмной темой. Переменные заданы по умолчанию,
-/// явно выставленные пользователем (например, `QT_QUICK_CONTROLS_STYLE`) не перезаписываются.
-fn apply_dark_style() {
-    for (key, value) in [
-        ("QT_QUICK_CONTROLS_STYLE", "Universal"),
-        ("QT_QUICK_CONTROLS_UNIVERSAL_THEME", "Dark"),
-        ("QT_QUICK_CONTROLS_UNIVERSAL_ACCENT", "Teal"),
-    ] {
+/// Стиль Qt Quick по теме из настроек (`general.theme`). Стиль выбирается до создания приложения и потом не меняется;
+/// тёмная и светлая темы — это стиль Universal, они переключаются на лету через `Universal.theme` в QML.
+/// Переменные окружения, выставленные пользователем (например, `QT_QUICK_CONTROLS_STYLE`), не перезаписываются.
+fn apply_style(theme: &str) {
+    let vars: &[(&str, &str)] = match theme {
+        "light" => &[("QT_QUICK_CONTROLS_STYLE", "Universal"), ("QT_QUICK_CONTROLS_UNIVERSAL_THEME", "Light"), ("QT_QUICK_CONTROLS_UNIVERSAL_ACCENT", "Teal")],
+        "fusion" => &[("QT_QUICK_CONTROLS_STYLE", "Fusion")],
+        "breeze" => &[("QT_QUICK_CONTROLS_STYLE", "org.kde.breeze")],
+        // The desktop's own choice: Qt picks the style from the platform theme.
+        "system" => &[],
+        _ => &[("QT_QUICK_CONTROLS_STYLE", "Universal"), ("QT_QUICK_CONTROLS_UNIVERSAL_THEME", "Dark"), ("QT_QUICK_CONTROLS_UNIVERSAL_ACCENT", "Teal")],
+    };
+    for (key, value) in vars {
         if std::env::var_os(key).is_none() {
             // SAFETY: вызывается в начале main, пока потоков, читающих окружение, ещё нет.
             unsafe { std::env::set_var(key, value) };
         }
+    }
+}
+
+/// What the «General» tab asks for at start: the log level (unless `RUST_LOG` says otherwise), the autostart entry.
+fn apply_general(general: &lipa_core::settings::GeneralSettings) {
+    if !logging::level_from_environment() && general.log_level != "info" {
+        let _ = logging::set_level(&general.log_level);
+    }
+    if general.autostart
+        && let Some(dir) = lipa_core::autostart::default_dir().filter(|d| !lipa_core::autostart::is_enabled(d))
+        && let Ok(exe) = std::env::current_exe()
+        && let Err(e) = lipa_core::autostart::set(&dir, true, &exe.to_string_lossy()) {
+        tracing::warn!(component = "autostart", error = %e, "запись автозапуска не восстановлена");
     }
 }
 
@@ -37,7 +56,9 @@ fn main() {
         instance::Startup::Forwarded | instance::Startup::NothingToDo => return,
     }
     tracing::info!(version = env!("CARGO_PKG_VERSION"), "Запуск LipaX");
-    apply_dark_style();
+    let general = lipa_core::settings::Settings::load().general;
+    apply_style(&general.theme);
+    apply_general(&general);
     icon::create_application();
     icon::configure();
     let mut engine = QQmlApplicationEngine::new();

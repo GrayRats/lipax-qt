@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Controls.Universal
 
 ApplicationWindow {
     id: win
     property var settingsWindow
+    Universal.theme: settingsWindow ? settingsWindow.universalTheme : Universal.Dark
     property var controller: settingsWindow ? settingsWindow.controller : null
     readonly property var current: settingsWindow ? settingsWindow.current : ({})
     readonly property var history: { try { return JSON.parse(controller.historyJson || "[]") } catch (e) { return [] } }

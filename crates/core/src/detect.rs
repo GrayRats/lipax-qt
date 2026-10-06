@@ -29,7 +29,7 @@ const MIN_TEXT: usize = 4;
 const BRIGHT: u8 = 140;
 const MINOR_HOLD: Duration = Duration::from_millis(1000);
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 struct Signature {
     w: usize,
     h: usize,
@@ -84,6 +84,7 @@ impl Signature {
     }
 }
 
+#[derive(Clone)]
 pub struct ChangeDetector {
     /// Последний принятый кадр: с ним сравниваются следующие.
     reference: Option<Signature>,

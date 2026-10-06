@@ -6,8 +6,17 @@ function send(method, ...args) {
 function rect(g) {
     return [g.x, g.y, g.width, g.height];
 }
+// Which window has the focus (and whether it is one of LipaX's own, which must not hide the overlay) and
+// which windows are minimised: the overlay is shown only over a game that can be seen and used.
+function sendFocus() {
+    const active = workspace.activeWindow;
+    send("Focus", active ? active.internalId.toString() : "", !!(active && active.pid === LIPA_PID));
+}
 function watchWindow(window) {
     const uuid = window.internalId.toString();
+    function sendMinimized() { send("Minimized", uuid, !!window.minimized); }
+    if (window.minimizedChanged) window.minimizedChanged.connect(sendMinimized);
+    sendMinimized();
     function update() {
         send("Update", uuid, JSON.stringify([rect(window.clientGeometry), rect(window.frameGeometry), rect(window.bufferGeometry)]));
     }
@@ -42,6 +51,7 @@ function restoreAutomaticFocus(window) {
     });
 }
 workspace.windowActivated.connect(function(window) {
+    sendFocus();
     if (window && isFloating(window)) restoreAutomaticFocus(window);
     else if (window) previousActive = window;
 });
@@ -105,4 +115,5 @@ workspace.windowList().forEach(function(window) {
     watchWindow(window);
     if (isFloating(window)) adoptFloating(window);
 });
+sendFocus();
 send("Ready");

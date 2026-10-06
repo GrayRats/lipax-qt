@@ -79,7 +79,7 @@ ApplicationWindow {
     }
 
     HistoryWindow { id: historyWin; settingsWindow: settingsWin }
-    OcrPreviewWindow { id: ocrWin; controller: ctl }
+    OcrPreviewWindow { id: ocrWin; controller: ctl; universalTheme: settingsWin.universalTheme }
 
     Controller {
         id: ctl
@@ -118,6 +118,25 @@ ApplicationWindow {
         }
     }
 
+    // ── «Original» and «Translation» areas of this window: their own font and background (the «General» tab) ──
+    readonly property var mainSettings: (settingsWin.current.appearance && settingsWin.current.appearance.main_window) || ({})
+    readonly property string mainFamily: mainSettings.font_family || "Inter"
+    readonly property string mainCjkFamily: mainSettings.cjk_font_family || "Noto Sans CJK SC"
+    readonly property int mainFontSize: mainSettings.font_size || 16
+    readonly property bool mainSystemBackground: mainSettings.background === "system"
+    readonly property color mainBackground: mainSystemBackground ? palette.base : "#2b2b2b"
+    readonly property color mainTextColor: mainSystemBackground ? palette.text : "#e8e8e8"
+    // QML has no per-glyph font fallback list: a text with Chinese, Japanese or Korean glyphs is shown as rich text,
+    // each run of them in the CJK family. Any other text stays plain.
+    readonly property var cjkRun: /([\u2e80-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\uf900-\ufaff\uff00-\uffef]+)/g
+    function hasCjk(text) { return /[\u2e80-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\uf900-\ufaff\uff00-\uffef]/.test(text || "") }
+    function markup(text) {
+        if (!hasCjk(text)) return text
+        const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        return escaped.replace(cjkRun, "<span style=\"font-family:'" + mainCjkFamily + "'\">$1</span>").replace(/\n/g, "<br>")
+    }
+    function format(text) { return hasCjk(text) ? TextEdit.RichText : TextEdit.PlainText }
+
     SettingsWindow { id: settingsWin; controller: ctl; onSelectRegionRequested: regionWin.begin() }
 
     // The two renderers have separate state owned by the Controller: which one runs
@@ -143,7 +162,7 @@ ApplicationWindow {
             settings: settingsWin.current
             entry: root.inplaceEntries.find(e => e.key === modelData) || null
             gameGeometry: ctl.gameGeometry
-            visible: root.inplaceActive && ctl.inplaceVisible && !relocating && !!desktopRect && !!entry && entry.text.length > 0
+            visible: root.inplaceActive && ctl.inplaceVisible && ctl.overlayAllowed && !relocating && !!desktopRect && !!entry && entry.text.length > 0
             // MMB hides only the in-place translation; the translation window is untouched.
             onHideRequested: ctl.setInplaceVisibility(false, "mmb")
         }
@@ -173,14 +192,14 @@ ApplicationWindow {
     readonly property var fallbackTexts: inplaceFallback.texts || []
     readonly property int degradedFields: inplaceFallback.degraded || 0
     readonly property string fallbackText: fallbackTexts.map(f => fallbackTexts.length > 1 ? f.region + ": " + f.text : f.text).join("\n\n")
-    readonly property bool fallbackShown: inplaceActive && ctl.inplaceVisible && fallbackText.length > 0
+    readonly property bool fallbackShown: inplaceActive && ctl.inplaceVisible && ctl.overlayAllowed && fallbackText.length > 0
     TranslationWindow {
         id: translationWindow
         controller: ctl
         translation: root.windowActive ? ctl.translation : root.fallbackText
         original: root.windowActive ? ctl.original : ""
         gameGeometry: ctl.gameGeometry
-        shown: !root.closingDown && ((root.windowActive && ctl.translationWindowVisible && ctl.translation.length > 0) || root.fallbackShown)
+        shown: !root.closingDown && ((root.windowActive && ctl.translationWindowVisible && ctl.overlayAllowed && ctl.translation.length > 0) || root.fallbackShown)
         settings: settingsWin.current
         // Pin state and the pinned placement are decided in Rust (pinned lands where floating was).
         onPinToggled: (p) => ctl.setTranslationWindowPinned(p, "mmb")
@@ -302,18 +321,32 @@ ApplicationWindow {
         ScrollView {
             Layout.fillWidth: true
             Layout.preferredHeight: 90
-            TextArea { text: ctl.original; readOnly: true; wrapMode: Text.Wrap }
+            TextArea {
+                objectName: "mainOriginalText"
+                text: root.markup(ctl.original)
+                textFormat: root.format(ctl.original)
+                readOnly: true
+                wrapMode: Text.Wrap
+                color: root.mainTextColor
+                font.family: root.mainFamily
+                font.pixelSize: root.mainFontSize
+                background: Rectangle { color: root.mainBackground; radius: 3 }
+            }
         }
         Label { text: "Перевод"; font.bold: true }
         ScrollView {
             Layout.fillWidth: true
             Layout.fillHeight: true
             TextArea {
-                text: ctl.translation
+                objectName: "mainTranslationText"
+                text: root.markup(ctl.translation)
+                textFormat: root.format(ctl.translation)
                 readOnly: true
                 wrapMode: Text.Wrap
-                font.family: settingsWin.current.appearance.window.font_family || "Inter"
-                font.pixelSize: settingsWin.current.appearance.window.font_size || 20
+                color: root.mainTextColor
+                font.family: root.mainFamily
+                font.pixelSize: root.mainFontSize
+                background: Rectangle { color: root.mainBackground; radius: 3 }
             }
         }
         // Compact status line: one elided row, full text in the tooltip.

@@ -2,6 +2,7 @@
 //! сравнение текста, кэш. Остальные модули (capture, ocr, translate, pipeline)
 //! добавляются поэтапно.
 
+pub mod autostart;
 pub mod cache;
 pub mod capture;
 pub mod detect;

@@ -1,7 +1,30 @@
 //! One synchronous console backend for Rust and Qt, installed before Qt/Tokio start.
 use std::{backtrace::Backtrace, io::IsTerminal};
 use tracing::Level;
-use tracing_subscriber::{EnvFilter, fmt::writer::MakeWriterExt};
+use std::sync::OnceLock;
+use tracing_subscriber::{EnvFilter, Registry, fmt::writer::MakeWriterExt, prelude::*, reload};
+
+/// The filter of the installed subscriber; the settings change the level through it while the program runs.
+static FILTER: OnceLock<reload::Handle<EnvFilter, Registry>> = OnceLock::new();
+
+/// The directives that survive any level: a panic and a fatal Qt message are always reported.
+fn always(filter: EnvFilter) -> EnvFilter {
+    filter.add_directive("lipa::panic=error".parse().unwrap()).add_directive("qt::fatal=error".parse().unwrap())
+}
+
+/// Change the level of the log (`error`, `warn`, `info`, `debug`) without a restart. `Err` — not a level or no logger.
+pub fn set_level(level: &str) -> Result<(), String> {
+    if !lipa_core::settings::LOG_LEVELS.contains(&level) { return Err(format!("неизвестный уровень журнала: {level}")); }
+    let handle = FILTER.get().ok_or("журнал не установлен")?;
+    handle.reload(always(EnvFilter::new(level))).map_err(|e| e.to_string())?;
+    tracing::info!(level, "уровень журнала изменён");
+    Ok(())
+}
+
+/// `RUST_LOG` is set: the environment decides the level at start, the settings only on a later change.
+pub fn level_from_environment() -> bool {
+    std::env::var_os("RUST_LOG").is_some()
+}
 
 #[cxx::bridge(namespace = "lipax")]
 mod ffi {
@@ -24,19 +47,20 @@ pub fn init() {
         Err(_) => (EnvFilter::new("info"), true),
     };
     // Fatal diagnostics must survive even RUST_LOG=off.
-    let filter = filter
-        .add_directive("lipa::panic=error".parse().unwrap())
-        .add_directive("qt::fatal=error".parse().unwrap());
+    let filter = always(filter);
     let writer = std::io::stderr
         .with_max_level(Level::ERROR)
         .or_else(std::io::stdout);
-    tracing_subscriber::fmt()
-        .with_env_filter(filter)
-        .with_writer(writer)
-        .with_ansi(std::io::stdout().is_terminal() && std::io::stderr().is_terminal())
-        .with_target(true)
+    let (filter, handle) = reload::Layer::new(filter);
+    tracing_subscriber::registry()
+        .with(filter)
+        .with(tracing_subscriber::fmt::layer()
+            .with_writer(writer)
+            .with_ansi(std::io::stdout().is_terminal() && std::io::stderr().is_terminal())
+            .with_target(true))
         .try_init()
         .expect("initialize console logging");
+    let _ = FILTER.set(handle);
     std::panic::set_hook(Box::new(|panic| {
         let reason = panic
             .payload()
@@ -158,6 +182,17 @@ mod tests {
                 });
             return;
         }
+        if mode == "level-change" {
+            tracing::debug!("probe-before-debug");
+            tracing::warn!("probe-before-warn");
+            set_level("error").unwrap();
+            tracing::warn!("probe-after-warn");
+            tracing::error!("probe-after-error");
+            set_level("debug").unwrap();
+            tracing::debug!("probe-debug-again");
+            assert!(set_level("loud").is_err());
+            return;
+        }
         if mode == "qml" {
             let _app = cxx_qt_lib::QGuiApplication::new();
             ffi::emitQmlLogProbe();
@@ -214,6 +249,18 @@ mod tests {
             !out.contains('\u{1b}') && !err.contains('\u{1b}'),
             "redirected logs have no ANSI escapes"
         );
+    }
+
+    #[test]
+    fn the_level_changes_while_the_program_runs() {
+        let result = probe("level-change", "info");
+        assert!(result.status.success(), "{}", String::from_utf8_lossy(&result.stderr));
+        let (out, err) = (String::from_utf8_lossy(&result.stdout), String::from_utf8_lossy(&result.stderr));
+        assert!(!out.contains("probe-before-debug"), "debug was off at the start");
+        assert!(out.contains("probe-before-warn"));
+        assert!(!out.contains("probe-after-warn"), "warnings are off after `error`");
+        assert!(err.contains("probe-after-error"), "errors still go through");
+        assert!(out.contains("probe-debug-again"), "debug is on after `debug`");
     }
 
     #[test]

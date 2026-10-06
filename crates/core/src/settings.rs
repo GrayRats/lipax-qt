@@ -124,6 +124,8 @@ pub struct InplaceSettings {
     /// Блок делится там, где шаг между строками (центр–центр) больше `k` средних высот строки; см. `layout::split`.
     /// Меньше — дробнее (склеенные имя и реплика разделяются раньше), больше — крупнее блоки.
     pub line_gap_factor: f32,
+    /// The overlay is shown only while the game window is the active one (not minimised, not behind another window).
+    pub only_when_active: bool,
 }
 
 impl Default for InplaceSettings {
@@ -156,6 +158,7 @@ impl Default for InplaceSettings {
             font_overrides: BTreeMap::new(),
             preferred_fonts: Vec::new(),
             line_gap_factor: crate::layout::split::DEFAULT_LINE_GAP_FACTOR,
+            only_when_active: false,
         }
     }
 }
@@ -259,6 +262,13 @@ fn optional_ocr_engine<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Option<
 }
 
 /// How the translation window draws its background.
+/// Application themes of the «General» tab. `system` leaves the choice to Qt and the desktop; `dark`/`light` are the
+/// Universal style (and switch live), `breeze`/`fusion` are other Qt Quick styles chosen at start.
+pub const THEMES: [&str; 5] = ["system", "breeze", "fusion", "dark", "light"];
+pub const LOG_LEVELS: [&str; 4] = ["error", "warn", "info", "debug"];
+/// What fills the text areas of the main window: a standard grey or the palette of the current theme.
+pub const MAIN_WINDOW_BACKGROUNDS: [&str; 2] = ["gray", "system"];
+
 pub const WINDOW_BACKGROUND_STYLES: [&str; 4] = [
     "blur",        // compositor blur with an adjustable dark tint
     "transparent", // no background: white text with a light shadow
@@ -470,10 +480,10 @@ pub const REACTIONS: &[(&str, Reaction)] = &{
         ("capture.window", Managed), ("capture.region", Managed),
         // Recognition and translation: the pipeline starts over.
         ("recognition.language", Pipeline), ("translation.target_language", Pipeline), ("translation.source_language", Pipeline), ("recognition.engine", Pipeline), ("recognition.paddle_python", Pipeline),
-        ("recognition.minimum_confidence", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
+        ("recognition.minimum_confidence", Pipeline), ("recognition.binarize", Pipeline), ("recognition.auto_invert", Pipeline), ("recognition.contrast", Pipeline), ("recognition.sharpen", Pipeline), ("recognition.filter_noise", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
         ("translation.custom_url", Pipeline), ("capture.portal_fills_monitor", Pipeline), ("translation.custom_api_key", Pipeline), ("recognition.interval_ms", Pipeline), ("recognition.sensitivity", Pipeline),
         ("recognition.debounce_ms", Pipeline), ("display_mode", Pipeline), ("capture.regions", Pipeline),
-        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline),
+        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("general.theme", Immediate), ("general.autostart", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
         ("hotkeys.toggle", Hotkeys), ("hotkeys.select_region", Hotkeys), ("hotkeys.translate_once", Hotkeys), ("hotkeys.toggle_translation", Hotkeys), ("hotkeys.toggle_pin", Hotkeys),
         // The backend is chosen by the window key at selection time.
         ("capture.source", Reselect),
@@ -538,6 +548,11 @@ impl Default for GameCaptureSettings {
 pub struct GameTextRecognitionSettings {
     pub language: String,
     pub engine: OcrEngine,
+    /// Image filters are a property of the game: dark interfaces want inversion, light ones do not.
+    pub binarize: bool,
+    pub auto_invert: bool,
+    pub contrast: i32,
+    pub sharpen: bool,
 }
 
 impl Default for GameTextRecognitionSettings {
@@ -545,6 +560,10 @@ impl Default for GameTextRecognitionSettings {
         Self {
             language: "eng".into(),
             engine: "tesseract".into(),
+            binarize: false,
+            auto_invert: false,
+            contrast: 0,
+            sharpen: false,
         }
     }
 }
@@ -636,6 +655,13 @@ pub struct TextRecognitionSettings {
     pub engine: OcrEngine,
     pub paddle_python: String,
     pub minimum_confidence: u32,
+    /// Filters before OCR (`ocr::filter::Preprocess`) and removal of stray marks after it.
+    pub binarize: bool,
+    pub auto_invert: bool,
+    /// −100…100, 0 is off.
+    pub contrast: i32,
+    pub sharpen: bool,
+    pub filter_noise: bool,
     pub interval_ms: u64,
     pub sensitivity: f32,
     pub debounce_ms: u64,
@@ -648,6 +674,11 @@ impl Default for TextRecognitionSettings {
             engine: "tesseract".into(),
             paddle_python: "python3".into(),
             minimum_confidence: 30,
+            binarize: false,
+            auto_invert: false,
+            contrast: 0,
+            sharpen: false,
+            filter_noise: true,
             interval_ms: 500,
             sensitivity: 2.0,
             debounce_ms: 400,
@@ -665,6 +696,9 @@ pub struct TranslationSettings {
     pub custom_url: String,
     pub custom_api_key: String,
     pub auto_translate: bool,
+    /// Translate what changed: the text of the translation window is split into paragraphs and only the
+    /// paragraphs not translated before are sent; the others come from the cache.
+    pub changes_only: bool,
     pub source_language: TranslationSourceLanguage,
 }
 
@@ -678,6 +712,7 @@ impl Default for TranslationSettings {
             custom_url: String::new(),
             custom_api_key: String::new(),
             auto_translate: true,
+            changes_only: false,
             source_language: TranslationSourceLanguage::default(),
         }
     }
@@ -788,6 +823,55 @@ impl Default for WindowAppearance {
 pub struct TranslationAppearance {
     pub window: WindowAppearance,
     pub inplace: InplaceSettings,
+    pub main_window: MainWindowAppearance,
+}
+
+/// The «Original» and «Translation» areas of the main LipaX window: its own font and background, independent of the
+/// floating translation window (`window`) and of the text drawn over the game (`inplace`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct MainWindowAppearance {
+    /// A font shipped with LipaX, for Latin and Cyrillic text.
+    pub font_family: String,
+    /// For Chinese, Japanese and Korean glyphs; empty — the bundled Noto Sans CJK.
+    pub cjk_font_family: String,
+    pub font_size: u32,
+    /// `gray` (standard) or `system` (the palette of the theme).
+    pub background: String,
+}
+
+impl Default for MainWindowAppearance {
+    fn default() -> Self {
+        Self { font_family: "Inter".into(), cjk_font_family: String::new(), font_size: 16, background: "gray".into() }
+    }
+}
+
+/// Behaviour of the application itself, not of translation.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct GeneralSettings {
+    pub theme: String,
+    /// Start LipaX when the user logs in (an autostart entry in `~/.config/autostart`).
+    pub autostart: bool,
+    /// A desktop notification when an area stops with an error and automatic retries are over.
+    pub notify_errors: bool,
+    /// A desktop notification at every failure that will be retried.
+    pub notify_retries: bool,
+    /// `error`, `warn`, `info` or `debug`; applied at once. `RUST_LOG` wins at start.
+    pub log_level: String,
+}
+
+impl Default for GeneralSettings {
+    fn default() -> Self {
+        Self { theme: "dark".into(), autostart: false, notify_errors: false, notify_retries: false, log_level: "info".into() }
+    }
+}
+
+impl GeneralSettings {
+    fn sanitize(&mut self) {
+        if !THEMES.contains(&self.theme.as_str()) { self.theme = "dark".into(); }
+        if !LOG_LEVELS.contains(&self.log_level.as_str()) { self.log_level = "info".into(); }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -798,6 +882,7 @@ pub struct Settings {
     pub history_persist: bool,
     pub history_limit: usize,
     pub close_to_tray: bool,
+    pub general: GeneralSettings,
     pub hotkeys: Hotkeys,
     pub game_profiles_enabled: bool,
     pub game_profiles: BTreeMap<String, GameProfile>,
@@ -817,6 +902,7 @@ impl Default for Settings {
             history_persist: false,
             history_limit: 200,
             close_to_tray: false,
+            general: GeneralSettings::default(),
             hotkeys: Hotkeys::default(),
             game_profiles_enabled: true,
             game_profiles: BTreeMap::new(),
@@ -916,6 +1002,7 @@ impl Settings {
     pub fn sanitize(&mut self) {
         self.appearance.window.font_size = self.appearance.window.font_size.clamp(8, 96);
         self.recognition.minimum_confidence = self.recognition.minimum_confidence.min(95);
+        self.recognition.contrast = self.recognition.contrast.clamp(-100, 100);
         // The translation window uses only fonts shipped with LipaX. Old configurations may
         // name a system font, which must never silently resolve through Qt/fontconfig.
         let bundled = crate::layout::font_database::InstalledFontDatabase::bundled();
@@ -923,6 +1010,12 @@ impl Settings {
         if !available.iter().any(|font| font.family == self.appearance.window.font_family) {
             self.appearance.window.font_family = available.first().map(|font| font.family.clone()).unwrap_or_else(|| "Inter".into());
         }
+        let main = &mut self.appearance.main_window;
+        if !available.iter().any(|font| font.family == main.font_family) { main.font_family = "Inter".into(); }
+        if !main.cjk_font_family.is_empty() && !available.iter().any(|font| font.family == main.cjk_font_family) { main.cjk_font_family.clear(); }
+        main.font_size = main.font_size.clamp(8, 72);
+        if !MAIN_WINDOW_BACKGROUNDS.contains(&main.background.as_str()) { main.background = "gray".into(); }
+        self.general.sanitize();
         if !self.appearance.window.original_font_family.is_empty()
             && !available.iter().any(|font| font.family == self.appearance.window.original_font_family) {
             self.appearance.window.original_font_family.clear();
@@ -1037,6 +1130,10 @@ impl Settings {
             recognition: GameTextRecognitionSettings {
                 language: self.recognition.language.clone(),
                 engine: self.recognition.engine.clone(),
+                binarize: self.recognition.binarize,
+                auto_invert: self.recognition.auto_invert,
+                contrast: self.recognition.contrast,
+                sharpen: self.recognition.sharpen,
             },
             translation: GameTranslationSettings {
                 target_language: self.translation.target_language.clone(),
@@ -1072,6 +1169,10 @@ impl Settings {
         self.translation.target_language = profile.translation.target_language;
         self.translation.source_language = profile.translation.source_language;
         self.recognition.engine = profile.recognition.engine;
+        self.recognition.binarize = profile.recognition.binarize;
+        self.recognition.auto_invert = profile.recognition.auto_invert;
+        self.recognition.contrast = profile.recognition.contrast.clamp(-100, 100);
+        self.recognition.sharpen = profile.recognition.sharpen;
         self.capture.regions = profile.capture.regions;
         self.capture.active_region = profile.capture.active_region;
         self.capture.allow_multiple_regions = profile.capture.allow_multiple_regions;
@@ -1172,6 +1273,49 @@ overlay_size = [800, 200]
 
     fn game(class: &str, uuid: &str) -> Option<WindowKey> {
         Some(WindowKey { uuid: uuid.into(), resource_class: class.into(), caption: format!("{class} window") })
+    }
+
+    #[test]
+    fn general_and_main_window_settings_are_checked_and_old_files_get_defaults() {
+        let s = Settings::from_toml("");
+        assert_eq!((s.general.theme.as_str(), s.general.log_level.as_str(), s.general.autostart), ("dark", "info", false));
+        let m = &s.appearance.main_window;
+        assert_eq!((m.font_family.as_str(), m.cjk_font_family.as_str(), m.font_size, m.background.as_str()), ("Inter", "", 16, "gray"));
+        let mut bad = Settings::default();
+        bad.general.theme = "neon".into();
+        bad.general.log_level = "loud".into();
+        bad.appearance.main_window = MainWindowAppearance { font_family: "Some System Font".into(), cjk_font_family: "Another".into(), font_size: 500, background: "plaid".into() };
+        bad.sanitize();
+        assert_eq!((bad.general.theme.as_str(), bad.general.log_level.as_str()), ("dark", "info"));
+        let m = &bad.appearance.main_window;
+        assert_eq!((m.font_family.as_str(), m.cjk_font_family.as_str(), m.font_size, m.background.as_str()), ("Inter", "", 72, "gray"), "a system font is never used");
+        let mut good = Settings::default();
+        good.general.theme = "light".into();
+        good.general.log_level = "debug".into();
+        good.appearance.main_window = MainWindowAppearance { font_family: "Lora".into(), cjk_font_family: "Noto Sans CJK SC".into(), font_size: 24, background: "system".into() };
+        good.sanitize();
+        let m = &good.appearance.main_window;
+        assert_eq!((good.general.theme.as_str(), good.general.log_level.as_str()), ("light", "debug"));
+        assert_eq!((m.font_family.as_str(), m.cjk_font_family.as_str(), m.font_size, m.background.as_str()), ("Lora", "Noto Sans CJK SC", 24, "system"));
+    }
+
+    #[test]
+    fn ocr_filters_belong_to_the_game() {
+        let mut s = { let mut value = Settings::default(); value.capture.window = game("dark.exe", "u1"); value };
+        s.recognition.auto_invert = true;
+        s.recognition.contrast = 30;
+        s.remember_game();
+        // A light game next: no filters, and it keeps them off.
+        s.capture.window = game("light.exe", "u2");
+        s.recognition.auto_invert = false;
+        s.recognition.contrast = 0;
+        s.remember_game();
+        s.capture.window = game("dark.exe", "u1");
+        assert!(s.apply_game_profile());
+        assert!(s.recognition.auto_invert && s.recognition.contrast == 30 && !s.recognition.binarize);
+        s.capture.window = game("light.exe", "u2");
+        assert!(s.apply_game_profile());
+        assert!(!s.recognition.auto_invert && s.recognition.contrast == 0);
     }
 
     #[test]
@@ -1296,6 +1440,8 @@ overlay_size = [800, 200]
             |s: &mut Settings| s.recognition.language = "jpn".into(),
             |s: &mut Settings| s.recognition.engine = "auto".into(),
             |s: &mut Settings| s.recognition.minimum_confidence = 50,
+            |s: &mut Settings| s.recognition.binarize = true,
+            |s: &mut Settings| s.recognition.contrast = 20,
             |s: &mut Settings| s.recognition.interval_ms += 100,
             |s: &mut Settings| s.display_mode = TranslationDisplayMode::Inplace,
             |s: &mut Settings| s.capture.regions[0].enabled = false,

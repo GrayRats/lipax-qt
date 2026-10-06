@@ -1,6 +1,7 @@
 //! OCR. Tesseract вызывается как процесс: PNG на stdin, текст из stdout —
 //! без временных файлов и гонок между запусками.
 
+pub mod filter;
 pub mod paddle;
 pub mod paddle_env;
 
@@ -88,12 +89,12 @@ pub struct AnyOcr {
 
 impl AnyOcr {
     async fn auto(&self, img: &DynamicImage, settings: &Settings) -> Result<OcrResult, OcrError> {
-        let first = Tesseract.run_detailed(img, &settings.recognition.language).await?;
+        let first = Tesseract.run_detailed_with(img, &settings.recognition.language, filter::Preprocess::of(&settings.recognition)).await?;
         // A result is good enough unless the engine itself is unsure.
         if first.confidence.is_none_or(|c| c >= AUTO_ACCEPT) { return Ok(first); }
         let down = self.paddle_down_until.lock().unwrap().is_some_and(|t| std::time::Instant::now() < t);
         if down { return Ok(first); }
-        match self.paddle.recognize_detailed(img, settings).await {
+        match self.paddle.recognize_detailed(&filtered(img, filter::Preprocess::of(&settings.recognition)).await?, settings).await {
             Ok(second) if !second.text.trim().is_empty() && second.confidence.is_none_or(|c| c > first.confidence.unwrap_or(0.0)) => {
                 tracing::debug!(engine = "auto", tesseract = ?first.confidence, paddleocr = ?second.confidence, "OCR: PaddleOCR is more sure");
                 Ok(second)
@@ -111,20 +112,20 @@ impl AnyOcr {
 impl Ocr for AnyOcr {
     async fn recognize(&self, img: &DynamicImage, settings: &Settings) -> Result<String, OcrError> {
         match settings.recognition.engine.as_str() {
-            "tesseract" => Tesseract.recognize(img, settings).await,
-            "paddleocr" => self.paddle.recognize(img, settings).await,
-            "auto" => Ok(self.auto(img, settings).await?.text),
+            "tesseract" | "paddleocr" | "auto" => Ok(self.recognize_detailed(img, settings).await?.text),
             _ => Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned())),
         }
     }
 
     async fn recognize_detailed(&self, img: &DynamicImage, settings: &Settings) -> Result<OcrResult, OcrError> {
-        match settings.recognition.engine.as_str() {
-            "tesseract" => Tesseract.run_detailed(img, &settings.recognition.language).await,
-            "paddleocr" => self.paddle.recognize_detailed(img, settings).await,
-            "auto" => self.auto(img, settings).await,
-            _ => Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned())),
-        }
+        let r = &settings.recognition;
+        let result = match r.engine.as_str() {
+            "tesseract" => Tesseract.run_detailed_with(img, &r.language, filter::Preprocess::of(r)).await?,
+            "paddleocr" => self.paddle.recognize_detailed(&filtered(img, filter::Preprocess::of(r)).await?, settings).await?,
+            "auto" => self.auto(img, settings).await?,
+            _ => return Err(OcrError::UnknownEngine(r.engine.as_str().to_owned())),
+        };
+        Ok(filter::clean(result, r.minimum_confidence, r.filter_noise))
     }
 }
 
@@ -145,15 +146,32 @@ pub fn preprocess(img: &DynamicImage) -> DynamicImage {
     img.resize_exact(img.width() * 2, img.height() * 2, FilterType::Lanczos3).grayscale()
 }
 
+/// Filters, enlargement and PNG encoding are seconds of CPU on a large frame: they run on a blocking-pool thread, not on
+/// the task that drives the pipeline (which also has the capture, the timers and the other fields to serve).
+async fn encode_for_tesseract(img: &DynamicImage, filters: filter::Preprocess) -> Result<Vec<u8>, OcrError> {
+    let img = img.clone();
+    tokio::task::spawn_blocking(move || {
+        let mut png = Vec::new();
+        preprocess(&filters.apply(&img)).write_to(&mut Cursor::new(&mut png), ImageFormat::Png)?;
+        Ok::<_, OcrError>(png)
+    }).await.map_err(|e| OcrError::Failed(format!("подготовка кадра прервана: {e}")))?
+}
+
+/// The frame after the filters, computed off the pipeline task; the frame itself if no filter is on.
+async fn filtered(img: &DynamicImage, filters: filter::Preprocess) -> Result<DynamicImage, OcrError> {
+    if filters.is_identity() { return Ok(img.clone()); }
+    let img = img.clone();
+    tokio::task::spawn_blocking(move || filters.apply(&img)).await.map_err(|e| OcrError::Failed(format!("подготовка кадра прервана: {e}")))
+}
+
 /// Tesseract processes the image enlarged twice; geometry from it is scaled back.
 const SCALE: f32 = 2.0;
 
 impl Tesseract {
     /// Runs the `tesseract` process on the preprocessed image and returns what it printed.
-    async fn run(img: &DynamicImage, lang: &str, extra: &[&str]) -> Result<Vec<u8>, OcrError> {
+    async fn run(img: &DynamicImage, lang: &str, filters: filter::Preprocess, extra: &[&str]) -> Result<Vec<u8>, OcrError> {
         tracing::debug!(engine = "tesseract", width = img.width(), height = img.height(), language = %lang, "Начало OCR");
-        let mut png = Vec::new();
-        preprocess(img).write_to(&mut Cursor::new(&mut png), ImageFormat::Png)?;
+        let png = encode_for_tesseract(img, filters).await?;
 
         // Языки выбираются в настройках: основной первым, дополнительные через «+» (например, `jpn+eng`).
         let lang = lang.to_owned();
@@ -201,7 +219,12 @@ impl Tesseract {
 
     /// Text, lines and confidence from the TSV output.
     pub async fn run_detailed(&self, img: &DynamicImage, lang: &str) -> Result<OcrResult, OcrError> {
-        let out = Self::run(img, lang, &["tsv"]).await?;
+        self.run_detailed_with(img, lang, filter::Preprocess::default()).await
+    }
+
+    /// As `run_detailed`, with the frame filtered first.
+    pub async fn run_detailed_with(&self, img: &DynamicImage, lang: &str, filters: filter::Preprocess) -> Result<OcrResult, OcrError> {
+        let out = Self::run(img, lang, filters, &["tsv"]).await?;
         Ok(parse_tsv(&String::from_utf8_lossy(&out)))
     }
 }
@@ -264,7 +287,7 @@ impl Ocr for Tesseract {
         if settings.recognition.engine != "tesseract" {
             return Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned()));
         }
-        let out = Self::run(img, &settings.recognition.language, &[]).await?;
+        let out = Self::run(img, &settings.recognition.language, filter::Preprocess::of(&settings.recognition), &[]).await?;
         Ok(String::from_utf8_lossy(&out).into_owned())
     }
 
@@ -272,7 +295,8 @@ impl Ocr for Tesseract {
         if settings.recognition.engine != "tesseract" {
             return Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned()));
         }
-        self.run_detailed(img, &settings.recognition.language).await
+        let r = &settings.recognition;
+        Ok(filter::clean(self.run_detailed_with(img, &r.language, filter::Preprocess::of(r)).await?, r.minimum_confidence, r.filter_noise))
     }
 }
 

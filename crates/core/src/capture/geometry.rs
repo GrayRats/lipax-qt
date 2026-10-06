@@ -1,7 +1,7 @@
 //! KWin's public window-info API exposes only the decorated frame. Its scripting API
 //! exposes client, frame and buffer geometry in logical desktop coordinates.
 use super::kwin::{WindowFrames, WindowGeometry};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use crate::settings::FloatingGeometry;
 use std::sync::{Arc, Mutex, OnceLock, atomic::{AtomicBool, Ordering}};
 use tokio::sync::{Notify, watch};
@@ -37,6 +37,9 @@ pub async fn shutdown() {
 
 struct State {
     windows: Mutex<HashMap<String, WindowFrames>>,
+    /// The window that has the focus and whether it belongs to LipaX itself (settings, preview, translation window).
+    focus: Mutex<(String, bool)>,
+    minimized: Mutex<HashSet<String>>,
     ready: Notify,
     /// JSON the KWin script applies to the floating translation window when it appears.
     placement: Mutex<String>,
@@ -46,7 +49,16 @@ struct State {
 
 impl Default for State {
     fn default() -> Self {
-        Self { windows: Default::default(), ready: Notify::new(), placement: Mutex::new("null".into()), floating: watch::channel(None).0 }
+        Self { windows: Default::default(), focus: Default::default(), minimized: Default::default(), ready: Notify::new(), placement: Mutex::new("null".into()), floating: watch::channel(None).0 }
+    }
+}
+
+impl State {
+    fn is_active(&self, uuid: &str) -> Option<bool> {
+        self.windows.lock().unwrap().get(uuid)?;
+        if self.minimized.lock().unwrap().contains(uuid) { return Some(false); }
+        let (active, own) = &*self.focus.lock().unwrap();
+        Some(*own || active == uuid)
     }
 }
 
@@ -65,9 +77,22 @@ impl GeometryService {
         });
         let mut windows = self.0.windows.lock().unwrap();
         match frames {
-            Some(frames) => windows.insert(uuid.into(), frames),
-            None => windows.remove(uuid),
-        };
+            Some(frames) => { windows.insert(uuid.into(), frames); }
+            None => {
+                windows.remove(uuid);
+                self.0.minimized.lock().unwrap().remove(uuid);
+            }
+        }
+    }
+
+    /// The active window changed. `own`: it is a LipaX window; the user is only configuring, the game still counts as in use.
+    fn focus(&self, uuid: &str, own: bool) {
+        *self.0.focus.lock().unwrap() = (uuid.to_owned(), own);
+    }
+
+    fn minimized(&self, uuid: &str, minimized: bool) {
+        let mut set = self.0.minimized.lock().unwrap();
+        if minimized { set.insert(uuid.to_owned()); } else { set.remove(uuid); }
     }
 
     fn ready(&self) {
@@ -172,6 +197,12 @@ impl ClientGeometry {
 
     pub fn get(&self, uuid: &str) -> Option<WindowFrames> {
         self.state.windows.lock().unwrap().get(uuid).copied()
+    }
+
+    /// Whether the window can be seen and used: it exists, is not minimised and has the focus (or a LipaX window has it).
+    /// `None`: KWin does not know the window (closed).
+    pub fn is_active(&self, uuid: &str) -> Option<bool> {
+        self.state.is_active(uuid)
     }
 
     pub fn set_floating_placement(&self, json: String) {
@@ -283,5 +314,27 @@ mod tests {
         assert_eq!(moved.frame, moved.client, "invalid frame falls back to the client area");
         service.update("game", "null");
         assert!(!state.windows.lock().unwrap().contains_key("game"));
+    }
+
+    #[test]
+    fn a_game_is_active_while_it_or_a_lipax_window_has_the_focus() {
+        let state = Arc::new(State::default());
+        let service = GeometryService(state.clone());
+        assert_eq!(state.is_active("game"), None, "unknown window");
+        service.update("game", "[[0,0,800,600],[0,0,800,600],[0,0,800,600]]");
+        service.update("other", "[[0,0,800,600],[0,0,800,600],[0,0,800,600]]");
+        service.focus("other", false);
+        assert_eq!(state.is_active("game"), Some(false), "another window is in front");
+        service.focus("game", false);
+        assert_eq!(state.is_active("game"), Some(true));
+        service.minimized("game", true);
+        assert_eq!(state.is_active("game"), Some(false), "minimised");
+        service.minimized("game", false);
+        service.focus("lipax-settings", true);
+        assert_eq!(state.is_active("game"), Some(true), "configuring LipaX does not hide the overlay");
+        service.minimized("game", true);
+        service.update("game", "null");
+        assert_eq!(state.is_active("game"), None, "closed");
+        assert!(!state.minimized.lock().unwrap().contains("game"));
     }
 }

@@ -60,6 +60,15 @@ pub enum Event {
     Cleared { region_id: String },
     /// What the last OCR run saw and found; sent only while the preview window is open.
     OcrPreview { region_id: String, region_name: String, preview: Box<OcrPreview> },
+    /// Result of auto-tuning the image filters: every preset with its score and the index of the best one.
+    AutoTune { region_id: String, results: Vec<TuneResult>, best: usize },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TuneResult {
+    pub name: &'static str,
+    pub score: f32,
+    pub filters: crate::ocr::filter::Preprocess,
 }
 
 /// One recognized block (or the whole frame in the translation-window mode), px of the region frame.
@@ -74,6 +83,8 @@ pub struct PreviewBox {
     /// The field as plain data (lines, box in the crop, font, colour, type, spacing); only for fields of the
     /// in-place mode that have been read.
     pub block: Option<crate::layout::dto::TextBlock>,
+    /// 0–100, as the engine reported it for this block; `None` if it does not.
+    pub confidence: Option<f32>,
 }
 
 /// Where a region is in its cycle. Every change is logged (`pipeline.phase`), so a stuck region
@@ -178,12 +189,71 @@ fn unsure(confidence: Option<f32>, min_confidence: u32) -> Option<f32> {
     confidence.filter(|c| min_confidence > 0 && *c < min_confidence as f32)
 }
 
+/// The recognised text as paragraphs, split by the rule that splits in-place fields (`layout::split`): a new
+/// paragraph starts where the pitch between lines (centre to centre) is larger than `k` mean line heights,
+/// `k` being `appearance.inplace.line_gap_factor`. A paragraph that stops mid-sentence (no closing punctuation)
+/// and is followed by one that starts in lower case is joined to it: a sentence is translated whole.
+/// An engine without geometry gives one paragraph.
+fn paragraphs(result: &crate::ocr::OcrResult, k: f32) -> Vec<String> {
+    let mut lines: Vec<&crate::ocr::OcrLine> = result.lines.iter().filter(|l| !l.text.trim().is_empty()).collect();
+    if lines.is_empty() { return vec![text::normalize(&result.text)]; }
+    lines.sort_by(|a, b| a.rect.y.total_cmp(&b.rect.y));
+    let mut out: Vec<String> = Vec::new();
+    let mut last: Option<&crate::ocr::OcrLine> = None;
+    for line in lines {
+        let joined = last.is_some_and(|p| {
+            let pitch = (line.rect.y + line.rect.h / 2.0) - (p.rect.y + p.rect.h / 2.0);
+            pitch <= k * (p.rect.h + line.rect.h) / 2.0
+        });
+        match out.last_mut() {
+            Some(current) if joined => { current.push('\n'); current.push_str(&line.text); }
+            _ => out.push(line.text.clone()),
+        }
+        last = Some(line);
+    }
+    let ends_sentence = |p: &str| p.trim_end().chars().next_back().is_some_and(|c| matches!(c, '.' | '!' | '?' | '…' | ':' | ';' | '"' | '”' | '»' | ')' | '。' | '！' | '？'));
+    let mut merged: Vec<String> = Vec::new();
+    for paragraph in out.into_iter().map(|p| text::normalize(&p)).filter(|p| !p.is_empty()) {
+        let continues = paragraph.chars().next().is_some_and(char::is_lowercase);
+        match merged.last_mut() {
+            Some(previous) if continues && !ends_sentence(previous) => { previous.push(' '); previous.push_str(&paragraph); }
+            _ => merged.push(paragraph),
+        }
+    }
+    merged
+}
+
+/// What the in-place engine would read: the text blocks of the frame with the margin it gives its OCR jobs
+/// (at most `MAX_TUNE_FIELDS`, the largest first). A frame with no block is read whole.
+const MAX_TUNE_FIELDS: usize = 4;
+fn field_crops(frame: &image::DynamicImage, s: &Settings) -> Vec<image::DynamicImage> {
+    use crate::layout::block_detector::BlockDetector;
+    let image = frame.to_rgba8();
+    let mask = BlockDetector::ink_mask(&image);
+    let detector = BlockDetector { line_gap_factor: s.appearance.inplace.line_gap_factor, ..BlockDetector::default() };
+    let mut blocks = detector.detect_text_blocks(&image, &mask);
+    blocks.sort_by(|a, b| (b.rect.w * b.rect.h).total_cmp(&(a.rect.w * a.rect.h)));
+    let (fw, fh) = (image.width() as f32, image.height() as f32);
+    let crops: Vec<_> = blocks.iter().take(MAX_TUNE_FIELDS).map(|b| {
+        let pad = (0.25 * b.line_height()).max(3.0);
+        let (x, y, w, h) = b.rect.expand(pad, fw, fh).pixels(image.width(), image.height());
+        image::DynamicImage::ImageRgba8(image::imageops::crop_imm(&image, x, y, w, h).to_image())
+    }).collect();
+    if crops.is_empty() { vec![frame.clone()] } else { crops }
+}
+
+/// The frame as the engine sees it after the filters of the settings; `None` if none is on.
+fn filtered_frame(s: &Settings, frame: &image::DynamicImage) -> Option<image::RgbaImage> {
+    let filters = crate::ocr::filter::Preprocess::of(&s.recognition);
+    (!filters.is_identity()).then(|| filters.apply(frame).to_rgba8())
+}
+
 /// One preview box per line the engine found; `origin` moves the crop to frame coordinates.
 fn line_boxes(result: &crate::ocr::OcrResult, origin: (u32, u32), note: Option<&str>) -> Vec<PreviewBox> {
     result.lines.iter().map(|l| {
         let mut details = vec![format!("уверенность OCR ({}): {:.0}%", result.engine, l.confidence)];
         details.extend(note.map(str::to_owned));
-        PreviewBox { rect: l.rect.in_frame(origin), original: l.text.clone(), translation: String::new(), details, block: None }
+        PreviewBox { rect: l.rect.in_frame(origin), original: l.text.clone(), translation: String::new(), details, block: None, confidence: Some(l.confidence) }
     }).collect()
 }
 
@@ -230,6 +300,12 @@ fn describe(block: &crate::layout::engine::InplaceBlock) -> Vec<String> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct OcrPreview {
     pub image: image::RgbaImage,
+    /// The frame after the filters of the recognition settings, if any is on.
+    pub filtered: Option<image::RgbaImage>,
+    /// The threshold in force, for colouring the confidence of the boxes.
+    pub minimum_confidence: u32,
+    pub filters: crate::ocr::filter::Preprocess,
+    pub filter_noise: bool,
     pub boxes: Vec<PreviewBox>,
     pub original: String,
     pub translation: String,
@@ -263,6 +339,8 @@ struct RegionState {
     field_engine: HashMap<u64, &'static str>,
     /// Inspector: what the engine said about each field the last time it was read.
     field_ocr: HashMap<u64, String>,
+    /// How many OCR runs in a row were dropped because the picture changed under them.
+    stale: u8,
     /// Inspector: the lines of each field's last reading and the corner of the crop they are relative to.
     field_lines: HashMap<u64, ((u32, u32), Vec<crate::ocr::OcrLine>)>,
     /// Inspector: fields whose text was ignored as unsure, with when; shown for a few seconds.
@@ -310,6 +388,11 @@ impl RegionState {
 type PendingTranslation = futures_util::future::Shared<futures_util::future::BoxFuture<'static, Result<String, Arc<TranslateError>>>>;
 /// At most this many different phrases are fetched at once; more are fetched without sharing.
 const MAX_INFLIGHT: usize = 32;
+/// While OCR runs, the window is looked at this often to see whether the picture has moved on.
+const STALE_PROBE: Duration = Duration::from_millis(150);
+/// An animated background must not keep OCR from ever finishing: after this many dropped runs in a row
+/// the next one is not interrupted.
+const MAX_STALE: u8 = 2;
 /// A request that nobody waits for any more is given up after this long.
 const ORPHAN_REQUEST_LIMIT: Duration = Duration::from_secs(120);
 
@@ -332,19 +415,23 @@ struct Io<C, O, T> {
 pub struct Pipeline<C, O, T> {
     io: Io<C, O, T>,
     states: HashMap<String, RegionState>,
+    /// Set by the owner while nobody can see the result (the game window is in the background and the overlay is
+    /// hidden): automatic ticks are skipped, so no frames are captured, read or translated. A command still runs.
+    paused: Arc<AtomicBool>,
 }
 
 impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
     pub fn new(capture: C, ocr: O, translator: T) -> Self {
-        Self { io: Io { capture, ocr, translator: Arc::new(translator), cache: Arc::new(std::sync::Mutex::new(TranslationCache::new(512))), inflight: Arc::default(), preview: Arc::default(), timings: Timings::default(), last_status: String::new() }, states: HashMap::new() }
+        Self { io: Io { capture, ocr, translator: Arc::new(translator), cache: Arc::new(std::sync::Mutex::new(TranslationCache::new(512))), inflight: Arc::default(), preview: Arc::default(), timings: Timings::default(), last_status: String::new() }, states: HashMap::new(), paused: Arc::default() }
     }
     /// The flag is owned by the caller: switching it costs nothing while the preview is closed.
     pub fn with_preview(mut self, flag: Arc<AtomicBool>) -> Self { self.io.preview = flag; self }
+    pub fn with_pause(mut self, flag: Arc<AtomicBool>) -> Self { self.paused = flag; self }
     pub fn reset(&mut self) { self.states.clear(); self.io.last_status.clear(); }
 
     pub async fn tick(&mut self, s: &Settings, force: bool, now: Instant, out: &dyn Sink) {
         let regions = s.capture_regions();
-        let Self { io, states } = self;
+        let Self { io, states, .. } = self;
         if s.capture.window.is_none() || regions.is_empty() { io.status("Выберите окно и включите область", out); return; }
         states.retain(|id, _| regions.iter().any(|r| &r.id == id));
         for region in regions {
@@ -362,6 +449,50 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
             if let Some(engine) = &region.engine { effective.recognition.engine = engine.clone(); }
             io.tick_region(&effective, &region, state, force, now, out).await;
         }
+    }
+
+    /// Reads the current frame of the active area with the current filters and with every preset at once and
+    /// reports which recognised the most text (`ocr::filter::score`). The first candidate is the user's own
+    /// setting, so a manual choice is replaced only by a preset that is clearly better. In the in-place mode the
+    /// engine reads the fields, not the area: the candidates are scored on the same crops. Does not touch the
+    /// settings: the owner applies the answer.
+    pub async fn auto_tune(&mut self, s: &Settings, out: &dyn Sink) {
+        let io = &mut self.io;
+        let regions = s.capture_regions();
+        let Some(region) = regions.iter().find(|r| r.id == s.capture.active_region).or(regions.first()).cloned() else { io.status("Выберите окно и включите область", out); return };
+        let (Some(window), Some(rect)) = (s.capture.window.as_ref(), region.rect) else { io.status("Выберите окно и область", out); return };
+        io.status("Подбор фильтров…", out);
+        let frame = match io.capture.grab(window, rect).await {
+            Ok(frame) => frame,
+            Err(e) => { io.status(&format!("Подбор фильтров: ошибка захвата ({e})"), out); return }
+        };
+        let inplace = s.display_mode == TranslationDisplayMode::Inplace && io.capture.capabilities(window, s).inplace_translation;
+        let images = if inplace { field_crops(&frame, s) } else { vec![frame] };
+        let started = Instant::now();
+        let current = crate::ocr::filter::Preprocess::of(&s.recognition);
+        let mut candidates: Vec<(&'static str, crate::ocr::filter::Preprocess)> = vec![("Текущие настройки", current)];
+        candidates.extend(crate::ocr::filter::PRESETS.iter().copied().filter(|(_, f)| *f != current));
+        let ocr = &io.ocr;
+        let images = &images;
+        let runs = candidates.iter().map(|(name, filters)| {
+            let mut candidate = s.clone();
+            let r = &mut candidate.recognition;
+            (r.binarize, r.auto_invert, r.contrast, r.sharpen) = (filters.binarize, filters.auto_invert, filters.contrast, filters.sharpen);
+            // «auto» would start Python for every candidate; the filters are judged on the fast engine.
+            if r.engine == "auto" { r.engine = "tesseract".into(); }
+            async move {
+                let mut score = 0.0;
+                for image in images { score += ocr.recognize_detailed(image, &candidate).await.map(|r| crate::ocr::filter::score(&r)).unwrap_or(0.0); }
+                (*name, *filters, score)
+            }
+        });
+        let results: Vec<TuneResult> = futures_util::future::join_all(runs).await.into_iter()
+            .map(|(name, filters, score)| TuneResult { name, filters, score })
+            .collect();
+        let best = crate::ocr::filter::pick_best(&results.iter().map(|r| r.score).collect::<Vec<_>>());
+        tracing::debug!(target: "pipeline.autotune", elapsed_ms = started.elapsed().as_millis() as u64, best = results[best].name, scores = ?results.iter().map(|r| r.score).collect::<Vec<_>>(), fields = images.len(), "auto-tune finished");
+        io.timings.record("autotune", started.elapsed());
+        out.send(Event::AutoTune { region_id: region.id.clone(), results, best });
     }
 
     /// How many transitions outside the state machine happened over the life of this pipeline.
@@ -391,7 +522,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
                 tokio::select! {
                     biased;
                     c = cmds.recv() => match c { Some(c) => c, None => break },
-                    _ = ticker.tick() => { if !*running.borrow() || !settings.borrow().translation.auto_translate { continue; } Cmd::Auto },
+                    _ = ticker.tick() => { if !*running.borrow() || !settings.borrow().translation.auto_translate || self.paused.load(Ordering::Relaxed) { continue; } Cmd::Auto },
                 }
             };
             if command == Cmd::Reset { self.reset(); continue; }
@@ -403,7 +534,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
                 biased;
                 c = cmds.recv() => { match c { Some(c) => pending = Some(c), None => break } },
                 changed = running.changed() => { if changed.is_err() { break; } },
-                _ = self.tick(&s, command == Cmd::TranslateOnce, Instant::now(), &stamp) => {},
+                _ = async { if command == Cmd::AutoTune { self.auto_tune(&s, &stamp).await } else { self.tick(&s, command == Cmd::TranslateOnce, Instant::now(), &stamp).await } } => {},
             }
         }
     }
@@ -449,6 +580,60 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         pending.await
     }
 
+    /// Awaits `work` (OCR of `frame`) but gives it up as soon as the window shows another picture: a result
+    /// for a frame that is gone would draw old text over new, or draw the same text twice. Dropping the
+    /// future stops the engine (the process is killed with it). `Err(())`: the picture changed.
+    /// Without a `probe` (the limit of dropped runs is reached) or a window to look at, it is just `work`.
+    async fn unless_stale<R>(&self, s: &Settings, region: &CaptureRegion, probe: Option<ChangeDetector>, work: impl Future<Output = R>) -> Result<R, ()> {
+        let (Some(window), Some(rect), Some(mut probe)) = (s.capture.window.as_ref(), region.rect, probe) else { return Ok(work.await) };
+        tokio::pin!(work);
+        let mut ticker = tokio::time::interval_at(tokio::time::Instant::now() + STALE_PROBE, STALE_PROBE);
+        ticker.set_missed_tick_behavior(MissedTickBehavior::Delay);
+        loop {
+            tokio::select! {
+                biased;
+                done = &mut work => return Ok(done),
+                _ = ticker.tick() => {
+                    // A failed grab says nothing about the picture: the work goes on.
+                    if let Ok(next) = self.capture.grab(window, rect).await
+                        && probe.changed(&next, s.recognition.sensitivity, Instant::now()) { return Err(()); }
+                }
+            }
+        }
+    }
+
+    /// What the picture looked like when OCR started, to compare with it while OCR runs. Built only when OCR really
+    /// starts and the tick has not already looked at the frame: the change detector of the region holds exactly this.
+    fn seeded_probe(s: &Settings, frame: &image::DynamicImage) -> ChangeDetector {
+        let mut probe = ChangeDetector::new();
+        probe.changed(frame, s.recognition.sensitivity, Instant::now());
+        probe
+    }
+
+    /// The OCR of a stale frame was dropped: the next tick looks at the new picture and, once it settles, reads it.
+    fn dropped_stale(&mut self, region: &CaptureRegion, state: &mut RegionState, now: Instant, out: &dyn Sink) {
+        state.stale += 1;
+        state.dirty_since = Some(now);
+        state.dirty_first.get_or_insert(now);
+        tracing::debug!(target: "pipeline.ocr", region = %region.id, dropped = state.stale, "OCR dropped: the picture changed while it was read");
+        self.status("Кадр изменился, распознавание отменено", out);
+    }
+
+    /// «Translate changes only»: each paragraph is translated on its own, so what was translated before (a static
+    /// header, a button that stays) comes from the cache and only the new paragraphs are sent. Joined with `\n`.
+    async fn translate_changes(&self, s: &Settings, parts: &[String], src: &str, dst: &str) -> Result<String, Arc<TranslateError>> {
+        let sent = parts.iter().filter(|p| self.cached(src, dst, p).is_none()).count();
+        let all = parts.iter().map(|part| async move {
+            match self.cached(src, dst, part) {
+                Some(t) => Ok(t),
+                None => self.translate_shared(s, part, src, dst).await,
+            }
+        });
+        let done = futures_util::future::join_all(all).await;
+        tracing::debug!(target: "pipeline.translate", paragraphs = parts.len(), sent, "translate changes only");
+        done.into_iter().collect::<Result<Vec<_>, _>>().map(|t| t.join("\n"))
+    }
+
     fn status(&mut self, text: &str, out: &dyn Sink) {
         if self.last_status != text {
             tracing::debug!(stage = text, "Состояние обработки");
@@ -458,9 +643,9 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn send_preview(&self, region: &CaptureRegion, frame: &image::DynamicImage, boxes: Vec<PreviewBox>, original: String, translation: String, phase: Phase, out: &dyn Sink) {
+    fn send_preview(&self, s: &Settings, region: &CaptureRegion, frame: &image::DynamicImage, boxes: Vec<PreviewBox>, original: String, translation: String, phase: Phase, out: &dyn Sink) {
         if !self.preview.load(Ordering::Relaxed) { return; }
-        let preview = OcrPreview { image: frame.to_rgba8(), boxes, original, translation, phase, timings: self.timings.summary() };
+        let preview = OcrPreview { image: frame.to_rgba8(), filtered: filtered_frame(s, frame), minimum_confidence: s.recognition.minimum_confidence, filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase, timings: self.timings.summary() };
         out.send(Event::OcrPreview { region_id: region.id.clone(), region_name: region.name.clone(), preview: Box::new(preview) });
     }
 
@@ -502,7 +687,9 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let grabbed = Instant::now();
         let frame = stage!(self.capture.grab(s.capture.window.as_ref().unwrap(), region.rect.unwrap()), "Ошибка захвата");
         self.timings.record("capture", grabbed.elapsed());
+        let mut detected = false;
         if !force && !retry && !rescan {
+            detected = true;
             let detecting = Instant::now();
             let changed = state.detector.changed(&frame, s.recognition.sensitivity, now);
             self.timings.record("detect", detecting.elapsed());
@@ -527,20 +714,31 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             }
         }
         if inplace {
-            self.inplace_tick(s, region, state, frame, force, now, out).await;
+            self.inplace_tick(s, region, state, frame, detected, force, now, out).await;
             return;
         }
         state.enter(&region.id, Phase::Recognizing);
         self.status("Распознавание окна…", out);
         let recognizing = Instant::now();
-        let result = stage!(self.ocr.recognize_detailed(&frame, s), "Ошибка OCR");
+        let probe = (state.stale < MAX_STALE).then(|| if detected { state.detector.clone() } else { Self::seeded_probe(s, &frame) });
+        let result = match tokio::time::timeout_at(deadline, self.unless_stale(s, region, probe, self.ocr.recognize_detailed(&frame, s))).await {
+            Ok(Ok(Ok(value))) => value,
+            Ok(Ok(Err(e))) => { state.fail(region, format!("Ошибка OCR: {e}"), now + started.elapsed(), false, out); return; },
+            Ok(Err(())) => {
+                state.enter(&region.id, Phase::WaitingFrame);
+                self.dropped_stale(region, state, now, out);
+                return;
+            },
+            Err(_) => { state.fail(region, "Ошибка OCR: нет ответа за 60 с".into(), now + started.elapsed(), true, out); return; },
+        };
+        state.stale = 0;
         self.timings.record("ocr", recognizing.elapsed());
         let original = text::normalize(&result.text);
         let doubt = unsure(result.confidence, s.recognition.minimum_confidence);
         if !text::is_meaningful(&original) || doubt.is_some() {
             state.enter(&region.id, Phase::WaitingFrame);
             let note = doubt.map(|c| format!("отброшено: уверенность {c:.0}% ниже порога {}%", s.recognition.minimum_confidence));
-            self.send_preview(region, &frame, line_boxes(&result, (0, 0), note.as_deref()), original.clone(), String::new(), Phase::WaitingFrame, out);
+            self.send_preview(s, region, &frame, line_boxes(&result, (0, 0), note.as_deref()), original.clone(), String::new(), Phase::WaitingFrame, out);
             state.settle(region, out);
             match doubt {
                 Some(c) => { tracing::debug!(target: "pipeline.ocr", region = %region.id, confidence = c, min = s.recognition.minimum_confidence, "OCR ignored: low confidence"); self.status(&format!("OCR: низкая уверенность ({c:.0}%), текст пропущен"), out) }
@@ -556,7 +754,12 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                 state.enter(&region.id, Phase::Translating);
                 self.status("Перевод…", out);
                 let translating = Instant::now();
-                match tokio::time::timeout_at(deadline, self.translate_shared(s, &original, src, &s.translation.target_language)).await {
+                let parts = if s.translation.changes_only { paragraphs(&result, s.appearance.inplace.line_gap_factor) } else { Vec::new() };
+                let request = async {
+                    if parts.len() > 1 { self.translate_changes(s, &parts, src, &s.translation.target_language).await }
+                    else { self.translate_shared(s, &original, src, &s.translation.target_language).await }
+                };
+                match tokio::time::timeout_at(deadline, request).await {
                     Ok(Ok(t)) => { self.timings.record("translate", translating.elapsed()); t },
                     Ok(Err(e)) => {
                         let stop = matches!(&*e, TranslateError::RateLimited { .. });
@@ -572,9 +775,9 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let mut boxes = line_boxes(&result, (0, 0), None);
         if boxes.is_empty() {
             let whole = crate::layout::Rect::new(0.0, 0.0, frame.width() as f32, frame.height() as f32);
-            boxes.push(PreviewBox { rect: whole, original: original.clone(), translation: translated.clone(), details: Vec::new(), block: None });
+            boxes.push(PreviewBox { rect: whole, original: original.clone(), translation: translated.clone(), details: Vec::new(), block: None, confidence: result.confidence });
         }
-        self.send_preview(region, &frame, boxes, original.clone(), translated.clone(), Phase::Showing, out);
+        self.send_preview(s, region, &frame, boxes, original.clone(), translated.clone(), Phase::Showing, out);
         state.last_text = original.clone();
         state.recovered();
         self.last_status = "Перевод обновлён".into();
@@ -590,10 +793,13 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     /// содержимого поля запоминается только в `complete`, поэтому незавершённое поле на следующем
     /// кадре распознаётся снова.
     #[allow(clippy::too_many_arguments)]
-    async fn inplace_tick(&mut self, s: &Settings, region: &CaptureRegion, state: &mut RegionState, frame: image::DynamicImage,
+    async fn inplace_tick(&mut self, s: &Settings, region: &CaptureRegion, state: &mut RegionState, frame: image::DynamicImage, detected: bool,
                           force: bool, now: Instant, out: &dyn Sink) {
         // The engine takes the frame; the preview needs its own copy, made only while it is open.
         let preview_image = self.preview.load(Ordering::Relaxed).then(|| frame.to_rgba8());
+        // What the picture looked like when OCR started; the engine takes `frame` itself.
+        // Only a tick that did not look at the frame yet (forced, rescan) needs its own reference, and such a tick reads.
+        let seeded = (!detected && state.stale < MAX_STALE).then(|| Self::seeded_probe(s, &frame));
         let engine = state.inplace.get_or_insert_with(Default::default);
         let laying_out = Instant::now();
         let jobs = engine.begin(frame, s, now, force);
@@ -626,8 +832,11 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                 let settings = pinned.get(&job.id).unwrap_or(s);
                 async move { (job.id, ocr.recognize_detailed(&job.image, settings).await) }
             });
-            match tokio::time::timeout_at(deadline, all).await {
-                Ok(done) => { self.timings.record("ocr", recognizing.elapsed()); recognized = done },
+            let probe = (state.stale < MAX_STALE).then(|| seeded.unwrap_or_else(|| state.detector.clone()));
+            match tokio::time::timeout_at(deadline, self.unless_stale(s, region, probe, all)).await {
+                Ok(Ok(done)) => { state.stale = 0; self.timings.record("ocr", recognizing.elapsed()); recognized = done },
+                // The fields stay due: their signatures are stored only when a field is completed.
+                Ok(Err(())) => self.dropped_stale(region, state, now, out),
                 Err(_) => failure = Some(("Ошибка OCR: нет ответа за 60 с".into(), true)),
             }
         }
@@ -660,7 +869,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                         // The engine is not sure what it read: keep the field as it was, do not translate noise.
                         tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, confidence = c, min = s.recognition.minimum_confidence, "OCR ignored: low confidence");
                         let details = vec![format!("OCR ({}) отброшен: уверенность {c:.0}% ниже порога {}%", result.engine, s.recognition.minimum_confidence)];
-                        state.ignored.insert(id, (now, PreviewBox { rect, original: original.clone(), translation: String::new(), details, block: None }));
+                        state.ignored.insert(id, (now, PreviewBox { rect, original: original.clone(), translation: String::new(), details, block: None, confidence: result.confidence }));
                         newly_ignored = true;
                         engine.complete(id, None, s);
                         continue;
@@ -727,7 +936,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                 let mut details = describe(b);
                 details.extend(known.get(&b.id).cloned());
                 let block = read.get(&b.id).map(|(origin, lines)| crate::layout::dto::TextBlock::of_field(b, lines, *origin));
-                PreviewBox { rect: b.text_rect, original: b.original.clone(), translation: b.translation.clone(), details, block }
+                PreviewBox { rect: b.text_rect, original: b.original.clone(), translation: b.translation.clone(), details, block, confidence: read.get(&b.id).filter(|(_, l)| !l.is_empty()).map(|(_, l)| l.iter().map(|x| x.confidence).sum::<f32>() / l.len() as f32) }
             }).collect();
         }
         if let Some(image) = preview_image.filter(|_| result.is_some() || newly_ignored) {
@@ -736,7 +945,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             boxes.extend(state.ignored.values().map(|(_, b)| b.clone()));
             let join = |f: fn(&PreviewBox) -> &str| boxes.iter().map(f).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("\n");
             let (original, translation) = (join(|b| &b.original), join(|b| &b.translation));
-            let preview = OcrPreview { image, boxes, original, translation, phase: state.phase, timings: self.timings.summary() };
+            let filtered = filtered_frame(s, &image::DynamicImage::ImageRgba8(image.clone()));
+            let preview = OcrPreview { image, filtered, minimum_confidence: s.recognition.minimum_confidence, filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase: state.phase, timings: self.timings.summary() };
             out.send(Event::OcrPreview { region_id: region.id.clone(), region_name: region.name.clone(), preview: Box::new(preview) });
         }
         if let Some(frame) = result {
@@ -751,7 +961,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Cmd { Reset, TranslateOnce, Auto, ReanalyzeFonts }
+pub enum Cmd { Reset, TranslateOnce, Auto, ReanalyzeFonts, AutoTune }
 
 #[cfg(test)]
 mod tests {
@@ -998,6 +1208,157 @@ mod tests {
         events.iter().filter_map(|e| match e { Event::Translation { text, .. } => Some(text.clone()), _ => None }).collect()
     }
 
+    /// OCR that finishes after `delay` and counts the runs that got to the end.
+    struct LateOcr { delay: Duration, finished: Arc<AtomicUsize> }
+    impl Ocr for LateOcr {
+        async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> {
+            tokio::time::sleep(self.delay).await;
+            self.finished.fetch_add(1, Ordering::SeqCst);
+            Ok("Slow words here".into())
+        }
+    }
+
+    #[tokio::test]
+    async fn ocr_of_a_frame_the_window_has_left_is_dropped() {
+        let cap = Arc::new(MockCapture(Mutex::new(10)));
+        let finished = Arc::new(AtomicUsize::new(0));
+        let mut p = Pipeline::new(cap.clone(), LateOcr { delay: Duration::from_millis(900), finished: finished.clone() }, MockTr(Arc::new(AtomicUsize::new(0))));
+        let s = settings();
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        // The picture changes 300 ms into the recognition.
+        let mover = cap.clone();
+        tokio::spawn(async move { tokio::time::sleep(Duration::from_millis(300)).await; *mover.0.lock().unwrap() = 160; });
+        p.tick(&s, true, Instant::now(), &tx).await;
+        let events = drain(&mut rx);
+        assert_eq!(finished.load(Ordering::SeqCst), 0, "the stale OCR was cancelled, not awaited");
+        assert!(texts_of(&events).is_empty(), "nothing is shown for the old frame");
+        assert_eq!(p.states["subtitles"].phase, Phase::WaitingFrame);
+        assert!(p.states["subtitles"].dirty_since.is_some(), "the new picture is read after it settles");
+        assert_eq!(p.states["subtitles"].stale, 1);
+    }
+
+    #[tokio::test]
+    async fn ocr_of_a_still_picture_is_not_interrupted() {
+        let cap = Arc::new(MockCapture(Mutex::new(10)));
+        let finished = Arc::new(AtomicUsize::new(0));
+        let mut p = Pipeline::new(cap, LateOcr { delay: Duration::from_millis(400), finished: finished.clone() }, MockTr(Arc::new(AtomicUsize::new(0))));
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        p.tick(&settings(), true, Instant::now(), &tx).await;
+        assert_eq!(finished.load(Ordering::SeqCst), 1);
+        assert_eq!(texts_of(&drain(&mut rx)).len(), 1);
+        assert_eq!(p.states["subtitles"].stale, 0);
+    }
+
+    /// An engine that reads well only with binarization on.
+    struct PickyOcr;
+    impl Ocr for PickyOcr {
+        async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok(String::new()) }
+        async fn recognize_detailed(&self, _: &DynamicImage, s: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
+            let (text, confidence) = if s.recognition.binarize && !s.recognition.auto_invert { ("Open the door\nTake the key", 85.0) } else { ("| ~", 30.0) };
+            let lines = text.lines().enumerate().map(|(i, t)| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(0.0, 20.0 * i as f32, 50.0, 15.0), text: t.to_owned(), confidence }).collect();
+            Ok(crate::ocr::OcrResult { text: text.into(), lines, confidence: Some(confidence), engine: "mock" })
+        }
+    }
+
+    #[tokio::test]
+    async fn auto_tune_reports_the_preset_that_reads_the_most() {
+        let mut p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))), PickyOcr, MockTr(Arc::new(AtomicUsize::new(0))));
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        p.auto_tune(&settings(), &tx).await;
+        let tuned = drain(&mut rx).into_iter().find_map(|e| match e { Event::AutoTune { results, best, .. } => Some((results, best)), _ => None }).expect("a result");
+        assert_eq!(tuned.0.len(), crate::ocr::filter::PRESETS.len());
+        assert_eq!(tuned.0[tuned.1].name, "Бинаризация");
+        assert_eq!(tuned.0[tuned.1].score, 170.0);
+        assert_eq!(tuned.0[0].score, 0.0, "the raw frame gave only noise");
+    }
+
+    /// Lines far apart (separate texts), as the engine would report a menu.
+    struct MenuOcr(Mutex<String>);
+    impl Ocr for MenuOcr {
+        async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok(self.0.lock().unwrap().clone()) }
+        async fn recognize_detailed(&self, _: &DynamicImage, _: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
+            let text = self.0.lock().unwrap().clone();
+            let lines = text.lines().enumerate().map(|(i, t)| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(0.0, 40.0 * i as f32, 90.0, 15.0), text: t.to_owned(), confidence: 90.0 }).collect();
+            Ok(crate::ocr::OcrResult { text, lines, confidence: Some(90.0), engine: "mock" })
+        }
+    }
+
+    #[test]
+    fn paragraphs_follow_the_gaps_between_lines() {
+        let line = |y: f32, t: &str| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(0.0, y, 80.0, 15.0), text: t.into(), confidence: 90.0 };
+        let wrapped = crate::ocr::OcrResult { text: String::new(), lines: vec![line(0.0, "I will not"), line(18.0, "go there"), line(60.0, "Continue")], confidence: None, engine: "mock" };
+        assert_eq!(paragraphs(&wrapped, 1.8), vec!["I will not go there".to_string(), "Continue".to_string()]);
+        assert_eq!(paragraphs(&wrapped, 4.0), vec!["I will not go there Continue".to_string()], "a larger factor keeps more together");
+        assert_eq!(paragraphs(&crate::ocr::OcrResult::text_only("Just text".into(), "x"), 1.8), vec!["Just text".to_string()]);
+    }
+
+    #[test]
+    fn a_sentence_split_by_a_gap_is_translated_whole() {
+        let line = |y: f32, t: &str| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(0.0, y, 80.0, 15.0), text: t.into(), confidence: 90.0 };
+        let r = crate::ocr::OcrResult { text: String::new(), lines: vec![line(0.0, "Welcome to the village,"), line(60.0, "traveller."), line(120.0, "Exit"), line(180.0, "Options")], confidence: None, engine: "mock" };
+        assert_eq!(paragraphs(&r, 1.8), vec!["Welcome to the village, traveller.".to_string(), "Exit".to_string(), "Options".to_string()]);
+    }
+
+    #[tokio::test]
+    async fn changes_only_translates_the_new_paragraphs_and_reuses_the_rest() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let mut p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))), MenuOcr(Mutex::new("Main menu\nContinue\nExit".into())), MockTr(calls.clone()));
+        let s = { let mut value = settings(); value.translation.changes_only = true; value };
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        p.tick(&s, true, Instant::now(), &tx).await;
+        assert_eq!(calls.load(Ordering::SeqCst), 3, "three separate texts the first time");
+        assert_eq!(texts_of(&drain(&mut rx)), vec!["RU:Main menu\nRU:Continue\nRU:Exit".to_string()]);
+        // Only the middle item changes.
+        *p.io.ocr.0.lock().unwrap() = "Main menu\nLoad game\nExit".into();
+        p.tick(&s, true, Instant::now(), &tx).await;
+        assert_eq!(calls.load(Ordering::SeqCst), 4, "one new request for the one new paragraph");
+        assert_eq!(texts_of(&drain(&mut rx)), vec!["RU:Main menu\nRU:Load game\nRU:Exit".to_string()]);
+    }
+
+    #[tokio::test]
+    async fn auto_tune_keeps_a_manual_choice_unless_a_preset_is_clearly_better() {
+        let tune = |binarize: bool| async move {
+            let mut p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))), PickyOcr, MockTr(Arc::new(AtomicUsize::new(0))));
+            let s = { let mut value = settings(); value.recognition.binarize = binarize; value.recognition.contrast = 20; value };
+            let (tx, mut rx) = mpsc::unbounded_channel();
+            p.auto_tune(&s, &tx).await;
+            drain(&mut rx).into_iter().find_map(|e| match e { Event::AutoTune { results, best, .. } => Some((results, best)), _ => None }).unwrap()
+        };
+        // The user's own binarize + contrast 20 already reads well: it stays (it is the first candidate).
+        let (results, best) = tune(true).await;
+        assert_eq!((best, results[0].name), (0, "Текущие настройки"));
+        assert_eq!(results[0].filters.contrast, 20, "the manual contrast is not overwritten");
+        // Contrast 20 alone reads nothing: a preset wins.
+        let (results, best) = tune(false).await;
+        assert_eq!(results[best].name, "Бинаризация");
+    }
+
+    #[tokio::test]
+    async fn a_paused_pipeline_does_not_read_the_window_until_it_is_resumed() {
+        struct Counting(Arc<AtomicUsize>);
+        impl Capture for Counting {
+            fn capabilities(&self, _: &WindowKey, _: &Settings) -> crate::capture::CaptureCapabilities { crate::capture::CaptureCapabilities::KWIN }
+            async fn grab(&self, _: &WindowKey, _: NormRect) -> Result<DynamicImage, CaptureError> {
+                self.0.fetch_add(1, Ordering::SeqCst);
+                Ok(DynamicImage::ImageRgba8(RgbaImage::from_pixel(100, 50, Rgba([20, 20, 20, 255]))))
+            }
+        }
+        let grabs = Arc::new(AtomicUsize::new(0));
+        let paused = Arc::new(AtomicBool::new(true));
+        let pipeline = Pipeline::new(Counting(grabs.clone()), SureOcr { text: "x".into(), confidence: 90.0 }, MockTr(Arc::new(AtomicUsize::new(0)))).with_pause(paused.clone());
+        let (_settings_tx, settings_rx) = watch::channel(settings());
+        let (_running_tx, running_rx) = watch::channel(true);
+        let (_cmd_tx, cmd_rx) = mpsc::unbounded_channel();
+        let (ev_tx, _ev_rx) = mpsc::unbounded_channel();
+        let task = tokio::spawn(pipeline.run(settings_rx, running_rx, cmd_rx, Arc::default(), ev_tx));
+        tokio::time::sleep(Duration::from_millis(600)).await;
+        assert_eq!(grabs.load(Ordering::SeqCst), 0, "paused: nothing is captured");
+        paused.store(false, Ordering::Relaxed);
+        tokio::time::sleep(Duration::from_millis(600)).await;
+        assert!(grabs.load(Ordering::SeqCst) > 0, "resumed: the window is read again");
+        task.abort();
+    }
+
     #[tokio::test]
     async fn unsure_text_is_ignored_and_explained() {
         let flag = Arc::new(AtomicBool::new(true));
@@ -1012,6 +1373,25 @@ mod tests {
         assert_eq!(preview[0].boxes.len(), 1);
         assert!(preview[0].boxes[0].details.iter().any(|d| d.contains("отброшено") && d.contains("18%") && d.contains("30%")), "{:?}", preview[0].boxes[0].details);
         assert_eq!(p.states["subtitles"].phase, Phase::WaitingFrame);
+    }
+
+    #[tokio::test]
+    async fn preview_carries_confidence_and_the_filtered_frame_only_when_a_filter_is_on() {
+        let run = |binarize: bool| async move {
+            let flag = Arc::new(AtomicBool::new(true));
+            let cap = Arc::new(MockCapture(Mutex::new(10)));
+            let mut p = Pipeline::new(cap, SureOcr { text: "Whxre arx yoz".into(), confidence: 18.0 }, MockTr(Arc::new(AtomicUsize::new(0)))).with_preview(flag);
+            let s = { let mut value = settings(); value.recognition.binarize = binarize; value };
+            let (tx, mut rx) = mpsc::unbounded_channel();
+            p.tick(&s, true, Instant::now(), &tx).await;
+            previews(drain(&mut rx))
+        };
+        let plain = run(false).await;
+        assert!(plain[0].filtered.is_none());
+        assert_eq!(plain[0].boxes[0].confidence, Some(18.0));
+        let filtered = run(true).await;
+        let frame = filtered[0].filtered.as_ref().expect("filtered frame");
+        assert!(filtered[0].filters.binarize && frame.pixels().all(|p| p.0[0] == 0 || p.0[0] == 255));
     }
 
     #[tokio::test]

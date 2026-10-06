@@ -226,6 +226,11 @@ impl KwinCapture {
         Some(self.tracker().await?.floating_moves())
     }
 
+    /// Окно видно и в фокусе (или в фокусе окно самого LipaX); `None` — KWin не знает такого окна или скрипт недоступен.
+    pub async fn window_active(&self, uuid: &str) -> Option<bool> {
+        self.tracker().await?.is_active(uuid)
+    }
+
     /// Клиентская область окна на рабочем столе (без рамки и заголовка KWin).
     pub async fn window_geometry(&self, uuid: &str) -> Option<WindowGeometry> {
         self.window_frames(uuid).await.map(|f| f.client)

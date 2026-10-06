@@ -41,6 +41,11 @@ pub mod qobject {
         #[qproperty(bool, has_region, cxx_name = "hasRegion")]
         /// Видимость перевода поверх оригинала. Не связана с окном перевода.
         #[qproperty(bool, inplace_visible, cxx_name = "inplaceVisible")]
+        /// Окно игры в таком состоянии, что перевод поверх оригинала можно показывать: настройка «только когда окно
+        /// активно» выключена или окно видно и в фокусе (в фокусе может быть и окно самого LipaX).
+        #[qproperty(bool, overlay_allowed, cxx_name = "overlayAllowed")]
+        /// Итог последнего автоподбора фильтров (JSON): пресеты с оценками, лучший и применён ли он.
+        #[qproperty(QString, autotune_json, cxx_name = "autotuneJson")]
         /// Видимость окна перевода («Поверх игры»). Не связана с переводом поверх оригинала.
         #[qproperty(bool, translation_window_visible, cxx_name = "translationWindowVisible")]
         /// Какой рендер работает сейчас: "inplace" или "window" (с учётом отката, см. `displayNote`).
@@ -148,6 +153,11 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "bundledFonts"]
         fn bundled_fonts(self: &Controller) -> QString;
+        /// Подобрать фильтры изображения для текущего кадра: результат придёт в `autotuneJson`, лучший набор
+        /// сохраняется в настройках (и в профиле игры).
+        #[qinvokable]
+        #[cxx_name = "autoTuneFilters"]
+        fn auto_tune_filters(self: Pin<&mut Controller>);
         #[qinvokable]
         #[cxx_name = "reanalyzeFonts"]
         fn reanalyze_fonts(self: Pin<&mut Controller>);
@@ -277,6 +287,8 @@ struct Shared {
     generation: Arc<std::sync::atomic::AtomicU64>,
     /// Окно просмотра входа OCR открыто; pipeline присылает кадры только тогда.
     preview: Arc<std::sync::atomic::AtomicBool>,
+    /// Игра в фоне и перевод скрыт: автоматические циклы pipeline пропускаются.
+    paused: Arc<std::sync::atomic::AtomicBool>,
     /// Последний результат каждой области в виде JSON-значения (см. `preview_entry`).
     preview_entries: std::sync::Mutex<std::collections::BTreeMap<String, serde_json::Value>>,
 }
@@ -376,6 +388,10 @@ pub struct ControllerRust {
     settings_rx: watch::Receiver<Settings>,
     running_rx: watch::Receiver<bool>,
     inplace_visible: bool,
+    overlay_allowed: bool,
+    autotune_json: QString,
+    /// Что из «Общих» настроек уже применено (журнал, автозапуск): сравнивается при каждом изменении настроек.
+    applied_general: lipa_core::settings::GeneralSettings,
     translation_window_visible: bool,
     effective_display: QString,
     display_note: QString,
@@ -423,6 +439,9 @@ impl Default for ControllerRust {
             preview_title_bar: 0,
             game_geometry: QString::default(),
             inplace_visible: true,
+            overlay_allowed: true,
+            autotune_json: QString::default(),
+            applied_general: settings.general.clone(),
             translation_window_visible: true,
             effective_display: QString::from(effective_display(&settings).0),
             display_note: QString::from(effective_display(&settings).1.as_str()),
@@ -437,6 +456,7 @@ impl Default for ControllerRust {
                 capture: Arc::new(AnyCapture::new(settings.capture.portal_token.clone())),
                 generation: Arc::default(),
                 preview: Arc::default(),
+                paused: Arc::default(),
                 preview_entries: Default::default(),
             }),
             events: Some((ev_rx, ev_tx, cmd_rx)),
@@ -462,10 +482,10 @@ impl cxx_qt::Initialize for qobject::Controller {
 
         // Pipeline: захват → OCR → перевод в фоне. Бэкенд захвата выбирается по ключу окна.
         let capture = shared.capture.clone();
-        let preview = shared.preview.clone();
+        let (preview, paused) = (shared.preview.clone(), shared.paused.clone());
         let generation = shared.generation.clone();
         spawn_service(async move {
-            Pipeline::new(capture, AnyOcr::default(), HttpTranslate::new()).with_preview(preview).run(settings_rx, running_rx, cmd_rx, generation, ev_tx).await
+            Pipeline::new(capture, AnyOcr::default(), HttpTranslate::new()).with_preview(preview).with_pause(paused).run(settings_rx, running_rx, cmd_rx, generation, ev_tx).await
         });
 
         {
@@ -580,21 +600,31 @@ impl cxx_qt::Initialize for qobject::Controller {
             let mut ticker = tokio::time::interval(GEOMETRY_POLL);
             ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
             let mut last: Option<String> = None;
+            let mut allowed = true;
             loop {
                 ticker.tick().await;
-                // Only the two things this needs: a clone of the whole settings ten times a second would be waste.
-                let (window, fills_monitor) = { let s = sh.settings.borrow(); (s.capture.window.clone(), s.capture.portal_fills_monitor) };
+                // Only what this needs: a clone of the whole settings ten times a second would be waste.
+                let (window, fills_monitor, only_active) = { let s = sh.settings.borrow(); (s.capture.window.clone(), s.capture.portal_fills_monitor, s.appearance.inplace.only_when_active) };
                 if window.as_ref().is_some_and(is_portal_window) && fills_monitor {
                     // QML reports the selected Qt screen in logical desktop coordinates.
+                    if !allowed { allowed = true; sh.paused.store(false, std::sync::atomic::Ordering::Relaxed); if qt.queue(|mut o| o.as_mut().set_overlay_allowed(true)).is_err() { break; } }
                     continue;
                 }
-                let geometry = match window.as_ref().filter(|w| !is_portal_window(w)) {
+                let (geometry, active) = match window.as_ref().filter(|w| !is_portal_window(w)) {
                     Some(w) => match sh.kwin().await {
-                        Ok(k) => k.window_geometry(&w.uuid).await,
-                        Err(e) => { tracing::debug!(component = "KWin/D-Bus", error = %e, "Геометрия окна недоступна"); None },
+                        // A window KWin does not know (or no script): nothing to hide by.
+                        Ok(k) => (k.window_geometry(&w.uuid).await, if only_active { k.window_active(&w.uuid).await } else { None }),
+                        Err(e) => { tracing::debug!(component = "KWin/D-Bus", error = %e, "Геометрия окна недоступна"); (None, None) },
                     },
-                    None => None,
+                    None => (None, None),
                 };
+                let now_allowed = active.unwrap_or(true);
+                if now_allowed != allowed {
+                    allowed = now_allowed;
+                    sh.paused.store(!allowed, std::sync::atomic::Ordering::Relaxed);
+                    tracing::debug!(target: "inplace.visibility", allowed, "the game window {}", if allowed { "is active again: overlay restored" } else { "is not active: overlay hidden" });
+                    if qt.queue(move |mut o| o.as_mut().set_overlay_allowed(now_allowed)).is_err() { break; }
+                }
                 // Ignore a result for a window that was replaced during the await.
                 if sh.settings.borrow().capture.window != window { continue; }
                 let json = geometry.map(|g| serde_json::json!([g.x, g.y, g.w, g.h]).to_string()).unwrap_or_default();
@@ -664,6 +694,16 @@ impl cxx_qt::Initialize for qobject::Controller {
                         o.as_mut().publish_faults();
                     },
                     Event::Error { region_id, message, terminal } => {
+                        let general = o.rust().shared.settings.borrow().general.clone();
+                        if (if terminal { general.notify_errors } else { general.notify_retries })
+                            && crate::notify::due(&format!("{region_id}\u{1}{message}"), std::time::Instant::now()) {
+                            let (summary, body) = (if terminal { "LipaX: перевод остановлен" } else { "LipaX: ошибка, будет повтор" }, message.clone());
+                            rt().spawn(async move {
+                                if let Err(e) = crate::notify::send(summary, &body).await {
+                                    tracing::debug!(component = "notify", error = %e, "уведомление не показано");
+                                }
+                            });
+                        }
                         o.as_mut().rust_mut().faults.insert(region_id, (message, terminal));
                         o.as_mut().publish_faults();
                     },
@@ -689,6 +729,27 @@ impl cxx_qt::Initialize for qobject::Controller {
                         o.as_mut().publish_faults();
                     },
                     Event::OcrPreview { .. } => {}
+                    Event::AutoTune { region_id, results, best } => {
+                        let winner = &results[best];
+                        let f = winner.filters;
+                        let patch = serde_json::json!({
+                            "recognition.binarize": f.binarize, "recognition.auto_invert": f.auto_invert,
+                            "recognition.contrast": f.contrast, "recognition.sharpen": f.sharpen,
+                        });
+                        let json = serde_json::json!({
+                            "region": region_id, "best": best, "applied": winner.score > 0.0,
+                            "results": results.iter().map(|r| serde_json::json!({ "name": r.name, "score": r.score })).collect::<Vec<_>>(),
+                        });
+                        // Nothing was read with any filter: the settings stay as they are.
+                        if winner.score > 0.0 {
+                            o.as_mut().apply_settings_patch(&QString::from(patch.to_string().as_str()));
+                            o.as_mut().set_status(QString::from(format!("Фильтры подобраны: {}", winner.name).as_str()));
+                        } else {
+                            o.as_mut().set_status(QString::from("Подбор фильтров: текст не найден ни с одним набором"));
+                        }
+                        o.as_mut().set_status_kind(QString::from("info"));
+                        o.as_mut().set_autotune_json(QString::from(json.to_string().as_str()));
+                    }
                     Event::Translation { region_id, region_name, original, text } => {
                         let settings = o.rust().shared.settings.borrow().clone();
                         if !settings.capture_regions().iter().any(|r| r.id == region_id) { return; }
@@ -797,7 +858,31 @@ impl qobject::Controller {
             self.as_mut().set_display_note(QString::from(note.as_str()));
         }
     }
+    /// Уровень журнала и запись автозапуска меняются сразу, как только они изменились в настройках.
+    fn apply_general(mut self: Pin<&mut Self>) {
+        let now = self.rust().shared.settings.borrow().general.clone();
+        let before = self.rust().applied_general.clone();
+        if now == before { return; }
+        self.as_mut().rust_mut().applied_general = now.clone();
+        let mut failures: Vec<String> = Vec::new();
+        if now.log_level != before.log_level
+            && let Err(e) = crate::logging::set_level(&now.log_level) { failures.push(e); }
+        if now.autostart != before.autostart {
+            let result = lipa_core::autostart::default_dir().ok_or_else(|| "не найден каталог ~/.config".to_owned()).and_then(|dir| {
+                let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+                lipa_core::autostart::set(&dir, now.autostart, &exe.to_string_lossy()).map_err(|e| e.to_string())
+            });
+            if let Err(e) = result { failures.push(format!("автозапуск: {e}")); }
+        }
+        if !failures.is_empty() {
+            tracing::error!(component = "settings", error = %failures.join("; "), "Общие настройки применены не полностью");
+            self.as_mut().set_status(QString::from(format!("Не удалось применить: {}", failures.join("; ")).as_str()));
+            self.as_mut().set_status_kind(QString::from("error"));
+        }
+    }
+
     fn publish_settings(mut self: Pin<&mut Self>) {
+        self.as_mut().apply_general();
         self.as_mut().publish_display();
         let s = self.rust().shared.settings.borrow().clone();
         let capabilities = capabilities_json(&s);
@@ -1216,6 +1301,12 @@ impl qobject::Controller {
         QString::from(serde_json::to_string(&names).unwrap_or_else(|_| "[]".into()).as_str())
     }
 
+    fn auto_tune_filters(mut self: Pin<&mut Self>) {
+        tracing::info!(component = "ocr", "Запрошен автоподбор фильтров");
+        self.as_mut().set_status(QString::from("Подбор фильтров…"));
+        let _ = self.rust().shared.cmds.send(Cmd::AutoTune);
+    }
+
     fn reanalyze_fonts(mut self: Pin<&mut Self>) {
         tracing::info!(component = "fonts", "Запрошено повторное определение шрифтов");
         lipa_core::layout::font_database::InstalledFontDatabase::reload();
@@ -1250,13 +1341,16 @@ fn remove_preview_files() {
 }
 
 /// Запись области для окна просмотра: кадр лежит в PNG рядом с превью окна, блоки — в JSON.
-fn preview_entry(region_id: &str, region_name: &str, preview: &lipa_core::pipeline::OcrPreview, url: &str) -> serde_json::Value {
+fn preview_entry(region_id: &str, region_name: &str, preview: &lipa_core::pipeline::OcrPreview, url: &str, filtered_url: Option<&str>) -> serde_json::Value {
     serde_json::json!({
         "id": region_id,
         "name": region_name,
         "width": preview.image.width(),
         "height": preview.image.height(),
         "image": url,
+        "filtered_image": filtered_url,
+        "minimum_confidence": preview.minimum_confidence,
+        "filters": { "binarize": preview.filters.binarize, "auto_invert": preview.filters.auto_invert, "sharpen": preview.filters.sharpen, "contrast": preview.filters.contrast, "filter_noise": preview.filter_noise },
         "original": preview.original,
         "translation": preview.translation,
         "phase": preview.phase.label(),
@@ -1264,7 +1358,7 @@ fn preview_entry(region_id: &str, region_name: &str, preview: &lipa_core::pipeli
             "stage": t.stage, "last_ms": t.last_ms, "p50_ms": t.p50_ms, "p95_ms": t.p95_ms, "samples": t.samples,
         })).collect::<Vec<_>>(),
         "boxes": preview.boxes.iter().map(|b| serde_json::json!({
-            "x": b.rect.x, "y": b.rect.y, "w": b.rect.w, "h": b.rect.h, "original": b.original, "translation": b.translation, "details": b.details, "block": b.block,
+            "x": b.rect.x, "y": b.rect.y, "w": b.rect.w, "h": b.rect.h, "original": b.original, "translation": b.translation, "details": b.details, "block": b.block, "confidence": b.confidence,
         })).collect::<Vec<_>>(),
     })
 }
@@ -1278,12 +1372,20 @@ fn publish_preview(shared: &Shared, region_id: String, region_name: String, prev
     let path = preview_dir().join(format!("{}{name}.png", preview_prefix()));
     std::fs::create_dir_all(path.parent()?).ok()?;
     preview.image.save(&path).inspect_err(|e| tracing::warn!(target: "ocr.preview", error = %e, "preview frame could not be written")).ok()?;
-    let url = format!("file://{}?r={}", path.display(), REVISION.fetch_add(1, Ordering::Relaxed));
+    let revision = REVISION.fetch_add(1, Ordering::Relaxed);
+    let url = format!("file://{}?r={revision}", path.display());
+    // `_` is not allowed in the region part of the name, so this cannot be another region's file.
+    let filtered_path = path.with_file_name(format!("{}{name}_filtered.png", preview_prefix()));
+    let filtered_url = match &preview.filtered {
+        Some(img) => img.save(&filtered_path).inspect_err(|e| tracing::warn!(target: "ocr.preview", error = %e, "filtered preview frame could not be written")).ok()
+            .map(|()| format!("file://{}?r={revision}", filtered_path.display())),
+        None => { let _ = std::fs::remove_file(&filtered_path); None }
+    };
     let active: Vec<String> = shared.settings.borrow().capture_regions().into_iter().map(|r| r.id).collect();
     let mut entries = shared.preview_entries.lock().unwrap();
     // The window may have been closed while the frame was being encoded.
     if !shared.preview.load(Ordering::Relaxed) { return None; }
-    entries.insert(region_id.clone(), preview_entry(&region_id, &region_name, &preview, &url));
+    entries.insert(region_id.clone(), preview_entry(&region_id, &region_name, &preview, &url, filtered_url.as_deref()));
     entries.retain(|id, _| active.contains(id));
     // Regions keep the order of the settings.
     let ordered: Vec<&serde_json::Value> = active.iter().filter_map(|id| entries.get(id)).collect();

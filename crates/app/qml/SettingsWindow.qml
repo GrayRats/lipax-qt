@@ -2,12 +2,14 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import QtQuick.Controls.Universal
 
 ApplicationWindow {
     id: win
     objectName: "settingsWindow"
     property var controller
     property var current: ({
+            general: {},
             capture: {},
             recognition: {},
             translation: {},
@@ -17,6 +19,33 @@ ApplicationWindow {
                 inplace: {}
             }
         })
+    readonly property var themeChoices: [
+        { value: "system", label: "Как в системе" },
+        { value: "breeze", label: "Breeze" },
+        { value: "fusion", label: "Fusion" },
+        { value: "dark", label: "Тёмная" },
+        { value: "light", label: "Светлая" }
+    ]
+    readonly property var mainBackgrounds: [
+        { value: "gray", label: "Серый (стандартный)" },
+        { value: "system", label: "Как в системе (палитра темы)" }
+    ]
+    readonly property var mainWindow: (current.appearance && current.appearance.main_window) || ({})
+    readonly property var logLevels: [
+        { value: "error", label: "Ошибки" },
+        { value: "warn", label: "Предупреждения" },
+        { value: "info", label: "Обычный (info)" },
+        { value: "debug", label: "Подробный (debug)" }
+    ]
+    // Dark and light switch at once (Universal style); the other styles are chosen when the program starts.
+    readonly property var general: current.general || ({})
+    readonly property string theme: general.theme || "dark"
+    readonly property int universalTheme: theme === "light" ? Universal.Light : Universal.Dark
+    Universal.theme: universalTheme
+    function choiceIndex(list, value, fallback) {
+        const i = list.findIndex(c => c.value === value)
+        return i < 0 ? fallback : i
+    }
     readonly property var translators: ["google", "yandex", "custom"]
     readonly property var backends: ["auto", "kwin", "portal"]
     readonly property var langs: ["eng", "rus", "jpn", "deu", "fra", "spa", "ita", "por", "kor", "chi_sim", "ukr", "pol"]
@@ -649,7 +678,7 @@ ApplicationWindow {
         id: tabs
         objectName: "settingsTabs"
         Repeater {
-            model: ["Источник изображения", "Распознавание текста", "Перевод", "Отображение перевода", "Окно перевода", "Оформление перевода", "Клавиши", "Статус", "О программе"]
+            model: ["Источник изображения", "Распознавание текста", "Перевод", "Отображение перевода", "Окно перевода", "Оформление перевода", "Клавиши", "Статус", "Общие", "Приложение", "О программе"]
             TabButton {
                 text: modelData
                 width: implicitWidth
@@ -1300,6 +1329,80 @@ ApplicationWindow {
                     text: "Текст, в котором сам движок не уверен (мусор из-за фона, анимации, мелкого шрифта), не переводится и не показывается. " + "0 — не проверять. Работает с Tesseract и PaddleOCR; причина отброшенного текста видна в «Просмотре OCR»."
                 }
                 Label {
+                    text: "Фильтры изображения перед распознаванием"
+                    font.bold: true
+                    Layout.columnSpan: 2
+                }
+                FieldLabel {
+                    helpText: "Превращает кадр в чёрно-белый по порогу Оцу: фон становится белым, буквы чёрными. Помогает на пёстром фоне и мелком тексте, но может «съесть» тонкие или полупрозрачные буквы."
+                    text: "Бинаризация (Оцу)"
+                    helpControl: filterBinarize
+                }
+                Switch {
+                    id: filterBinarize
+                    objectName: "filterBinarize"
+                    checked: !!win.current.recognition.binarize
+                    onToggled: win.set("recognition.binarize", checked)
+                }
+                FieldLabel {
+                    helpText: "Если кадр в среднем тёмный, цвета переворачиваются: светлый текст на тёмном фоне становится тёмным на светлом, как любят движки. Для светлых интерфейсов ничего не меняет."
+                    text: "Авто-инверсия цветов"
+                    helpControl: filterInvert
+                }
+                Switch {
+                    id: filterInvert
+                    objectName: "filterInvert"
+                    checked: !!win.current.recognition.auto_invert
+                    onToggled: win.set("recognition.auto_invert", checked)
+                }
+                FieldLabel {
+                    helpText: "Усиливает разницу между текстом и фоном (0 — без изменений, положительные значения — сильнее, отрицательные — слабее). Полезно для бледного текста."
+                    text: "Контраст"
+                    helpControl: filterContrast
+                }
+                SpinBox {
+                    id: filterContrast
+                    objectName: "filterContrast"
+                    from: -100
+                    to: 100
+                    stepSize: 10
+                    editable: true
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    value: win.current.recognition.contrast !== undefined ? win.current.recognition.contrast : 0
+                    onValueModified: win.set("recognition.contrast", value)
+                }
+                FieldLabel {
+                    helpText: "Подчёркивает края букв (нерезкая маска). Помогает на мелких и размытых шрифтах; на шумном изображении усиливает и шум."
+                    text: "Резкость"
+                    helpControl: filterSharpen
+                }
+                Switch {
+                    id: filterSharpen
+                    objectName: "filterSharpen"
+                    checked: !!win.current.recognition.sharpen
+                    onToggled: win.set("recognition.sharpen", checked)
+                }
+                FieldLabel {
+                    helpText: "Убирает из результата одиночные «~ | ° _ ^» и им подобные знаки, которые движок видит в текстурах фона, и строки, состоящие только из них."
+                    text: "Убирать мусорные символы"
+                    helpControl: filterNoise
+                }
+                Switch {
+                    id: filterNoise
+                    objectName: "filterNoise"
+                    checked: win.current.recognition.filter_noise !== false
+                    onToggled: win.set("recognition.filter_noise", checked)
+                }
+                Label {
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    wrapMode: Text.Wrap
+                    opacity: 0.75
+                    text: "Фильтры запоминаются для каждой игры отдельно (профиль игры): тёмному интерфейсу нужна инверсия, светлому — нет. " + "Не знаете, что включить, — откройте «Просмотр OCR» и нажмите «Автоподбор»: LipaX сам попробует несколько наборов на текущем кадре."
+                }
+                Label {
                     text: "Tesseract: состояние и языковые пакеты"
                     visible: win.current.recognition.engine !== "paddleocr"
                     font.bold: true
@@ -1617,6 +1720,17 @@ ApplicationWindow {
                     checked: win.current.translation.auto_translate !== false
                     onToggled: win.set("translation.auto_translate", checked)
                 }
+                FieldLabel {
+                    helpText: "Окно перевода делит распознанный текст на абзацы и отправляет в переводчик только те, которых ещё не было: неизменные заголовки и кнопки берутся из кэша. Меньше запросов, но абзацы переводятся порознь, без общего контекста."
+                    text: "Переводить только изменения"
+                    helpControl: changesOnlySwitch
+                }
+                Switch {
+                    id: changesOnlySwitch
+                    objectName: "changesOnly"
+                    checked: !!win.current.translation.changes_only
+                    onToggled: win.set("translation.changes_only", checked)
+                }
                 ResetButton {
                     text: "Сбросить настройки перевода"
                     keys: ["translation"]
@@ -1715,6 +1829,29 @@ ApplicationWindow {
                     visible: win.current.display_mode === "inplace" && win.inplaceBlocker.length > 0
                     text: "Для этого окна недоступно: " + win.inplaceBlocker + "."
                 }
+                FieldLabel {
+                    helpText: "Перевод (поверх оригинала и окно перевода) показывается, только пока окно игры видно и в фокусе. Если окно свёрнуто, закрыто, на другом рабочем столе или поверх него другая программа, перевод скрывается, а распознавание приостанавливается; всё возвращается, когда вы вернётесь в игру. Окна самого LipaX игру «активной» не лишают. Работает для окон, выбранных через KWin; для захвата через портал данных об окне нет."
+                    text: "Показывать перевод только при активном окне игры"
+                    helpControl: onlyWhenActive
+                }
+                Switch {
+                    id: onlyWhenActive
+                    objectName: "onlyWhenActive"
+                    checked: !!win.inplace().only_when_active
+                    onToggled: win.setInplace("only_when_active", checked)
+                }
+                Label {
+                    objectName: "onlyWhenActiveLinkDisplay"
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    wrapMode: Text.Wrap
+                    opacity: 0.75
+                    textFormat: Text.StyledText
+                    linkColor: palette.link
+                    text: "Та же настройка есть на вкладке <a href=\"appearance\">«Оформление перевода»</a>: там она рядом с остальными параметрами перевода поверх оригинала."
+                    onLinkActivated: tabs.currentIndex = 5
+                }
                 ResetButton {
                     text: "Сбросить способ отображения"
                     keys: ["display_mode"]
@@ -1726,12 +1863,24 @@ ApplicationWindow {
             objectName: "settingsPage4"
             contentWidth: availableWidth
             clip: true
+            // The window is used only in the «separate window» mode; in the in-place mode its settings have no effect.
+            enabled: win.current.display_mode !== "inplace"
+            opacity: enabled ? 1 : 0.45
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             GridLayout {
                 width: page4.availableWidth - 16
                 columns: 2
                 columnSpacing: 24
                 rowSpacing: 14
+                Label {
+                    objectName: "windowSettingsDisabledNote"
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    wrapMode: Text.Wrap
+                    visible: win.current.display_mode === "inplace"
+                    color: "#ffc23d"
+                    text: "Эти настройки не действуют, пока перевод показывается поверх исходного текста. Чтобы включить их, выберите «В отдельном окне» на вкладке «Отображение перевода»."
+                }
                 Label {
                     Layout.columnSpan: 2
                     Layout.fillWidth: true
@@ -1859,22 +2008,6 @@ ApplicationWindow {
                         value: win.current.translation_window.size ? win.current.translation_window.size[1] : 120
                         onValueModified: win.set("translation_window.size", [win.current.translation_window.size[0], value])
                     }
-                }
-                FieldLabel {
-                    text: "Сворачивать приложение в системный трей"
-                }
-                Switch {
-                    objectName: "closeToTraySwitch"
-                    checked: win.current.close_to_tray === true
-                    onToggled: win.set("close_to_tray", checked)
-                }
-                Label {
-                    Layout.columnSpan: 2
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: 0
-                    wrapMode: Text.Wrap
-                    opacity: 0.75
-                    text: "Включено: закрытие главного окна скрывает его в трей, захват и перевод продолжают работать. " + "Выключено: закрытие главного окна завершает LipaX. Полностью выйти можно из меню значка в трее."
                 }
                 FieldLabel {
                     text: "Автоматический размер текста (уменьшать, если не помещается)"
@@ -2112,6 +2245,29 @@ ApplicationWindow {
                         wrapMode: Text.Wrap
                         opacity: 0.7
                         text: "По умолчанию 1,8: абзац остаётся одним полем, а поля, разделённые пустой строкой (имя над репликой), — разными."
+                    }
+                    FieldLabel {
+                        helpText: "Перевод (поверх оригинала и окно перевода) показывается, только пока окно игры видно и в фокусе. Если окно свёрнуто, закрыто, на другом рабочем столе или поверх него другая программа, перевод скрывается, а распознавание приостанавливается; всё возвращается, когда вы вернётесь в игру. Окна самого LipaX игру «активной» не лишают. Работает для окон, выбранных через KWin; для захвата через портал данных об окне нет."
+                        text: "Показывать перевод только при активном окне игры"
+                        helpControl: onlyWhenActiveAppearance
+                    }
+                    Switch {
+                        id: onlyWhenActiveAppearance
+                        objectName: "onlyWhenActiveAppearance"
+                        checked: !!win.inplace().only_when_active
+                        onToggled: win.setInplace("only_when_active", checked)
+                    }
+                    Label {
+                        objectName: "onlyWhenActiveLinkAppearance"
+                        Layout.columnSpan: 2
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        opacity: 0.75
+                        textFormat: Text.StyledText
+                        linkColor: palette.link
+                        text: "Та же настройка есть на вкладке <a href=\"display\">«Отображение перевода»</a>: она действует и для окна перевода."
+                        onLinkActivated: tabs.currentIndex = 3
                     }
                     FieldLabel {
                         text: "Фон под переводом"
@@ -3013,18 +3169,227 @@ ApplicationWindow {
             }
         }
         ScrollView {
-            id: page8
+            id: pageGeneral
             objectName: "settingsPage8"
+            contentWidth: availableWidth
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            GridLayout {
+                width: pageGeneral.availableWidth - 16
+                columns: 2
+                columnSpacing: 24
+                rowSpacing: 14
+                SectionTitle {
+                    text: "Главное окно: «Оригинал» и «Перевод»"
+                }
+                Label {
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    wrapMode: Text.Wrap
+                    opacity: 0.75
+                    text: "Эти параметры относятся только к двум текстовым полям главного окна LipaX. Плавающее окно перевода и перевод поверх игры настраиваются на вкладках «Окно перевода» и «Оформление перевода»."
+                }
+                FieldLabel {
+                    helpText: "Шрифт текста в главном окне (латиница и кириллица). Доступны только шрифты, поставляемые с LipaX."
+                    text: "Шрифт"
+                    helpControl: mainFont
+                }
+                ComboBox {
+                    id: mainFont
+                    objectName: "mainWindowFont"
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    model: win.fontFamilies
+                    currentIndex: win.fontIndex(win.mainWindow.font_family)
+                    onActivated: win.set("appearance.main_window.font_family", currentText)
+                }
+                FieldLabel {
+                    helpText: "Шрифт для китайских, японских и корейских иероглифов, которых нет в основном шрифте. «Авто» — Noto Sans CJK из комплекта LipaX."
+                    text: "Шрифт для CJK"
+                    helpControl: mainCjkFont
+                }
+                ComboBox {
+                    id: mainCjkFont
+                    objectName: "mainWindowCjkFont"
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    model: ["Авто"].concat(win.fontFamilies)
+                    currentIndex: win.mainWindow.cjk_font_family ? Math.max(0, win.fontFamilies.indexOf(win.mainWindow.cjk_font_family) + 1) : 0
+                    onActivated: win.set("appearance.main_window.cjk_font_family", currentIndex === 0 ? "" : currentText)
+                }
+                FieldLabel {
+                    helpText: "Размер текста в полях «Оригинал» и «Перевод»."
+                    text: "Размер шрифта"
+                    helpControl: mainFontSize
+                }
+                SpinBox {
+                    id: mainFontSize
+                    objectName: "mainWindowFontSize"
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    from: 8
+                    to: 72
+                    editable: true
+                    value: win.mainWindow.font_size || 16
+                    onValueModified: win.set("appearance.main_window.font_size", value)
+                }
+                FieldLabel {
+                    helpText: "Заливка полей: стандартный серый или цвета текущей темы (светлые при светлой теме, тёмные при тёмной)."
+                    text: "Фон"
+                    helpControl: mainBackground
+                }
+                ComboBox {
+                    id: mainBackground
+                    objectName: "mainWindowBackground"
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    model: win.mainBackgrounds.map(c => c.label)
+                    currentIndex: win.choiceIndex(win.mainBackgrounds, win.mainWindow.background, 0)
+                    onActivated: win.set("appearance.main_window.background", win.mainBackgrounds[currentIndex].value)
+                }
+                ResetButton {
+                    text: "Сбросить настройки главного окна"
+                    keys: ["appearance.main_window"]
+                }
+            }
+        }
+        ScrollView {
+            id: pageApp
+            objectName: "settingsPage9"
+            contentWidth: availableWidth
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            GridLayout {
+                width: pageApp.availableWidth - 16
+                columns: 2
+                columnSpacing: 24
+                rowSpacing: 14
+                SectionTitle {
+                    text: "Оформление приложения"
+                }
+                FieldLabel {
+                    helpText: "Тёмная и светлая темы переключаются сразу. «Как в системе», Breeze и Fusion — другие стили Qt: они выбираются при запуске, поэтому действуют после перезапуска LipaX (Breeze нужен пакет qqc2-breeze-style)."
+                    text: "Тема"
+                    helpControl: generalTheme
+                }
+                ComboBox {
+                    id: generalTheme
+                    objectName: "generalTheme"
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    model: win.themeChoices.map(c => c.label)
+                    currentIndex: win.choiceIndex(win.themeChoices, win.theme, 3)
+                    onActivated: win.set("general.theme", win.themeChoices[currentIndex].value)
+                }
+                Label {
+                    objectName: "generalThemeNote"
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    wrapMode: Text.Wrap
+                    opacity: 0.75
+                    text: win.theme === "dark" || win.theme === "light" ? "Тема действует сразу." : "Этот стиль применится после перезапуска LipaX."
+                }
+                SectionTitle {
+                    text: "Трей и запуск"
+                }
+                FieldLabel {
+                    text: "Сворачивать в системный трей при закрытии"
+                }
+                Switch {
+                    objectName: "closeToTraySwitch"
+                    checked: win.current.close_to_tray === true
+                    onToggled: win.set("close_to_tray", checked)
+                }
+                Label {
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    wrapMode: Text.Wrap
+                    opacity: 0.75
+                    text: "Включено: закрытие главного окна скрывает его в трей, захват и перевод продолжают работать. " + "Выключено: закрытие главного окна завершает LipaX. Полностью выйти можно из меню значка в трее."
+                }
+                Label {
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    wrapMode: Text.Wrap
+                    opacity: 0.75
+                    text: "LipaX запускается в одном экземпляре: повторный запуск и действия меню значка (показать, настройки, выбрать окно, запустить и остановить автоперевод, выход) передаются работающему. То же из терминала: lipax --show, --settings, --capture, --start-autotranslate, --stop-autotranslate, --quit."
+                }
+                FieldLabel {
+                    helpText: "Создаёт запись в ~/.config/autostart/io.lipa.Translator.desktop: LipaX запускается при входе в систему. Выключение удаляет запись."
+                    text: "Запускать при входе в систему"
+                    helpControl: generalAutostart
+                }
+                Switch {
+                    id: generalAutostart
+                    objectName: "generalAutostart"
+                    checked: !!win.general.autostart
+                    onToggled: win.set("general.autostart", checked)
+                }
+                SectionTitle {
+                    text: "Уведомления рабочего стола"
+                }
+                FieldLabel {
+                    helpText: "Всплывающее уведомление, когда область остановилась из-за ошибки и автоповтор закончился. Одно и то же сообщение показывается не чаще раза в минуту."
+                    text: "Об остановке из-за ошибки"
+                    helpControl: generalNotifyErrors
+                }
+                Switch {
+                    id: generalNotifyErrors
+                    objectName: "generalNotifyErrors"
+                    checked: !!win.general.notify_errors
+                    onToggled: win.set("general.notify_errors", checked)
+                }
+                FieldLabel {
+                    helpText: "Уведомление при каждой ошибке, после которой LipaX повторит попытку (сеть, захват, OCR). Может быть шумным."
+                    text: "О каждой ошибке с повтором"
+                    helpControl: generalNotifyRetries
+                }
+                Switch {
+                    id: generalNotifyRetries
+                    objectName: "generalNotifyRetries"
+                    checked: !!win.general.notify_retries
+                    onToggled: win.set("general.notify_retries", checked)
+                }
+                SectionTitle {
+                    text: "Журнал"
+                }
+                FieldLabel {
+                    helpText: "Сколько подробностей писать в журнал (терминал, journalctl). Меняется сразу, без перезапуска. Переменная окружения RUST_LOG при запуске имеет приоритет, пока уровень не изменён здесь."
+                    text: "Уровень журнала"
+                    helpControl: generalLogLevel
+                }
+                ComboBox {
+                    id: generalLogLevel
+                    objectName: "generalLogLevel"
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    model: win.logLevels.map(c => c.label)
+                    currentIndex: win.choiceIndex(win.logLevels, win.general.log_level, 2)
+                    onActivated: win.set("general.log_level", win.logLevels[currentIndex].value)
+                }
+                ResetButton {
+                    text: "Сбросить настройки приложения"
+                    keys: ["general", "close_to_tray"]
+                }
+            }
+        }
+        ScrollView {
+            id: page10
+            objectName: "settingsPage10"
             contentWidth: availableWidth
             clip: true
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ColumnLayout {
                 id: about
                 objectName: "aboutPage"
-                width: page8.availableWidth - 16
+                width: page10.availableWidth - 16
                 spacing: 10
                 // The animations run only while the tab is on screen (the tab index is that of the tab bar above).
-                readonly property bool active: win.visible && tabs.currentIndex === 8
+                readonly property bool active: win.visible && tabs.currentIndex === 10
                 readonly property string version: win.controller.appVersion ? win.controller.appVersion() : ""
 
                 Item {

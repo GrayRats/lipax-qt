@@ -9,6 +9,9 @@ TestCase {
     QtObject {
         id: ctl
         property string ocrPreviewJson: "[]"
+        property string patch: ""
+        property string autotuneJson: ""
+        property int tuneCalls: 0
         property bool enabled: false
         property int enableCalls: 0
         property int onceCalls: 0
@@ -16,6 +19,8 @@ TestCase {
         function setOcrPreviewEnabled(on) { enabled = on; enableCalls++ }
         function translateOnce() { onceCalls++ }
         function copyText(text) { copied = text }
+        function applySettingsPatch(json) { patch = json }
+        function autoTuneFilters() { tuneCalls++ }
     }
     Lipa.OcrPreviewWindow { id: preview; controller: ctl }
 
@@ -111,5 +116,52 @@ TestCase {
         preview.regionIndex = 0
         preview.close()
         ctl.ocrPreviewJson = "[]"
+    }
+
+    function test_confidenceColoursAndFilteredFrame() {
+        compare(preview.confidenceColor(90, 30), "#3fb950")
+        compare(preview.confidenceColor(45, 30), "#f5a623")
+        compare(preview.confidenceColor(10, 30), "#e5484d")
+        compare(preview.confidenceColor(undefined, 30), "#00c8b4")
+        preview.openWindow()
+        const entry = JSON.parse(JSON.stringify(subtitles))
+        entry.minimum_confidence = 30
+        entry.filters = {binarize: true, auto_invert: false, sharpen: false, contrast: 0, filter_noise: true}
+        entry.boxes[0].confidence = 12
+        entry.image = "file:///raw.png"
+        ctl.ocrPreviewJson = JSON.stringify([entry])
+        verify(!findChild(preview, "ocrShowFiltered").enabled, "no filtered frame yet")
+        verify(findChild(preview, "ocrFilterBinarize").checked)
+        entry.filtered_image = "file:///filtered.png"
+        ctl.ocrPreviewJson = JSON.stringify([entry])
+        verify(findChild(preview, "ocrShowFiltered").enabled)
+        compare(findChild(preview, "ocrPreviewImage").source.toString(), "file:///raw.png")
+        preview.showFiltered = true
+        compare(findChild(preview, "ocrPreviewImage").source.toString(), "file:///filtered.png")
+        preview.showFiltered = false
+        mouseClick(findChild(preview, "ocrFilterInvert"))
+        compare(JSON.parse(ctl.patch), {"recognition.auto_invert": true})
+        preview.close()
+        ctl.ocrPreviewJson = "[]"
+    }
+
+    function test_autoTuneAsksForTheBestFilterAndShowsTheScores() {
+        preview.openWindow()
+        ctl.ocrPreviewJson = JSON.stringify([subtitles])
+        const button = findChild(preview, "ocrAutoTune")
+        verify(button.enabled)
+        button.clicked()
+        compare(ctl.tuneCalls, 1)
+        verify(!button.enabled, "busy until the answer arrives")
+        ctl.autotuneJson = JSON.stringify({region: "subtitles", best: 1, applied: true,
+            results: [{name: "Без фильтров", score: 40}, {name: "Бинаризация", score: 170.4}]})
+        verify(button.enabled)
+        const label = findChild(preview, "ocrAutoTuneResult")
+        verify(label.visible)
+        verify(label.text.indexOf("Применено: Бинаризация") === 0, label.text)
+        verify(label.text.indexOf("Без фильтров — 40") >= 0, label.text)
+        preview.close()
+        ctl.ocrPreviewJson = "[]"
+        ctl.autotuneJson = ""
     }
 }

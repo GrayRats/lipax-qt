@@ -1,5 +1,5 @@
 pkgname=lipax
-pkgver=1.0.8
+pkgver=1.0.9
 pkgrel=1
 pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')

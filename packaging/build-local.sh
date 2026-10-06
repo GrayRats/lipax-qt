@@ -3,8 +3,18 @@
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 lipa_root=$PWD
-lipa_version=$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)
+# PKGBUILD is what makepkg builds, so its pkgver is the version; Cargo.toml and Cargo.lock follow it.
+lipa_version=$(sed -n 's/^pkgver=//p' PKGBUILD | head -1)
+[[ $lipa_version =~ ^[0-9]+(\.[0-9]+)*$ ]] || { echo "build-local: no valid pkgver in PKGBUILD" >&2; exit 1; }
+cargo_version=$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)
+if [[ $cargo_version != "$lipa_version" ]]; then
+    echo "build-local: Cargo version $cargo_version -> $lipa_version (as in PKGBUILD)"
+    sed -i "0,/^version = \".*\"/s//version = \"$lipa_version\"/" Cargo.toml
+    sed -i "/^name = \"lipa\(-core\)\?\"\$/{n;s/^version = \".*\"/version = \"$lipa_version\"/}" Cargo.lock
+fi
 mkdir -p dist
+# Archives and packages of other versions would only confuse makepkg and the install command.
+find dist -maxdepth 1 -type f \( -name 'lipax-*.tar.gz' -o -name 'lipax-*.pkg.tar.*' \) ! -name "lipax-${lipa_version}[.-]*" -delete
 # Explicit list avoids capturing credentials, target/, old archives or .git/.
 # Only files required to build and package the application are included.
 tar --exclude='__pycache__' --exclude='.qmlls.ini' --exclude='crates/app/assets/fonts/*.ttf' --exclude='crates/app/assets/fonts/*.otf' --transform="s,^,lipax-${lipa_version}/," \
