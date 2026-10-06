@@ -99,13 +99,8 @@ ApplicationWindow {
             label: "Сплошной фон"
         }
     ]
-    readonly property string windowModeDescription: "Перевод показывается в отдельном окне: его можно закрепить поверх игры или перетащить, "
-        + "оформить фон, шрифт и рамку. Работает при любом способе захвата; закрепить или скрыть окно можно средней кнопкой мыши."
-    readonly property string inplaceModeDescription: "Перевод рисуется прямо поверх исходного текста в каждой активной области: цвет фона, размер и начертание "
-        + "оцениваются по кадру, длинный перевод уменьшается. Нужна геометрия окна (KWin или portal с «окно занимает весь монитор»). "
-        + "Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Поверх исходного текста»."
-    // The appearance tab edits the way chosen in "Отображение перевода": there is one choice, not two.
-    readonly property string appearanceMode: current.display_mode === "inplace" ? "inplace" : "window"
+    readonly property string windowDisplayDescription: "Показывает перевод в отдельном окне. Его можно закрепить поверх игры или сделать свободным и перемещать мышью. Положение и размер задаются на вкладке «Окно перевода»."
+    readonly property string inplaceDisplayDescription: "Размещает перевод на месте исходного текста в области захвата. Требуются точные координаты окна и шрифт для языка перевода. Если способ недоступен, причина указана в подсказке."
     readonly property bool solidStyle: (current.appearance.window.background_style || "solid") === "solid"
     // Largest connected screen in logical pixels: bounds for window position and size.
     readonly property int screenMaxWidth: Math.max(200, ...Qt.application.screens.map(s => s.width))
@@ -263,6 +258,22 @@ ApplicationWindow {
     }
 
     component FieldLabel: Label {
+        id: fieldLabel
+        property string helpText: ""
+        property Item helpControl: null
+        Accessible.description: helpText
+        HoverHint {
+            control: fieldLabel
+            feature: fieldLabel.text
+            explanation: feature + "\n\n" + fieldLabel.helpText
+            active: fieldLabel.helpText.length > 0
+        }
+        HoverHint {
+            control: fieldLabel.helpControl || fieldLabel
+            feature: fieldLabel.text
+            explanation: feature + "\n\n" + fieldLabel.helpText
+            active: fieldLabel.helpText.length > 0 && !!fieldLabel.helpControl && fieldLabel.helpControl.enabled
+        }
         wrapMode: Text.Wrap
         Layout.preferredWidth: 230
         Layout.maximumWidth: 230
@@ -604,7 +615,7 @@ ApplicationWindow {
     function addRegion() {
         const r = (current.capture.regions || []).slice();
         if (r.length >= maxRegions) {
-            notifyRegions("Можно создать не больше " + maxRegions + " областей. Удалите одну, чтобы добавить новую.");
+            notifyRegions("Можно создать не больше " + maxRegions + " областей захвата. Удалите одну, чтобы добавить новую.");
             return false;
         }
         let n = r.length + 1;
@@ -691,17 +702,16 @@ ApplicationWindow {
                         win.controller.pickWindow();
                     }
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "KWin получает изображение и положение окна. Portal открывает системный выбор источника; положение окна на рабочем столе ему недоступно."
                     text: "Способ захвата"
+                    helpControl: captureSourceHelpTarget1
                 }
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     ComboBox {
+                        id: captureSourceHelpTarget1
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         model: ["Авто: KWin, а если недоступен — portal", "KWin ScreenShot2 (только KDE)", "xdg-desktop-portal (PipeWire)"]
@@ -734,12 +744,12 @@ ApplicationWindow {
                         text: "Выбранное через portal окно занимает весь указанный экран"
                         onToggled: win.set("capture.portal_fills_monitor", checked)
 
-                        Accessible.description: unavailableHint1.explanation
+                        Accessible.description: unavailableHint1.accessibleExplanation
                         UnavailableHint {
                             id: unavailableHint1
                             control: unavailableControl1
                             feature: "Полноэкранный захват portal"
-                            reason: "Монитор не указан. Portal не сообщает положение окна."
+                            reason: "Экран не указан. Portal не сообщает положение окна."
                             remedy: "Выберите экран на вкладке «Окно перевода»."
                         }
                     }
@@ -756,13 +766,9 @@ ApplicationWindow {
                     Layout.columnSpan: 2
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
-                    text: "KWin исключает серверную рамку. Заголовок CSD внутри клиентской области выбирайте вручную границей области захвата. Portal не сообщает положение окна на рабочем столе."
+                    text: "KWin исключает серверную рамку. Если приложение рисует собственный заголовок (CSD), выделите область захвата ниже него. Portal не сообщает положение окна на рабочем столе."
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
                     text: "Запоминать настройки каждой игры"
                 }
                 Switch {
@@ -776,7 +782,7 @@ ApplicationWindow {
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
                     opacity: 0.75
-                    text: "Области, языки, движок OCR и положение перевода сохраняются отдельно для каждого окна (по его классу) " + "и возвращаются, когда вы снова выбираете окно этой игры. Внешний вид и клавиши общие."
+                    text: "Области захвата, языки, движок распознавания и положение перевода сохраняются отдельно для каждого окна (по его классу) " + "и возвращаются, когда вы снова выбираете окно этой игры. Оформление перевода и клавиши общие."
                 }
                 Repeater {
                     objectName: "gameProfileList"
@@ -792,16 +798,16 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             Layout.minimumWidth: 0
                             elide: Text.ElideRight
-                            text: modelData + (profile.caption ? " — " + profile.caption : "") + " · областей: " + (profile.capture.regions || []).filter(r => r.rect).length + (selected ? " (выбрана)" : "")
+                            text: modelData + (profile.caption ? " — " + profile.caption : "") + " · областей захвата: " + (profile.capture.regions || []).filter(r => r.rect).length + (selected ? " (выбрана)" : "")
                         }
                         Button {
                             id: unavailableControl2
                             objectName: "forgetGame_" + modelData
-                            text: "Забыть"
+                            text: "Забыть профиль игры"
                             enabled: !selected
                             onClicked: win.controller.forgetGameProfile(modelData)
 
-                            Accessible.description: unavailableHint2.explanation
+                            Accessible.description: unavailableHint2.accessibleExplanation
                             UnavailableHint {
                                 id: unavailableHint2
                                 control: unavailableControl2
@@ -813,7 +819,7 @@ ApplicationWindow {
                     }
                 }
                 SectionTitle {
-                    text: "Рамка областей в игре"
+                    text: "Рамка областей захвата в игре"
                 }
                 FieldLabel {
                     text: "Показывать рамку"
@@ -841,10 +847,13 @@ ApplicationWindow {
                     onValueModified: win.set("capture.frame_seconds", value)
                 }
                 FieldLabel {
-                    text: "Цвет контура текста"
+                    helpText: "Цвет рамки, обозначающей участок изображения, который передаётся на распознавание."
+                    text: "Цвет рамки области захвата"
                     visible: win.current.capture.region_frame_mode !== "pattern" && win.current.capture.region_frame_mode !== "off"
+                    helpControl: translationSettingHelpTarget1
                 }
                 ColorRow {
+                    id: translationSettingHelpTarget1
                     visible: win.current.capture.region_frame_mode !== "pattern" && win.current.capture.region_frame_mode !== "off"
                     key: "capture.frame_color"
                     presets: ["#ff0000", "#00c800", "#1e90ff", "#ffd400", "#ffffff"]
@@ -864,7 +873,7 @@ ApplicationWindow {
                     onValueModified: win.set("capture.frame_width", value)
                 }
                 FieldLabel {
-                    text: "Когда перевод закреплён"
+                    text: "Когда окно перевода закреплено"
                 }
                 ComboBox {
                     Layout.fillWidth: true
@@ -879,7 +888,7 @@ ApplicationWindow {
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
                     opacity: 0.7
-                    text: "Рамка рисуется вокруг каждой активной области и не мешает кликам. У каждой области свой таймер; " + "режим можно переопределить для отдельной области в разделе областей захвата."
+                    text: "Рамка рисуется вокруг каждой активной области захвата и не мешает кликам. У каждой области свой таймер; " + "режим можно переопределить для отдельной области в разделе областей захвата."
                 }
                 Label {
                     objectName: "frameBlockerNote"
@@ -897,10 +906,10 @@ ApplicationWindow {
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
                     opacity: 0.75
-                    text: "До " + win.maxRegions + " областей. Каждая распознаётся отдельно; пустые поля берутся из общих настроек. " + "Выключенная область сохраняет выделение."
+                    text: "До " + win.maxRegions + " областей захвата. Каждая распознаётся отдельно; пустые поля берутся из общих настроек. " + "Выключенная область захвата сохраняет выделение."
                 }
                 FieldLabel {
-                    text: "Разрешить несколько активных областей"
+                    text: "Разрешить несколько активных областей захвата"
                 }
                 Switch {
                     objectName: "allowMultipleRegions"
@@ -913,7 +922,7 @@ ApplicationWindow {
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
                     opacity: 0.7
-                    text: win.current.capture.allow_multiple_regions === true ? "Активными могут быть до " + win.maxRegions + " областей одновременно." : "Активна одна область: включение другой выключает предыдущую."
+                    text: win.current.capture.allow_multiple_regions === true ? "Активными могут быть до " + win.maxRegions + " областей захвата одновременно." : "Активна одна область захвата: включение другой выключает предыдущую."
                 }
                 Repeater {
                     model: win.current.capture.regions || []
@@ -943,15 +952,19 @@ ApplicationWindow {
                                     win.setRegionField(regionFrame.index, "name", text.trim())
                             }
                             FieldLabel {
-                                text: regionFrame.hasRect ? "Область задана" : "Область не задана"
+                                Layout.columnSpan: 2
+                                text: regionFrame.hasRect ? "Область захвата задана" : "Область захвата не задана"
                                 color: regionFrame.hasRect ? palette.text : "#ffb347"
                             }
-                            RowLayout {
+                            Flow {
+                                objectName: "captureRegionActions"
+                                Layout.columnSpan: 2
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
+                                spacing: 8
                                 Button {
                                     id: unavailableControl3
-                                    text: "Выделить на экране"
+                                    text: "Выбрать область захвата"
                                     enabled: win.controller.windowTitle !== undefined && win.controller.windowTitle.length > 0
                                     onClicked: {
                                         win.activateRegion(regionFrame.index, true);
@@ -959,7 +972,7 @@ ApplicationWindow {
                                         win.selectRegionRequested();
                                     }
 
-                                    Accessible.description: unavailableHint3.explanation
+                                    Accessible.description: unavailableHint3.accessibleExplanation
                                     UnavailableHint {
                                         id: unavailableHint3
                                         control: unavailableControl3
@@ -970,15 +983,15 @@ ApplicationWindow {
                                 }
                                 Button {
                                     id: unavailableControl4
-                                    text: "Очистить"
+                                    text: "Сбросить область захвата"
                                     enabled: regionFrame.hasRect
                                     onClicked: win.setRegionField(regionFrame.index, "rect", null)
 
-                                    Accessible.description: unavailableHint4.explanation
+                                    Accessible.description: unavailableHint4.accessibleExplanation
                                     UnavailableHint {
                                         id: unavailableHint4
                                         control: unavailableControl4
-                                        feature: "Очистить область захвата"
+                                        feature: "Сбросить область захвата"
                                         reason: "У этой области ещё нет выделения."
                                         remedy: "Сначала выделите область в окне игры."
                                     }
@@ -988,24 +1001,27 @@ ApplicationWindow {
                                 }
                                 Button {
                                     id: unavailableControl5
-                                    text: "Удалить"
+                                    text: "Удалить область захвата"
                                     enabled: (win.current.capture.regions || []).length > 1
                                     onClicked: win.removeRegion(regionFrame.index)
 
-                                    Accessible.description: unavailableHint5.explanation
+                                    Accessible.description: unavailableHint5.accessibleExplanation
                                     UnavailableHint {
                                         id: unavailableHint5
                                         control: unavailableControl5
                                         feature: "Удалить область захвата"
-                                        reason: "Нужно оставить хотя бы одну область."
+                                        reason: "Нужно оставить хотя бы одну область захвата."
                                         remedy: "Очистите выделение или добавьте другую область."
                                     }
                                 }
                             }
                             FieldLabel {
+                                helpText: "Выберите язык исходного текста. Для выбранного движка должна быть установлена соответствующая языковая модель."
                                 text: "Язык распознавания"
+                                helpControl: recognitionLanguageHelpTarget1
                             }
                             ComboBox {
+                                id: recognitionLanguageHelpTarget1
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
                                 model: ["Как в общих настройках"].concat(win.langs)
@@ -1013,9 +1029,12 @@ ApplicationWindow {
                                 onActivated: win.setRegionField(regionFrame.index, "recognition_language", currentIndex === 0 ? "" : currentText)
                             }
                             FieldLabel {
+                                helpText: "Язык, на котором будет показан результат перевода."
                                 text: "Язык перевода"
+                                helpControl: targetLanguageHelpTarget1
                             }
                             ComboBox {
+                                id: targetLanguageHelpTarget1
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
                                 model: ["Как в общих настройках"].concat(win.targets)
@@ -1023,9 +1042,12 @@ ApplicationWindow {
                                 onActivated: win.setRegionField(regionFrame.index, "target_language", currentIndex === 0 ? "" : currentText)
                             }
                             FieldLabel {
+                                helpText: "Tesseract и PaddleOCR распознают текст в области захвата. Автоматический режим повторяет распознавание через PaddleOCR при низкой уверенности Tesseract."
                                 text: "Движок распознавания"
+                                helpControl: recognitionEngineHelpTarget1
                             }
                             ComboBox {
+                                id: recognitionEngineHelpTarget1
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
                                 readonly property var values: ["", "tesseract", "paddleocr", "auto"]
@@ -1034,7 +1056,7 @@ ApplicationWindow {
                                 onActivated: win.setRegionField(regionFrame.index, "engine", values[currentIndex] || null)
                             }
                             FieldLabel {
-                                text: "Рамка области"
+                                text: "Рамка области захвата"
                             }
                             ComboBox {
                                 Layout.fillWidth: true
@@ -1044,7 +1066,7 @@ ApplicationWindow {
                                 onActivated: win.setRegionField(regionFrame.index, "frame_mode", currentIndex === 0 ? "" : win.frameModes[currentIndex - 1].value)
                             }
                             FieldLabel {
-                                text: "Интервал / ожидание стабилизации, мс"
+                                text: "Интервал / задержка перед распознаванием, мс"
                             }
                             RowLayout {
                                 Layout.fillWidth: true
@@ -1080,7 +1102,7 @@ ApplicationWindow {
                     // Stays enabled at the limit: pressing it explains why nothing was added.
                     Button {
                         objectName: "addRegion"
-                        text: "Добавить область"
+                        text: "Добавить область захвата"
                         onClicked: win.addRegion()
                     }
                     Label {
@@ -1100,9 +1122,10 @@ ApplicationWindow {
                 }
                 ResetButton {
                     keys: ["capture.regions", "capture.active_region", "capture.allow_multiple_regions"]
-                    text: "Сбросить области по умолчанию (выделения будут очищены)"
+                    text: "Сбросить области захвата (выделения будут очищены)"
                 }
                 ResetButton {
+                    text: "Сбросить настройки захвата"
                     keys: win.settingPaths.filter(k => k.startsWith("capture.") && !["capture.regions", "capture.active_region", "capture.allow_multiple_regions"].includes(k))
                 }
             }
@@ -1118,14 +1141,13 @@ ApplicationWindow {
                 columns: 2
                 columnSpacing: 24
                 rowSpacing: 14
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "Tesseract и PaddleOCR распознают текст в области захвата. Автоматический режим повторяет распознавание через PaddleOCR при низкой уверенности Tesseract."
                     text: "Движок распознавания"
+                    helpControl: recognitionEngineHelpTarget2
                 }
                 ComboBox {
+                    id: recognitionEngineHelpTarget2
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     objectName: "ocrEngineBox"
@@ -1134,15 +1156,14 @@ ApplicationWindow {
                     currentIndex: Math.max(0, values.indexOf(win.current.recognition.engine))
                     onActivated: win.set("recognition.engine", values[currentIndex])
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "Путь к интерпретатору Python, в окружении которого установлены PaddleOCR и PaddlePaddle."
                     text: "Python для PaddleOCR"
                     visible: win.usesPaddle
+                    helpControl: paddlePythonHelpTarget1
                 }
                 TextField {
+                    id: paddlePythonHelpTarget1
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     visible: win.usesPaddle
@@ -1253,14 +1274,13 @@ ApplicationWindow {
                         text: "Команды только показываются: LipaX ничего не устанавливает сам. Выполните их в терминале от своего пользователя (не root), затем укажите Python окружения выше; проверка запустится сама."
                     }
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "Результаты ниже этого порога не переводятся. Значение 0 отключает проверку уверенности."
                     text: "Минимальная уверенность распознавания, %"
+                    helpControl: recognitionConfidenceHelpTarget1
                 }
                 SpinBox {
+                    id: recognitionConfidenceHelpTarget1
                     objectName: "ocrMinConfidence"
                     from: 0
                     to: 95
@@ -1302,12 +1322,10 @@ ApplicationWindow {
                     color: "#ff6b6b"
                     text: "Tesseract не установлен" + (win.tess.engine_install_command ? ". Команда установки: " + win.tess.engine_install_command : "")
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "Язык исходного текста. Для выбранного движка должна быть установлена соответствующая языковая модель."
                     text: "Язык распознавания"
+                    helpControl: primaryBox
                 }
                 ComboBox {
                     id: primaryBox
@@ -1367,7 +1385,7 @@ ApplicationWindow {
                             enabled: !win.controller.tesseractBusy
                             onClicked: win.askInstall(modelData.code, modelData.name)
 
-                            Accessible.description: unavailableHint7.explanation
+                            Accessible.description: unavailableHint7.accessibleExplanation
                             UnavailableHint {
                                 id: unavailableHint7
                                 control: unavailableControl7
@@ -1378,11 +1396,7 @@ ApplicationWindow {
                         }
                     }
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
                     text: "Установить другой язык"
                     visible: win.current.recognition.engine !== "paddleocr"
                 }
@@ -1398,7 +1412,7 @@ ApplicationWindow {
                         textRole: "label"
                         enabled: win.installable.length > 0
 
-                        Accessible.description: unavailableHint8.explanation
+                        Accessible.description: unavailableHint8.accessibleExplanation
                         UnavailableHint {
                             id: unavailableHint8
                             control: installBox
@@ -1413,7 +1427,7 @@ ApplicationWindow {
                         enabled: installBox.currentIndex >= 0 && win.installable.length > 0 && !win.controller.tesseractBusy
                         onClicked: win.askInstall(win.installable[installBox.currentIndex].code, win.installable[installBox.currentIndex].name)
 
-                        Accessible.description: unavailableHint9.explanation
+                        Accessible.description: unavailableHint9.accessibleExplanation
                         UnavailableHint {
                             id: unavailableHint9
                             control: unavailableControl9
@@ -1431,7 +1445,7 @@ ApplicationWindow {
                     enabled: !win.controller.tesseractBusy
                     onClicked: win.controller.refreshTesseract()
 
-                    Accessible.description: unavailableHint6.explanation
+                    Accessible.description: unavailableHint6.accessibleExplanation
                     UnavailableHint {
                         id: unavailableHint6
                         control: unavailableControl6
@@ -1440,14 +1454,13 @@ ApplicationWindow {
                         remedy: "Дождитесь завершения текущей операции."
                     }
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "Пауза между проверками изображения на изменение текста."
                     text: "Интервал распознавания, мс"
+                    helpControl: recognitionIntervalHelpTarget1
                 }
                 SpinBox {
+                    id: recognitionIntervalHelpTarget1
                     from: 100
                     to: 5000
                     stepSize: 50
@@ -1473,14 +1486,13 @@ ApplicationWindow {
                     value: win.current.recognition.sensitivity || 2
                     onMoved: win.set("recognition.sensitivity", value)
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "После изменения изображения приложение ждёт стабилизации текста перед распознаванием."
                     text: "Задержка перед распознаванием, мс"
+                    helpControl: recognitionDelayHelpTarget1
                 }
                 SpinBox {
+                    id: recognitionDelayHelpTarget1
                     from: 0
                     to: 3000
                     stepSize: 50
@@ -1491,6 +1503,7 @@ ApplicationWindow {
                     onValueModified: win.set("recognition.debounce_ms", value)
                 }
                 ResetButton {
+                    text: "Сбросить настройки распознавания"
                     keys: ["recognition"]
                 }
             }
@@ -1507,9 +1520,12 @@ ApplicationWindow {
                 columnSpacing: 24
                 rowSpacing: 14
                 FieldLabel {
+                    helpText: "По умолчанию берётся из языка распознавания активной области захвата. Можно выбрать отдельный язык для сервиса перевода."
                     text: "Исходный язык"
+                    helpControl: sourceLanguageHelpTarget1
                 }
                 ComboBox {
+                    id: sourceLanguageHelpTarget1
                     objectName: "translationSourceLanguage"
                     Layout.fillWidth: true
                     model: ["Из языка распознавания"].concat(win.targets)
@@ -1521,26 +1537,23 @@ ApplicationWindow {
                         language: win.targets[currentIndex - 1]
                     })
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "Язык, на котором будет показан результат перевода."
                     text: "Язык перевода"
+                    helpControl: targetLanguageHelpTarget2
                 }
                 ComboBox {
+                    id: targetLanguageHelpTarget2
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     model: win.targets
                     currentIndex: Math.max(0, win.targets.indexOf(win.current.translation.target_language))
                     onActivated: win.set("translation.target_language", currentText)
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "Сервис, которому отправляется распознанный текст. Для некоторых сервисов требуется ключ API."
                     text: "Сервис перевода"
+                    helpControl: tr
                 }
                 ComboBox {
                     id: tr
@@ -1550,11 +1563,7 @@ ApplicationWindow {
                     currentIndex: Math.max(0, win.translators.indexOf(win.current.translation.service))
                     onActivated: win.set("translation.service", win.translators[currentIndex])
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
                     text: "Yandex API-ключ"
                     visible: tr.currentIndex === 1
                 }
@@ -1566,11 +1575,7 @@ ApplicationWindow {
                     text: win.current.translation.yandex_api_key || ""
                     onEditingFinished: win.set("translation.yandex_api_key", text)
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
                     text: "Yandex folder ID"
                     visible: tr.currentIndex === 1
                 }
@@ -1581,11 +1586,7 @@ ApplicationWindow {
                     text: win.current.translation.yandex_folder_id || ""
                     onEditingFinished: win.set("translation.yandex_folder_id", text)
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
                     text: "URL API (LibreTranslate-формат)"
                     visible: tr.currentIndex === 2
                 }
@@ -1597,11 +1598,7 @@ ApplicationWindow {
                     text: win.current.translation.custom_url || ""
                     onEditingFinished: win.set("translation.custom_url", text)
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
                     text: "Ключ API (необязательно)"
                     visible: tr.currentIndex === 2
                 }
@@ -1613,11 +1610,7 @@ ApplicationWindow {
                     text: win.current.translation.custom_api_key || ""
                     onEditingFinished: win.set("translation.custom_api_key", text)
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
                     text: "Автоматический перевод"
                 }
                 Switch {
@@ -1625,6 +1618,7 @@ ApplicationWindow {
                     onToggled: win.set("translation.auto_translate", checked)
                 }
                 ResetButton {
+                    text: "Сбросить настройки перевода"
                     keys: ["translation"]
                 }
             }
@@ -1644,27 +1638,31 @@ ApplicationWindow {
                     text: "Способ отображения"
                 }
                 FieldLabel {
+                    helpText: "Перевод поверх исходного текста требует точных координат окна. Отдельное окно перевода можно разместить независимо от текста игры."
                     text: "Где показывать перевод"
                 }
                 ColumnLayout {
                     Layout.fillWidth: true
                     RadioButton {
+                        id: windowChoice
                         objectName: "displayWindow"
+                        HoverHint {
+                            control: windowChoice
+                            feature: "Отдельное окно перевода"
+                            objectName: "windowDisplayHint"
+                            explanation: feature + "\n\n" + win.windowDisplayDescription
+                        }
                         text: "В отдельном окне"
+                        Accessible.description: win.windowDisplayDescription
                         checked: win.current.display_mode !== "inplace"
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 400
-                        ToolTip.text: win.windowModeDescription
                         onClicked: win.set("display_mode", "window")
                     }
                     Label {
-                        objectName: "displayWindowDescription"
+                        objectName: "windowDisplayDescription"
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
-                        Layout.leftMargin: 28
                         wrapMode: Text.Wrap
-                        opacity: 0.7
-                        text: win.windowModeDescription
+                        text: win.windowDisplayDescription
                     }
                     RadioButton {
                         id: inplaceChoice
@@ -1672,11 +1670,14 @@ ApplicationWindow {
                         text: "Поверх исходного текста"
                         checked: win.current.display_mode === "inplace"
                         enabled: win.inplaceAvailability.available
-                        Accessible.description: inplaceHint.explanation
-                        // A disabled control gets no hover: then the hint below explains why it is unavailable.
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 400
-                        ToolTip.text: win.inplaceModeDescription
+                        HoverHint {
+                            control: inplaceChoice
+                            feature: "Поверх исходного текста"
+                            objectName: "inplaceDisplayHint"
+                            explanation: feature + "\n\n" + win.inplaceDisplayDescription
+                            active: inplaceChoice.enabled
+                        }
+                        Accessible.description: enabled ? win.inplaceDisplayDescription : inplaceHint.explanation
                         onClicked: win.set("display_mode", "inplace")
                         UnavailableHint {
                             id: inplaceHint
@@ -1688,14 +1689,21 @@ ApplicationWindow {
                         }
                     }
                     Label {
-                        objectName: "displayInplaceDescription"
+                        objectName: "inplaceDisplayDescription"
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
-                        Layout.leftMargin: 28
                         wrapMode: Text.Wrap
-                        opacity: 0.7
-                        text: win.inplaceModeDescription
+                        text: win.inplaceDisplayDescription
                     }
+                }
+                Label {
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    wrapMode: Text.Wrap
+                    opacity: 0.7
+                    visible: win.current.display_mode === "inplace"
+                    text: "Перевод закрывает исходный текст в каждой активной области: размытая заливка цвета фона, " + "цвет, размер и начертание оцениваются по кадру; длинный перевод уменьшается. " + "Свой шрифт можно выбрать на вкладке «Оформление перевода». Средняя кнопка мыши скрывает перевод; вернуть его можно переключателем «Поверх исходного текста»."
                 }
                 Label {
                     objectName: "inplaceBlockerNote"
@@ -1708,6 +1716,7 @@ ApplicationWindow {
                     text: "Для этого окна недоступно: " + win.inplaceBlocker + "."
                 }
                 ResetButton {
+                    text: "Сбросить способ отображения"
                     keys: ["display_mode"]
                 }
             }
@@ -1729,14 +1738,13 @@ ApplicationWindow {
                     wrapMode: Text.Wrap
                     text: "Прозрачность: 100 % — непрозрачно, 0 % — полностью прозрачно."
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "Экран для размещения окна перевода. Для portal его нужно указать вручную."
                     text: "Экран перевода"
+                    helpControl: translationScreenHelpTarget1
                 }
                 ComboBox {
+                    id: translationScreenHelpTarget1
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     readonly property var screens: Qt.application.screens
@@ -1753,9 +1761,12 @@ ApplicationWindow {
                     text: "В KWin перевод следует за окном игры. Для portal выберите экран вручную: положение окна скрыто порталом. Координаты ниже считаются от угла этого экрана."
                 }
                 FieldLabel {
+                    helpText: "Закреплённое окно сохраняет положение и может пропускать клики в игру. Свободное окно можно перетаскивать мышью."
                     text: "Закрепить окно"
+                    helpControl: windowPinnedHelpTarget1
                 }
                 Switch {
+                    id: windowPinnedHelpTarget1
                     checked: win.current.translation_window.mode === "pinned"
                     // Through the Controller: pinning places the pinned window where the floating one was.
                     onToggled: if (win.controller.setTranslationWindowPinned)
@@ -1764,9 +1775,12 @@ ApplicationWindow {
                         win.set("translation_window.mode", checked ? "pinned" : "floating")
                 }
                 FieldLabel {
+                    helpText: "Радиус углов фона закреплённого окна перевода."
                     text: "Скругление углов закреплённого окна, px"
+                    helpControl: pinnedCornerRadiusHelpTarget1
                 }
                 SpinBox {
+                    id: pinnedCornerRadiusHelpTarget1
                     objectName: "pinnedCornerRadius"
                     from: 0
                     to: 32
@@ -1782,27 +1796,25 @@ ApplicationWindow {
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
                     opacity: 0.75
-                    text: "Средняя кнопка мыши по рамке перевода переключает закрепление. Незакреплённый перевод перетаскивается левой кнопкой, его рамка толще. " + "Закреплённый пропускает клики в игру (если включено ниже); рамка и значок в углу остаются доступны для средней кнопки."
+                    text: "Средняя кнопка мыши по рамке перевода переключает закрепление. Свободное окно перевода перетаскивается левой кнопкой, его рамка толще. " + "Закреплённый пропускает клики в игру (если включено ниже); рамка и значок в углу остаются доступны для средней кнопки."
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
+                    helpText: "Клики по содержимому закреплённого окна перевода передаются в игру."
                     text: "Пропускать клики мыши"
+                    helpControl: windowClickThroughHelpTarget1
                 }
                 Switch {
+                    id: windowClickThroughHelpTarget1
                     checked: win.current.translation_window.click_through !== false
                     onToggled: win.set("translation_window.click_through", checked)
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
-                    text: "Положение перевода (x, y)"
+                FieldLabel {
+                    helpText: "Координаты окна перевода относительно выбранного экрана."
+                    text: "Положение окна перевода (x, y)"
+                    helpControl: windowPositionHelpTarget1
                 }
                 RowLayout {
+                    id: windowPositionHelpTarget1
                     SpinBox {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
@@ -1822,14 +1834,13 @@ ApplicationWindow {
                         onValueModified: win.set("translation_window.position", [win.current.translation_window.position[0], value])
                     }
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
-                    text: "Размер перевода (ш, в)"
+                FieldLabel {
+                    helpText: "Ширина и высота отдельного окна перевода."
+                    text: "Размер окна перевода (ш, в)"
+                    helpControl: windowSizeHelpTarget1
                 }
                 RowLayout {
+                    id: windowSizeHelpTarget1
                     SpinBox {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
@@ -1849,11 +1860,7 @@ ApplicationWindow {
                         onValueModified: win.set("translation_window.size", [win.current.translation_window.size[0], value])
                     }
                 }
-                Label {
-                    wrapMode: Text.Wrap
-                    Layout.preferredWidth: 230
-                    Layout.maximumWidth: 230
-                    Layout.minimumWidth: 0
+                FieldLabel {
                     text: "Сворачивать приложение в системный трей"
                 }
                 Switch {
@@ -1878,10 +1885,13 @@ ApplicationWindow {
                     onToggled: win.set("translation_window.auto_shrink", checked)
                 }
                 FieldLabel {
+                    helpText: "100 % — непрозрачно, 0 % — полностью прозрачно. Изменяет только фон."
                     text: "Прозрачность фона"
                     visible: win.solidStyle
+                    helpControl: backgroundOpacityHelpTarget1
                 }
                 RowLayout {
+                    id: backgroundOpacityHelpTarget1
                     visible: win.solidStyle
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
@@ -1937,7 +1947,7 @@ ApplicationWindow {
                     wrapMode: Text.Wrap
                     opacity: 0.7
                     visible: win.current.translation_window.border_always === false
-                    text: "Рамка появляется на заданное время после выделения или изменения области. Незакреплённый перевод показывает рамку всегда."
+                    text: "Рамка появляется на заданное время после выделения или изменения области. Свободное окно перевода показывает рамку всегда."
                 }
                 FieldLabel {
                     text: "Узор «текстура ошибки» (цвет/чёрный)"
@@ -1947,9 +1957,12 @@ ApplicationWindow {
                     onToggled: win.set("translation_window.border_pattern", checked)
                 }
                 FieldLabel {
+                    helpText: "100 % — непрозрачно, 0 % — полностью прозрачно. Изменяет только рамку окна перевода."
                     text: "Прозрачность рамки"
+                    helpControl: borderOpacityHelpTarget1
                 }
                 RowLayout {
+                    id: borderOpacityHelpTarget1
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     Slider {
@@ -1965,7 +1978,7 @@ ApplicationWindow {
                     }
                 }
                 FieldLabel {
-                    text: "Толщина рамки (закреплён), px"
+                    text: "Толщина рамки закреплённого окна, px"
                 }
                 SpinBox {
                     from: 1
@@ -1982,12 +1995,15 @@ ApplicationWindow {
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
                     opacity: 0.7
-                    text: "Незакреплённый перевод показывается с рамкой на 2 px толще: так видно, что его можно перетаскивать."
+                    text: "Свободное окно перевода показывается с рамкой на 2 px толще: так видно, что его можно перетаскивать."
                 }
                 FieldLabel {
+                    helpText: "Радиус углов фона свободного окна перевода."
                     text: "Скругление углов свободного окна, px"
+                    helpControl: floatingCornerRadiusHelpTarget1
                 }
                 SpinBox {
+                    id: floatingCornerRadiusHelpTarget1
                     from: 0
                     to: 32
                     editable: true
@@ -2016,7 +2032,7 @@ ApplicationWindow {
                     value: win.current.translation_window.maximum_width || 900
                     onValueModified: win.set("translation_window.maximum_width", value)
 
-                    Accessible.description: unavailableHint10.explanation
+                    Accessible.description: unavailableHint10.accessibleExplanation
                     UnavailableHint {
                         id: unavailableHint10
                         control: unavailableControl10
@@ -2026,6 +2042,7 @@ ApplicationWindow {
                     }
                 }
                 ResetButton {
+                    text: "Сбросить настройки окна перевода"
                     keys: win.settingPaths.filter(k => k.startsWith("translation_window."))
                 }
             }
@@ -2047,31 +2064,13 @@ ApplicationWindow {
                     wrapMode: Text.Wrap
                     text: "Прозрачность: 100 % — непрозрачно, 0 % — полностью прозрачно."
                 }
-                // The way is chosen once, in "Отображение перевода"; this tab shows the parameters of that way.
-                RowLayout {
-                    Layout.columnSpan: 2
-                    Layout.fillWidth: true
-                    Label {
-                        objectName: "appearanceModeNote"
-                        Layout.fillWidth: true
-                        Layout.minimumWidth: 0
-                        wrapMode: Text.Wrap
-                        font.bold: true
-                        text: "Параметры способа: " + (win.appearanceMode === "inplace" ? "«Поверх исходного текста»" : "«В отдельном окне»")
-                            + ". Способ выбирается во вкладке «Отображение перевода»."
-                    }
-                    Button {
-                        objectName: "appearanceChangeMode"
-                        text: "Сменить способ"
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 400
-                        ToolTip.text: "Перейти во вкладку «Отображение перевода»"
-                        onClicked: tabs.currentIndex = 3
-                    }
+                SectionTitle {
+                    objectName: "appearanceModeTitle"
+                    text: win.current.display_mode === "inplace" ? "Поверх исходного текста" : "Отдельное окно перевода"
                 }
                 GridLayout {
                     objectName: "inplaceSettings"
-                    visible: win.appearanceMode === "inplace"
+                    visible: win.current.display_mode === "inplace"
                     Layout.columnSpan: 2
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
@@ -2126,8 +2125,10 @@ ApplicationWindow {
                         onActivated: win.setInplace("background_mode", win.inplaceBackgrounds[currentIndex].value)
                     }
                     FieldLabel {
+                        helpText: "Цвет обводки букв перевода."
                         text: "Цвет контура текста"
                         visible: win.inplace().background_mode === "transparent_outline"
+                        helpControl: outlineColorRow
                     }
                     PropRow {
                         id: outlineColorRow
@@ -2142,10 +2143,13 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
+                        helpText: "Толщина обводки букв перевода в пикселях."
                         text: "Толщина контура текста, px"
                         visible: win.inplace().background_mode === "transparent_outline"
+                        helpControl: translationSettingHelpTarget5
                     }
                     SpinBox {
+                        id: translationSettingHelpTarget5
                         visible: win.inplace().background_mode === "transparent_outline"
                         from: 0
                         to: 8
@@ -2153,6 +2157,7 @@ ApplicationWindow {
                         onValueModified: win.setInplace("outline_width", value)
                     }
                     FieldLabel {
+                        helpText: "Тень букв перевода помогает отделить текст от фона."
                         text: "Тень текста"
                         visible: win.inplace().background_mode === "transparent_outline"
                     }
@@ -2162,10 +2167,13 @@ ApplicationWindow {
                         onToggled: win.setInplace("shadow", checked)
                     }
                     FieldLabel {
+                        helpText: "100 % — непрозрачно, 0 % — полностью прозрачно. Изменяет только текст перевода."
                         text: "Прозрачность текста, %"
                         visible: win.inplace().background_mode === "transparent_outline"
+                        helpControl: translationSettingHelpTarget6
                     }
                     SpinBox {
+                        id: translationSettingHelpTarget6
                         visible: win.inplace().background_mode === "transparent_outline"
                         from: 0
                         to: 100
@@ -2189,10 +2197,13 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
+                        helpText: "100 % — непрозрачно, 0 % — полностью прозрачно. Изменяет только фон под переводом."
                         text: "Прозрачность фона, %"
                         visible: win.inplace().background_mode === "padded_fill"
+                        helpControl: translationSettingHelpTarget7
                     }
                     SpinBox {
+                        id: translationSettingHelpTarget7
                         visible: win.inplace().background_mode === "padded_fill"
                         from: 0
                         to: 100
@@ -2222,10 +2233,13 @@ ApplicationWindow {
                         onValueModified: win.setInplace("padding_y", value)
                     }
                     FieldLabel {
+                        helpText: "Отступы снаружи блока перевода."
                         text: "Внешние отступы, px"
                         visible: win.inplace().background_mode === "padded_fill"
+                        helpControl: translationSettingHelpTarget8
                     }
                     SpinBox {
+                        id: translationSettingHelpTarget8
                         visible: win.inplace().background_mode === "padded_fill"
                         from: 0
                         to: 64
@@ -2244,7 +2258,9 @@ ApplicationWindow {
                         onValueModified: win.setInplace("corner_radius", value)
                     }
                     FieldLabel {
+                        helpText: "Шрифт результата перевода. Список содержит шрифты из комплекта приложения."
                         text: "Шрифт перевода"
+                        helpControl: fontRow
                     }
                     PropRow {
                         id: fontRow
@@ -2260,7 +2276,9 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
+                        helpText: "Размер текста перевода в пикселях. Автоматический режим подбирает его по исходному тексту."
                         text: "Размер текста, px"
+                        helpControl: sizeRow
                     }
                     PropRow {
                         id: sizeRow
@@ -2311,7 +2329,9 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
+                        helpText: "Расстояние между строками относительно размера текста."
                         text: "Межстрочный интервал, %"
+                        helpControl: lineRow
                     }
                     PropRow {
                         id: lineRow
@@ -2330,7 +2350,9 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
-                        text: "Трекинг, px"
+                        helpText: "Дополнительное расстояние между буквами перевода."
+                        text: "Межбуквенный интервал, px"
+                        helpControl: spacingRow
                     }
                     PropRow {
                         id: spacingRow
@@ -2348,7 +2370,9 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
+                        helpText: "Расположение строк внутри блока перевода: слева, по центру или справа."
                         text: "Выравнивание текста"
+                        helpControl: alignRow
                     }
                     PropRow {
                         id: alignRow
@@ -2365,7 +2389,9 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
+                        helpText: "Как размещать текст, который не помещается в одну строку."
                         text: "Перенос строк"
+                        helpControl: wrapRow
                     }
                     PropRow {
                         id: wrapRow
@@ -2412,7 +2438,9 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
+                        helpText: "Расстояние от текста до границы его фона."
                         text: "Внутренние отступы, px"
+                        helpControl: paddingRow
                     }
                     PropRow {
                         id: paddingRow
@@ -2442,7 +2470,7 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
-                        text: "Кегль: от / до, px"
+                        text: "Размер текста: от / до, px"
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -2528,7 +2556,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                         }
                         Button {
-                            text: "Сбросить «Поверх исходного текста»"
+                            text: "Сбросить оформление перевода поверх текста"
                             onClicked: win.resetKeys(["appearance.inplace"])
                         }
                     }
@@ -2541,7 +2569,7 @@ ApplicationWindow {
                     }
                 }
                 GridLayout {
-                    visible: win.appearanceMode === "window"
+                    visible: win.current.display_mode !== "inplace"
                     Layout.columnSpan: 2
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
@@ -2569,10 +2597,13 @@ ApplicationWindow {
                         onToggled: win.set("appearance.window.blur_enabled", checked)
                     }
                     FieldLabel {
+                        helpText: "100 % — непрозрачно, 0 % — полностью прозрачно. Изменяет только фон."
                         text: "Прозрачность фона"
                         visible: win.current.appearance.window.background_style === "blur"
+                        helpControl: backgroundOpacityHelpTarget2
                     }
                     RowLayout {
+                        id: backgroundOpacityHelpTarget2
                         visible: win.current.appearance.window.background_style === "blur"
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
@@ -2611,9 +2642,12 @@ ApplicationWindow {
                         text: "Текст перевода"
                     }
                     FieldLabel {
+                        helpText: "Шрифт результата перевода. Список содержит шрифты из комплекта приложения."
                         text: "Шрифт перевода"
+                        helpControl: translationFontHelpTarget2
                     }
                     ComboBox {
+                        id: translationFontHelpTarget2
                         objectName: "translationFontFamily"
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
@@ -2622,9 +2656,12 @@ ApplicationWindow {
                         onActivated: win.set("appearance.window.font_family", currentText)
                     }
                     FieldLabel {
+                        helpText: "Размер текста перевода в пикселях. Автоматический режим подбирает его по исходному тексту."
                         text: "Размер текста, px"
+                        helpControl: translationFontSizeHelpTarget2
                     }
                     SpinBox {
+                        id: translationFontSizeHelpTarget2
                         from: 8
                         to: 96
                         editable: true
@@ -2658,9 +2695,12 @@ ApplicationWindow {
                         presets: ["#ffffff", "#ffe066", "#7cf29c", "#7cc7ff"]
                     }
                     FieldLabel {
+                        helpText: "Обводка букв повышает читаемость перевода на сложном фоне."
                         text: "Контур текста"
+                        helpControl: translationSettingHelpTarget13
                     }
                     RowLayout {
+                        id: translationSettingHelpTarget13
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         Switch {
@@ -2672,7 +2712,7 @@ ApplicationWindow {
                             key: "appearance.window.outline_color"
                             presets: ["#000000", "#400040"]
                             enabled: win.current.appearance.window.text_outline !== false
-                            Accessible.description: unavailableHint11.explanation
+                            Accessible.description: unavailableHint11.accessibleExplanation
                             UnavailableHint {
                                 id: unavailableHint11
                                 control: unavailableControl11
@@ -2683,9 +2723,12 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
+                        helpText: "Расстояние между строками текста перевода."
                         text: "Межстрочный интервал"
+                        helpControl: translationSettingHelpTarget14
                     }
                     RowLayout {
+                        id: translationSettingHelpTarget14
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         Slider {
@@ -2702,9 +2745,12 @@ ApplicationWindow {
                         }
                     }
                     FieldLabel {
+                        helpText: "Расположение строк внутри блока перевода: слева, по центру или справа."
                         text: "Выравнивание текста"
+                        helpControl: translationSettingHelpTarget15
                     }
                     ComboBox {
+                        id: translationSettingHelpTarget15
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         readonly property var values: ["left", "center", "right"]
@@ -2713,9 +2759,12 @@ ApplicationWindow {
                         onActivated: win.set("appearance.window.text_alignment", values[currentIndex])
                     }
                     FieldLabel {
+                        helpText: "Как размещать текст, который не помещается в одну строку."
                         text: "Перенос строк"
+                        helpControl: translationSettingHelpTarget16
                     }
                     Switch {
+                        id: translationSettingHelpTarget16
                         checked: win.current.appearance.window.text_wrap !== false
                         onToggled: win.set("appearance.window.text_wrap", checked)
                     }
@@ -2774,9 +2823,12 @@ ApplicationWindow {
                         presets: ["#181818", "#000000", "#202040", "#300030"]
                     }
                     FieldLabel {
+                        helpText: "Расстояние от текста до границы его фона."
                         text: "Внутренние отступы, px"
+                        helpControl: textPaddingHelpTarget2
                     }
                     SpinBox {
+                        id: textPaddingHelpTarget2
                         from: 0
                         to: 64
                         editable: true
@@ -2787,7 +2839,7 @@ ApplicationWindow {
                     }
                 }
                 ResetButton {
-                    keys: win.appearanceMode === "inplace" ? ["appearance.inplace"] : ["appearance.window"]
+                    keys: win.current.display_mode === "inplace" ? ["appearance.inplace"] : ["appearance.window"]
                 }
             }
         }
@@ -2846,7 +2898,7 @@ ApplicationWindow {
                 }
                 Button {
                     Layout.columnSpan: 2
-                    text: "Сбросить клавиши по умолчанию"
+                    text: "Сбросить горячие клавиши"
                     onClicked: win.resetKeys(["hotkeys"])
                 }
             }
@@ -2879,7 +2931,7 @@ ApplicationWindow {
                         enabled: !win.controller.diagnosticsBusy
                         onClicked: win.controller.refreshDiagnostics()
 
-                        Accessible.description: unavailableHint12.explanation
+                        Accessible.description: unavailableHint12.accessibleExplanation
                         UnavailableHint {
                             id: unavailableHint12
                             control: unavailableControl12

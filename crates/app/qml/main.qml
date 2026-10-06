@@ -229,16 +229,16 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     enabled: ctl.windowTitle.length > 0
                     onClicked: regionWin.begin()
-                    Accessible.description: selectRegionHint.explanation
+                    Accessible.description: selectRegionHint.accessibleExplanation
                     UnavailableHint { id: selectRegionHint; control: selectCaptureRegion; feature: "Выбрать область захвата"; reason: "Окно для захвата ещё не выбрано."; remedy: "Выберите окно для захвата." }
                 }
             }
             RowLayout {
-                Label { text: ctl.hasRegion ? "область задана" : "область не задана"; Layout.fillWidth: true }
+                Label { text: ctl.hasRegion ? "область захвата задана" : "область захвата не задана"; Layout.fillWidth: true }
                 Button {
                     id: resetCaptureRegion
                     text: "Сбросить область захвата"; enabled: ctl.hasRegion; onClicked: ctl.resetRegion()
-                    Accessible.description: resetRegionHint.explanation
+                    Accessible.description: resetRegionHint.accessibleExplanation
                     UnavailableHint { id: resetRegionHint; control: resetCaptureRegion; feature: "Сбросить область захвата"; reason: "Область захвата ещё не задана."; remedy: "Сначала выделите область с текстом." }
                 }
             }
@@ -250,7 +250,7 @@ ApplicationWindow {
                 text: ctl.running ? "Остановить" : "Запустить"
                 highlighted: ctl.running
                 enabled: ctl.hasRegion
-                Accessible.description: startTranslationHint.explanation
+                Accessible.description: startTranslationHint.accessibleExplanation
                 UnavailableHint { id: startTranslationHint; control: startTranslation; feature: "Запустить автоперевод"; reason: "Нет выделенной области захвата."; remedy: "Выберите окно и область с текстом." }
                 onClicked: ctl.running ? ctl.stop() : ctl.start()
             }

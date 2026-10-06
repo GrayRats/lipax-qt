@@ -137,7 +137,7 @@ Window {
             Label { Layout.fillWidth: true; text: "Выделите мышью область с текстом. Enter — сохранить, Esc — отмена." ; color: "white" }
             Button { objectName: "belowTitleBar"; text: "Начать ниже заголовка"; visible: win.overlapsBar; onClicked: win.belowTitleBar() }
             Button { text: "Сбросить область захвата"; onClicked: { win.selW = 0; win.selH = 0 } }
-            Button { text: "Сохранить"; enabled: win.hasSel; id: saveCaptureRegion; Accessible.description: saveCaptureRegionHint.explanation; UnavailableHint { id: saveCaptureRegionHint; control: saveCaptureRegion; feature: "Сохранить область захвата"; reason: "Область захвата ещё не выделена."; remedy: "Выделите мышью область с текстом." } highlighted: true; onClicked: win.accept() }
+            Button { text: "Сохранить"; enabled: win.hasSel; id: saveCaptureRegion; Accessible.description: saveCaptureRegionHint.accessibleExplanation; UnavailableHint { id: saveCaptureRegionHint; control: saveCaptureRegion; feature: "Сохранить область захвата"; reason: "Область захвата ещё не выделена."; remedy: "Выделите мышью область с текстом." } highlighted: true; onClicked: win.accept() }
         }
     }
 }

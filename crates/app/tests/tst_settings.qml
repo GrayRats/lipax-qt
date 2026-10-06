@@ -85,7 +85,7 @@ TestCase {
         wait(60)
         const point = choice.mapToItem(settings.contentItem, choice.width / 2, choice.height / 2)
         mouseMove(settings.contentItem, point.x, point.y)
-        tryVerify(() => hint.tooltipVisible)
+        tryVerify(() => hint.popupVisible, 2000, "the tooltip popup actually opens after hovering")
         verify(hint.explanation.includes("Нет глобальных координат окна"))
         verify(hint.explanation.includes("Выберите KWin"))
         controller.captureCapabilities = JSON.stringify({inplaceTranslation: {
@@ -95,6 +95,99 @@ TestCase {
         tryVerify(() => choice.enabled && !hint.visible)
         settings.set("display_mode", "window")
         settings.apply()
+    }
+
+    function test_displayChoiceControlsAppearanceAndExplainsBothModes() {
+        settings.show()
+        settings.width = 880
+        settings.height = 740
+        const tabs = findChild(settings, "settingsTabs")
+        tabs.currentIndex = 3
+        controller.captureCapabilities = JSON.stringify({inplaceTranslation: {available: true, reason: "", remedy: ""}})
+        verify(findChild(settings, "appearanceContext") === null)
+        const windowChoice = findChild(settings, "displayWindow")
+        const inplaceChoice = findChild(settings, "displayInplace")
+        const windowDescription = findChild(settings, "windowDisplayDescription")
+        const inplaceDescription = findChild(settings, "inplaceDisplayDescription")
+        verify(windowDescription.visible && windowDescription.text.includes("перемещать мышью"))
+        verify(inplaceDescription.visible && inplaceDescription.text.includes("координаты"))
+        for (const entry of [
+            {choice: windowChoice, hint: "windowDisplayHint", mode: "window"},
+            {choice: inplaceChoice, hint: "inplaceDisplayHint", mode: "inplace"}
+        ]) {
+            tabs.currentIndex = 3
+            wait(80)
+            mouseMove(settings.contentItem, 1, 1)
+            const point = entry.choice.mapToItem(settings.contentItem, entry.choice.width / 2, entry.choice.height / 2)
+            mouseMove(settings.contentItem, point.x, point.y)
+            const hint = findChild(settings.contentItem, entry.hint)
+            tryVerify(() => hint.popupVisible, 2000)
+            mouseClick(entry.choice, entry.choice.width / 2, entry.choice.height / 2)
+            compare(settings.current.display_mode, entry.mode)
+            tabs.currentIndex = 5
+            compare(findChild(settings, "inplaceSettings").visible, entry.mode === "inplace")
+            compare(findChild(settings, "appearanceModeTitle").text,
+                    entry.mode === "inplace" ? "Поверх исходного текста" : "Отдельное окно перевода")
+        }
+        // A temporary backend limitation must not switch the saved mode or the style being edited.
+        controller.captureCapabilities = JSON.stringify({inplaceTranslation: {available: false, reason: "Нет координат", remedy: "Выберите KWin"}})
+        verify(findChild(settings, "inplaceSettings").visible)
+        compare(settings.current.display_mode, "inplace")
+        controller.captureCapabilities = JSON.stringify({inplaceTranslation: {available: true, reason: "", remedy: ""}})
+        settings.set("display_mode", "window")
+        settings.apply()
+    }
+
+    function test_captureActionsFitNarrowSettingsWindow() {
+        settings.show()
+        settings.width = 740
+        settings.height = 540
+        findChild(settings, "settingsTabs").currentIndex = 0
+        function findActions(item) {
+            if (item.objectName === "captureRegionActions") return item
+            for (const child of item.children || []) {
+                const found = findActions(child)
+                if (found) return found
+            }
+            return null
+        }
+        const actions = findActions(settings.contentItem)
+        verify(actions !== null)
+        wait(100)
+        verify(actions.width > 0)
+        for (const button of actions.children) {
+            if (button.visible && button.width > 0)
+                verify(button.x >= 0 && button.x + button.width <= actions.width + 1,
+                    "capture action fits the available width: " + button.text)
+        }
+    }
+
+    function test_enabledSettingTooltipAndClicks() {
+        settings.show()
+        settings.width = 880
+        settings.height = 740
+        const tabs = findChild(settings, "settingsTabs")
+        tabs.currentIndex = 1
+        const page = findChild(settings, "settingsPage1")
+        page.contentItem.contentY = 0
+        const editor = findChild(settings, "ocrEngineBox")
+        const hint = settings.contentItem.children.find(item => item.control === editor && item.active)
+        verify(hint !== undefined)
+        wait(80)
+        mouseMove(settings.contentItem, 1, 1)
+        const point = editor.mapToItem(settings.contentItem, editor.width / 2, editor.height / 2)
+        mouseMove(settings.contentItem, point.x, point.y)
+        tryVerify(() => hint.popupVisible, 2000)
+        verify(hint.explanation.includes("Tesseract"))
+        verify(hint.explanation.includes("PaddleOCR"))
+        mouseClick(editor, editor.width / 2, editor.height / 2)
+        tryVerify(() => editor.popup.visible, 2000, "hover help does not intercept clicks")
+        keyClick(Qt.Key_Escape)
+        page.contentItem.contentY = page.contentItem.contentHeight - page.availableHeight
+        tryVerify(() => !hint.visible && !hint.popupVisible, 2000, "a scrolled-out control has no hover target")
+        page.contentItem.contentY = 0
+        tabs.currentIndex = 0
+        tryVerify(() => !hint.visible && !hint.popupVisible)
     }
 
     function test_appearanceResetAndSourceLanguageAreIndependent() {
@@ -235,34 +328,6 @@ TestCase {
         return null
     }
 
-    function test_appearanceFollowsTheChosenDisplayWayWithoutASecondChoice() {
-        settings.reload()
-        settings.show()
-        const tabs = findChild(settings, "settingsTabs")
-        tabs.currentIndex = 5
-        const page = findChild(settings, "settingsPage5")
-        // The duplicate selector is gone: the way is chosen once, in "Отображение перевода".
-        verify(visualFind(page.contentItem, "appearanceContext") === null)
-        settings.set("display_mode", "window")
-        compare(settings.appearanceMode, "window")
-        const note = visualFind(page.contentItem, "appearanceModeNote")
-        verify(note !== null)
-        verify(note.text.indexOf("«В отдельном окне»") >= 0 && note.text.indexOf("«Отображение перевода»") >= 0, note.text)
-        settings.set("display_mode", "inplace")
-        compare(settings.appearanceMode, "inplace")
-        verify(note.text.indexOf("«Поверх исходного текста»") >= 0, note.text)
-        wait(50)
-        verify(findChild(settings, "inplaceSettings").visible)
-        verify(!findChild(settings, "windowBackgroundStyle").visible)
-        // The way can be changed from here: the button leads to the tab where it is chosen.
-        const change = visualFind(page.contentItem, "appearanceChangeMode")
-        verify(change !== null)
-        change.clicked()
-        compare(tabs.currentIndex, 3)
-        settings.set("display_mode", "window")
-        settings.apply()
-    }
-
     function paddleReport(ready, problems) {
         return JSON.stringify({ready: ready, summary: ready ? "PaddleOCR 3.0.1 · PaddlePaddle 3.0.0 · виртуальное окружение uv · язык «eng»" : "PaddleOCR не установлен в /usr/bin/python3",
             problems: problems})
@@ -399,31 +464,6 @@ TestCase {
         spin.valueModified()
         compare(settings.current.appearance.inplace.line_gap_factor, 2.2)
         verify(settings.pendingPatch()["appearance.inplace.line_gap_factor"] !== undefined)
-        settings.set("display_mode", "window")
-        settings.apply()
-    }
-
-    function test_bothDisplayWaysAreDescribedAndHaveHints() {
-        settings.reload()
-        settings.show()
-        findChild(settings, "settingsTabs").currentIndex = 3
-        const page = findChild(settings, "settingsPage3")
-        const windowDescription = visualFind(page.contentItem, "displayWindowDescription")
-        const inplaceDescription = visualFind(page.contentItem, "displayInplaceDescription")
-        verify(windowDescription !== null && inplaceDescription !== null)
-        // Both are always on screen, whichever way is chosen: one can compare them before choosing.
-        for (const mode of ["window", "inplace"]) {
-            settings.set("display_mode", mode)
-            wait(30)
-            verify(windowDescription.visible && inplaceDescription.visible, mode)
-        }
-        verify(windowDescription.text.indexOf("отдельном окне") >= 0, windowDescription.text)
-        verify(inplaceDescription.text.indexOf("поверх исходного текста") >= 0, inplaceDescription.text)
-        // The same words are the hover hints of the choices.
-        const windowChoice = visualFind(page.contentItem, "displayWindow")
-        const inplaceChoice = visualFind(page.contentItem, "displayInplace")
-        compare(windowChoice.ToolTip.text, windowDescription.text)
-        compare(inplaceChoice.ToolTip.text, inplaceDescription.text)
         settings.set("display_mode", "window")
         settings.apply()
     }
