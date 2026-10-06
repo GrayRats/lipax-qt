@@ -24,7 +24,7 @@ LipaX помогает читать текст в играх: захватыва
 git clone https://github.com/GrayRats/lipax-qt.git
 cd lipax-qt
 ./packaging/build-local.sh
-sudo pacman -U dist/lipax-1.0.4-1-x86_64.pkg.tar.zst
+sudo pacman -U dist/lipax-1.0.6-1-x86_64.pkg.tar.zst
 ```
 
 Для сборки из клонированного репозитория также подходит `makepkg -si`. Пакет устанавливает команду `lipax`, ярлык приложения и встроенные шрифты. Для распознавания нужного языка установите соответствующий пакет данных Tesseract; [настройка PaddleOCR](docs/PaddleOCR.md) описана отдельно.
@@ -91,7 +91,7 @@ On Arch Linux, build and install the package with:
 git clone https://github.com/GrayRats/lipax-qt.git
 cd lipax-qt
 ./packaging/build-local.sh
-sudo pacman -U dist/lipax-1.0.4-1-x86_64.pkg.tar.zst
+sudo pacman -U dist/lipax-1.0.6-1-x86_64.pkg.tar.zst
 ```
 
 Start `lipax`, choose a game window and text region, configure OCR languages and a translation service, then press “Запустить” (Start). The settings include appearance, regions, shortcuts, and dependency status. The translation window can be pinned or moved; a long translation can be scrolled with the mouse wheel. History storage can be disabled.
