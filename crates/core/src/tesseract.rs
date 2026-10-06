@@ -836,4 +836,19 @@ mod tests {
         let unreachable = download_language_from("http://127.0.0.1:1", "deu", &dir).await.unwrap_err();
         assert!(unreachable.contains("не удалось скачать"), "{unreachable}");
     }
+
+    /// The real thing, on the real network and the real Tesseract: `cargo test -p lipa-core -- --ignored real_download`.
+    #[tokio::test]
+    #[ignore = "needs network and Tesseract"]
+    async fn real_download_gives_a_language_tesseract_can_use() {
+        let (user, system) = (scratch("real-u"), system_tessdata_dir().expect("a system tessdata directory"));
+        let path = download_language_from(TESSDATA_URL, "deu", &user).await.expect("download");
+        assert!(std::fs::metadata(&path).unwrap().len() > 500_000);
+        let dir = tessdata_arg_in(&user, Some(&system)).expect("merged directory");
+        let listed = Command::new("tesseract").args(["--list-langs", "--tessdata-dir"]).arg(&dir).output().unwrap();
+        let text = String::from_utf8_lossy(&listed.stdout);
+        let (_, langs) = parse_list_langs(&text);
+        assert!(langs.contains(&"deu".to_string()) && langs.contains(&"eng".to_string()), "downloaded and system languages together: {langs:?}");
+        let _ = std::fs::remove_dir_all(&user);
+    }
 }
