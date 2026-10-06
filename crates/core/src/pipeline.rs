@@ -71,6 +71,9 @@ pub struct PreviewBox {
     /// What the layout engine decided for this block and why (type, font and its confidence, background);
     /// empty in the translation-window mode, which does not analyse blocks.
     pub details: Vec<String>,
+    /// The field as plain data (lines, box in the crop, font, colour, type, spacing); only for fields of the
+    /// in-place mode that have been read.
+    pub block: Option<crate::layout::dto::TextBlock>,
 }
 
 /// Where a region is in its cycle. Every change is logged (`pipeline.phase`), so a stuck region
@@ -180,7 +183,7 @@ fn line_boxes(result: &crate::ocr::OcrResult, origin: (u32, u32), note: Option<&
     result.lines.iter().map(|l| {
         let mut details = vec![format!("уверенность OCR ({}): {:.0}%", result.engine, l.confidence)];
         details.extend(note.map(str::to_owned));
-        PreviewBox { rect: l.rect.in_frame(origin), original: l.text.clone(), translation: String::new(), details }
+        PreviewBox { rect: l.rect.in_frame(origin), original: l.text.clone(), translation: String::new(), details, block: None }
     }).collect()
 }
 
@@ -257,6 +260,8 @@ struct RegionState {
     field_engine: HashMap<u64, &'static str>,
     /// Inspector: what the engine said about each field the last time it was read.
     field_ocr: HashMap<u64, String>,
+    /// Inspector: the lines of each field's last reading and the corner of the crop they are relative to.
+    field_lines: HashMap<u64, ((u32, u32), Vec<crate::ocr::OcrLine>)>,
     /// Inspector: fields whose text was ignored as unsure, with when; shown for a few seconds.
     ignored: HashMap<u64, (Instant, PreviewBox)>,
     /// Inspector: boxes of the last frame sent to the screen.
@@ -562,7 +567,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let mut boxes = line_boxes(&result, (0, 0), None);
         if boxes.is_empty() {
             let whole = crate::layout::Rect::new(0.0, 0.0, frame.width() as f32, frame.height() as f32);
-            boxes.push(PreviewBox { rect: whole, original: original.clone(), translation: translated.clone(), details: Vec::new() });
+            boxes.push(PreviewBox { rect: whole, original: original.clone(), translation: translated.clone(), details: Vec::new(), block: None });
         }
         self.send_preview(region, &frame, boxes, original.clone(), translated.clone(), Phase::Showing, out);
         state.last_text = original.clone();
@@ -650,7 +655,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                         // The engine is not sure what it read: keep the field as it was, do not translate noise.
                         tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, confidence = c, min = s.recognition.minimum_confidence, "OCR ignored: low confidence");
                         let details = vec![format!("OCR ({}) отброшен: уверенность {c:.0}% ниже порога {}%", result.engine, s.recognition.minimum_confidence)];
-                        state.ignored.insert(id, (now, PreviewBox { rect, original: original.clone(), translation: String::new(), details }));
+                        state.ignored.insert(id, (now, PreviewBox { rect, original: original.clone(), translation: String::new(), details, block: None }));
                         newly_ignored = true;
                         engine.complete(id, None, s);
                         continue;
@@ -659,6 +664,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                     // The lines the engine found describe the structure of the field better than the picture does.
                     let lines: Vec<crate::layout::Rect> = result.lines.iter().map(|l| l.rect.in_frame(origin)).collect();
                     engine.observe_ocr_lines(id, &lines, s);
+                    state.field_lines.insert(id, (origin, result.lines.clone()));
                     state.field_ocr.insert(id, match result.confidence {
                         Some(c) => format!("OCR ({}): уверенность {c:.0}%, строк {}", result.engine, result.lines.len().max(1)),
                         None => format!("OCR ({}): уверенность не сообщается", if result.engine.is_empty() { "?" } else { result.engine }),
@@ -706,11 +712,12 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         self.timings.record("layout", finishing.elapsed());
         if failure.is_none() { state.enter(&region.id, if result.as_ref().is_some_and(|f| !f.blocks.is_empty()) { Phase::Showing } else { Phase::WaitingFrame }); }
         if let Some(frame) = &result {
-            let known = &state.field_ocr;
+            let (known, read) = (&state.field_ocr, &state.field_lines);
             state.preview_boxes = frame.blocks.iter().map(|b| {
                 let mut details = describe(b);
                 details.extend(known.get(&b.id).cloned());
-                PreviewBox { rect: b.text_rect, original: b.original.clone(), translation: b.translation.clone(), details }
+                let block = read.get(&b.id).map(|(origin, lines)| crate::layout::dto::TextBlock::of_field(b, lines, *origin));
+                PreviewBox { rect: b.text_rect, original: b.original.clone(), translation: b.translation.clone(), details, block }
             }).collect();
         }
         if let Some(image) = preview_image.filter(|_| result.is_some() || newly_ignored) {
@@ -1167,6 +1174,14 @@ mod tests {
         let shown = previews(events);
         let details = &shown.last().unwrap().boxes[0].details;
         assert!(details.iter().any(|d| d.contains("согласны")), "the inspector shows where the structure came from: {details:?}");
+        // The same field as plain data: its lines as the engine gave them (crop pixels), its box in that crop.
+        let dto = shown.last().unwrap().boxes[0].block.as_ref().expect("a field that has been read carries its data");
+        assert_eq!(dto.id, block.id);
+        assert_eq!((dto.lines.len(), dto.lines[0].text.as_str(), dto.lines[0].confidence), (1, "Hello there", 90.0));
+        assert!(!dto.font_family.is_empty() && dto.bbox.w > 0.0 && dto.bbox.h > 0.0);
+        assert_eq!(dto.block_type, block.block_type);
+        // The line the engine found lies inside the field's box in the same crop (both are relative to the crop's corner).
+        assert!(dto.bbox.x <= dto.lines[0].bbox.x + 4.0 && dto.bbox.y <= dto.lines[0].bbox.y + 4.0, "{:?} vs {:?}", dto.bbox, dto.lines[0].bbox);
     }
 
     #[tokio::test]

@@ -217,6 +217,7 @@ impl InplaceEngine {
         let image = frame.into_rgba8();
         self.pending_signatures.clear();
         let mask = BlockDetector::ink_mask(&image);
+        self.detector.line_gap_factor = s.appearance.inplace.line_gap_factor;
         let detected = self.detector.detect_text_blocks(&image, &mask);
         let assignments = self.tracker.update(&detected, now);
         self.missing_font_warned.retain(|id| self.tracker.get(*id).is_some());
@@ -484,6 +485,87 @@ mod tests {
 
     fn settings() -> Settings {
         { let mut value = Settings::default(); value.translation.target_language = "ru".into(); value.display_mode = crate::settings::TranslationDisplayMode::Inplace; value }
+    }
+
+    /// A character name one blank line above its dialogue, all one colour: the grouping alone makes one block.
+    /// `lines` dialogue lines, the name optional, everything moved right by `shift` px.
+    fn glued(lines: usize, name: bool, shift: u32) -> DynamicImage {
+        let mut img = canvas(1200, 500, [25, 30, 40]);
+        if name { draw_prose_line(&mut img, 100 + shift, 100, 8, 14, 4, 32, 3, [240, 240, 240]); }
+        for i in 0..lines as u32 { draw_prose_line(&mut img, 100 + shift, 162 + 46 * i, 34 - 6 * i as usize, 14, 4, 32, 3, [240, 240, 240]); }
+        dynamic(img)
+    }
+
+    /// Reads every job as the text of its field and translates it; returns the published frame, the jobs' ids and the new pairs.
+    fn read_all(e: &mut InplaceEngine, frame: DynamicImage, s: &Settings, now: Instant) -> (Vec<u64>, Option<InplaceFrame>) {
+        let jobs = e.begin(frame, s, now, false);
+        let ids: Vec<u64> = jobs.iter().map(|j| j.id).collect();
+        for j in jobs { e.complete(j.id, Some((format!("text {}", j.id), format!("перевод {}", j.id))), s); }
+        (ids, e.finish(s))
+    }
+
+    #[test]
+    fn a_split_gives_two_fields_with_their_own_plates_and_stable_ids() {
+        let s = settings();
+        let (mut e, t0) = (InplaceEngine::with_fonts(InstalledFontDatabase::bundled()), Instant::now());
+        let (jobs, frame) = read_all(&mut e, glued(2, true, 0), &s, t0);
+        assert_eq!(jobs.len(), 2, "the name and the dialogue are read separately");
+        let blocks = frame.expect("both fields").blocks;
+        let by_type = |t: TextBlockType| blocks.iter().find(|b| b.block_type == t).unwrap_or_else(|| panic!("{t:?} in {:?}", blocks.iter().map(|b| b.block_type).collect::<Vec<_>>())).clone();
+        let (name, dialogue) = (by_type(TextBlockType::CharacterName), by_type(TextBlockType::Dialogue));
+        // Each field has the plate of its own boundary, not the merged parent's: the name's plate stops above the dialogue.
+        assert!(name.background.rect.bottom() <= dialogue.text_rect.y, "{:?} vs {:?}", name.background.rect, dialogue.text_rect);
+        assert!(dialogue.background.rect.y >= name.text_rect.bottom(), "{:?} vs {:?}", dialogue.background.rect, name.text_rect);
+        // The same picture again: the same fields, nothing re-read, nothing sent again.
+        let (again, frame) = read_all(&mut e, glued(2, true, 0), &s, t0 + Duration::from_millis(200));
+        assert!(again.is_empty() && frame.is_none(), "stable ids: no flicker, no repeated work");
+    }
+
+    #[test]
+    fn changing_one_field_keeps_the_font_lock_of_its_neighbour() {
+        let s = settings();
+        let (mut e, t0) = (InplaceEngine::with_fonts(InstalledFontDatabase::bundled()), Instant::now());
+        let (_, first) = read_all(&mut e, glued(2, true, 0), &s, t0);
+        let before = first.expect("fields").blocks;
+        let name_before = before.iter().find(|b| b.block_type == TextBlockType::CharacterName).unwrap().clone();
+        // The dialogue gets a third line; the name is untouched.
+        let (jobs, frame) = read_all(&mut e, glued(3, true, 0), &s, t0 + Duration::from_millis(300));
+        assert_eq!(jobs.len(), 1, "only the changed dialogue is read again");
+        assert!(jobs[0] != name_before.id);
+        let name_after = frame.expect("the dialogue changed").blocks.into_iter().find(|b| b.id == name_before.id).expect("the name keeps its id");
+        assert_eq!(name_after.font, name_before.font, "the font chosen for the name stays");
+        assert_eq!(name_after.translation, name_before.translation);
+    }
+
+    #[test]
+    fn a_field_that_blinks_out_keeps_its_id_through_the_grace_period() {
+        let s = settings();
+        let (mut e, t0) = (InplaceEngine::with_fonts(InstalledFontDatabase::bundled()), Instant::now());
+        let (_, first) = read_all(&mut e, glued(2, true, 0), &s, t0);
+        let name_id = first.expect("fields").blocks.iter().find(|b| b.block_type == TextBlockType::CharacterName).unwrap().id;
+        // One scan without the name: it is still shown.
+        let (_, frame) = read_all(&mut e, glued(2, false, 0), &s, t0 + Duration::from_millis(200));
+        assert!(frame.is_none_or(|f| f.blocks.iter().any(|b| b.id == name_id)), "a short miss does not drop the field");
+        // It comes back: the same id, read from memory (no new read).
+        let (again, frame) = read_all(&mut e, glued(2, true, 0), &s, t0 + Duration::from_millis(400));
+        assert!(again.is_empty(), "{again:?}");
+        assert!(frame.is_none_or(|f| f.blocks.iter().any(|b| b.id == name_id)));
+    }
+
+    #[test]
+    fn a_move_alone_changes_the_geometry_not_the_translations() {
+        let s = settings();
+        let (mut e, t0) = (InplaceEngine::with_fonts(InstalledFontDatabase::bundled()), Instant::now());
+        let (_, first) = read_all(&mut e, glued(2, true, 0), &s, t0);
+        assert_eq!(first.expect("fields").new_translations.len(), 2, "the first reading is new text");
+        // The scene moves 6 px right: the fields follow, and since the text is the same no translation is new,
+        // so neither the cache nor the history has anything to write.
+        let (jobs, frame) = read_all(&mut e, glued(2, true, 6), &s, t0 + Duration::from_millis(200));
+        assert!(jobs.is_empty(), "the text did not change");
+        if let Some(frame) = frame {
+            assert!(frame.new_translations.is_empty(), "{:?}", frame.new_translations);
+            assert!(frame.blocks.iter().all(|b| b.text_rect.x >= 100.0 + 5.0), "the fields moved with the scene");
+        }
     }
 
     /// One block of three lines, as dialogue text.

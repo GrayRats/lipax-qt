@@ -36,11 +36,14 @@ impl DetectedTextBlock {
 pub struct BlockDetector {
     /// Больше блоков в одной области не бывает: лишние (самые мелкие) отбрасываются.
     pub max_blocks: usize,
+    /// `k` правила разделения по шагу строк (`layout::split`): склеенные поля, строки которых
+    /// стоят реже, чем в абзаце, становятся отдельными блоками.
+    pub line_gap_factor: f32,
 }
 
 impl Default for BlockDetector {
     fn default() -> Self {
-        Self { max_blocks: 16 }
+        Self { max_blocks: 16, line_gap_factor: super::split::DEFAULT_LINE_GAP_FACTOR }
     }
 }
 
@@ -243,7 +246,11 @@ impl BlockDetector {
                 None => blocks.push(vec![line]),
             }
         }
-        let mut out: Vec<DetectedTextBlock> = blocks.into_iter().map(|lines| {
+        // Fields the grouping above joined because they look alike (a name in the dialogue's colour right
+        // above it, menu entries in one style) are told apart by the pitch of their lines. Each part is a
+        // block of its own and is classified on its own below.
+        let blocks = blocks.into_iter().flat_map(|lines| super::split::split_by_line_gaps(lines, self.line_gap_factor));
+        let mut out: Vec<DetectedTextBlock> = blocks.map(|lines| {
             let rect = lines.iter().skip(1).fold(lines[0].rect, |a, l| a.union(&l.rect));
             let ink_color = lines[0].ink_color;
             DetectedTextBlock { rect, lines, block_type: TextBlockType::Unknown, ink_color }
@@ -316,6 +323,44 @@ mod tests {
         assert_eq!(summary[1], (TextBlockType::Dialogue, 2, 100, 140));
         assert_eq!((summary[2].0, summary[3].0), (TextBlockType::Button, TextBlockType::Button));
         assert!(blocks[1].ink_color[0] > 200 && blocks[0].ink_color[2] < 120);
+    }
+
+    /// A character name and the dialogue below it, all in one colour and one size, the name one blank line
+    /// above the dialogue (pitch 62 px = 1.94 line heights): the detector's grouping takes them for one block.
+    fn glued_scene() -> RgbaImage {
+        let mut img = canvas(1200, 500, [25, 30, 40]);
+        draw_prose_line(&mut img, 100, 100, 8, 14, 4, 32, 3, [240, 240, 240]);
+        draw_prose_line(&mut img, 100, 162, 34, 14, 4, 32, 3, [240, 240, 240]);
+        draw_prose_line(&mut img, 100, 208, 28, 14, 4, 32, 3, [240, 240, 240]);
+        img
+    }
+
+    #[test]
+    fn a_name_glued_to_its_dialogue_is_split_and_each_part_gets_its_own_type() {
+        let img = glued_scene();
+        let mask = BlockDetector::ink_mask(&img);
+        // Without the rule the grouping makes one block of three lines...
+        let glued = BlockDetector { line_gap_factor: 100.0, ..BlockDetector::default() }.detect_text_blocks(&img, &mask);
+        assert_eq!(glued.iter().map(|b| b.lines.len()).collect::<Vec<_>>(), vec![3]);
+        // ...with it the name and the dialogue are two, each classified on its own.
+        let blocks = BlockDetector::default().detect_text_blocks(&img, &mask);
+        let summary: Vec<_> = blocks.iter().map(|b| (b.block_type, b.lines.len(), b.rect.y as u32)).collect();
+        assert_eq!(summary.len(), 2, "{summary:?}");
+        assert_eq!((summary[0].0, summary[0].1), (TextBlockType::CharacterName, 1), "{summary:?}");
+        assert_eq!((summary[1].0, summary[1].1), (TextBlockType::Dialogue, 2), "{summary:?}");
+        assert!(blocks[0].rect.bottom() < blocks[1].rect.y, "the parts do not overlap");
+        // The union of the parts is what the block was.
+        let whole = glued[0].rect;
+        assert_eq!(blocks[0].rect.union(&blocks[1].rect), whole);
+    }
+
+    #[test]
+    fn ordinary_paragraphs_and_menus_are_left_whole() {
+        let mut img = canvas(1200, 500, [25, 30, 40]);
+        // Three lines of a paragraph, 46 px apart (1.44 line heights).
+        for y in [100, 146, 192] { draw_prose_line(&mut img, 100, y, 34, 14, 4, 32, 3, [240, 240, 240]); }
+        let blocks = BlockDetector::default().detect_text_blocks(&img, &BlockDetector::ink_mask(&img));
+        assert_eq!(blocks.iter().map(|b| b.lines.len()).collect::<Vec<_>>(), vec![3]);
     }
 
     #[test]

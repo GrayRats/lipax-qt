@@ -255,6 +255,25 @@ TestCase {
         settings.apply()
     }
 
+    function test_lineGapFactorIsEditableAndSaved() {
+        settings.reload()
+        settings.show()
+        settings.set("display_mode", "inplace")
+        findChild(settings, "settingsTabs").currentIndex = 5
+        wait(50)
+        const spin = findChild(settings, "lineGapFactor")
+        verify(spin !== null)
+        compare(spin.value, 18, "the default is 1.8")
+        compare(spin.textFromValue(18), "1.8 × высоты строки")
+        compare(spin.valueFromText("2,5 × высоты строки"), 25, "a decimal comma is understood")
+        spin.value = 22
+        spin.valueModified()
+        compare(settings.current.appearance.inplace.line_gap_factor, 2.2)
+        verify(settings.pendingPatch()["appearance.inplace.line_gap_factor"] !== undefined)
+        settings.set("display_mode", "window")
+        settings.apply()
+    }
+
     function test_bothDisplayWaysAreDescribedAndHaveHints() {
         settings.reload()
         settings.show()

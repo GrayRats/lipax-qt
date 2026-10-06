@@ -121,6 +121,9 @@ pub struct InplaceSettings {
     pub font_overrides: BTreeMap<String, String>,
     /// Семейства, которые проверяются первыми при автоматическом выборе.
     pub preferred_fonts: Vec<String>,
+    /// Блок делится там, где шаг между строками (центр–центр) больше `k` средних высот строки; см. `layout::split`.
+    /// Меньше — дробнее (склеенные имя и реплика разделяются раньше), больше — крупнее блоки.
+    pub line_gap_factor: f32,
 }
 
 impl Default for InplaceSettings {
@@ -152,6 +155,7 @@ impl Default for InplaceSettings {
             allow_condensed_fallback: true,
             font_overrides: BTreeMap::new(),
             preferred_fonts: Vec::new(),
+            line_gap_factor: crate::layout::split::DEFAULT_LINE_GAP_FACTOR,
         }
     }
 }
@@ -159,6 +163,8 @@ impl Default for InplaceSettings {
 impl InplaceSettings {
     fn sanitize(&mut self) {
         let finite = |v: f32, d: f32| if v.is_finite() { v } else { d };
+        // Below 1.3 ordinary line spacing (1.2–1.5 heights) would be cut; above 4 nothing would ever be.
+        self.line_gap_factor = finite(self.line_gap_factor, crate::layout::split::DEFAULT_LINE_GAP_FACTOR).clamp(1.3, 4.0);
         self.minimum_font_size = finite(self.minimum_font_size, 8.0).clamp(4.0, 200.0);
         self.maximum_font_size = finite(self.maximum_font_size, 96.0).clamp(self.minimum_font_size, 400.0);
         if let PropertyMode::Manual(v) = &mut self.font_size { *v = finite(*v, 20.0).clamp(4.0, 400.0); }
@@ -467,7 +473,7 @@ pub const REACTIONS: &[(&str, Reaction)] = &{
         ("recognition.minimum_confidence", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
         ("translation.custom_url", Pipeline), ("capture.portal_fills_monitor", Pipeline), ("translation.custom_api_key", Pipeline), ("recognition.interval_ms", Pipeline), ("recognition.sensitivity", Pipeline),
         ("recognition.debounce_ms", Pipeline), ("display_mode", Pipeline), ("capture.regions", Pipeline),
-        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout),
+        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline),
         ("hotkeys.toggle", Hotkeys), ("hotkeys.select_region", Hotkeys), ("hotkeys.translate_once", Hotkeys), ("hotkeys.toggle_translation", Hotkeys), ("hotkeys.toggle_pin", Hotkeys),
         // The backend is chosen by the window key at selection time.
         ("capture.source", Reselect),

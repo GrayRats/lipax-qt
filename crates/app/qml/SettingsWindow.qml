@@ -1969,6 +1969,34 @@ ApplicationWindow {
                         text: "Каждое поле текста находится и отслеживается отдельно. Шрифт для поля выбирается один раз — " + "по признакам начертания оригинала и среди шрифтов приложения с глифами языка перевода — и дальше не меняется. " + "Каждое свойство ниже можно оставить автоматическим или задать вручную независимо от остальных."
                     }
                     FieldLabel {
+                        text: "Делить блок при шаге строк больше"
+                    }
+                    SpinBox {
+                        objectName: "lineGapFactor"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        from: 13
+                        to: 40
+                        value: Math.round((win.inplace().line_gap_factor || 1.8) * 10)
+                        textFromValue: v => (v / 10).toFixed(1) + " × высоты строки"
+                        valueFromText: t => Math.round(parseFloat(String(t).replace(",", ".")) * 10)
+                        editable: true
+                        ToolTip.visible: hovered
+                        ToolTip.delay: 400
+                        ToolTip.text: "Если расстояние между соседними строками (от центра до центра) больше этого числа высот строки, "
+                            + "они считаются разными полями: склеенные имя персонажа и реплика, пункты меню. Обычный абзац — 1,2–1,5. "
+                            + "Меньше — делится чаще, больше — блоки крупнее."
+                        onValueModified: win.setInplace("line_gap_factor", value / 10)
+                    }
+                    Label {
+                        Layout.columnSpan: 2
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        opacity: 0.7
+                        text: "По умолчанию 1,8: абзац остаётся одним полем, а поля, разделённые пустой строкой (имя над репликой), — разными."
+                    }
+                    FieldLabel {
                         text: "Фон под переводом"
                     }
                     ComboBox {

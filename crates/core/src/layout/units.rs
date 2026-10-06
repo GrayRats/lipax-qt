@@ -81,6 +81,13 @@ impl Rect<FramePx> {
     }
 }
 
+impl Rect<FramePx> {
+    /// The same rectangle in a crop cut from the frame at `origin` (the crop's top-left corner).
+    pub fn in_crop(&self, origin: (u32, u32)) -> Rect<CropPx> {
+        Rect::in_space(self.x - origin.0 as f32, self.y - origin.1 as f32, self.w, self.h)
+    }
+}
+
 impl Rect<CropPx> {
     /// The same rectangle in the frame the crop was cut from at `origin` (its top-left corner).
     pub fn in_frame(&self, origin: (u32, u32)) -> Rect<FramePx> {
@@ -220,6 +227,8 @@ mod tests {
     fn a_crop_moves_into_the_frame_by_its_origin() {
         let line = Rect::<CropPx>::in_space(10.0, 5.0, 100.0, 20.0);
         assert_eq!(line.in_frame((40, 300)), Rect::new(50.0, 305.0, 100.0, 20.0));
+        // And back: frame -> crop -> frame is the identity.
+        assert_eq!(line.in_frame((40, 300)).in_crop((40, 300)), line);
     }
 
     #[test]

@@ -25,6 +25,8 @@ pub mod typography;
 
 use serde::{Deserialize, Serialize};
 
+pub mod dto;
+pub mod split;
 pub mod units;
 pub use units::{CropPx, CropRect, DesktopPx, DesktopRect, FramePx, FrameToDesktop, LogicalScale, Rect, Space};
 
@@ -293,6 +295,28 @@ pub(crate) mod testing {
                     let bar = serifs && (yy < y + stroke || yy >= y + height - stroke);
                     let middle = yy >= y + height / 2 && yy < y + height / 2 + stroke;
                     if edge || bar || middle { img.put_pixel(xx, yy, Rgba([ink[0], ink[1], ink[2], 255])); }
+                }
+            }
+            gx += glyph + gap;
+        }
+        gx
+    }
+
+    /// Like `draw_line`, but set in lower case: every third letter is tall (an ascender or a capital), the others
+    /// are 60 % of it and sit on the baseline. A line occupies `height` while a typical letter is 0.6 of it, as
+    /// in ordinary text (capitals only, like `draw_line`, have no ascenders and descenders).
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw_prose_line(img: &mut RgbaImage, x: u32, y: u32, chars: usize, glyph: u32, gap: u32, height: u32, stroke: u32, ink: [u8; 3]) -> u32 {
+        let mut gx = x;
+        for i in 0..chars {
+            if i > 0 && i % 5 == 0 { gx += gap * 3; }
+            let h = if i % 3 == 0 { height } else { height * 6 / 10 };
+            let top = y + height - h;
+            for yy in top..top + h {
+                for xx in gx..gx + glyph {
+                    let edge = xx < gx + stroke || xx >= gx + glyph - stroke;
+                    let middle = yy >= top + h / 2 && yy < top + h / 2 + stroke;
+                    if edge || middle { img.put_pixel(xx, yy, Rgba([ink[0], ink[1], ink[2], 255])); }
                 }
             }
             gx += glyph + gap;

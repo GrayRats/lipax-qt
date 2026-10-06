@@ -206,6 +206,9 @@ use lipa_core::translate::HttpTranslate;
 use std::sync::{Arc, OnceLock};
 use tokio::sync::{mpsc, watch};
 
+/// How often the position of the game window is read.
+const GEOMETRY_POLL: std::time::Duration = std::time::Duration::from_millis(100);
+
 pub(crate) fn rt() -> &'static tokio::runtime::Runtime {
     static RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
     RT.get_or_init(|| {
@@ -551,14 +554,16 @@ impl cxx_qt::Initialize for qobject::Controller {
         let sh = shared.clone();
         let qt = self.qt_thread();
         spawn_service(async move {
-            let mut ticker = tokio::time::interval(std::time::Duration::from_millis(500));
-            // Only changes reach the GUI thread.
+            // Ten times a second: while the window is dragged the overlay follows it in steps of 100 ms rather
+            // than 500 ms. A read is a lookup in the state the KWin script keeps, and only changes reach the GUI thread.
+            let mut ticker = tokio::time::interval(GEOMETRY_POLL);
+            ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
             let mut last: Option<String> = None;
             loop {
                 ticker.tick().await;
-                let settings = sh.settings.borrow().clone();
-                let window = settings.capture.window.clone();
-                if window.as_ref().is_some_and(is_portal_window) && settings.capture.portal_fills_monitor {
+                // Only the two things this needs: a clone of the whole settings ten times a second would be waste.
+                let (window, fills_monitor) = { let s = sh.settings.borrow(); (s.capture.window.clone(), s.capture.portal_fills_monitor) };
+                if window.as_ref().is_some_and(is_portal_window) && fills_monitor {
                     // QML reports the selected Qt screen in logical desktop coordinates.
                     continue;
                 }
@@ -1236,7 +1241,7 @@ fn preview_entry(region_id: &str, region_name: &str, preview: &lipa_core::pipeli
             "stage": t.stage, "last_ms": t.last_ms, "p50_ms": t.p50_ms, "p95_ms": t.p95_ms, "samples": t.samples,
         })).collect::<Vec<_>>(),
         "boxes": preview.boxes.iter().map(|b| serde_json::json!({
-            "x": b.rect.x, "y": b.rect.y, "w": b.rect.w, "h": b.rect.h, "original": b.original, "translation": b.translation, "details": b.details,
+            "x": b.rect.x, "y": b.rect.y, "w": b.rect.w, "h": b.rect.h, "original": b.original, "translation": b.translation, "details": b.details, "block": b.block,
         })).collect::<Vec<_>>(),
     })
 }
