@@ -70,9 +70,26 @@ pub fn tessdata_arg_in(user: &Path, system: Option<&Path>) -> Option<PathBuf> {
     Some(user.to_path_buf())
 }
 
+/// How long the answer of `tessdata_arg` is reused. It walks directories and may create links, and it is asked at every
+/// reading (several a second, from several fields at once); a language installed a moment ago waits at most this long
+/// (`download_language` clears the answer at once).
+const TESSDATA_ARG_TTL: std::time::Duration = std::time::Duration::from_secs(5);
+
+static TESSDATA_ARG: std::sync::Mutex<Option<(std::time::Instant, Option<PathBuf>)>> = std::sync::Mutex::new(None);
+
 /// То же для текущего пользователя.
 pub fn tessdata_arg() -> Option<PathBuf> {
-    tessdata_arg_in(&user_tessdata_dir(), system_tessdata_dir().as_deref())
+    let mut cached = TESSDATA_ARG.lock().unwrap();
+    if let Some((when, answer)) = cached.as_ref() && when.elapsed() < TESSDATA_ARG_TTL { return answer.clone(); }
+    // The lock is held while the directories are walked: concurrent readings make the links once, not each their own.
+    let answer = tessdata_arg_in(&user_tessdata_dir(), system_tessdata_dir().as_deref());
+    *cached = Some((std::time::Instant::now(), answer.clone()));
+    answer
+}
+
+/// Forget the answer of `tessdata_arg` (a language was added or removed).
+pub fn forget_tessdata_arg() {
+    *TESSDATA_ARG.lock().unwrap() = None;
 }
 
 /// Скачивает модель `code` из `tessdata_fast` в пользовательский каталог.
@@ -96,6 +113,7 @@ pub async fn download_language_from(base_url: &str, code: &str, dir: &Path) -> R
     let (target, partial) = (dir.join(format!("{code}.traineddata")), dir.join(format!("{code}.traineddata.part")));
     std::fs::write(&partial, &bytes).map_err(|e| format!("{}: {e}", partial.display()))?;
     std::fs::rename(&partial, &target).map_err(|e| format!("{}: {e}", target.display()))?;
+    forget_tessdata_arg();
     Ok(target)
 }
 

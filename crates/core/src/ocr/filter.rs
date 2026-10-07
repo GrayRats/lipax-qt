@@ -29,9 +29,9 @@ impl Preprocess {
         !self.auto_invert && self.contrast == 0 && !self.sharpen && !self.binarize
     }
 
-    /// The frame as the engine will see it (before Tesseract's own enlargement). Unchanged if no filter is on.
-    pub fn apply(&self, img: &DynamicImage) -> DynamicImage {
-        if self.is_identity() { return img.clone(); }
+    /// The frame as the engine will see it (before Tesseract's own enlargement). Borrowed, not copied, if no filter is on.
+    pub fn apply<'a>(&self, img: &'a DynamicImage) -> std::borrow::Cow<'a, DynamicImage> {
+        if self.is_identity() { return std::borrow::Cow::Borrowed(img); }
         let mut gray = img.to_luma8();
         if self.auto_invert && mean(&gray) < 128.0 {
             for p in gray.pixels_mut() { p.0[0] = 255 - p.0[0]; }
@@ -45,7 +45,7 @@ impl Preprocess {
             let t = otsu(&gray);
             for p in gray.pixels_mut() { p.0[0] = if p.0[0] > t { 255 } else { 0 }; }
         }
-        DynamicImage::ImageLuma8(gray)
+        std::borrow::Cow::Owned(DynamicImage::ImageLuma8(gray))
     }
 }
 
@@ -61,12 +61,12 @@ pub fn otsu(img: &GrayImage) -> u8 {
     let total: u64 = hist.iter().sum();
     let sum: f64 = hist.iter().enumerate().map(|(i, &c)| i as f64 * c as f64).sum();
     let (mut below, mut below_sum, mut best, mut threshold) = (0u64, 0f64, 0f64, 0u8);
-    for t in 0..256usize {
-        below += hist[t];
+    for (t, &count) in hist.iter().enumerate() {
+        below += count;
         if below == 0 { continue; }
         let above = total - below;
         if above == 0 { break; }
-        below_sum += t as f64 * hist[t] as f64;
+        below_sum += t as f64 * count as f64;
         let (m1, m2) = (below_sum / below as f64, (sum - below_sum) / above as f64);
         let between = below as f64 * above as f64 * (m1 - m2) * (m1 - m2);
         if between > best { best = between; threshold = t as u8; }
@@ -139,53 +139,66 @@ pub fn effective_min_confidence(language: &str, configured: u32) -> u32 {
     if configured > 0 && is_cjk_language(language) { configured.max(CJK_MIN_CONFIDENCE) } else { configured }
 }
 
-/// What a frame looks like before any filter: brightness and how many different levels it uses.
+/// How noisy a frame is, before any filter.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct FrameStats {
-    /// Mean luminance, 0–255.
-    pub mean: f32,
-    /// Shannon entropy of the luminance histogram in bits (0–8). Text on a flat background uses two or three
-    /// levels (low); a gradient with a texture behind it uses many (high).
+    /// The share of neighbouring pixels that differ a little but not nothing (1–`TEXTURE_STEP` levels): the mark of a
+    /// grain, a dither or a busy texture. A flat background has none of them, a smooth gradient very few (its
+    /// neighbours are equal or one level apart over long runs), and the edge of a glyph is a large step, not a small one.
+    pub texture: f32,
+    /// Shannon entropy of the luminance histogram in bits (0–8); informative, not used for the decision.
     pub entropy: f32,
 }
 
-/// At most this many pixels are looked at, whatever the size of the frame.
+/// At most this many pixel pairs are looked at, whatever the size of the frame.
 const STATS_SAMPLES: u32 = 40_000;
-/// An entropy above this is a noisy background (flat ones measure below 3 bits in `tests/ocr_languages.rs`).
-pub const NOISY_ENTROPY: f32 = 4.0;
+/// Neighbours closer than this (but not equal) belong to texture; farther apart they are an edge.
+const TEXTURE_STEP: i32 = 24;
+/// A frame with a larger share of texture pairs is noisy. Flat frames and tight crops of clean text measure below 0.2,
+/// textured ones above 0.7 (`tests/ocr_languages.rs`).
+pub const NOISY_TEXTURE: f32 = 0.4;
 
 impl FrameStats {
     pub fn of(img: &DynamicImage) -> Self {
-        let (w, h) = (img.width().max(1), img.height().max(1));
+        let (w, h) = (img.width().max(2), img.height().max(1));
         let step = (((w as u64 * h as u64) / STATS_SAMPLES as u64) as f32).sqrt().ceil().max(1.0) as u32;
+        let rgba = img.as_rgba8();
+        let luma_at = |x: u32, y: u32| -> i32 {
+            let [r, g, b, _] = match rgba { Some(buffer) => buffer.get_pixel(x, y).0, None => image::GenericImageView::get_pixel(img, x, y).0 };
+            ((r as i32 * 77 + g as i32 * 150 + b as i32 * 29) >> 8).min(255)
+        };
         let mut hist = [0u32; 256];
-        let mut count = 0u32;
-        let mut sum = 0u64;
+        let (mut count, mut textured) = (0u32, 0u32);
         let mut y = 0;
+        let mut row = 0u32;
         while y < h {
-            let mut x = 0;
-            while x < w {
-                let [r, g, b, _] = image::GenericImageView::get_pixel(img, x, y).0;
-                let luma = ((r as u32 * 77 + g as u32 * 150 + b as u32 * 29) >> 8) as usize;
-                hist[luma.min(255)] += 1;
-                sum += luma as u64;
+            // Each row starts a little further along: a texture with the period of the step cannot hide between the samples.
+            let mut x = (row * 7) % step;
+            while x + 1 < w {
+                let (a, b) = (luma_at(x, y), luma_at(x + 1, y));
+                hist[a as usize] += 1;
+                let d = (a - b).abs();
+                if d > 0 && d <= TEXTURE_STEP { textured += 1; }
                 count += 1;
                 x += step;
             }
             y += step;
+            row += 1;
         }
         let n = count.max(1) as f32;
         let entropy = hist.iter().filter(|&&c| c > 0).map(|&c| { let p = c as f32 / n; -p * p.log2() }).sum();
-        Self { mean: sum as f32 / n, entropy }
+        Self { texture: textured as f32 / n, entropy }
     }
 
     pub fn is_noisy(&self) -> bool {
-        self.entropy > NOISY_ENTROPY
+        self.texture > NOISY_TEXTURE
     }
 }
 
-/// How the filters of a reading are decided: the ones switched on by hand win; otherwise, with `auto`, a noisy
-/// frame gets Otsu binarization with inversion (inversion itself acts only on a dark frame) and a clean one none.
+/// How the filters of a reading are decided. Binarization and inversion are the user's call when either is on:
+/// then exactly the manual filters are used. Otherwise, with `auto`, a noisy frame gets Otsu binarization with
+/// inversion (which acts only on a dark frame) in addition to the manual contrast and sharpening, and a clean one
+/// is left as it is.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct FilterPlan {
     pub manual: Preprocess,
@@ -197,15 +210,34 @@ impl FilterPlan {
         Self { manual: Preprocess::of(r), auto: r.auto_filters }
     }
 
-    /// The filters for `img`, and whether they were chosen by the program (so the reading may be checked against the raw frame).
+    /// The filters for `img`, and whether the program added to the user's choice (so the reading may be checked
+    /// against the frame without that addition).
     pub fn resolve(&self, img: &DynamicImage) -> (Preprocess, bool) {
-        if !self.manual.is_identity() || !self.auto { return (self.manual, false); }
+        if !self.auto || self.manual.binarize || self.manual.auto_invert { return (self.manual, false); }
         if FrameStats::of(img).is_noisy() {
-            (Preprocess { binarize: true, auto_invert: true, ..Preprocess::default() }, true)
+            (Preprocess { binarize: true, auto_invert: true, ..self.manual }, true)
         } else {
-            (Preprocess::default(), false)
+            (self.manual, false)
         }
     }
+
+    /// What the reading is compared with when the automatic addition did not help: the user's filters alone.
+    pub fn without_addition(&self) -> Preprocess {
+        self.manual
+    }
+}
+
+/// Which of two readings of the same picture to keep. A reading that reaches the confidence `floor` beats one that
+/// does not; among the sure ones (or among the unsure ones) the higher mean confidence wins, and on a tie the one
+/// with more valid lines. An empty reading loses to any text. (The score of `score` is a sum, so it must not decide
+/// alone: three junk lines would beat one clean one.)
+pub fn better_reading<'a>(a: &'a OcrResult, b: &'a OcrResult, floor: u32) -> &'a OcrResult {
+    let key = |r: &OcrResult| {
+        let empty = r.text.trim().is_empty();
+        let confidence = r.confidence.unwrap_or(0.0);
+        (!empty, !empty && confidence >= floor as f32, (confidence * 10.0) as i32, score(r) as i32)
+    };
+    if key(b) > key(a) { b } else { a }
 }
 
 /// The combinations tried by auto-tuning, in the order of preference: on a tie the earlier one wins.
@@ -255,6 +287,7 @@ mod tests {
             confidence: Some(lines.iter().map(|l| l.confidence).sum::<f32>() / lines.len() as f32),
             lines,
             engine: "tesseract",
+            ..Default::default()
         }
     }
 
@@ -397,25 +430,84 @@ mod tests {
         DynamicImage::ImageRgba8(img)
     }
 
-    #[test]
-    fn a_flat_frame_is_clean_and_a_textured_one_is_noisy() {
-        let (clean, noisy) = (FrameStats::of(&clean_frame()), FrameStats::of(&noisy_frame()));
-        assert!(!clean.is_noisy() && clean.entropy < 2.0, "{clean:?}");
-        assert!(noisy.is_noisy() && noisy.entropy > 5.0, "{noisy:?}");
-        assert!(clean.mean < 80.0, "dark frame: {clean:?}");
-        let big = DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(3840, 2160, image::Rgba([10, 10, 10, 255])));
-        assert!(FrameStats::of(&big).entropy < 0.01, "a large frame is sampled, not walked through");
+    /// A tight crop of dense, antialiased text, as the in-place engine hands to OCR: many grey levels, no texture.
+    fn dense_text_crop() -> DynamicImage {
+        let img = image::RgbaImage::from_fn(240, 34, |x, y| {
+            // Vertical strokes with soft edges, 9 px apart.
+            let phase = (x % 9) as f32;
+            let ink = if y > 4 && y < 29 { (1.0 - ((phase - 3.5).abs() / 2.0)).clamp(0.0, 1.0) } else { 0.0 };
+            let v = (22.0 + ink * 218.0) as u8;
+            image::Rgba([v, v, v, 255])
+        });
+        DynamicImage::ImageRgba8(img)
+    }
+
+    /// A smooth sky: one level of change every few pixels, no grain.
+    fn smooth_gradient() -> DynamicImage {
+        DynamicImage::ImageRgba8(image::RgbaImage::from_fn(300, 100, |x, y| {
+            let v = (40.0 + x as f32 * 0.07 + y as f32 * 0.2) as u8;
+            image::Rgba([v, v, v.saturating_add(30), 255])
+        }))
     }
 
     #[test]
-    fn automatic_filters_apply_to_noise_only_and_never_override_the_users_choice() {
+    fn a_flat_frame_is_clean_and_a_textured_one_is_noisy() {
+        let (clean, noisy) = (FrameStats::of(&clean_frame()), FrameStats::of(&noisy_frame()));
+        assert!(!clean.is_noisy() && clean.texture < 0.05, "{clean:?}");
+        assert!(noisy.is_noisy() && noisy.texture > 0.7, "{noisy:?}");
+        let big = DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(3840, 2160, image::Rgba([10, 10, 10, 255])));
+        assert!(FrameStats::of(&big).texture < 0.001, "a large frame is sampled, not walked through");
+    }
+
+    #[test]
+    fn clean_text_in_a_tight_crop_and_a_smooth_gradient_are_not_noise() {
+        let dense = FrameStats::of(&dense_text_crop());
+        assert!(!dense.is_noisy(), "dense antialiased text is not texture: {dense:?}");
+        let sky = FrameStats::of(&smooth_gradient());
+        assert!(!sky.is_noisy(), "a smooth gradient is not texture (its entropy is high, which is why entropy does not decide): {sky:?}");
+        assert!(sky.entropy > 3.0, "{sky:?}");
+    }
+
+    #[test]
+    fn a_texture_with_the_period_of_the_sampling_step_is_still_seen() {
+        // Dither on every other pixel of a large frame: a fixed grid would meet only the bright ones.
+        let img = DynamicImage::ImageRgba8(image::RgbaImage::from_fn(2000, 1200, |x, y| {
+            let v = if (x + y) % 2 == 0 { 100 } else { 110 };
+            image::Rgba([v, v, v, 255])
+        }));
+        assert!(FrameStats::of(&img).is_noisy(), "{:?}", FrameStats::of(&img));
+    }
+
+    #[test]
+    fn automatic_filters_apply_to_noise_only_and_keep_the_users_choice() {
         let auto = FilterPlan { manual: Preprocess::default(), auto: true };
         assert_eq!(auto.resolve(&clean_frame()), (Preprocess::default(), false), "clean text is read as it is");
-        let (filters, chosen) = auto.resolve(&noisy_frame());
-        assert!(chosen && filters.binarize && filters.auto_invert && filters.contrast == 0 && !filters.sharpen, "{filters:?}");
+        let (filters, added) = auto.resolve(&noisy_frame());
+        assert!(added && filters.binarize && filters.auto_invert && filters.contrast == 0 && !filters.sharpen, "{filters:?}");
         let off = FilterPlan { manual: Preprocess::default(), auto: false };
         assert_eq!(off.resolve(&noisy_frame()), (Preprocess::default(), false), "switched off");
-        let by_hand = Preprocess { sharpen: true, ..Preprocess::default() };
-        assert_eq!(FilterPlan { manual: by_hand, auto: true }.resolve(&noisy_frame()), (by_hand, false), "the user's filters win");
+        // Binarization or inversion switched on by hand: the user decided, nothing is added.
+        let by_hand = Preprocess { binarize: true, ..Preprocess::default() };
+        assert_eq!(FilterPlan { manual: by_hand, auto: true }.resolve(&noisy_frame()), (by_hand, false));
+        // Contrast and sharpening are not that decision: the automatic part joins them.
+        let tuned = Preprocess { sharpen: true, contrast: 20, ..Preprocess::default() };
+        let (filters, added) = FilterPlan { manual: tuned, auto: true }.resolve(&noisy_frame());
+        assert!(added && filters.binarize && filters.auto_invert && filters.sharpen && filters.contrast == 20, "{filters:?}");
+        assert_eq!(FilterPlan { manual: tuned, auto: true }.without_addition(), tuned);
+    }
+
+    #[test]
+    fn the_better_reading_is_the_surer_one_not_the_one_with_more_junk_lines() {
+        let one_clean = result(vec![line("Welcome back", 80.0)]);
+        let three_junk = result(vec![line("xq", 28.0), line("zz", 28.0), line("kj", 28.0)]);
+        assert!(std::ptr::eq(better_reading(&one_clean, &three_junk, 30), &one_clean), "a sum of junk must not win");
+        assert!(std::ptr::eq(better_reading(&three_junk, &one_clean, 30), &one_clean), "whatever the order");
+        let empty = OcrResult::default();
+        assert!(std::ptr::eq(better_reading(&empty, &three_junk, 30), &three_junk), "any text beats nothing");
+        let weak = result(vec![line("maybe text", 25.0)]);
+        assert!(std::ptr::eq(better_reading(&weak, &three_junk, 30), &three_junk), "among unsure ones the higher confidence");
+        let first = result(vec![line("same", 70.0)]);
+        let second = result(vec![line("same", 70.0)]);
+        assert!(std::ptr::eq(better_reading(&first, &second, 30), &first), "a tie keeps the first");
     }
 }

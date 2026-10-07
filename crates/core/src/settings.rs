@@ -1091,7 +1091,12 @@ impl Settings {
     /// The confidence below which a reading is rejected: the configured threshold, raised to the CJK floor while a
     /// Chinese, Japanese or Korean model is in use (their garbage on a textured background scores 28–30).
     pub fn effective_minimum_confidence(&self) -> u32 {
-        crate::ocr::filter::effective_min_confidence(&self.recognition.language, self.recognition.minimum_confidence)
+        // PaddleOCR reads the first language only; Tesseract (and `auto`, which starts with it) reads all of them.
+        let language = match self.recognition.engine.as_str() {
+            "paddleocr" => crate::tesseract::primary_lang(&self.recognition.language),
+            _ => self.recognition.language.as_str(),
+        };
+        crate::ocr::filter::effective_min_confidence(language, self.recognition.minimum_confidence)
     }
 
     pub fn processing_key(&self) -> String {
@@ -1307,6 +1312,17 @@ overlay_size = [800, 200]
         let m = &good.appearance.main_window;
         assert_eq!((good.general.theme.as_str(), good.general.log_level.as_str()), ("light", "debug"));
         assert_eq!((m.font_family.as_str(), m.cjk_font_family.as_str(), m.font_size, m.background.as_str()), ("Lora", "Noto Sans CJK SC", 24, "system"));
+    }
+
+    #[test]
+    fn the_cjk_floor_follows_the_language_the_engine_reads() {
+        let mut s = Settings::default();
+        s.recognition.language = "eng+jpn".into();
+        assert_eq!(s.effective_minimum_confidence(), 38, "Tesseract reads both");
+        s.recognition.engine = "paddleocr".into();
+        assert_eq!(s.effective_minimum_confidence(), 30, "PaddleOCR reads only English here");
+        s.recognition.language = "jpn+eng".into();
+        assert_eq!(s.effective_minimum_confidence(), 38);
     }
 
     #[test]

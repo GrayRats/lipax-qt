@@ -243,16 +243,32 @@ fn field_crops(frame: &image::DynamicImage, s: &Settings) -> Vec<image::DynamicI
 }
 
 /// The frame as the engine sees it after the filters of the settings; `None` if none is on.
-fn filtered_frame(s: &Settings, frame: &image::DynamicImage) -> Option<image::RgbaImage> {
-    // What the engine will see, automatic choice included.
-    let (filters, _) = crate::ocr::filter::FilterPlan::of(&s.recognition).resolve(frame);
-    (!filters.is_identity()).then(|| filters.apply(frame).to_rgba8())
+fn filtered_frame(s: &Settings, frame: &image::DynamicImage) -> (Option<image::RgbaImage>, bool) {
+    // What the engine will see, automatic choice included (and whether the program added to the user's filters).
+    let (filters, added) = crate::ocr::filter::FilterPlan::of(&s.recognition).resolve(frame);
+    ((!filters.is_identity()).then(|| filters.apply(frame).to_rgba8()), added)
+}
+
+/// «binarization + inversion», for the inspector: what the engine did to the picture before reading it.
+fn describe_filters(f: &crate::ocr::filter::Preprocess) -> String {
+    let mut parts = Vec::new();
+    if f.auto_invert { parts.push("инверсия тёмного кадра".to_owned()); }
+    if f.contrast != 0 { parts.push(format!("контраст {}", f.contrast)); }
+    if f.sharpen { parts.push("резкость".into()); }
+    if f.binarize { parts.push("бинаризация Оцу".into()); }
+    parts.join(" + ")
+}
+
+/// The inspector line about the filters of a reading; none when the picture was read as it was.
+fn filters_note(result: &crate::ocr::OcrResult) -> Option<String> {
+    (!result.filters.is_identity()).then(|| format!("фильтры ({}): {}", if result.automatic_filters { "подобраны автоматически" } else { "заданы вручную" }, describe_filters(&result.filters)))
 }
 
 /// One preview box per line the engine found; `origin` moves the crop to frame coordinates.
 fn line_boxes(result: &crate::ocr::OcrResult, origin: (u32, u32), note: Option<&str>) -> Vec<PreviewBox> {
     result.lines.iter().map(|l| {
         let mut details = vec![format!("уверенность OCR ({}): {:.0}%", result.engine, l.confidence)];
+        details.extend(filters_note(result));
         details.extend(note.map(str::to_owned));
         PreviewBox { rect: l.rect.in_frame(origin), original: l.text.clone(), translation: String::new(), details, block: None, confidence: Some(l.confidence) }
     }).collect()
@@ -306,6 +322,8 @@ pub struct OcrPreview {
     /// The threshold in force, for colouring the confidence of the boxes.
     pub minimum_confidence: u32,
     pub filters: crate::ocr::filter::Preprocess,
+    /// The program added filters of its own to this frame (the user's `filters` are what the settings say).
+    pub filters_auto: bool,
     pub filter_noise: bool,
     pub boxes: Vec<PreviewBox>,
     pub original: String,
@@ -545,8 +563,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
             if command == Cmd::Reset { self.reset(); continue; }
             if command == Cmd::ReanalyzeFonts { self.reanalyze_fonts(); continue; }
             // Settings are looked at before every frame, not only when the pipeline starts.
-            if settings.has_changed().unwrap_or(false) && self.apply_settings_change(&mut settings, &mut seen_key) {
-                if command != Cmd::TranslateOnce { continue; }
+            if settings.has_changed().unwrap_or(false) && self.apply_settings_change(&mut settings, &mut seen_key) && command != Cmd::TranslateOnce {
+                continue;
             }
             let stamp = Stamped { tx: &out, generation: generation.load(Ordering::SeqCst) };
             let s = settings.borrow().clone();
@@ -686,7 +704,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     #[allow(clippy::too_many_arguments)]
     fn send_preview(&self, s: &Settings, region: &CaptureRegion, frame: &image::DynamicImage, boxes: Vec<PreviewBox>, original: String, translation: String, phase: Phase, out: &dyn Sink) {
         if !self.preview.load(Ordering::Relaxed) { return; }
-        let preview = OcrPreview { image: frame.to_rgba8(), filtered: filtered_frame(s, frame), minimum_confidence: s.effective_minimum_confidence(), filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase, timings: self.timings.summary() };
+        let (filtered, filters_auto) = filtered_frame(s, frame);
+        let preview = OcrPreview { image: frame.to_rgba8(), filtered, filters_auto, minimum_confidence: s.effective_minimum_confidence(), filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase, timings: self.timings.summary() };
         out.send(Event::OcrPreview { region_id: region.id.clone(), region_name: region.name.clone(), preview: Box::new(preview) });
     }
 
@@ -925,10 +944,11 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                         continue;
                     }
                     state.field_lines.insert(id, (origin, result.lines.clone()));
-                    state.field_ocr.insert(id, match result.confidence {
+                    let read = match result.confidence {
                         Some(c) => format!("OCR ({}): уверенность {c:.0}%, строк {}", result.engine, result.lines.len().max(1)),
                         None => format!("OCR ({}): уверенность не сообщается", if result.engine.is_empty() { "?" } else { result.engine }),
-                    });
+                    };
+                    state.field_ocr.insert(id, match filters_note(&result) { Some(note) => format!("{read}; {note}"), None => read });
                     if !text::is_meaningful(&original) { engine.complete(id, None, s); continue; }
                     match engine.cached_translation(id, &original).or_else(|| self.cached(&src, &s.translation.target_language, &original)) {
                         Some(t) => engine.complete(id, Some((original, t)), s),
@@ -986,8 +1006,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             boxes.extend(state.ignored.values().map(|(_, b)| b.clone()));
             let join = |f: fn(&PreviewBox) -> &str| boxes.iter().map(f).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("\n");
             let (original, translation) = (join(|b| &b.original), join(|b| &b.translation));
-            let filtered = filtered_frame(s, &image::DynamicImage::ImageRgba8(image.clone()));
-            let preview = OcrPreview { image, filtered, minimum_confidence: s.effective_minimum_confidence(), filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase: state.phase, timings: self.timings.summary() };
+            let (filtered, filters_auto) = filtered_frame(s, &image::DynamicImage::ImageRgba8(image.clone()));
+            let preview = OcrPreview { image, filtered, filters_auto, minimum_confidence: s.effective_minimum_confidence(), filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase: state.phase, timings: self.timings.summary() };
             out.send(Event::OcrPreview { region_id: region.id.clone(), region_name: region.name.clone(), preview: Box::new(preview) });
         }
         if let Some(frame) = result {
@@ -1241,7 +1261,7 @@ mod tests {
         async fn recognize_detailed(&self, img: &DynamicImage, _: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
             let lines = self.text.lines().enumerate().map(|(i, t)| crate::ocr::OcrLine {
                 rect: crate::layout::CropRect::in_space(5.0, 5.0 + 20.0 * i as f32, img.width() as f32 - 10.0, 15.0), text: t.to_owned(), confidence: self.confidence }).collect();
-            Ok(crate::ocr::OcrResult { text: self.text.clone(), lines, confidence: Some(self.confidence), engine: "mock" })
+            Ok(crate::ocr::OcrResult { text: self.text.clone(), lines, confidence: Some(self.confidence), engine: "mock", ..Default::default() })
         }
     }
 
@@ -1297,7 +1317,7 @@ mod tests {
         async fn recognize_detailed(&self, _: &DynamicImage, s: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
             let (text, confidence) = if s.recognition.binarize && !s.recognition.auto_invert { ("Open the door\nTake the key", 85.0) } else { ("| ~", 30.0) };
             let lines = text.lines().enumerate().map(|(i, t)| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(0.0, 20.0 * i as f32, 50.0, 15.0), text: t.to_owned(), confidence }).collect();
-            Ok(crate::ocr::OcrResult { text: text.into(), lines, confidence: Some(confidence), engine: "mock" })
+            Ok(crate::ocr::OcrResult { text: text.into(), lines, confidence: Some(confidence), engine: "mock", ..Default::default() })
         }
     }
 
@@ -1320,14 +1340,14 @@ mod tests {
         async fn recognize_detailed(&self, _: &DynamicImage, _: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
             let text = self.0.lock().unwrap().clone();
             let lines = text.lines().enumerate().map(|(i, t)| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(0.0, 40.0 * i as f32, 90.0, 15.0), text: t.to_owned(), confidence: 90.0 }).collect();
-            Ok(crate::ocr::OcrResult { text, lines, confidence: Some(90.0), engine: "mock" })
+            Ok(crate::ocr::OcrResult { text, lines, confidence: Some(90.0), engine: "mock", ..Default::default() })
         }
     }
 
     #[test]
     fn paragraphs_follow_the_gaps_between_lines() {
         let line = |y: f32, t: &str| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(0.0, y, 80.0, 15.0), text: t.into(), confidence: 90.0 };
-        let wrapped = crate::ocr::OcrResult { text: String::new(), lines: vec![line(0.0, "I will not"), line(18.0, "go there"), line(60.0, "Continue")], confidence: None, engine: "mock" };
+        let wrapped = crate::ocr::OcrResult { text: String::new(), lines: vec![line(0.0, "I will not"), line(18.0, "go there"), line(60.0, "Continue")], confidence: None, engine: "mock", ..Default::default() };
         assert_eq!(paragraphs(&wrapped, 1.8), vec!["I will not go there".to_string(), "Continue".to_string()]);
         assert_eq!(paragraphs(&wrapped, 4.0), vec!["I will not go there Continue".to_string()], "a larger factor keeps more together");
         assert_eq!(paragraphs(&crate::ocr::OcrResult::text_only("Just text".into(), "x"), 1.8), vec!["Just text".to_string()]);
@@ -1336,7 +1356,7 @@ mod tests {
     #[test]
     fn a_sentence_split_by_a_gap_is_translated_whole() {
         let line = |y: f32, t: &str| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(0.0, y, 80.0, 15.0), text: t.into(), confidence: 90.0 };
-        let r = crate::ocr::OcrResult { text: String::new(), lines: vec![line(0.0, "Welcome to the village,"), line(60.0, "traveller."), line(120.0, "Exit"), line(180.0, "Options")], confidence: None, engine: "mock" };
+        let r = crate::ocr::OcrResult { text: String::new(), lines: vec![line(0.0, "Welcome to the village,"), line(60.0, "traveller."), line(120.0, "Exit"), line(180.0, "Options")], confidence: None, engine: "mock", ..Default::default() };
         assert_eq!(paragraphs(&r, 1.8), vec!["Welcome to the village, traveller.".to_string(), "Exit".to_string(), "Options".to_string()]);
     }
 
@@ -1408,7 +1428,7 @@ mod tests {
         async fn recognize_detailed(&self, _: &DynamicImage, s: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
             tokio::time::sleep(self.delay).await;
             self.finished.lock().unwrap().push((s.recognition.binarize, s.recognition.minimum_confidence));
-            Ok(crate::ocr::OcrResult { text: "Some words here".into(), lines: Vec::new(), confidence: Some(90.0), engine: "mock" })
+            Ok(crate::ocr::OcrResult { text: "Some words here".into(), lines: Vec::new(), confidence: Some(90.0), engine: "mock", ..Default::default() })
         }
     }
 
@@ -1446,6 +1466,19 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(700)).await;
         task.abort();
         assert!(!finished.lock().unwrap().is_empty(), "the reading in progress was not thrown away by a cosmetic change");
+    }
+
+    #[test]
+    fn the_inspector_says_what_was_done_to_the_picture() {
+        use crate::ocr::{OcrResult, filter::Preprocess};
+        let plain = OcrResult::default();
+        assert_eq!(filters_note(&plain), None, "nothing to say about a picture read as it was");
+        let auto = OcrResult { filters: Preprocess { binarize: true, auto_invert: true, ..Preprocess::default() }, automatic_filters: true, ..OcrResult::default() };
+        let note = filters_note(&auto).unwrap();
+        assert!(note.contains("автоматически") && note.contains("бинаризация") && note.contains("инверсия"), "{note}");
+        let manual = OcrResult { filters: Preprocess { sharpen: true, contrast: 20, ..Preprocess::default() }, ..OcrResult::default() };
+        let note = filters_note(&manual).unwrap();
+        assert!(note.contains("вручную") && note.contains("резкость") && note.contains("контраст 20"), "{note}");
     }
 
     #[tokio::test]
@@ -1637,7 +1670,7 @@ mod tests {
             async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok("Hello there".into()) }
             async fn recognize_detailed(&self, img: &DynamicImage, _: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
                 let line = crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(3.0, 3.0, img.width() as f32 - 6.0, img.height() as f32 - 6.0), text: "Hello there".into(), confidence: 90.0 };
-                Ok(crate::ocr::OcrResult { text: "Hello there".into(), lines: vec![line], confidence: Some(90.0), engine: "mock" })
+                Ok(crate::ocr::OcrResult { text: "Hello there".into(), lines: vec![line], confidence: Some(90.0), engine: "mock", ..Default::default() })
             }
         }
         let flag = Arc::new(AtomicBool::new(true));
@@ -1684,7 +1717,7 @@ mod tests {
             let line = |y: f32, h: f32, text: &str| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(3.0, y, w - 6.0, h), text: text.into(), confidence: 90.0 };
             let (text, lines) = if h > 60.0 { ("Title\nBody text".to_string(), vec![line(3.0, 22.0, "Title"), line(h - 25.0, 22.0, "Body text")]) }
                 else { ("One part".to_string(), vec![line(3.0, h - 6.0, "One part")]) };
-            Ok(crate::ocr::OcrResult { text, lines, confidence: Some(90.0), engine: "mock" })
+            Ok(crate::ocr::OcrResult { text, lines, confidence: Some(90.0), engine: "mock", ..Default::default() })
         }
     }
 
@@ -1718,7 +1751,7 @@ mod tests {
             async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok("Hello there".into()) }
             async fn recognize_detailed(&self, _: &DynamicImage, s: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
                 self.0.lock().unwrap().push(s.recognition.engine.as_str().to_owned());
-                Ok(crate::ocr::OcrResult { text: "Hello there".into(), lines: Vec::new(), confidence: Some(90.0), engine: "paddleocr" })
+                Ok(crate::ocr::OcrResult { text: "Hello there".into(), lines: Vec::new(), confidence: Some(90.0), engine: "paddleocr", ..Default::default() })
             }
         }
         let seen = Arc::new(Mutex::new(Vec::new()));

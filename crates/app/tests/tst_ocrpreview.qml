@@ -164,4 +164,21 @@ TestCase {
         ctl.ocrPreviewJson = "[]"
         ctl.autotuneJson = ""
     }
+
+    function test_automaticFiltersAreAnnouncedForTheFrame() {
+        preview.openWindow()
+        const entry = JSON.parse(JSON.stringify(subtitles))
+        entry.filters = {binarize: false, auto_invert: false, sharpen: false, contrast: 0, filter_noise: true}
+        entry.filters_auto = false
+        ctl.ocrPreviewJson = JSON.stringify([entry])
+        verify(!findChild(preview, "ocrFiltersAuto").visible)
+        entry.filters_auto = true
+        ctl.ocrPreviewJson = JSON.stringify([entry])
+        verify(findChild(preview, "ocrFiltersAuto").visible)
+        verify(findChild(preview, "ocrFiltersAuto").text.indexOf("автоматически") >= 0)
+        // The check boxes still show the user's own choice, not what the program added.
+        verify(!findChild(preview, "ocrFilterBinarize").checked)
+        preview.close()
+        ctl.ocrPreviewJson = "[]"
+    }
 }

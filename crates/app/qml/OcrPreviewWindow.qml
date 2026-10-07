@@ -208,6 +208,15 @@ ApplicationWindow {
             }
         }
         Label {
+            objectName: "ocrFiltersAuto"
+            Layout.fillWidth: true
+            visible: !!win.region && win.region.filters_auto === true
+            wrapMode: Text.Wrap
+            font.pixelSize: 12
+            opacity: 0.85
+            text: "Для этого кадра автоматически включены бинаризация и инверсия: фон шумный. Если результат неуверенный, кадр читается ещё раз без них (подробности — в списке блоков ниже)."
+        }
+        Label {
             objectName: "ocrAutoTuneResult"
             Layout.fillWidth: true
             visible: !!win.region && !!win.tuned

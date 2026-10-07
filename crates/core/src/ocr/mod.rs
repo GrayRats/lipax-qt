@@ -8,9 +8,8 @@ pub mod paddle_env;
 use crate::layout::CropRect;
 use crate::settings::Settings;
 use crate::tesseract::TesseractManager;
-use image::{DynamicImage, ImageFormat, imageops::FilterType};
+use image::{DynamicImage, imageops::FilterType};
 use std::future::Future;
-use std::io::Cursor;
 use std::process::Stdio;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::process::Command;
@@ -49,11 +48,14 @@ pub struct OcrResult {
     pub confidence: Option<f32>,
     /// Which engine produced the text (the choice of `auto` is visible here).
     pub engine: &'static str,
+    /// The filters the frame went through before the engine saw it, and whether the program added some of them.
+    pub filters: filter::Preprocess,
+    pub automatic_filters: bool,
 }
 
 impl OcrResult {
     pub fn text_only(text: String, engine: &'static str) -> Self {
-        Self { text, lines: Vec::new(), confidence: None, engine }
+        Self { text, engine, ..Self::default() }
     }
 }
 
@@ -85,7 +87,13 @@ const PADDLE_RETRY_AFTER: std::time::Duration = std::time::Duration::from_secs(3
 pub struct AnyOcr {
     paddle: paddle::PaddleOcr,
     paddle_down_until: std::sync::Mutex<Option<std::time::Instant>>,
+    /// When a frame last read as empty both with the automatic filters and without them. A scene without text is
+    /// not read twice at every cycle: for `EMPTY_BACKOFF` the raw second reading is skipped.
+    last_empty_both: std::sync::Mutex<Option<std::time::Instant>>,
 }
+
+/// After a frame was empty with and without the automatic filters, an empty automatic reading is believed for this long.
+const EMPTY_BACKOFF: std::time::Duration = std::time::Duration::from_secs(5);
 
 impl AnyOcr {
     async fn auto(&self, img: &DynamicImage, settings: &Settings, filters: filter::Preprocess) -> Result<OcrResult, OcrError> {
@@ -118,23 +126,42 @@ impl Ocr for AnyOcr {
     }
 
     async fn recognize_detailed(&self, img: &DynamicImage, settings: &Settings) -> Result<OcrResult, OcrError> {
-        let r = &settings.recognition;
-        // Filters switched on by hand are used as they are; otherwise a noisy frame gets binarization with inversion.
-        let (filters, chosen_here) = filter::FilterPlan::of(r).resolve(img);
-        let floor = settings.effective_minimum_confidence();
-        let mut result = self.engine(img, settings, filters).await?;
-        // The program chose these filters, not the user: if the reading is empty or unsure, the frame as it is gets its chance.
-        if chosen_here && (result.text.trim().is_empty() || result.confidence.is_some_and(|c| floor > 0 && c < floor as f32)) {
-            match self.engine(img, settings, filter::Preprocess::default()).await {
-                Ok(raw) if filter::score(&raw) > filter::score(&result) => {
-                    tracing::debug!(target: "ocr.filters", automatic = ?filters, "automatic filters did not help: the raw frame is used");
-                    result = raw;
+        let backoff = &self.last_empty_both;
+        read_checked(img, settings, backoff, |filters| self.engine(img, settings, filters)).await
+    }
+}
+
+/// One reading with the filters the settings call for, checked against the frame without the program's own addition
+/// when the addition did not give a sure reading: `read(filters)` is one reading of `img` with exactly these filters.
+/// The same path serves every engine, so `Tesseract` used on its own behaves like `AnyOcr`.
+async fn read_checked<F, Fut>(img: &DynamicImage, settings: &Settings, backoff: &std::sync::Mutex<Option<std::time::Instant>>, read: F) -> Result<OcrResult, OcrError>
+where F: Fn(filter::Preprocess) -> Fut, Fut: Future<Output = Result<OcrResult, OcrError>> {
+    let r = &settings.recognition;
+    let plan = filter::FilterPlan::of(r);
+    let (filters, added) = plan.resolve(img);
+    let floor = settings.effective_minimum_confidence();
+    let mut result = read(filters).await?;
+    result.filters = filters;
+    result.automatic_filters = added;
+    if added {
+        let empty = result.text.trim().is_empty();
+        let unsure = result.confidence.is_some_and(|c| floor > 0 && c < floor as f32);
+        let believed_empty = empty && backoff.lock().unwrap().is_some_and(|t| t.elapsed() < EMPTY_BACKOFF);
+        if (empty || unsure) && !believed_empty {
+            let alone = plan.without_addition();
+            if let Ok(mut other) = read(alone).await {
+                other.filters = alone;
+                if empty && other.text.trim().is_empty() {
+                    *backoff.lock().unwrap() = Some(std::time::Instant::now());
                 }
-                _ => {}
+                if std::ptr::eq(filter::better_reading(&result, &other, floor), &other) {
+                    tracing::debug!(target: "ocr.filters", automatic = ?filters, "the automatic filters did not help: the frame without them is used");
+                    result = other;
+                }
             }
         }
-        Ok(filter::clean(result, floor, r.filter_noise))
     }
+    Ok(filter::clean(result, floor, r.filter_noise))
 }
 
 impl AnyOcr {
@@ -171,18 +198,28 @@ pub fn preprocess(img: &DynamicImage) -> DynamicImage {
 /// the task that drives the pipeline (which also has the capture, the timers and the other fields to serve).
 async fn encode_for_tesseract(img: &DynamicImage, filters: filter::Preprocess) -> Result<Vec<u8>, OcrError> {
     let img = img.clone();
-    tokio::task::spawn_blocking(move || {
-        let mut png = Vec::new();
-        preprocess(&filters.apply(&img)).write_to(&mut Cursor::new(&mut png), ImageFormat::Png)?;
-        Ok::<_, OcrError>(png)
-    }).await.map_err(|e| OcrError::Failed(format!("подготовка кадра прервана: {e}")))?
+    tokio::task::spawn_blocking(move || fast_png(&preprocess(&filters.apply(&img)))).await
+        .map_err(|e| OcrError::Failed(format!("подготовка кадра прервана: {e}")))?
+}
+
+/// PNG for a pipe to an engine: the default compression took about 30 ms on a 2000×600 frame and the fast one 3 ms, while
+/// the engine reads either at the same speed (measured with the `tesseract` command; a raw PGM is bigger and read slower).
+pub(crate) fn fast_png(img: &DynamicImage) -> Result<Vec<u8>, OcrError> {
+    use image::{ExtendedColorType, ImageEncoder, codecs::png::{CompressionType, FilterType as Filter, PngEncoder}};
+    let mut png = Vec::with_capacity(img.width() as usize * img.height() as usize / 8);
+    let encoder = PngEncoder::new_with_quality(&mut png, CompressionType::Fast, Filter::Sub);
+    match img {
+        DynamicImage::ImageLuma8(gray) => encoder.write_image(gray.as_raw(), gray.width(), gray.height(), ExtendedColorType::L8)?,
+        other => { let rgba = other.to_rgba8(); encoder.write_image(rgba.as_raw(), rgba.width(), rgba.height(), ExtendedColorType::Rgba8)? }
+    }
+    Ok(png)
 }
 
 /// The frame after the filters, computed off the pipeline task; the frame itself if no filter is on.
 async fn filtered(img: &DynamicImage, filters: filter::Preprocess) -> Result<DynamicImage, OcrError> {
     if filters.is_identity() { return Ok(img.clone()); }
     let img = img.clone();
-    tokio::task::spawn_blocking(move || filters.apply(&img)).await.map_err(|e| OcrError::Failed(format!("подготовка кадра прервана: {e}")))
+    tokio::task::spawn_blocking(move || filters.apply(&img).into_owned()).await.map_err(|e| OcrError::Failed(format!("подготовка кадра прервана: {e}")))
 }
 
 /// Tesseract processes the image enlarged twice; geometry from it is scaled back.
@@ -276,7 +313,8 @@ pub fn parse_tsv(tsv: &str) -> OcrResult {
         let n = |i: usize| cols[i].parse::<f32>().unwrap_or(0.0);
         let key = (cols[2].parse().unwrap_or(0), cols[3].parse().unwrap_or(0), cols[4].parse().unwrap_or(0));
         let (x, y, w, h) = (n(6), n(7), n(8), n(9));
-        match lines.iter_mut().find(|(k, _)| *k == key) {
+        // The words of a line are consecutive rows of the output.
+        match lines.last_mut().filter(|(k, _)| *k == key) {
             Some((_, line)) => {
                 let (lx, ly, lw, lh) = line.rect;
                 let (x2, y2) = ((lx + lw).max(x + w), (ly + lh).max(y + h));
@@ -300,6 +338,7 @@ pub fn parse_tsv(tsv: &str) -> OcrResult {
         confidence: (!all.is_empty()).then(|| mean(&all)),
         lines,
         engine: "tesseract",
+        ..OcrResult::default()
     }
 }
 
@@ -308,17 +347,15 @@ impl Ocr for Tesseract {
         if settings.recognition.engine != "tesseract" {
             return Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned()));
         }
-        let out = Self::run(img, &settings.recognition.language, filter::FilterPlan::of(&settings.recognition).resolve(img).0, &[]).await?;
-        Ok(String::from_utf8_lossy(&out).into_owned())
+        Ok(self.recognize_detailed(img, settings).await?.text)
     }
 
     async fn recognize_detailed(&self, img: &DynamicImage, settings: &Settings) -> Result<OcrResult, OcrError> {
         if settings.recognition.engine != "tesseract" {
             return Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned()));
         }
-        let r = &settings.recognition;
-        let (filters, _) = filter::FilterPlan::of(r).resolve(img);
-        Ok(filter::clean(self.run_detailed_with(img, &r.language, filters).await?, settings.effective_minimum_confidence(), r.filter_noise))
+        let backoff = std::sync::Mutex::new(None);
+        read_checked(img, settings, &backoff, |filters| self.run_detailed_with(img, &settings.recognition.language, filters)).await
     }
 }
 
@@ -336,6 +373,93 @@ mod tests {
 5\t1\t1\t1\t1\t3\t240\t10\t80\t40\t30.0\tyou?\n\
 5\t1\t1\t1\t2\t1\t20\t80\t60\t30\t80.0\tGoing\n\
 5\t1\t1\t1\t2\t2\t90\t80\t10\t30\t-1\t \n";
+
+    fn noisy() -> DynamicImage {
+        let mut state = 99u32;
+        DynamicImage::ImageRgba8(RgbaImage::from_fn(160, 60, |x, y| {
+            state = state.wrapping_mul(1664525).wrapping_add(1013904223);
+            let v = (80.0 + 20.0 * (x as f32 / 7.0 + y as f32 / 4.0).sin() + ((state >> 24) % 24) as f32) as u8;
+            Rgba([v, v, v, 255])
+        }))
+    }
+
+    fn clean() -> DynamicImage {
+        DynamicImage::ImageRgba8(RgbaImage::from_pixel(160, 60, Rgba([20, 20, 30, 255])))
+    }
+
+    fn reading(text: &str, confidence: f32) -> OcrResult {
+        let lines = if text.is_empty() { Vec::new() } else { vec![OcrLine { rect: CropRect::in_space(0.0, 0.0, 50.0, 10.0), text: text.into(), confidence }] };
+        OcrResult { text: text.into(), confidence: (!text.is_empty()).then_some(confidence), lines, engine: "mock", ..OcrResult::default() }
+    }
+
+    /// Runs `read_checked` with an engine that answers by whether the frame was binarized; returns the result and the filters of every reading.
+    async fn checked(img: &DynamicImage, settings: &Settings, backoff: &std::sync::Mutex<Option<std::time::Instant>>, with_filter: OcrResult, without: OcrResult) -> (OcrResult, Vec<bool>) {
+        let calls = std::sync::Mutex::new(Vec::new());
+        let result = read_checked(img, settings, backoff, |filters| {
+            calls.lock().unwrap().push(filters.binarize);
+            let answer = if filters.binarize { with_filter.clone() } else { without.clone() };
+            async move { Ok(answer) }
+        }).await.unwrap();
+        (result, calls.into_inner().unwrap())
+    }
+
+    #[tokio::test]
+    async fn a_clean_frame_is_read_once_and_without_filters() {
+        let (result, calls) = checked(&clean(), &Settings::default(), &std::sync::Mutex::new(None), reading("Hello there", 90.0), reading("Hello there", 90.0)).await;
+        assert_eq!(calls, vec![false]);
+        assert!(!result.automatic_filters && result.filters.is_identity());
+    }
+
+    #[tokio::test]
+    async fn a_sure_automatic_reading_of_a_noisy_frame_is_not_checked_again() {
+        let (result, calls) = checked(&noisy(), &Settings::default(), &std::sync::Mutex::new(None), reading("Hello there", 90.0), reading("junk", 10.0)).await;
+        assert_eq!(calls, vec![true], "one reading is enough");
+        assert!(result.automatic_filters && result.filters.binarize && result.text == "Hello there");
+    }
+
+    #[tokio::test]
+    async fn an_unsure_automatic_reading_gives_way_to_a_surer_raw_one_but_not_to_more_junk() {
+        let settings = Settings::default();
+        let (result, calls) = checked(&noisy(), &settings, &std::sync::Mutex::new(None), reading("xq", 20.0), reading("Welcome back", 80.0)).await;
+        assert_eq!(calls, vec![true, false]);
+        assert_eq!((result.text.as_str(), result.automatic_filters), ("Welcome back", false), "the raw frame won, and says so");
+        // Raw gives three junk lines: a bigger sum, but not a better reading.
+        let junk = OcrResult { lines: vec![reading("a", 20.0).lines[0].clone(), reading("b", 20.0).lines[0].clone(), reading("c", 20.0).lines[0].clone()], text: "a\nb\nc".into(), confidence: Some(20.0), engine: "mock", ..OcrResult::default() };
+        let (result, _) = checked(&noisy(), &settings, &std::sync::Mutex::new(None), reading("xq", 29.0), junk).await;
+        assert!(result.automatic_filters, "{result:?}");
+    }
+
+    #[tokio::test]
+    async fn a_noisy_frame_without_text_is_not_read_twice_at_every_cycle() {
+        let backoff = std::sync::Mutex::new(None);
+        let (_, first) = checked(&noisy(), &Settings::default(), &backoff, reading("", 0.0), reading("", 0.0)).await;
+        assert_eq!(first, vec![true, false], "the first time the raw frame gets its chance");
+        let (result, second) = checked(&noisy(), &Settings::default(), &backoff, reading("", 0.0), reading("", 0.0)).await;
+        assert_eq!(second, vec![true], "then an empty automatic reading is believed for a while");
+        assert!(result.text.is_empty());
+        // Text appearing in the raw frame after the pause is still found once the pause is over.
+        *backoff.lock().unwrap() = Some(std::time::Instant::now() - EMPTY_BACKOFF - std::time::Duration::from_millis(1));
+        let (found, third) = checked(&noisy(), &Settings::default(), &backoff, reading("", 0.0), reading("Hello", 70.0)).await;
+        assert_eq!((third, found.text.as_str()), (vec![true, false], "Hello"));
+    }
+
+    #[tokio::test]
+    async fn filters_chosen_by_hand_are_not_second_guessed() {
+        let mut settings = Settings::default();
+        settings.recognition.binarize = true;
+        let (result, calls) = checked(&noisy(), &settings, &std::sync::Mutex::new(None), reading("xq", 5.0), reading("Welcome back", 90.0)).await;
+        assert_eq!(calls, vec![true], "the user asked for binarization: no second reading without it");
+        assert!(!result.automatic_filters && result.filters.binarize);
+    }
+
+    #[test]
+    fn the_fast_png_is_a_valid_picture_in_both_kinds() {
+        let gray = DynamicImage::ImageLuma8(image::GrayImage::from_fn(30, 20, |x, y| image::Luma([(x * 8 + y) as u8])));
+        let back = image::load_from_memory(&fast_png(&gray).unwrap()).unwrap();
+        assert_eq!(back.to_luma8(), gray.to_luma8());
+        let color = DynamicImage::ImageRgba8(RgbaImage::from_fn(10, 10, |x, y| Rgba([x as u8 * 20, y as u8 * 20, 7, 255])));
+        assert_eq!(image::load_from_memory(&fast_png(&color).unwrap()).unwrap().to_rgba8(), color.to_rgba8());
+    }
 
     #[test]
     fn tsv_words_become_lines_with_geometry_and_confidence() {

@@ -1350,6 +1350,7 @@ fn preview_entry(region_id: &str, region_name: &str, preview: &lipa_core::pipeli
         "image": url,
         "filtered_image": filtered_url,
         "minimum_confidence": preview.minimum_confidence,
+        "filters_auto": preview.filters_auto,
         "filters": { "binarize": preview.filters.binarize, "auto_invert": preview.filters.auto_invert, "sharpen": preview.filters.sharpen, "contrast": preview.filters.contrast, "filter_noise": preview.filter_noise },
         "original": preview.original,
         "translation": preview.translation,

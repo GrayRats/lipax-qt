@@ -124,13 +124,17 @@ async fn english_russian_and_japanese_are_read_and_auto_tune_finds_the_best_filt
                 readings.push((label, similarity, confidence, points));
             }
             let stats = FrameStats::of(&img);
-            report.push_str(&format!("{:14} {:10} frame: mean {:.0} entropy {:.2} bits{}\n", case.name, background, stats.mean, stats.entropy, if stats.is_noisy() { " (noisy)" } else { "" }));
+            // A tight crop of the text, as the in-place engine hands it to OCR: antialiased glyphs fill most of it.
+            let tight = img.crop_imm(30, 8, img.width().saturating_sub(60), img.height().saturating_sub(16));
+            let tight_stats = FrameStats::of(&tight);
+            report.push_str(&format!("{:14} {:10} frame: texture {:.2} entropy {:.2} bits{}; tight crop: texture {:.2}{}\n", case.name, background, stats.texture, stats.entropy, if stats.is_noisy() { " (noisy)" } else { "" }, tight_stats.texture, if tight_stats.is_noisy() { " (noisy)" } else { "" }));
+            assert_eq!(tight_stats.is_noisy(), background == "busy", "{} on {background}: a tight crop is classified wrongly (texture {:.2})\n{report}", case.name, tight_stats.texture);
             // The default settings: nothing switched on by hand, the program looks at the frame.
             let (auto_text, auto_confidence) = read_default(&img, case.language).await;
             let auto_similarity = similarity(&expected, &auto_text);
             report.push_str(&format!("{:14} {:10} {:24} similarity {:.2} confidence {:>3}  {}\n", case.name, background, "AUTOMATIC (defaults)", auto_similarity, auto_confidence.map_or("-".into(), |c| format!("{c:.0}")), auto_text.chars().take(48).collect::<String>()));
             assert!(auto_similarity >= 0.85, "{} on {background}: the default settings read it at {auto_similarity:.2}\n{report}", case.name);
-            assert_eq!(stats.is_noisy(), background == "busy", "{} on {background}: the frame is classified wrongly (entropy {:.2})", case.name, stats.entropy);
+            assert_eq!(stats.is_noisy(), background == "busy", "{} on {background}: the frame is classified wrongly (texture {:.2})", case.name, stats.texture);
             let best = pick_best(&readings.iter().map(|r| r.3).collect::<Vec<_>>());
             report.push_str(&format!("{:14} {:10} => auto-tune picks «{}»\n", case.name, background, readings[best].0));
             // The shipped default (no filters) reads clean text.

@@ -1,8 +1,7 @@
 use super::{Ocr, OcrError, OcrLine, OcrResult};
 use crate::settings::Settings;
-use image::{DynamicImage, ImageFormat};
+use image::DynamicImage;
 use std::{
-    io::Cursor,
     process::Stdio,
     sync::{Arc, Mutex as StdMutex},
     time::Duration,
@@ -88,7 +87,7 @@ fn reply_to_result(text: String, lines: Vec<ReplyLine>) -> OcrResult {
         confidence: (l.score * 100.0).clamp(0.0, 100.0),
     }).collect();
     let confidence = (!lines.is_empty()).then(|| lines.iter().map(|l| l.confidence).sum::<f32>() / lines.len() as f32);
-    OcrResult { text, lines, confidence, engine: "paddleocr" }
+    OcrResult { text, lines, confidence, engine: "paddleocr", ..OcrResult::default() }
 }
 
 impl Worker {
@@ -130,7 +129,9 @@ impl Worker {
         })
     }
 
-    async fn recognize(&mut self, png: &[u8]) -> Result<OcrResult, OcrError> {
+    /// One request. `Ok(Err(message))` is the worker answering that it could not read this picture: the process is fine
+    /// and is kept (starting it again loads the models, seconds of work); `Err` is a broken exchange.
+    async fn recognize(&mut self, png: &[u8]) -> Result<Result<OcrResult, String>, OcrError> {
         let size = u32::try_from(png.len()).map_err(setup)?;
         self.input
             .write_all(&size.to_be_bytes())
@@ -145,10 +146,10 @@ impl Worker {
         }
         let reply: Reply = serde_json::from_str(&line).map_err(setup)?;
         if let Some(error) = reply.error {
-            return Err(setup(error));
+            return Ok(Err(error));
         }
         let text = reply.text.ok_or_else(|| setup("ответ не содержит текста"))?;
-        Ok(reply_to_result(text, reply.lines))
+        Ok(Ok(reply_to_result(text, reply.lines)))
     }
 }
 
@@ -160,9 +161,9 @@ impl Ocr for PaddleOcr {
     async fn recognize_detailed(&self, img: &DynamicImage, settings: &Settings) -> Result<OcrResult, OcrError> {
         tracing::debug!(engine = "paddleocr", width = img.width(), height = img.height(), language = %settings.recognition.language, "Начало OCR");
         let language = language(&settings.recognition.language)?;
-        let mut png = Vec::new();
-        // Paddle's detector handles resizing; retain colour and original resolution.
-        img.write_to(&mut Cursor::new(&mut png), ImageFormat::Png)?;
+        // Paddle's detector handles resizing; colour and the original resolution are kept. Encoding is seconds of CPU on a
+        // large frame: not on the task that drives the pipeline.
+        let png = encode_png(img).await?;
         let mut slot = self.worker.lock().await;
         if !slot
             .as_ref()
@@ -177,19 +178,22 @@ impl Ocr for PaddleOcr {
         }
         // Own the worker across await: cancellation kills it instead of leaving a stale reply.
         let mut worker = slot.take().unwrap();
-        let result = tokio::time::timeout(
-            Duration::from_secs(120),
-            worker.recognize(&png),
-        )
-        .await
-        .unwrap_or_else(|_| {
-            Err(setup(
-                "превышено время ожидания (120 с); при первом запуске загружаются модели",
-            ))
-        });
-        if result.is_ok() { *slot = Some(worker); }
-        result
+        let exchange = tokio::time::timeout(Duration::from_secs(120), worker.recognize(&png)).await
+            .unwrap_or_else(|_| Err(setup("превышено время ожидания (120 с); при первом запуске загружаются модели")));
+        match exchange {
+            Ok(answer) => {
+                *slot = Some(worker);
+                answer.map_err(setup)
+            }
+            Err(e) => Err(e),
+        }
     }
+}
+
+async fn encode_png(img: &DynamicImage) -> Result<Vec<u8>, OcrError> {
+    let img = img.clone();
+    tokio::task::spawn_blocking(move || super::fast_png(&img)).await
+        .map_err(|e| OcrError::Failed(format!("подготовка кадра прервана: {e}")))?
 }
 
 #[cfg(test)]
@@ -226,15 +230,9 @@ for i in range(3):
     print(json.dumps({'text': 'Привет ' + str(i)} if i < 2 else {'error': 'model unavailable'}), flush=True)
 "#;
         let mut worker = Worker::spawn("python3", "en", script).unwrap();
-        assert_eq!(worker.recognize(b"image").await.unwrap().text, "Привет 0");
-        assert_eq!(worker.recognize(b"image").await.unwrap().text, "Привет 1");
-        assert!(
-            worker
-                .recognize(b"image")
-                .await
-                .unwrap_err()
-                .to_string()
-                .contains("model unavailable")
-        );
+        assert_eq!(worker.recognize(b"image").await.unwrap().unwrap().text, "Привет 0");
+        assert_eq!(worker.recognize(b"image").await.unwrap().unwrap().text, "Привет 1");
+        // The worker answering «cannot read this» is an answer, not a broken exchange: the process stays usable.
+        assert_eq!(worker.recognize(b"image").await.unwrap().unwrap_err(), "model unavailable");
     }
 }
