@@ -46,6 +46,20 @@ TestCase {
         compare([t.x, t.y, t.width, t.height], [6, 4, 488, 52], "inner padding from Rust")
     }
 
+    function test_overflowingTextIsCutToTheFieldNotSpilledOver() {
+        for (const wrap of ["word", "anywhere", "none", "elide"]) {
+            inplace.entry = Object.assign({}, baseEntry, { wrap: wrap, text: "Очень длинный перевод, который не помещается в поле оригинала. ".repeat(12), max_lines: 2 })
+            const t = child("inplaceText")
+            compare(t.elide, Text.ElideRight, wrap + ": cut with an ellipsis")
+            verify(t.clip, wrap + ": clipped to the field")
+            verify(child("inplaceBackground").clip, wrap + ": the plate is clipped too")
+            verify(t.x >= 0 && t.y >= 0 && t.x + t.width <= inplace.width && t.y + t.height <= inplace.height, wrap + ": the text box lies inside the window")
+        }
+        // The elided variant keeps to the lines Rust measured.
+        inplace.entry = Object.assign({}, baseEntry, { wrap: "elide", max_lines: 2, text: "слово ".repeat(200) })
+        compare(child("inplaceText").maximumLineCount, 2)
+    }
+
     function test_backgroundModes_data() {
         return [
             { tag: "solid", mode: "solid_fill", fill: true, image: false, shown: true },

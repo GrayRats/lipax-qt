@@ -88,13 +88,13 @@ pub struct AnyOcr {
 }
 
 impl AnyOcr {
-    async fn auto(&self, img: &DynamicImage, settings: &Settings) -> Result<OcrResult, OcrError> {
-        let first = Tesseract.run_detailed_with(img, &settings.recognition.language, filter::Preprocess::of(&settings.recognition)).await?;
+    async fn auto(&self, img: &DynamicImage, settings: &Settings, filters: filter::Preprocess) -> Result<OcrResult, OcrError> {
+        let first = Tesseract.run_detailed_with(img, &settings.recognition.language, filters).await?;
         // A result is good enough unless the engine itself is unsure.
         if first.confidence.is_none_or(|c| c >= AUTO_ACCEPT) { return Ok(first); }
         let down = self.paddle_down_until.lock().unwrap().is_some_and(|t| std::time::Instant::now() < t);
         if down { return Ok(first); }
-        match self.paddle.recognize_detailed(&filtered(img, filter::Preprocess::of(&settings.recognition)).await?, settings).await {
+        match self.paddle.recognize_detailed(&filtered(img, filters).await?, settings).await {
             Ok(second) if !second.text.trim().is_empty() && second.confidence.is_none_or(|c| c > first.confidence.unwrap_or(0.0)) => {
                 tracing::debug!(engine = "auto", tesseract = ?first.confidence, paddleocr = ?second.confidence, "OCR: PaddleOCR is more sure");
                 Ok(second)
@@ -119,13 +119,34 @@ impl Ocr for AnyOcr {
 
     async fn recognize_detailed(&self, img: &DynamicImage, settings: &Settings) -> Result<OcrResult, OcrError> {
         let r = &settings.recognition;
-        let result = match r.engine.as_str() {
-            "tesseract" => Tesseract.run_detailed_with(img, &r.language, filter::Preprocess::of(r)).await?,
-            "paddleocr" => self.paddle.recognize_detailed(&filtered(img, filter::Preprocess::of(r)).await?, settings).await?,
-            "auto" => self.auto(img, settings).await?,
-            _ => return Err(OcrError::UnknownEngine(r.engine.as_str().to_owned())),
-        };
-        Ok(filter::clean(result, r.minimum_confidence, r.filter_noise))
+        // Filters switched on by hand are used as they are; otherwise a noisy frame gets binarization with inversion.
+        let (filters, chosen_here) = filter::FilterPlan::of(r).resolve(img);
+        let floor = settings.effective_minimum_confidence();
+        let mut result = self.engine(img, settings, filters).await?;
+        // The program chose these filters, not the user: if the reading is empty or unsure, the frame as it is gets its chance.
+        if chosen_here && (result.text.trim().is_empty() || result.confidence.is_some_and(|c| floor > 0 && c < floor as f32)) {
+            match self.engine(img, settings, filter::Preprocess::default()).await {
+                Ok(raw) if filter::score(&raw) > filter::score(&result) => {
+                    tracing::debug!(target: "ocr.filters", automatic = ?filters, "automatic filters did not help: the raw frame is used");
+                    result = raw;
+                }
+                _ => {}
+            }
+        }
+        Ok(filter::clean(result, floor, r.filter_noise))
+    }
+}
+
+impl AnyOcr {
+    /// One reading with the engine of the settings and exactly these filters.
+    async fn engine(&self, img: &DynamicImage, settings: &Settings, filters: filter::Preprocess) -> Result<OcrResult, OcrError> {
+        let r = &settings.recognition;
+        match r.engine.as_str() {
+            "tesseract" => Tesseract.run_detailed_with(img, &r.language, filters).await,
+            "paddleocr" => self.paddle.recognize_detailed(&filtered(img, filters).await?, settings).await,
+            "auto" => self.auto(img, settings, filters).await,
+            _ => Err(OcrError::UnknownEngine(r.engine.as_str().to_owned())),
+        }
     }
 }
 
@@ -287,7 +308,7 @@ impl Ocr for Tesseract {
         if settings.recognition.engine != "tesseract" {
             return Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned()));
         }
-        let out = Self::run(img, &settings.recognition.language, filter::Preprocess::of(&settings.recognition), &[]).await?;
+        let out = Self::run(img, &settings.recognition.language, filter::FilterPlan::of(&settings.recognition).resolve(img).0, &[]).await?;
         Ok(String::from_utf8_lossy(&out).into_owned())
     }
 
@@ -296,7 +317,8 @@ impl Ocr for Tesseract {
             return Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned()));
         }
         let r = &settings.recognition;
-        Ok(filter::clean(self.run_detailed_with(img, &r.language, filter::Preprocess::of(r)).await?, r.minimum_confidence, r.filter_noise))
+        let (filters, _) = filter::FilterPlan::of(r).resolve(img);
+        Ok(filter::clean(self.run_detailed_with(img, &r.language, filters).await?, settings.effective_minimum_confidence(), r.filter_noise))
     }
 }
 

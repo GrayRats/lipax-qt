@@ -244,7 +244,8 @@ fn field_crops(frame: &image::DynamicImage, s: &Settings) -> Vec<image::DynamicI
 
 /// The frame as the engine sees it after the filters of the settings; `None` if none is on.
 fn filtered_frame(s: &Settings, frame: &image::DynamicImage) -> Option<image::RgbaImage> {
-    let filters = crate::ocr::filter::Preprocess::of(&s.recognition);
+    // What the engine will see, automatic choice included.
+    let (filters, _) = crate::ocr::filter::FilterPlan::of(&s.recognition).resolve(frame);
     (!filters.is_identity()).then(|| filters.apply(frame).to_rgba8())
 }
 
@@ -478,6 +479,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
             let mut candidate = s.clone();
             let r = &mut candidate.recognition;
             (r.binarize, r.auto_invert, r.contrast, r.sharpen) = (filters.binarize, filters.auto_invert, filters.contrast, filters.sharpen);
+            // Each candidate is exactly what it says: the automatic choice would turn «no filters» into something else.
+            r.auto_filters = false;
             // «auto» would start Python for every candidate; the filters are judged on the fast engine.
             if r.engine == "auto" { r.engine = "tesseract".into(); }
             async move {
@@ -493,6 +496,17 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
         tracing::debug!(target: "pipeline.autotune", elapsed_ms = started.elapsed().as_millis() as u64, best = results[best].name, scores = ?results.iter().map(|r| r.score).collect::<Vec<_>>(), fields = images.len(), "auto-tune finished");
         io.timings.record("autotune", started.elapsed());
         out.send(Event::AutoTune { region_id: region.id.clone(), results, best });
+    }
+
+    /// Marks the new settings as seen and, if they change what is recognised or shown, starts the pipeline over.
+    /// `true`: it was started over.
+    fn apply_settings_change(&mut self, settings: &mut watch::Receiver<Settings>, seen_key: &mut String) -> bool {
+        let key = settings.borrow_and_update().processing_key();
+        if key == *seen_key { return false; }
+        *seen_key = key;
+        tracing::debug!(target: "pipeline.settings", "settings changed: the pipeline starts over with the new ones");
+        self.reset();
+        true
     }
 
     /// How many transitions outside the state machine happened over the life of this pipeline.
@@ -512,11 +526,14 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
     /// settings of its tick, so an event from before a change can never look current: the
     /// receiver drops it. A cancelled tick already stops its own work; this covers the events
     /// that were sent but not yet delivered.
-    pub async fn run(mut self, settings: watch::Receiver<Settings>, mut running: watch::Receiver<bool>, mut cmds: mpsc::UnboundedReceiver<Cmd>,
+    pub async fn run(mut self, mut settings: watch::Receiver<Settings>, mut running: watch::Receiver<bool>, mut cmds: mpsc::UnboundedReceiver<Cmd>,
                      generation: Arc<AtomicU64>, out: mpsc::UnboundedSender<(u64, Event)>) {
         let mut ticker = tokio::time::interval(Duration::from_millis(100));
         ticker.set_missed_tick_behavior(MissedTickBehavior::Skip);
         let mut pending = None;
+        // What the running pipeline was built for: a change of any setting that decides what is recognised or shown
+        // (`Settings::processing_key`) starts it over, with or without a `Cmd::Reset` from the owner.
+        let mut seen_key = settings.borrow().processing_key();
         loop {
             let command = if let Some(c) = pending.take() { c } else {
                 tokio::select! {
@@ -527,14 +544,38 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
             };
             if command == Cmd::Reset { self.reset(); continue; }
             if command == Cmd::ReanalyzeFonts { self.reanalyze_fonts(); continue; }
+            // Settings are looked at before every frame, not only when the pipeline starts.
+            if settings.has_changed().unwrap_or(false) && self.apply_settings_change(&mut settings, &mut seen_key) {
+                if command != Cmd::TranslateOnce { continue; }
+            }
             let stamp = Stamped { tx: &out, generation: generation.load(Ordering::SeqCst) };
             let s = settings.borrow().clone();
             let _ = running.borrow_and_update();
-            tokio::select! {
-                biased;
-                c = cmds.recv() => { match c { Some(c) => pending = Some(c), None => break } },
-                changed = running.changed() => { if changed.is_err() { break; } },
-                _ = async { if command == Cmd::AutoTune { self.auto_tune(&s, &stamp).await } else { self.tick(&s, command == Cmd::TranslateOnce, Instant::now(), &stamp).await } } => {},
+            let (mut quit, mut restart) = (false, false);
+            {
+                let work = async { if command == Cmd::AutoTune { self.auto_tune(&s, &stamp).await } else { self.tick(&s, command == Cmd::TranslateOnce, Instant::now(), &stamp).await } };
+                tokio::pin!(work);
+                loop {
+                    tokio::select! {
+                        biased;
+                        c = cmds.recv() => { match c { Some(c) => pending = Some(c), None => quit = true } break },
+                        changed = running.changed() => { quit = changed.is_err(); break },
+                        // The settings change while a frame is being read. A change that decides what is recognised or
+                        // shown makes the reading one for settings that are gone: it is dropped. Any other (a colour,
+                        // a position) leaves it alone and the wait goes on.
+                        changed = settings.changed() => {
+                            if changed.is_err() { quit = true; break }
+                            let key = settings.borrow_and_update().processing_key();
+                            if key != seen_key { seen_key = key; restart = true; break }
+                        },
+                        _ = &mut work => break,
+                    }
+                }
+            }
+            if quit { break; }
+            if restart {
+                tracing::debug!(target: "pipeline.settings", "settings changed while a frame was being read: the reading is dropped, the pipeline starts over");
+                self.reset();
             }
         }
     }
@@ -645,7 +686,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     #[allow(clippy::too_many_arguments)]
     fn send_preview(&self, s: &Settings, region: &CaptureRegion, frame: &image::DynamicImage, boxes: Vec<PreviewBox>, original: String, translation: String, phase: Phase, out: &dyn Sink) {
         if !self.preview.load(Ordering::Relaxed) { return; }
-        let preview = OcrPreview { image: frame.to_rgba8(), filtered: filtered_frame(s, frame), minimum_confidence: s.recognition.minimum_confidence, filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase, timings: self.timings.summary() };
+        let preview = OcrPreview { image: frame.to_rgba8(), filtered: filtered_frame(s, frame), minimum_confidence: s.effective_minimum_confidence(), filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase, timings: self.timings.summary() };
         out.send(Event::OcrPreview { region_id: region.id.clone(), region_name: region.name.clone(), preview: Box::new(preview) });
     }
 
@@ -734,14 +775,14 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         state.stale = 0;
         self.timings.record("ocr", recognizing.elapsed());
         let original = text::normalize(&result.text);
-        let doubt = unsure(result.confidence, s.recognition.minimum_confidence);
+        let doubt = unsure(result.confidence, s.effective_minimum_confidence());
         if !text::is_meaningful(&original) || doubt.is_some() {
             state.enter(&region.id, Phase::WaitingFrame);
-            let note = doubt.map(|c| format!("отброшено: уверенность {c:.0}% ниже порога {}%", s.recognition.minimum_confidence));
+            let note = doubt.map(|c| format!("отброшено: уверенность {c:.0}% ниже порога {}%", s.effective_minimum_confidence()));
             self.send_preview(s, region, &frame, line_boxes(&result, (0, 0), note.as_deref()), original.clone(), String::new(), Phase::WaitingFrame, out);
             state.settle(region, out);
             match doubt {
-                Some(c) => { tracing::debug!(target: "pipeline.ocr", region = %region.id, confidence = c, min = s.recognition.minimum_confidence, "OCR ignored: low confidence"); self.status(&format!("OCR: низкая уверенность ({c:.0}%), текст пропущен"), out) }
+                Some(c) => { tracing::debug!(target: "pipeline.ocr", region = %region.id, confidence = c, min = s.effective_minimum_confidence(), "OCR ignored: low confidence"); self.status(&format!("OCR: низкая уверенность ({c:.0}%), текст пропущен"), out) }
                 None => self.status("OCR: текст не обнаружен", out),
             }
             return;
@@ -865,10 +906,10 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                 Ok(result) => {
                     let original = text::normalize(&result.text);
                     let (rect, origin) = origins.get(&id).copied().unwrap_or_default();
-                    if let Some(c) = unsure(result.confidence, s.recognition.minimum_confidence) {
+                    if let Some(c) = unsure(result.confidence, s.effective_minimum_confidence()) {
                         // The engine is not sure what it read: keep the field as it was, do not translate noise.
-                        tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, confidence = c, min = s.recognition.minimum_confidence, "OCR ignored: low confidence");
-                        let details = vec![format!("OCR ({}) отброшен: уверенность {c:.0}% ниже порога {}%", result.engine, s.recognition.minimum_confidence)];
+                        tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, confidence = c, min = s.effective_minimum_confidence(), "OCR ignored: low confidence");
+                        let details = vec![format!("OCR ({}) отброшен: уверенность {c:.0}% ниже порога {}%", result.engine, s.effective_minimum_confidence())];
                         state.ignored.insert(id, (now, PreviewBox { rect, original: original.clone(), translation: String::new(), details, block: None, confidence: result.confidence }));
                         newly_ignored = true;
                         engine.complete(id, None, s);
@@ -946,7 +987,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             let join = |f: fn(&PreviewBox) -> &str| boxes.iter().map(f).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("\n");
             let (original, translation) = (join(|b| &b.original), join(|b| &b.translation));
             let filtered = filtered_frame(s, &image::DynamicImage::ImageRgba8(image.clone()));
-            let preview = OcrPreview { image, filtered, minimum_confidence: s.recognition.minimum_confidence, filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase: state.phase, timings: self.timings.summary() };
+            let preview = OcrPreview { image, filtered, minimum_confidence: s.effective_minimum_confidence(), filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase: state.phase, timings: self.timings.summary() };
             out.send(Event::OcrPreview { region_id: region.id.clone(), region_name: region.name.clone(), preview: Box::new(preview) });
         }
         if let Some(frame) = result {
@@ -1357,6 +1398,54 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(600)).await;
         assert!(grabs.load(Ordering::SeqCst) > 0, "resumed: the window is read again");
         task.abort();
+    }
+
+    /// Records the filters and the threshold each reading was made with; a reading takes `delay` and is only
+    /// recorded if it is allowed to finish.
+    struct RecordingOcr { delay: Duration, finished: Arc<Mutex<Vec<(bool, u32)>>> }
+    impl Ocr for RecordingOcr {
+        async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok(String::new()) }
+        async fn recognize_detailed(&self, _: &DynamicImage, s: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
+            tokio::time::sleep(self.delay).await;
+            self.finished.lock().unwrap().push((s.recognition.binarize, s.recognition.minimum_confidence));
+            Ok(crate::ocr::OcrResult { text: "Some words here".into(), lines: Vec::new(), confidence: Some(90.0), engine: "mock" })
+        }
+    }
+
+    #[tokio::test]
+    async fn changed_settings_reach_the_next_frame_without_a_restart_and_drop_the_reading_in_progress() {
+        let finished = Arc::new(Mutex::new(Vec::new()));
+        let pipeline = Pipeline::new(MockCapture(Mutex::new(10)), RecordingOcr { delay: Duration::from_millis(500), finished: finished.clone() }, MockTr(Arc::new(AtomicUsize::new(0))));
+        let (settings_tx, settings_rx) = watch::channel(settings());
+        let (_running_tx, running_rx) = watch::channel(true);
+        let (_cmd_tx, cmd_rx) = mpsc::unbounded_channel();
+        let (ev_tx, _ev_rx) = mpsc::unbounded_channel();
+        let task = tokio::spawn(pipeline.run(settings_rx, running_rx, cmd_rx, Arc::default(), ev_tx));
+        // The first reading starts (debounce 100 ms) and is half way through when the filter is switched on. Nobody sends
+        // a `Cmd::Reset`: the pipeline notices the change itself.
+        tokio::time::sleep(Duration::from_millis(350)).await;
+        settings_tx.send_modify(|s| { s.recognition.binarize = true; s.recognition.minimum_confidence = 45; });
+        tokio::time::sleep(Duration::from_millis(1800)).await;
+        task.abort();
+        let readings = finished.lock().unwrap().clone();
+        assert!(!readings.is_empty(), "the pipeline went on reading");
+        assert!(readings.iter().all(|r| *r == (true, 45)), "no reading with the old settings reached its end: {readings:?}");
+    }
+
+    #[tokio::test]
+    async fn a_setting_that_does_not_affect_recognition_does_not_interrupt_a_reading() {
+        let finished = Arc::new(Mutex::new(Vec::new()));
+        let pipeline = Pipeline::new(MockCapture(Mutex::new(10)), RecordingOcr { delay: Duration::from_millis(400), finished: finished.clone() }, MockTr(Arc::new(AtomicUsize::new(0))));
+        let (settings_tx, settings_rx) = watch::channel(settings());
+        let (_running_tx, running_rx) = watch::channel(true);
+        let (_cmd_tx, cmd_rx) = mpsc::unbounded_channel();
+        let (ev_tx, _ev_rx) = mpsc::unbounded_channel();
+        let task = tokio::spawn(pipeline.run(settings_rx, running_rx, cmd_rx, Arc::default(), ev_tx));
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        settings_tx.send_modify(|s| s.translation_window.opacity = 0.5);
+        tokio::time::sleep(Duration::from_millis(700)).await;
+        task.abort();
+        assert!(!finished.lock().unwrap().is_empty(), "the reading in progress was not thrown away by a cosmetic change");
     }
 
     #[tokio::test]

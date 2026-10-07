@@ -655,6 +655,12 @@ TestCase {
             settings.set(key, false)
         }
         verify(findChild(settings, "filterNoise").checked, "noise removal is on by default")
+        const automatic = findChild(settings, "filterAuto")
+        verify(automatic !== null && automatic.checked, "the automatic choice is on by default")
+        automatic.checked = false
+        automatic.toggled()
+        compare(settings.current.recognition.auto_filters, false)
+        settings.set("recognition.auto_filters", true)
         const contrast = findChild(settings, "filterContrast")
         contrast.value = 40
         contrast.valueModified()

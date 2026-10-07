@@ -4,7 +4,7 @@
 //! `LIPAX_OCR_FULL=1` runs every language on every background with every filter preset (about a minute).
 
 use image::DynamicImage;
-use lipa_core::ocr::filter::{PRESETS, Preprocess, pick_best, score};
+use lipa_core::ocr::filter::{FrameStats, PRESETS, Preprocess, pick_best, score};
 use lipa_core::ocr::{AnyOcr, Ocr};
 use lipa_core::settings::Settings;
 use lipa_core::tesseract::TesseractManager;
@@ -70,11 +70,21 @@ fn squash(text: &str) -> String {
     normalize(text).chars().filter(|c| !c.is_whitespace()).collect()
 }
 
+/// A reading with the settings a new user has: no filter by hand, automatic choice on, the default threshold.
+async fn read_default(img: &DynamicImage, language: &str) -> (String, Option<f32>) {
+    let mut settings = Settings::default();
+    settings.recognition.language = language.into();
+    let result = AnyOcr::default().recognize_detailed(img, &settings).await.expect("tesseract runs");
+    (squash(&result.text), result.confidence)
+}
+
 /// Text, confidence and the auto-tune score of one reading with the given filters.
 async fn read(img: &DynamicImage, language: &str, filters: Preprocess) -> (String, Option<f32>, f32) {
     let mut settings = Settings::default();
     settings.recognition.language = language.into();
     settings.recognition.minimum_confidence = 0;
+    // Each preset is exactly what it says; the automatic choice is tested on its own below.
+    settings.recognition.auto_filters = false;
     (settings.recognition.binarize, settings.recognition.auto_invert, settings.recognition.contrast, settings.recognition.sharpen) =
         (filters.binarize, filters.auto_invert, filters.contrast, filters.sharpen);
     let result = AnyOcr::default().recognize_detailed(img, &settings).await.expect("tesseract runs");
@@ -113,6 +123,14 @@ async fn english_russian_and_japanese_are_read_and_auto_tune_finds_the_best_filt
                 report.push_str(&format!("{:14} {:10} {:24} similarity {:.2} confidence {:>3} score {:>5.0}  {}\n", case.name, background, label, similarity, confidence.map_or("-".into(), |c| format!("{c:.0}")), points, text.chars().take(48).collect::<String>()));
                 readings.push((label, similarity, confidence, points));
             }
+            let stats = FrameStats::of(&img);
+            report.push_str(&format!("{:14} {:10} frame: mean {:.0} entropy {:.2} bits{}\n", case.name, background, stats.mean, stats.entropy, if stats.is_noisy() { " (noisy)" } else { "" }));
+            // The default settings: nothing switched on by hand, the program looks at the frame.
+            let (auto_text, auto_confidence) = read_default(&img, case.language).await;
+            let auto_similarity = similarity(&expected, &auto_text);
+            report.push_str(&format!("{:14} {:10} {:24} similarity {:.2} confidence {:>3}  {}\n", case.name, background, "AUTOMATIC (defaults)", auto_similarity, auto_confidence.map_or("-".into(), |c| format!("{c:.0}")), auto_text.chars().take(48).collect::<String>()));
+            assert!(auto_similarity >= 0.85, "{} on {background}: the default settings read it at {auto_similarity:.2}\n{report}", case.name);
+            assert_eq!(stats.is_noisy(), background == "busy", "{} on {background}: the frame is classified wrongly (entropy {:.2})", case.name, stats.entropy);
             let best = pick_best(&readings.iter().map(|r| r.3).collect::<Vec<_>>());
             report.push_str(&format!("{:14} {:10} => auto-tune picks «{}»\n", case.name, background, readings[best].0));
             // The shipped default (no filters) reads clean text.

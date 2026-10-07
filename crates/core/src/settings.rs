@@ -480,7 +480,7 @@ pub const REACTIONS: &[(&str, Reaction)] = &{
         ("capture.window", Managed), ("capture.region", Managed),
         // Recognition and translation: the pipeline starts over.
         ("recognition.language", Pipeline), ("translation.target_language", Pipeline), ("translation.source_language", Pipeline), ("recognition.engine", Pipeline), ("recognition.paddle_python", Pipeline),
-        ("recognition.minimum_confidence", Pipeline), ("recognition.binarize", Pipeline), ("recognition.auto_invert", Pipeline), ("recognition.contrast", Pipeline), ("recognition.sharpen", Pipeline), ("recognition.filter_noise", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
+        ("recognition.minimum_confidence", Pipeline), ("recognition.binarize", Pipeline), ("recognition.auto_invert", Pipeline), ("recognition.contrast", Pipeline), ("recognition.sharpen", Pipeline), ("recognition.filter_noise", Pipeline), ("recognition.auto_filters", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
         ("translation.custom_url", Pipeline), ("capture.portal_fills_monitor", Pipeline), ("translation.custom_api_key", Pipeline), ("recognition.interval_ms", Pipeline), ("recognition.sensitivity", Pipeline),
         ("recognition.debounce_ms", Pipeline), ("display_mode", Pipeline), ("capture.regions", Pipeline),
         ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("general.theme", Immediate), ("general.autostart", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
@@ -662,6 +662,9 @@ pub struct TextRecognitionSettings {
     pub contrast: i32,
     pub sharpen: bool,
     pub filter_noise: bool,
+    /// With no filter switched on by hand, the frame is looked at and Otsu binarization with inversion is applied to
+    /// a noisy one (`ocr::filter::FilterPlan`); a clean frame is read as it is.
+    pub auto_filters: bool,
     pub interval_ms: u64,
     pub sensitivity: f32,
     pub debounce_ms: u64,
@@ -679,6 +682,7 @@ impl Default for TextRecognitionSettings {
             contrast: 0,
             sharpen: false,
             filter_noise: true,
+            auto_filters: true,
             interval_ms: 500,
             sensitivity: 2.0,
             debounce_ms: 400,
@@ -1082,6 +1086,12 @@ impl Settings {
             TranslationSourceLanguage::RecognitionLanguage => crate::translate::tess_to_iso(crate::tesseract::primary_lang(&self.recognition.language)),
             TranslationSourceLanguage::Explicit(language) => language,
         }
+    }
+
+    /// The confidence below which a reading is rejected: the configured threshold, raised to the CJK floor while a
+    /// Chinese, Japanese or Korean model is in use (their garbage on a textured background scores 28–30).
+    pub fn effective_minimum_confidence(&self) -> u32 {
+        crate::ocr::filter::effective_min_confidence(&self.recognition.language, self.recognition.minimum_confidence)
     }
 
     pub fn processing_key(&self) -> String {

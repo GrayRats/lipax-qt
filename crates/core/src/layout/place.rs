@@ -71,15 +71,17 @@ pub struct Placed {
     pub text_opacity: f32,
     pub background: PlacedBackground,
     pub font_selection: PlacedFont,
-    /// How the field was degraded to fit, if it was: `plain-plate` (a plain plate instead of the
-    /// restored background) or `beside-original` (a compact label next to the text it translates).
+    /// How the field was degraded to fit, if it was: `plain-plate` (a plain plate instead of the restored
+    /// background), `beside-original` (a compact label next to the text it translates) or `inside-original`
+    /// (the plate is the box of the original text and the translation is cut to it).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub degraded: Option<&'static str>,
 }
 
-/// A translation that could not be shown over the game at all: it goes to the translation window.
+/// A translation that could not be drawn over the game at all. It is not sent anywhere else: the in-place mode never
+/// opens the translation window. It is only counted, so the main window can say that something was left out.
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct FallbackText {
+pub struct DroppedText {
     pub region_id: String,
     pub block_id: u64,
     pub text: String,
@@ -91,7 +93,7 @@ pub struct FallbackText {
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct PlacementOutcome {
     pub placed: Vec<Placed>,
-    pub fallback: Vec<FallbackText>,
+    pub dropped: Vec<DroppedText>,
 }
 
 /// Область с её последним результатом движка.
@@ -275,6 +277,8 @@ fn chip_area(b: &InplaceBlock, side: Beside) -> Rect {
 
 /// Logical padding of the label's plate.
 const CHIP_PAD: f32 = 4.0;
+/// Logical padding of the plate that covers exactly the original text.
+const INSIDE_PAD: f32 = 2.0;
 
 /// Keeps what is already placed: a variant is taken only if the field it is meant for fits now and
 /// every field that fitted before still does.
@@ -286,10 +290,11 @@ fn accepted(trial: &[Candidate], before: &[Option<collision::Placement>], index:
 /// Размещает все поля всех областей. `window` — клиентская область окна игры на рабочем столе
 /// (логические пиксели). `images` — готовые URL подложек по (область, поле).
 ///
-/// Поле, которое не помещается без перекрытия, не пропадает: оно деградирует по ступеням —
-/// простая плашка вместо восстановленного фона, затем компактная плашка рядом с оригиналом,
-/// и только если и она не помещается, перевод уходит в окно перевода (`fallback`). Уже
-/// размещённые поля при этом не сдвигаются.
+/// Поле, которое не помещается без перекрытия, деградирует по ступеням: простая плашка вместо
+/// восстановленного фона, компактная плашка рядом с оригиналом, наконец плашка в границах самого
+/// оригинала, где перевод обрезается с многоточием. Если не помещается и она (дубль OCR на том же
+/// тексте), поле не показывается (`dropped`): в окно перевода «поверх оригинала» ничего не уходит.
+/// Уже размещённые поля при этом не сдвигаются.
 pub fn place_regions(regions: &[RegionInput], window: &WindowGeometry, settings: &InplaceSettings,
                      images: &HashMap<(String, u64), String>, measure: &dyn TextMeasure, cache: &mut PlacementCache) -> PlacementOutcome {
     struct Owner<'a> { region: &'a RegionInput<'a>, block: &'a InplaceBlock, map: FrameToDesktop, fitted: Fitted, image: Option<&'a str> }
@@ -297,14 +302,15 @@ pub fn place_regions(regions: &[RegionInput], window: &WindowGeometry, settings:
     let mut live = HashSet::new();
     let mut owners: Vec<Owner> = Vec::new();
     let mut candidates: Vec<Candidate> = Vec::new();
-    let mut fallback: Vec<FallbackText> = Vec::new();
+    let mut dropped: Vec<DroppedText> = Vec::new();
     for region in regions {
         let frame = region.frame.frame;
         // Where the region frame lies on the desktop: the only conversion between frame and desktop pixels.
         let map = FrameToDesktop::new(window, region.rect, frame);
         let scale = map.scale();
         for u in &region.frame.undrawable {
-            fallback.push(FallbackText { region_id: region.id.to_owned(), block_id: u.id, text: u.translation.clone(), original: u.original.clone(), reason: u.reason });
+            tracing::warn!(target: "inplace.fallback", block = u.id, reason = u.reason, "field cannot be drawn: left out (the translation window is not used in the in-place mode)");
+            dropped.push(DroppedText { region_id: region.id.to_owned(), block_id: u.id, text: u.translation.clone(), original: u.original.clone(), reason: u.reason });
         }
         for b in &region.frame.blocks {
             let key = (region.id.to_owned(), b.id);
@@ -379,13 +385,34 @@ pub fn place_regions(regions: &[RegionInput], window: &WindowGeometry, settings:
                 break;
             }
         }
+        if tiers[i].is_some() { continue; }
+        // 3. The box of the original itself: the translation is cut to it (elided), whatever its length.
+        let area = owner.block.text_rect;
+        let inner = [INSIDE_PAD; 4];
+        let fitted = fit_in(owner.block, area, inner, owner.map.scale(), measure);
+        let plate = owner.map.rect(&area);
+        let mut trial = candidates.clone();
+        trial[i] = Candidate {
+            text_rect: DesktopRect::in_space(plate.x + inner[0], plate.y + inner[1], (plate.w - 2.0 * INSIDE_PAD).max(1.0), (plate.h - 2.0 * INSIDE_PAD).max(1.0)),
+            background_rect: plate,
+            effect_margin: 0.0,
+            image_background: false,
+            allow_text_shift: false,
+            ..candidates[i].clone()
+        };
+        if let Some(after) = accepted(&trial, &results, i, bounds) {
+            candidates = trial;
+            results = after;
+            tiers[i] = Some("inside-original");
+            chip_fit[i] = Some(fitted);
+        }
     }
     let mut placed = Vec::with_capacity(owners.len());
     for (i, owner) in owners.iter().enumerate() {
         let Some(place) = results[i].as_ref() else {
-            // 3. Nothing fits: the translation is not lost, the translation window shows it.
-            tracing::warn!(target: "inplace.fallback", block = %candidates[i].id, "no room over the game: the translation goes to the translation window");
-            fallback.push(FallbackText { region_id: owner.region.id.to_owned(), block_id: owner.block.id, text: owner.block.translation.clone(),
+            // 4. Not even the box of the original is free (the same text read twice): the field is left out.
+            tracing::warn!(target: "inplace.fallback", block = %candidates[i].id, "no room over the game: the field is not shown");
+            dropped.push(DroppedText { region_id: owner.region.id.to_owned(), block_id: owner.block.id, text: owner.block.translation.clone(),
                 original: owner.block.original.clone(), reason: "для перевода нет места поверх игры" });
             continue;
         };
@@ -405,7 +432,7 @@ pub fn place_regions(regions: &[RegionInput], window: &WindowGeometry, settings:
         }
         placed.push(entry);
     }
-    PlacementOutcome { placed, fallback }
+    PlacementOutcome { placed, dropped }
 }
 
 #[cfg(test)]
@@ -475,7 +502,7 @@ mod tests {
                                    (Rect::new(500.0, 100.0, 200.0, 20.0), Rect::new(492.0, 92.0, 216.0, 36.0))]);
         let out = outcome(&frame);
         assert_eq!(out.placed.len(), 2);
-        assert!(out.fallback.is_empty() && out.placed.iter().all(|p| p.degraded.is_none()));
+        assert!(out.dropped.is_empty() && out.placed.iter().all(|p| p.degraded.is_none()));
     }
 
     #[test]
@@ -491,7 +518,7 @@ mod tests {
         assert_eq!(first.background.mode, BackgroundRenderMode::SolidFill);
         assert!(first.background.image.is_empty() && !first.outline);
         assert_eq!(out.placed[1].degraded, None, "the neighbour is untouched");
-        assert!(out.fallback.is_empty());
+        assert!(out.dropped.is_empty());
         let json = serde_json::to_value(first).unwrap();
         assert_eq!(json["degraded"], "plain-plate");
         assert!(serde_json::to_value(&out.placed[1]).unwrap().get("degraded").is_none(), "absent when not degraded");
@@ -519,16 +546,34 @@ mod tests {
     }
 
     #[test]
-    fn a_field_that_cannot_be_placed_anywhere_goes_to_the_translation_window() {
+    fn a_field_that_cannot_be_placed_anywhere_is_left_out_not_sent_to_a_window() {
         // Two fields on the same text (an OCR duplicate): the second cannot be drawn without covering the first.
         let frame = custom_frame(&[(Rect::new(100.0, 100.0, 200.0, 20.0), Rect::new(92.0, 92.0, 216.0, 36.0)),
                                    (Rect::new(110.0, 104.0, 200.0, 20.0), Rect::new(102.0, 96.0, 216.0, 36.0))]);
         let out = outcome(&frame);
         assert_eq!(out.placed.len(), 1, "the first stays");
         assert_eq!(out.placed[0].block_id, 1);
-        assert_eq!(out.fallback.len(), 1);
-        assert_eq!((out.fallback[0].block_id, out.fallback[0].text.as_str()), (2, "перевод 1"), "the translation is not lost");
-        assert!(out.fallback[0].reason.contains("нет места"));
+        assert_eq!(out.dropped.len(), 1, "the duplicate is counted, not shown anywhere");
+        assert_eq!(out.dropped[0].block_id, 2);
+        assert!(out.dropped[0].reason.contains("нет места"));
+    }
+
+    #[test]
+    fn a_translation_with_no_room_for_a_label_is_cut_to_the_original_box() {
+        // As above, but the places under and over the original are taken too: the only free place is the original's own box.
+        let mut frame = custom_frame(&[(Rect::new(100.0, 100.0, 200.0, 20.0), Rect::new(100.0, 100.0, 500.0, 20.0)),
+                                       (Rect::new(420.0, 100.0, 100.0, 20.0), Rect::new(412.0, 92.0, 116.0, 36.0)),
+                                       (Rect::new(100.0, 124.0, 150.0, 20.0), Rect::new(96.0, 124.0, 158.0, 24.0)),
+                                       (Rect::new(100.0, 70.0, 150.0, 20.0), Rect::new(96.0, 66.0, 158.0, 28.0))]);
+        frame.blocks[0].style.padding_manual = true;
+        frame.blocks[0].style.padding = crate::layout::Padding::uniform(0.0);
+        let out = outcome(&frame);
+        assert_eq!((out.placed.len(), out.dropped.len()), (4, 0), "everything is drawn over the game, nothing goes to a window");
+        let cut = &out.placed[0];
+        assert_eq!(cut.degraded, Some("inside-original"));
+        let [x, y, w, h] = cut.box_rect;
+        let (px, py, pw, ph) = (x * 1200.0, y * 400.0, w * 1200.0, h * 400.0);
+        assert!((px - 100.0).abs() < 0.5 && (py - 100.0).abs() < 0.5 && (pw - 200.0).abs() < 0.5 && (ph - 20.0).abs() < 0.5, "exactly the box of the original text: {px} {py} {pw} {ph}");
     }
 
     #[test]
@@ -545,12 +590,12 @@ mod tests {
     }
 
     #[test]
-    fn undrawable_fields_are_handed_to_the_translation_window() {
+    fn undrawable_fields_are_counted_not_handed_to_a_window() {
         let mut frame = custom_frame(&[(Rect::new(100.0, 100.0, 200.0, 20.0), Rect::new(92.0, 92.0, 216.0, 36.0))]);
         frame.undrawable.push(crate::layout::engine::UndrawableField { id: 9, original: "src".into(), translation: "текст".into(), reason: "нет встроенного шрифта с нужными глифами" });
         let out = outcome(&frame);
-        assert_eq!((out.placed.len(), out.fallback.len()), (1, 1));
-        assert_eq!((out.fallback[0].block_id, out.fallback[0].text.as_str()), (9, "текст"));
+        assert_eq!((out.placed.len(), out.dropped.len()), (1, 1));
+        assert_eq!((out.dropped[0].block_id, out.dropped[0].text.as_str()), (9, "текст"));
     }
 
     #[test]

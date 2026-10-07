@@ -60,6 +60,7 @@ Window {
         id: backgroundItem
         objectName: "inplaceBackground"
         anchors.fill: parent
+        clip: true
         visible: win.bg.mode !== "transparent"
         // Inpaint + blur: a small reconstructed image stretched with smoothing.
         Image {
@@ -145,7 +146,7 @@ Window {
             : win.entry.wrap === "anywhere" ? Text.WrapAnywhere
             : win.entry.wrap === "none" ? Text.NoWrap : Text.Wrap
         // Explicit overflow fallback: never drawn outside the field.
-        elide: win.entry && win.entry.wrap === "elide" ? Text.ElideRight : Text.ElideNone
+        elide: Text.ElideRight
         maximumLineCount: win.entry && win.entry.wrap === "elide" ? win.entry.max_lines : 10000
         clip: true
         horizontalAlignment: !win.entry ? Text.AlignHCenter

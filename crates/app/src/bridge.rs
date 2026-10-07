@@ -959,7 +959,7 @@ impl qobject::Controller {
             None => Default::default(),
         };
         tracing::debug!(target: "inplace.render", geometry = window.is_some(), regions = frames.len(), placed = placed.placed.len(),
-            fallback = placed.fallback.len(), degraded = placed.placed.iter().filter(|p| p.degraded.is_some()).count(), "in-place fields published");
+            dropped = placed.dropped.len(), degraded = placed.placed.iter().filter(|p| p.degraded.is_some()).count(), "in-place fields published");
         let fallback = fallback_json(&placed, &regions);
         if self.inplace_fallback_json().to_string() != fallback {
             self.as_mut().set_inplace_fallback_json(QString::from(fallback.as_str()));
@@ -1438,11 +1438,11 @@ fn effective_display(s: &Settings) -> (&'static str, String) {
     if availability.available { ("inplace", String::new()) } else { ("window", availability.reason) }
 }
 
-/// What did not go over the game as planned, for the translation window and the note in the main window.
+/// What did not go over the game as planned, for the note in the main window. Nothing here is shown in another window.
 fn fallback_json(outcome: &lipa_core::layout::place::PlacementOutcome, regions: &[lipa_core::settings::CaptureRegion]) -> String {
     let name = |id: &str| regions.iter().find(|r| r.id == id).map_or_else(|| id.to_owned(), |r| r.name.clone());
-    let texts: Vec<serde_json::Value> = outcome.fallback.iter().map(|f| serde_json::json!({ "region": name(&f.region_id), "text": f.text, "reason": f.reason })).collect();
-    serde_json::json!({ "texts": texts, "degraded": outcome.placed.iter().filter(|p| p.degraded.is_some()).count() }).to_string()
+    let texts: Vec<serde_json::Value> = outcome.dropped.iter().map(|f| serde_json::json!({ "region": name(&f.region_id), "text": f.text, "reason": f.reason })).collect();
+    serde_json::json!({ "dropped": texts, "degraded": outcome.placed.iter().filter(|p| p.degraded.is_some()).count() }).to_string()
 }
 
 /// Возможности способа захвата выбранного окна для QML; без окна — как у KWin (ограничений нет).
@@ -1692,14 +1692,15 @@ mod display_tests {
     }
 
     #[test]
-    fn translations_without_room_reach_the_translation_window_with_their_region_names() {
-        use lipa_core::layout::place::{FallbackText, PlacementOutcome};
+    fn fields_left_out_are_reported_for_the_note_only() {
+        use lipa_core::layout::place::{DroppedText, PlacementOutcome};
         let regions = vec![lipa_core::settings::CaptureRegion { id: "dialogue".into(), name: "Диалоги".into(), ..Default::default() }];
         let none = serde_json::from_str::<serde_json::Value>(&fallback_json(&PlacementOutcome::default(), &regions)).unwrap();
-        assert_eq!((none["texts"].as_array().map(Vec::len), none["degraded"].as_u64()), (Some(0), Some(0)), "nothing to report: the note stays hidden");
-        let outcome = PlacementOutcome { placed: Vec::new(), fallback: vec![FallbackText { region_id: "dialogue".into(), block_id: 3, text: "Привет".into(), original: "Hello".into(), reason: "для перевода нет места поверх игры" }] };
+        assert_eq!((none["dropped"].as_array().map(Vec::len), none["degraded"].as_u64()), (Some(0), Some(0)), "nothing to report: the note stays hidden");
+        assert!(none.get("texts").is_none(), "no texts for another window");
+        let outcome = PlacementOutcome { placed: Vec::new(), dropped: vec![DroppedText { region_id: "dialogue".into(), block_id: 3, text: "Привет".into(), original: "Hello".into(), reason: "для перевода нет места поверх игры" }] };
         let shown = serde_json::from_str::<serde_json::Value>(&fallback_json(&outcome, &regions)).unwrap();
-        assert_eq!((shown["texts"][0]["region"].as_str(), shown["texts"][0]["text"].as_str()), (Some("Диалоги"), Some("Привет")));
+        assert_eq!((shown["dropped"][0]["region"].as_str(), shown["dropped"][0]["text"].as_str()), (Some("Диалоги"), Some("Привет")));
     }
 
     #[test]

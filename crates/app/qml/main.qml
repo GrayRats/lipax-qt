@@ -186,20 +186,18 @@ ApplicationWindow {
     }
     RegionSelector { id: regionWin; controller: ctl }
     FrameOverlay { id: selectionFrame; settings: settingsWin.current }
-    // What could not be shown over the game as planned (see Controller.inplaceFallbackJson): translations
-    // without room go to the translation window, even in the "over the original" mode.
+    // What could not be shown over the game as planned (see Controller.inplaceFallbackJson). The "over the original"
+    // mode never uses the translation window: such fields are simplified or left out, and the note below says so.
     readonly property var inplaceFallback: { try { return JSON.parse(ctl.inplaceFallbackJson || "{}") } catch (e) { return ({}) } }
-    readonly property var fallbackTexts: inplaceFallback.texts || []
+    readonly property int droppedFields: (inplaceFallback.dropped || []).length
     readonly property int degradedFields: inplaceFallback.degraded || 0
-    readonly property string fallbackText: fallbackTexts.map(f => fallbackTexts.length > 1 ? f.region + ": " + f.text : f.text).join("\n\n")
-    readonly property bool fallbackShown: inplaceActive && ctl.inplaceVisible && ctl.overlayAllowed && fallbackText.length > 0
     TranslationWindow {
         id: translationWindow
         controller: ctl
-        translation: root.windowActive ? ctl.translation : root.fallbackText
-        original: root.windowActive ? ctl.original : ""
+        translation: ctl.translation
+        original: ctl.original
         gameGeometry: ctl.gameGeometry
-        shown: !root.closingDown && ((root.windowActive && ctl.translationWindowVisible && ctl.overlayAllowed && ctl.translation.length > 0) || root.fallbackShown)
+        shown: !root.closingDown && ((root.windowActive && ctl.translationWindowVisible && ctl.overlayAllowed && ctl.translation.length > 0))
         settings: settingsWin.current
         // Pin state and the pinned placement are decided in Rust (pinned lands where floating was).
         onPinToggled: (p) => ctl.setTranslationWindowPinned(p, "mmb")
@@ -308,14 +306,14 @@ ApplicationWindow {
         Label {
             objectName: "fallbackNote"
             Layout.fillWidth: true
-            visible: root.inplaceActive && (root.degradedFields > 0 || root.fallbackTexts.length > 0)
+            visible: root.inplaceActive && (root.degradedFields > 0 || root.droppedFields > 0)
             wrapMode: Text.Wrap
             color: "#ffc23d"
             font.pixelSize: 12
             text: "Не все поля удалось показать поверх исходного текста"
-                + (root.degradedFields > 0 ? ": упрощено — " + root.degradedFields : "")
-                + (root.fallbackTexts.length > 0 ? (root.degradedFields > 0 ? ", " : ": ") + "в окне перевода — " + root.fallbackTexts.length : "")
-                + ". Причина — нет места без перекрытия соседнего текста."
+                + (root.degradedFields > 0 ? ": упрощено или обрезано — " + root.degradedFields : "")
+                + (root.droppedFields > 0 ? (root.degradedFields > 0 ? ", " : ": ") + "не показано — " + root.droppedFields : "")
+                + ". Причина — нет места без перекрытия соседнего текста; в окно перевода текст не переносится."
         }
         Label { text: "Оригинал"; font.bold: true }
         ScrollView {

@@ -121,6 +121,93 @@ pub fn clean(mut result: OcrResult, min_confidence: u32, filter_noise: bool) -> 
     result
 }
 
+/// A reading below this confidence is rejected while a CJK model is active, whatever the configured value (unless it
+/// is 0 = no check). Garbage from a textured background scores 28–30 there, which the default 30 lets through.
+pub const CJK_MIN_CONFIDENCE: u32 = 38;
+
+/// Tesseract (`jpn`, `chi_sim`, `kor`, `jpn+eng`, …) and PaddleOCR (`japan`, `ch`, `korean`, …) language codes of Chinese,
+/// Japanese and Korean. A combination counts if any of its parts does.
+pub fn is_cjk_language(language: &str) -> bool {
+    language.split('+').map(str::trim).any(|part| {
+        let part = part.to_ascii_lowercase();
+        ["jpn", "chi", "kor", "japan", "korean", "ch", "zh", "ja", "ko"].iter().any(|code| part == *code || part.strip_prefix(code).is_some_and(|rest| rest.starts_with('_') || rest.starts_with('-')))
+    })
+}
+
+/// The threshold in force: `configured`, raised to `CJK_MIN_CONFIDENCE` for a CJK language; 0 stays 0.
+pub fn effective_min_confidence(language: &str, configured: u32) -> u32 {
+    if configured > 0 && is_cjk_language(language) { configured.max(CJK_MIN_CONFIDENCE) } else { configured }
+}
+
+/// What a frame looks like before any filter: brightness and how many different levels it uses.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FrameStats {
+    /// Mean luminance, 0–255.
+    pub mean: f32,
+    /// Shannon entropy of the luminance histogram in bits (0–8). Text on a flat background uses two or three
+    /// levels (low); a gradient with a texture behind it uses many (high).
+    pub entropy: f32,
+}
+
+/// At most this many pixels are looked at, whatever the size of the frame.
+const STATS_SAMPLES: u32 = 40_000;
+/// An entropy above this is a noisy background (flat ones measure below 3 bits in `tests/ocr_languages.rs`).
+pub const NOISY_ENTROPY: f32 = 4.0;
+
+impl FrameStats {
+    pub fn of(img: &DynamicImage) -> Self {
+        let (w, h) = (img.width().max(1), img.height().max(1));
+        let step = (((w as u64 * h as u64) / STATS_SAMPLES as u64) as f32).sqrt().ceil().max(1.0) as u32;
+        let mut hist = [0u32; 256];
+        let mut count = 0u32;
+        let mut sum = 0u64;
+        let mut y = 0;
+        while y < h {
+            let mut x = 0;
+            while x < w {
+                let [r, g, b, _] = image::GenericImageView::get_pixel(img, x, y).0;
+                let luma = ((r as u32 * 77 + g as u32 * 150 + b as u32 * 29) >> 8) as usize;
+                hist[luma.min(255)] += 1;
+                sum += luma as u64;
+                count += 1;
+                x += step;
+            }
+            y += step;
+        }
+        let n = count.max(1) as f32;
+        let entropy = hist.iter().filter(|&&c| c > 0).map(|&c| { let p = c as f32 / n; -p * p.log2() }).sum();
+        Self { mean: sum as f32 / n, entropy }
+    }
+
+    pub fn is_noisy(&self) -> bool {
+        self.entropy > NOISY_ENTROPY
+    }
+}
+
+/// How the filters of a reading are decided: the ones switched on by hand win; otherwise, with `auto`, a noisy
+/// frame gets Otsu binarization with inversion (inversion itself acts only on a dark frame) and a clean one none.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FilterPlan {
+    pub manual: Preprocess,
+    pub auto: bool,
+}
+
+impl FilterPlan {
+    pub fn of(r: &TextRecognitionSettings) -> Self {
+        Self { manual: Preprocess::of(r), auto: r.auto_filters }
+    }
+
+    /// The filters for `img`, and whether they were chosen by the program (so the reading may be checked against the raw frame).
+    pub fn resolve(&self, img: &DynamicImage) -> (Preprocess, bool) {
+        if !self.manual.is_identity() || !self.auto { return (self.manual, false); }
+        if FrameStats::of(img).is_noisy() {
+            (Preprocess { binarize: true, auto_invert: true, ..Preprocess::default() }, true)
+        } else {
+            (Preprocess::default(), false)
+        }
+    }
+}
+
 /// The combinations tried by auto-tuning, in the order of preference: on a tie the earlier one wins.
 pub const PRESETS: [(&str, Preprocess); 6] = [
     ("Без фильтров", Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }),
@@ -272,5 +359,63 @@ mod tests {
     fn presets_start_with_no_filters_and_are_all_different() {
         assert!(PRESETS[0].1.is_identity());
         for (i, (_, a)) in PRESETS.iter().enumerate() { for (_, b) in &PRESETS[i + 1..] { assert_ne!(a, b); } }
+    }
+
+    #[test]
+    fn cjk_languages_are_recognised_in_tesseract_and_paddle_codes() {
+        for cjk in ["jpn", "jpn_vert", "chi_sim", "chi_tra", "kor", "jpn+eng", "eng+kor", "japan", "korean", "ch", "zh", "ja", "ko"] {
+            assert!(is_cjk_language(cjk), "{cjk}");
+        }
+        for other in ["eng", "rus", "deu", "eng+rus", "chr", "kan", "khm", "fra", "osd", ""] {
+            assert!(!is_cjk_language(other), "{other}");
+        }
+    }
+
+    #[test]
+    fn the_threshold_is_raised_only_for_cjk_and_only_when_it_is_on() {
+        assert_eq!(effective_min_confidence("eng", 30), 30);
+        assert_eq!(effective_min_confidence("jpn", 30), CJK_MIN_CONFIDENCE);
+        assert_eq!(effective_min_confidence("eng+chi_sim", 30), CJK_MIN_CONFIDENCE);
+        assert_eq!(effective_min_confidence("jpn", 50), 50, "a higher choice of the user stays");
+        assert_eq!(effective_min_confidence("jpn", 0), 0, "0 switches the check off");
+        assert!((35..=40).contains(&CJK_MIN_CONFIDENCE));
+    }
+
+    fn noisy_frame() -> DynamicImage {
+        let mut state = 12345u32;
+        let img = image::RgbaImage::from_fn(200, 80, |x, y| {
+            state = state.wrapping_mul(1664525).wrapping_add(1013904223);
+            let v = (70.0 + 25.0 * ((x as f32) / 9.0 + (y as f32) / 5.0).sin() + ((state >> 24) % 40) as f32 - 20.0) as u8;
+            image::Rgba([v, v, v.saturating_add(20), 255])
+        });
+        DynamicImage::ImageRgba8(img)
+    }
+
+    fn clean_frame() -> DynamicImage {
+        let mut img = image::RgbaImage::from_pixel(200, 80, image::Rgba([22, 26, 36, 255]));
+        for x in 40..160 { for y in 30..44 { img.put_pixel(x, y, image::Rgba([240, 240, 240, 255])); } }
+        DynamicImage::ImageRgba8(img)
+    }
+
+    #[test]
+    fn a_flat_frame_is_clean_and_a_textured_one_is_noisy() {
+        let (clean, noisy) = (FrameStats::of(&clean_frame()), FrameStats::of(&noisy_frame()));
+        assert!(!clean.is_noisy() && clean.entropy < 2.0, "{clean:?}");
+        assert!(noisy.is_noisy() && noisy.entropy > 5.0, "{noisy:?}");
+        assert!(clean.mean < 80.0, "dark frame: {clean:?}");
+        let big = DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(3840, 2160, image::Rgba([10, 10, 10, 255])));
+        assert!(FrameStats::of(&big).entropy < 0.01, "a large frame is sampled, not walked through");
+    }
+
+    #[test]
+    fn automatic_filters_apply_to_noise_only_and_never_override_the_users_choice() {
+        let auto = FilterPlan { manual: Preprocess::default(), auto: true };
+        assert_eq!(auto.resolve(&clean_frame()), (Preprocess::default(), false), "clean text is read as it is");
+        let (filters, chosen) = auto.resolve(&noisy_frame());
+        assert!(chosen && filters.binarize && filters.auto_invert && filters.contrast == 0 && !filters.sharpen, "{filters:?}");
+        let off = FilterPlan { manual: Preprocess::default(), auto: false };
+        assert_eq!(off.resolve(&noisy_frame()), (Preprocess::default(), false), "switched off");
+        let by_hand = Preprocess { sharpen: true, ..Preprocess::default() };
+        assert_eq!(FilterPlan { manual: by_hand, auto: true }.resolve(&noisy_frame()), (by_hand, false), "the user's filters win");
     }
 }

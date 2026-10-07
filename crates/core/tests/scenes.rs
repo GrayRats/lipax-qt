@@ -72,7 +72,7 @@ fn scene_quality_thresholds() {
         let placed = place_regions(&[region], &WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64]),
             &settings().appearance.inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default());
         assert_eq!(placed.placed.len(), expect.fields, "{scene}: translated fields fit without collisions");
-        assert!(placed.fallback.is_empty(), "{scene}: nothing is sent to the translation window");
+        assert!(placed.dropped.is_empty(), "{scene}: nothing is sent to the translation window");
         assert!(placed.placed.iter().all(|p| p.degraded.is_none()), "{scene}: a scene that fits is not degraded: {:?}", placed.placed.iter().map(|p| p.degraded).collect::<Vec<_>>());
     }
     assert!(correct_style * 10 >= total_style * 9,
