@@ -58,7 +58,7 @@ LipaX — переводчик игрового текста для KDE Plasma 6
 | `layout/dto.rs` | `TextLine`, `TextBlock`, `TextBlockId`: данные поля для инспектора (JSON) |
 | `layout/units.rs` | типизированные координаты: `Rect<FramePx\|CropPx\|DesktopPx>`, `FrameToDesktop`, `LogicalScale` |
 | `layout/` | движок «поверх исходного текста»: поиск и отслеживание полей, выбор встроенного шрифта, типографика, фон, подгонка и проверка коллизий |
-| `translate/`, `cache.rs` | Google, Yandex, совместимый API, LRU переводов |
+| `translate/`, `cache.rs` | Google, Yandex, совместимый API, DeepL, Microsoft Translator, локальный Bergamot, LRU переводов |
 | `history.rs`, `diagnostics.rs`, `hotkeys.rs` | история, проверка зависимостей, KGlobalAccel |
 | `crates/app/src/bridge.rs` | QObject Controller, очередь событий Rust → GUI, сохранение состояния |
 | `qml/TranslationWindow.qml`, `qml/TranslationWindowContent.qml` | общий контроллер и содержимое окна перевода |
@@ -70,6 +70,14 @@ LipaX — переводчик игрового текста для KDE Plasma 6
 | `crates/app/src/app_icon.h` | иконка, KWindowEffects blur, область ввода Wayland, буфер обмена |
 
 GUI работает в потоке Qt, захват, процессы OCR и сеть — в Tokio. Ядро не зависит от Qt.
+DeepL и Microsoft Translator используют общий асинхронный HTTP-клиент с таймаутом 10 с.
+Ключи задаются в настройках или через `DEEPL_API_KEY` и `MICROSOFT_TRANSLATOR_API_KEY`;
+регион Azure — через настройки или `MICROSOFT_TRANSLATOR_REGION`. При ошибке этих
+провайдеров запрос переходит на Google Translate (кроме отсутствующего ключа). Кэш
+перевода разделён по сервисам, ответ fallback хранится под ключом Google.
+Локальный Bergamot запускается как нативный CLI в Tokio с таймаутом 45 с; модель
+выбирается по паре языков из каталога конфигураций. При его ошибке сетевой fallback
+не запускается. Установка и ограничения описаны в [Bergamot.md](Bergamot.md).
 QML использует `org.kde.layershell`; blur отдельного окна перевода использует KF6WindowSystem.
 
 ## Области и pipeline

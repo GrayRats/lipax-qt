@@ -102,7 +102,12 @@ impl AnyOcr {
         if first.confidence.is_none_or(|c| c >= AUTO_ACCEPT) { return Ok(first); }
         let down = self.paddle_down_until.lock().unwrap().is_some_and(|t| std::time::Instant::now() < t);
         if down { return Ok(first); }
-        match self.paddle.recognize_detailed(&filtered(img, filters).await?, settings).await {
+        let second = if filters.is_identity() {
+            self.paddle.recognize_detailed(img, settings).await
+        } else {
+            self.paddle.recognize_detailed(&filtered(img, filters).await?, settings).await
+        };
+        match second {
             Ok(second) if !second.text.trim().is_empty() && second.confidence.is_none_or(|c| c > first.confidence.unwrap_or(0.0)) => {
                 tracing::debug!(engine = "auto", tesseract = ?first.confidence, paddleocr = ?second.confidence, "OCR: PaddleOCR is more sure");
                 Ok(second)
@@ -170,6 +175,7 @@ impl AnyOcr {
         let r = &settings.recognition;
         match r.engine.as_str() {
             "tesseract" => Tesseract.run_detailed_with(img, &r.language, filters).await,
+            "paddleocr" if filters.is_identity() => self.paddle.recognize_detailed(img, settings).await,
             "paddleocr" => self.paddle.recognize_detailed(&filtered(img, filters).await?, settings).await,
             "auto" => self.auto(img, settings, filters).await,
             _ => Err(OcrError::UnknownEngine(r.engine.as_str().to_owned())),
@@ -191,7 +197,8 @@ fn explain(raw: String, lang: &str, spawn_failed: bool) -> Option<OcrError> {
 
 /// Увеличение 2x и градации серого повышают точность на мелком игровом тексте.
 pub fn preprocess(img: &DynamicImage) -> DynamicImage {
-    img.resize_exact(img.width() * 2, img.height() * 2, FilterType::Lanczos3).grayscale()
+    // Resize one grayscale channel instead of three/four colour channels.
+    img.grayscale().resize_exact(img.width() * 2, img.height() * 2, FilterType::Lanczos3)
 }
 
 /// Filters, enlargement and PNG encoding are seconds of CPU on a large frame: they run on a blocking-pool thread, not on

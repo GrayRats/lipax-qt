@@ -46,7 +46,7 @@ ApplicationWindow {
         const i = list.findIndex(c => c.value === value)
         return i < 0 ? fallback : i
     }
-    readonly property var translators: ["google", "yandex", "custom"]
+    readonly property var translators: ["google", "yandex", "custom", "deepl", "microsoft", "bergamot"]
     readonly property var backends: ["auto", "kwin", "portal"]
     readonly property var langs: ["eng", "rus", "jpn", "deu", "fra", "spa", "ita", "por", "kor", "chi_sim", "ukr", "pol"]
     readonly property var targets: ["ru", "en", "uk", "de", "fr", "es", "it", "pt", "ja", "ko", "zh", "pl"]
@@ -1673,7 +1673,7 @@ ApplicationWindow {
                     id: tr
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
-                    model: ["Google Translate", "Yandex Translate", "Свой API"]
+                    model: ["Google Translate", "Yandex Translate", "Свой API", "DeepL", "Microsoft Translator", "Bergamot (локально)"]
                     currentIndex: Math.max(0, win.translators.indexOf(win.current.translation.service))
                     onActivated: win.set("translation.service", win.translators[currentIndex])
                 }
@@ -1723,6 +1723,65 @@ ApplicationWindow {
                     echoMode: TextInput.Password
                     text: win.current.translation.custom_api_key || ""
                     onEditingFinished: win.set("translation.custom_api_key", text)
+                }
+                FieldLabel {
+                    text: "DeepL API-ключ"
+                    visible: tr.currentIndex === 3
+                }
+                TextField {
+                    visible: tr.currentIndex === 3
+                    Layout.fillWidth: true
+                    echoMode: TextInput.Password
+                    placeholderText: "Можно задать DEEPL_API_KEY"
+                    text: win.current.translation.deepl_api_key || ""
+                    onEditingFinished: win.set("translation.deepl_api_key", text)
+                }
+                FieldLabel {
+                    text: "Microsoft Translator API-ключ"
+                    visible: tr.currentIndex === 4
+                }
+                TextField {
+                    visible: tr.currentIndex === 4
+                    Layout.fillWidth: true
+                    echoMode: TextInput.Password
+                    placeholderText: "Можно задать MICROSOFT_TRANSLATOR_API_KEY"
+                    text: win.current.translation.microsoft_api_key || ""
+                    onEditingFinished: win.set("translation.microsoft_api_key", text)
+                }
+                FieldLabel {
+                    text: "Регион Azure (для регионального ресурса)"
+                    visible: tr.currentIndex === 4
+                }
+                TextField {
+                    visible: tr.currentIndex === 4
+                    Layout.fillWidth: true
+                    placeholderText: "Можно задать MICROSOFT_TRANSLATOR_REGION"
+                    text: win.current.translation.microsoft_region || ""
+                    onEditingFinished: win.set("translation.microsoft_region", text)
+                }
+                FieldLabel {
+                    text: "Bergamot: путь к CLI"
+                    visible: tr.currentIndex === 5
+                    helpText: "Нативный исполняемый файл bergamot. Пустое поле означает поиск в PATH или BERGAMOT_BINARY."
+                }
+                TextField {
+                    visible: tr.currentIndex === 5
+                    Layout.fillWidth: true
+                    placeholderText: "bergamot"
+                    text: win.current.translation.bergamot_binary || ""
+                    onEditingFinished: win.set("translation.bergamot_binary", text)
+                }
+                FieldLabel {
+                    text: "Bergamot: каталог моделей"
+                    visible: tr.currentIndex === 5
+                    helpText: "Каталог с конфигурациями пар en-ru.yml, ja-ru.yml и так далее. Можно задать BERGAMOT_MODELS_DIR."
+                }
+                TextField {
+                    visible: tr.currentIndex === 5
+                    Layout.fillWidth: true
+                    placeholderText: "/путь/к/bergamot-models"
+                    text: win.current.translation.bergamot_models_dir || ""
+                    onEditingFinished: win.set("translation.bergamot_models_dir", text)
                 }
                 FieldLabel {
                     text: "Автоматический перевод"

@@ -1,4 +1,6 @@
-//! Движки перевода: Google (gtx, без ключа), Yandex Cloud Translate v2, свой API.
+//! Движки перевода: Google, Yandex, свой API, DeepL, Microsoft и локальный Bergamot.
+
+pub mod bergamot;
 
 use crate::settings::{Settings, TranslationService};
 use serde_json::{Value, json};
@@ -16,6 +18,8 @@ pub enum TranslateError {
     BadResponse,
     #[error("не настроено: {0}")]
     NotConfigured(&'static str),
+    #[error("локальный перевод: {0}")]
+    Local(String),
 }
 
 impl From<reqwest::Error> for TranslateError {
@@ -82,15 +86,18 @@ impl Translate for HttpTranslate {
             Translator::Google => "google".to_string(),
             Translator::Yandex { .. } => "yandex".to_string(),
             Translator::Custom { url, .. } => format!("custom:{url}"),
+            Translator::DeepL { .. } => "deepl".to_string(),
+            Translator::Microsoft { .. } => "microsoft".to_string(),
+            Translator::Bergamot { .. } => "bergamot".to_string(),
         };
-        {
+        let cooldown = {
             let mut cooldowns = self.cooldowns.lock().unwrap();
             let now = Instant::now();
             cooldowns.retain(|_, until| *until > now);
-            if let Some(until) = cooldowns.get(&key) {
-                let remaining = until.duration_since(now);
-                return Err(TranslateError::RateLimited { retry_after: remaining.as_secs() + u64::from(remaining.subsec_nanos() > 0) });
-            }
+            cooldowns.get(&key).map(|until| until.duration_since(now))
+        };
+        if let Some(remaining) = cooldown {
+            return Err(TranslateError::RateLimited { retry_after: remaining.as_secs() + u64::from(remaining.subsec_nanos() > 0) });
         }
         let result = translator.translate(&self.http, text, src, dst).await;
         if let Err(TranslateError::RateLimited { retry_after }) = &result {
@@ -108,6 +115,9 @@ pub enum Translator {
     Google,
     Yandex { api_key: String, folder_id: String },
     Custom { url: String, api_key: String },
+    DeepL { api_key: String },
+    Microsoft { api_key: String, region: String },
+    Bergamot { binary: String, models_dir: String },
 }
 
 impl Translator {
@@ -121,6 +131,17 @@ impl Translator {
             TranslationService::Custom => Self::Custom {
                 url: s.translation.custom_url.clone(),
                 api_key: s.translation.custom_api_key.clone(),
+            },
+            TranslationService::DeepL => Self::DeepL {
+                api_key: configured_key(&s.translation.deepl_api_key, "DEEPL_API_KEY"),
+            },
+            TranslationService::Microsoft => Self::Microsoft {
+                api_key: configured_key(&s.translation.microsoft_api_key, "MICROSOFT_TRANSLATOR_API_KEY"),
+                region: configured_key(&s.translation.microsoft_region, "MICROSOFT_TRANSLATOR_REGION"),
+            },
+            TranslationService::Bergamot => Self::Bergamot {
+                binary: configured_key(&s.translation.bergamot_binary, "BERGAMOT_BINARY"),
+                models_dir: configured_key(&s.translation.bergamot_models_dir, "BERGAMOT_MODELS_DIR"),
             },
         }
     }
@@ -180,8 +201,45 @@ impl Translator {
                 let resp = http.post(url).json(&body).send().await?;
                 parse_custom(&checked(resp).await?)
             }
+            Self::DeepL { api_key } => {
+                if api_key.is_empty() { return Err(TranslateError::NotConfigured("DeepL API key / DEEPL_API_KEY")); }
+                let endpoint = if api_key.ends_with(":fx") { "https://api-free.deepl.com/v2/translate" } else { "https://api.deepl.com/v2/translate" };
+                let mut body = json!({"text": [text], "target_lang": deepl_language(dst)});
+                if src != "auto" { body["source_lang"] = json!(if src == "zh-TW" { "ZH".into() } else { deepl_language(src) }); }
+                let resp = http.post(endpoint)
+                    .header("Authorization", format!("DeepL-Auth-Key {api_key}"))
+                    .json(&body).send().await?;
+                parse_yandex(&checked(resp).await?)
+            }
+            Self::Microsoft { api_key, region } => {
+                if api_key.is_empty() { return Err(TranslateError::NotConfigured("Microsoft Translator API key / MICROSOFT_TRANSLATOR_API_KEY")); }
+                let mut request = http.post("https://api.cognitive.microsofttranslator.com/translate")
+                    .query(&[("api-version", "3.0"), ("to", microsoft_language(dst))])
+                    .header("Ocp-Apim-Subscription-Key", api_key.as_str())
+                    .json(&json!([{"Text": text}]));
+                if src != "auto" { request = request.query(&[("from", microsoft_language(src))]); }
+                if !region.is_empty() { request = request.header("Ocp-Apim-Subscription-Region", region.as_str()); }
+                parse_microsoft(&checked(request.send().await?).await?)
+            }
+            Self::Bergamot { binary, models_dir } => bergamot::translate(binary, models_dir, text, src, dst).await,
         }
     }
+}
+
+fn configured_key(setting: &str, environment: &str) -> String {
+    if setting.is_empty() { std::env::var(environment).unwrap_or_default() } else { setting.to_owned() }
+}
+
+fn deepl_language(language: &str) -> String {
+    match language { "zh-TW" => "ZH-HANT".into(), other => other.to_ascii_uppercase() }
+}
+
+fn microsoft_language(language: &str) -> &str {
+    match language { "zh" => "zh-Hans", "zh-TW" => "zh-Hant", other => other }
+}
+
+pub fn parse_microsoft(v: &Value) -> Result<String, TranslateError> {
+    v[0]["translations"][0]["text"].as_str().map(str::to_owned).ok_or(TranslateError::BadResponse)
 }
 
 async fn checked(resp: reqwest::Response) -> Result<Value, TranslateError> {

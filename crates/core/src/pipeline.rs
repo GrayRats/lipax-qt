@@ -286,11 +286,23 @@ fn join_messages(first: &str, notes: &[String]) -> String {
 }
 
 /// Which service and which phrase an error is about: every waiter of a shared request gets its own message.
+fn cache_source(s: &Settings, src: &str) -> String {
+    let service = match s.translation.service {
+        crate::settings::TranslationService::Custom => format!("custom:{}", s.translation.custom_url),
+        crate::settings::TranslationService::Bergamot => format!("bergamot:{}:{}", s.translation.bergamot_binary, s.translation.bergamot_models_dir),
+        other => format!("{other:?}"),
+    };
+    format!("{service}\u{1}{src}")
+}
+
 fn translation_context(s: &Settings, text: &str) -> String {
     let service = match s.translation.service {
         crate::settings::TranslationService::Google => "Google Translate",
         crate::settings::TranslationService::Yandex => "Yandex Translate",
         crate::settings::TranslationService::Custom => "свой API",
+        crate::settings::TranslationService::DeepL => "DeepL",
+        crate::settings::TranslationService::Microsoft => "Microsoft Translator",
+        crate::settings::TranslationService::Bergamot => "Bergamot",
     };
     let mut excerpt: String = text.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(40).collect();
     if text.chars().count() > 40 { excerpt.push('…'); }
@@ -600,8 +612,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
 }
 
 impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
-    fn cached(&self, src: &str, dst: &str, text: &str) -> Option<String> {
-        self.cache.lock().unwrap().get(src, dst, text)
+    fn cached(&self, s: &Settings, src: &str, dst: &str, text: &str) -> Option<String> {
+        self.cache.lock().unwrap().get(&cache_source(s, src), dst, text)
     }
 
     /// Translate `text`, joining a request for the same phrase that is already running. The
@@ -612,17 +624,32 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     /// request. The error is shared as well, so a rate limit reaches everyone who waited for it.
     async fn translate_shared(&self, s: &Settings, text: &str, src: &str, dst: &str) -> Result<String, Arc<TranslateError>> {
         // The service is part of the key: another translator may answer differently.
-        let service = if s.translation.service == crate::settings::TranslationService::Custom { format!("custom:{}", s.translation.custom_url) } else { format!("{:?}", s.translation.service) };
-        let key = format!("{service}\u{1}{src}\u{1}{dst}\u{1}{text}");
+        let key = format!("{}\u{1}{dst}\u{1}{text}", cache_source(s, src));
         let pending = {
             let mut running = self.inflight.lock().unwrap();
             if let Some(found) = running.get(&key) { found.clone() } else {
                 let (translator, settings, cache) = (self.translator.clone(), s.clone(), self.cache.clone());
                 let (text, src, dst) = (text.to_owned(), src.to_owned(), dst.to_owned());
                 let request = async move {
-                    let result = translator.translate(&settings, &text, &src, &dst).await.map_err(Arc::new);
-                    if let Ok(translated) = &result { cache.lock().unwrap().put(&src, &dst, &text, translated.clone()); }
-                    result
+                    match translator.translate(&settings, &text, &src, &dst).await {
+                        Ok(translated) => {
+                            cache.lock().unwrap().put(&cache_source(&settings, &src), &dst, &text, translated.clone());
+                            Ok(translated)
+                        }
+                        Err(error) if matches!(settings.translation.service, crate::settings::TranslationService::DeepL | crate::settings::TranslationService::Microsoft)
+                            && !matches!(&error, TranslateError::NotConfigured(_)) => {
+                            tracing::warn!(service = ?settings.translation.service, error = %error, "Переводчик недоступен, используется Google Translate");
+                            let mut fallback = settings.clone();
+                            fallback.translation.service = crate::settings::TranslationService::Google;
+                            let fallback_src = cache_source(&fallback, &src);
+                            let cached = cache.lock().unwrap().get(&fallback_src, &dst, &text);
+                            if let Some(translated) = cached { return Ok(translated); }
+                            let translated = translator.translate(&fallback, &text, &src, &dst).await.map_err(Arc::new)?;
+                            cache.lock().unwrap().put(&fallback_src, &dst, &text, translated.clone());
+                            Ok(translated)
+                        }
+                        Err(error) => Err(Arc::new(error)),
+                    }
                 }.boxed().shared();
                 // Beyond the limit the phrase is still fetched, just not shared or carried on its own.
                 if running.len() < MAX_INFLIGHT {
@@ -681,9 +708,9 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     /// «Translate changes only»: each paragraph is translated on its own, so what was translated before (a static
     /// header, a button that stays) comes from the cache and only the new paragraphs are sent. Joined with `\n`.
     async fn translate_changes(&self, s: &Settings, parts: &[String], src: &str, dst: &str) -> Result<String, Arc<TranslateError>> {
-        let sent = parts.iter().filter(|p| self.cached(src, dst, p).is_none()).count();
+        let sent = parts.iter().filter(|p| self.cached(s, src, dst, p).is_none()).count();
         let all = parts.iter().map(|part| async move {
-            match self.cached(src, dst, part) {
+            match self.cached(s, src, dst, part) {
                 Some(t) => Ok(t),
                 None => self.translate_shared(s, part, src, dst).await,
             }
@@ -808,7 +835,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         }
         if !force && text::similarity(&original, &state.last_text) >= SAME_TEXT_RATIO { state.enter(&region.id, Phase::Showing); state.settle(region, out); self.status("Ожидание текста", out); return; }
         let src = s.translation_source_language();
-        let translated = match self.cached(src, &s.translation.target_language, &original) {
+        let translated = match self.cached(s, src, &s.translation.target_language, &original) {
             Some(t) => t,
             None => {
                 state.enter(&region.id, Phase::Translating);
@@ -950,7 +977,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                     };
                     state.field_ocr.insert(id, match filters_note(&result) { Some(note) => format!("{read}; {note}"), None => read });
                     if !text::is_meaningful(&original) { engine.complete(id, None, s); continue; }
-                    match engine.cached_translation(id, &original).or_else(|| self.cached(&src, &s.translation.target_language, &original)) {
+                    match engine.cached_translation(id, &original).or_else(|| self.cached(s, &src, &s.translation.target_language, &original)) {
                         Some(t) => engine.complete(id, Some((original, t)), s),
                         None => pending.push((id, original)),
                     }

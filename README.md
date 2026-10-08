@@ -9,7 +9,7 @@ LipaX помогает читать текст в играх: захватыва
 
 ## Что умеет
 
-- Распознаёт текст через Tesseract; при желании можно подключить PaddleOCR. Переводит через Google, Yandex или настраиваемый совместимый сервис. Доступность перевода зависит от выбранного сервиса и сети.
+- Распознаёт текст через Tesseract; при желании можно подключить PaddleOCR. Переводит через Google, Yandex, DeepL, Microsoft Translator, настраиваемый API или [локальный Bergamot](docs/Bergamot.md). Сетевым сервисам нужен доступ к интернету; для Bergamot нужны нативный CLI и модель нужной языковой пары.
 - Позволяет задать до трёх областей: например, отдельно для субтитров, диалогов и меню. Каждую область можно временно отключить и настроить отдельно.
 - Показывает результат в отдельном окне поверх игры или накладывает переведённый текст поверх исходного текста. Для второго режима нужна геометрия окна от KWin: при захвате через Portal приложение использует обычное окно перевода.
 - Даёт настроить фон, рамку, прозрачность, скругление и шрифты из комплекта LipaX. Закреплённое окно оставляет доступ к игре; откреплённое можно двигать, видеть в панели задач и прокручивать колёсиком, если текст длинный.
@@ -108,4 +108,3 @@ other LipaX first: a second start only forwards its command. In “Авто” m
 window through the portal; the “Статус” tab shows whether the current binary is allowed to capture.
 
 Run `RUST_LOG=debug lipax` to see more diagnostic output, or use `2>&1 | tee lipax.log` to save it. See [logging](docs/LOGGING.md), [architecture](docs/ARCHITECTURE.md), and [PaddleOCR setup](docs/PaddleOCR.md).
-
