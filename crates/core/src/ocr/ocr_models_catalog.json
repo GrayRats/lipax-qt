@@ -520,5 +520,37 @@
         "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/te_PP-OCRv5_rec_mobile/ppocrv5_te_dict.txt"
       }
     }
+  },
+  {
+    "id": "meiki-ja",
+    "engine": "meikiocr",
+    "script": "ja",
+    "variant": "v0.1",
+    "label": "японский: игры и визуальные новеллы",
+    "languages": [
+      "jpn"
+    ],
+    "version": "detector v0.1 960×544 (a9cffa4), recognizer v0 (a28cf58), rtr46",
+    "license": "LGPL-3.0",
+    "files": {
+      "det": {
+        "name": "meiki.text.detect.v0.1.960x544.onnx",
+        "size": 14503825,
+        "sha256": "40b6a016667745cae7d3055929ae3b8b1e7716aac795f5904cd3c2c7c3b8404b",
+        "url": "https://huggingface.co/rtr46/meiki.text.detect.v0/resolve/a9cffa4f60cbf72ddb87edf19c6f98a01cd042e6/meiki.text.detect.v0.1.960x544.onnx"
+      },
+      "rec": {
+        "name": "meiki.text.rec.v0.960x32.onnx",
+        "size": 18593254,
+        "sha256": "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000",
+        "url": "https://huggingface.co/rtr46/meiki.txt.recognition.v0/resolve/a28cf5874dc2438ebb1c86336be26bcec51e3375/meiki.text.rec.v0.960x32.onnx"
+      },
+      "vrec": {
+        "name": "meiki.text.rec.v0.vertical.32x480.onnx",
+        "size": 12872961,
+        "sha256": "2c2a83a23bc3b7e6c63962175f507ecc6c5e85cc174f17bdec37d9bbd0bf895a",
+        "url": "https://huggingface.co/rtr46/meiki.txt.recognition.v0/resolve/a28cf5874dc2438ebb1c86336be26bcec51e3375/meiki.text.rec.v0.vertical.32x480.onnx"
+      }
+    }
   }
 ]

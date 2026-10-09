@@ -311,12 +311,12 @@ pub enum TranslationSourceLanguage { #[default] RecognitionLanguage, Explicit(St
 /// Unknown engines are retained so diagnostics can explain an invalid configuration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(from = "String", into = "String")]
-pub enum OcrEngine { Tesseract, PaddleOcr, RapidOcr, Auto, Unknown(String) }
+pub enum OcrEngine { Tesseract, PaddleOcr, RapidOcr, MeikiOcr, Auto, Unknown(String) }
 impl OcrEngine {
-    pub fn as_str(&self) -> &str { match self { Self::Tesseract => "tesseract", Self::PaddleOcr => "paddleocr", Self::RapidOcr => "rapidocr", Self::Auto => "auto", Self::Unknown(name) => name } }
+    pub fn as_str(&self) -> &str { match self { Self::Tesseract => "tesseract", Self::PaddleOcr => "paddleocr", Self::RapidOcr => "rapidocr", Self::MeikiOcr => "meikiocr", Self::Auto => "auto", Self::Unknown(name) => name } }
 }
 impl From<&str> for OcrEngine {
-    fn from(name: &str) -> Self { match name { "tesseract" => Self::Tesseract, "paddleocr" => Self::PaddleOcr, "rapidocr" => Self::RapidOcr, "auto" => Self::Auto, _ => Self::Unknown(name.into()) } }
+    fn from(name: &str) -> Self { match name { "tesseract" => Self::Tesseract, "paddleocr" => Self::PaddleOcr, "rapidocr" => Self::RapidOcr, "meikiocr" => Self::MeikiOcr, "auto" => Self::Auto, _ => Self::Unknown(name.into()) } }
 }
 impl From<String> for OcrEngine { fn from(name: String) -> Self { Self::from(name.as_str()) } }
 impl From<OcrEngine> for String { fn from(engine: OcrEngine) -> Self { engine.as_str().into() } }
@@ -1118,9 +1118,9 @@ impl Settings {
     /// The confidence below which a reading is rejected: the configured threshold, raised to the CJK floor while a
     /// Chinese, Japanese or Korean model is in use (their garbage on a textured background scores 28–30).
     pub fn effective_minimum_confidence(&self) -> u32 {
-        // PaddleOCR and RapidOCR read the first language only; Tesseract (and `auto`, which starts with it) reads all of them.
+        // PaddleOCR, RapidOCR and MeikiOCR read the first language only; Tesseract (and `auto`, which starts with it) reads all of them.
         let language = match self.recognition.engine.as_str() {
-            "paddleocr" | "rapidocr" => crate::tesseract::primary_lang(&self.recognition.language),
+            "paddleocr" | "rapidocr" | "meikiocr" => crate::tesseract::primary_lang(&self.recognition.language),
             _ => self.recognition.language.as_str(),
         };
         let floor = crate::ocr::filter::effective_min_confidence(language, self.recognition.minimum_confidence);

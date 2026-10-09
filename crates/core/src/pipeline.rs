@@ -933,8 +933,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         for (id, result) in recognized {
             if s.recognition.engine == "auto" {
                 match &result {
-                    // The second opinion of `auto` (RapidOCR, or PaddleOCR in its place) was needed: it reads the field from now on.
-                    Ok(r) if matches!(r.engine, "paddleocr" | "rapidocr") => {
+                    // The second opinion of `auto` (MeikiOCR for Japanese, RapidOCR, or PaddleOCR in its place) was needed: it reads the field from now on.
+                    Ok(r) if matches!(r.engine, "paddleocr" | "rapidocr" | "meikiocr") => {
                         if state.field_engine.len() >= 64 { state.field_engine.clear(); }
                         if state.field_engine.insert(id, r.engine) != Some(r.engine) {
                             tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, engine = r.engine, "OCR auto: the field is read with this engine from now on");
@@ -1782,7 +1782,7 @@ mod tests {
                 Ok(crate::ocr::OcrResult { text: "Hello there".into(), lines: Vec::new(), confidence: Some(90.0), engine: self.1, ..Default::default() })
             }
         }
-        for engine in ["paddleocr", "rapidocr"] {
+        for engine in ["paddleocr", "rapidocr", "meikiocr"] {
             let seen = Arc::new(Mutex::new(Vec::new()));
             let cap = Arc::new(MockCapture(Mutex::new(10)));
             let mut p = Pipeline::new(cap.clone(), AutoOcr(seen.clone(), engine), MockTr(Arc::new(AtomicUsize::new(0))));

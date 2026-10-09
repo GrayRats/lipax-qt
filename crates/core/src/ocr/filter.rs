@@ -213,7 +213,7 @@ impl FilterPlan {
     pub fn of(r: &TextRecognitionSettings) -> Self {
         // PP-OCR reads colour and grey better than a binarized frame: for RapidOCR the program adds nothing, only the
         // filters chosen by hand apply.
-        Self { manual: Preprocess::of(r), auto: r.auto_filters && r.engine != crate::settings::OcrEngine::RapidOcr }
+        Self { manual: Preprocess::of(r), auto: r.auto_filters && !matches!(r.engine, crate::settings::OcrEngine::RapidOcr | crate::settings::OcrEngine::MeikiOcr) }
     }
 
     /// The filters for `img`, and whether the program added to the user's choice (so the reading may be checked

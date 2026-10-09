@@ -45,6 +45,17 @@ pub fn prepare(
     cancel: &mut tokio::sync::watch::Receiver<bool>,
     progress: impl FnMut(i32),
 ) -> Result<std::path::PathBuf, String> {
+    prepare_version(pair, None, paths, cancel, progress)
+}
+
+/// `prepare` for one catalog version (the user's choice or an update); `None` keeps any installed version.
+pub fn prepare_version(
+    pair: &str,
+    version: Option<&str>,
+    paths: &[std::path::PathBuf],
+    cancel: &mut tokio::sync::watch::Receiver<bool>,
+    progress: impl FnMut(i32),
+) -> Result<std::path::PathBuf, String> {
     prepare_catching_panic(|| {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
@@ -56,7 +67,7 @@ pub fn prepare(
             let firefox = dirs::home_dir().unwrap_or_default().join(".mozilla/firefox");
             tokio::select! {
                 _ = cancel.changed() => Err("Model installation cancelled.".into()),
-                result = lipa_core::translate::models::ensure(pair, paths, &root, &firefox, progress) => result,
+                result = lipa_core::translate::models::ensure_version(pair, version, paths, &root, &firefox, progress) => result,
             }
         })
     })

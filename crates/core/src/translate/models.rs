@@ -31,6 +31,63 @@ pub fn catalog() -> &'static [Model] {
             .expect("bundled Mozilla catalog")
     })
 }
+fn version_key(version: &str) -> Vec<u64> {
+    version.split('.').map(|p| p.parse().unwrap_or(0)).collect()
+}
+/// Every set of the pair in `catalog`, newest first.
+fn sets_of<'a>(catalog: &'a [Model], pair: &str) -> Vec<&'a Model> {
+    let mut sets: Vec<_> = catalog.iter().filter(|m| m.pair == pair).collect();
+    sets.sort_by_key(|m| std::cmp::Reverse(version_key(&m.version)));
+    sets
+}
+/// Every bundled set of the pair, newest first.
+pub fn versions(pair: &str) -> Vec<&'static Model> {
+    sets_of(catalog(), pair)
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+pub struct VersionStatus {
+    pub version: String,
+    pub size: u64,
+    pub installed: bool,
+    pub newest: bool,
+}
+/// What is installed for a pair against what the bundled catalog offers. `update` means a newer set exists than the
+/// installed one; nothing is fetched to know that.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+pub struct PairVersions {
+    pub pair: String,
+    pub installed: Option<String>,
+    pub newest: Option<String>,
+    pub update: bool,
+    pub versions: Vec<VersionStatus>,
+}
+/// Blocking: hashes the installed files.
+pub fn version_status(pair: &str, root: &Path) -> PairVersions {
+    version_status_in(catalog(), pair, root)
+}
+fn version_status_in(catalog: &[Model], pair: &str, root: &Path) -> PairVersions {
+    let sets = sets_of(catalog, pair);
+    let dir = root.join(pair);
+    let installed = sets.iter().position(|m| valid_at(&dir, m).is_some());
+    PairVersions {
+        pair: pair.into(),
+        installed: installed.map(|i| sets[i].version.clone()),
+        newest: sets.first().map(|m| m.version.clone()),
+        update: installed.is_some_and(|i| i > 0),
+        versions: sets
+            .iter()
+            .enumerate()
+            .map(|(i, m)| VersionStatus {
+                version: m.version.clone(),
+                size: m.files.values().map(|f| f.size).sum(),
+                installed: installed == Some(i),
+                newest: i == 0,
+            })
+            .collect(),
+    }
+}
+
 pub fn pair(source: &str, target: &str) -> Result<String, String> {
     if [source, target].iter().any(|s| {
         s.is_empty()
@@ -237,24 +294,40 @@ pub async fn ensure(
     explicit: &[PathBuf],
     root: &Path,
     firefox: &Path,
+    progress: impl FnMut(i32),
+) -> Result<PathBuf, String> {
+    ensure_version(pair, None, explicit, root, firefox, progress).await
+}
+/// Like [`ensure`], but with `version` only a set of that version counts: an installed older one is replaced
+/// (the user chose it or asked for an update). Without it any valid installed set is kept and the newest is downloaded.
+pub async fn ensure_version(
+    pair: &str,
+    version: Option<&str>,
+    explicit: &[PathBuf],
+    root: &Path,
+    firefox: &Path,
     mut progress: impl FnMut(i32),
 ) -> Result<PathBuf, String> {
-    ensure_with_catalog(pair, explicit, root, firefox, catalog(), &mut progress).await
+    ensure_with_catalog(pair, version, explicit, root, firefox, catalog(), &mut progress).await
 }
 async fn ensure_with_catalog(
     pair: &str,
+    version: Option<&str>,
     explicit: &[PathBuf],
     root: &Path,
     firefox: &Path,
     catalog: &[Model],
     progress: &mut impl FnMut(i32),
 ) -> Result<PathBuf, String> {
-    let models: Vec<_> = catalog.iter().filter(|m| m.pair == pair).collect();
+    let mut models = sets_of(catalog, pair);
+    if let Some(version) = version {
+        models.retain(|m| m.version == version);
+    }
     let Some(preferred) = models.first() else {
-        return Err(format!(
-            "{} No official model is available for this pair.",
-            missing(pair)
-        ));
+        return Err(match version {
+            Some(version) => format!("{} No official model {version} is available for this pair.", missing(pair)),
+            None => format!("{} No official model is available for this pair.", missing(pair)),
+        });
     };
     progress(-1);
     let cache = root.join(pair);
@@ -339,6 +412,9 @@ async fn ensure_with_catalog(
 mod tests {
     use super::*;
     fn fixture() -> (tempfile::TempDir, Model) {
+        fixture_of("test")
+    }
+    fn fixture_of(version: &str) -> (tempfile::TempDir, Model) {
         let dir = tempfile::tempdir().unwrap();
         let files = [
             ("model", "model.enru.intgemm.alphas.bin"),
@@ -347,7 +423,7 @@ mod tests {
         ]
         .into_iter()
         .map(|(role, name)| {
-            let data = format!("valid fixture bytes for {role}");
+            let data = format!("valid fixture bytes for {role} ({version})");
             fs::write(dir.path().join(name), &data).unwrap();
             (
                 role.into(),
@@ -364,7 +440,7 @@ mod tests {
             dir,
             Model {
                 pair: "en-ru".into(),
-                version: "test".into(),
+                version: version.into(),
                 files,
             },
         )
@@ -412,6 +488,70 @@ mod tests {
         fs::remove_file(dir.path().join(&model.files["vocab"].name)).unwrap();
         assert!(valid_at(dir.path(), &model).is_none());
     }
+    #[test]
+    fn versions_are_listed_newest_first_and_compared_numerically() {
+        let (_, mut a) = fixture_of("2.9");
+        let (_, mut b) = fixture_of("2.10");
+        let (_, c) = fixture_of("1.1");
+        a.pair = "en-ru".into();
+        b.pair = "en-ru".into();
+        let catalog = [a, c, b];
+        let order: Vec<_> = sets_of(&catalog, "en-ru").iter().map(|m| m.version.clone()).collect();
+        assert_eq!(order, ["2.10", "2.9", "1.1"]);
+        assert!(sets_of(&catalog, "en-de").is_empty());
+        // The bundled catalog really offers a choice for en-ru.
+        assert!(versions("en-ru").len() > 1);
+    }
+    #[test]
+    fn version_status_tells_the_installed_set_by_content_and_flags_an_update() {
+        let (old_dir, old) = fixture_of("1");
+        let (_, new) = fixture_of("2");
+        let catalog = [new.clone(), old.clone()];
+        let root = tempfile::tempdir().unwrap();
+        let none = version_status_in(&catalog, "en-ru", root.path());
+        assert_eq!((none.installed, none.update, none.newest.as_deref()), (None, false, Some("2")));
+        assert_eq!(none.versions.len(), 2);
+        // Same file names and sizes in both sets: only the hash tells them apart.
+        install(root.path(), &old, &files_at(old_dir.path(), &old).unwrap()).unwrap();
+        let outdated = version_status_in(&catalog, "en-ru", root.path());
+        assert_eq!(outdated.installed.as_deref(), Some("1"));
+        assert!(outdated.update);
+        assert_eq!(outdated.versions.iter().map(|v| (v.version.as_str(), v.installed, v.newest)).collect::<Vec<_>>(), [("2", false, true), ("1", true, false)]);
+        fs::write(root.path().join("en-ru").join(&old.files["model"].name), b"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx").unwrap();
+        assert_eq!(version_status_in(&catalog, "en-ru", root.path()).installed, None);
+    }
+    #[tokio::test]
+    async fn installed_older_set_is_kept_offline_and_replaced_only_on_request() {
+        let (old_dir, old) = fixture_of("1");
+        let (new_dir, mut new) = fixture_of("2");
+        let root = tempfile::tempdir().unwrap();
+        install(root.path(), &old, &files_at(old_dir.path(), &old).unwrap()).unwrap();
+        let mut offline = new.clone();
+        for f in offline.files.values_mut() {
+            f.url = "http://127.0.0.1:9/never".into();
+        }
+        // Plain `ensure` is satisfied by the older set: no network, no silent upgrade.
+        let kept = ensure_with_catalog("en-ru", None, &[], root.path(), Path::new("/missing"), &[offline, old.clone()], &mut |_| {}).await.unwrap();
+        assert!(valid_at(&kept, &old).is_some());
+        // Asking for the newer version downloads it and replaces the old files in place.
+        let server = server(&mut new, new_dir.path(), false);
+        let mut progress = Vec::new();
+        let updated = ensure_with_catalog("en-ru", Some("2"), &[kept], root.path(), Path::new("/missing"), &[new.clone(), old.clone()], &mut |p| progress.push(p)).await.unwrap();
+        server.join().unwrap();
+        assert_eq!(progress.last(), Some(&100));
+        assert!(valid_at(&updated, &new).is_some() && valid_at(&updated, &old).is_none());
+        let status = version_status_in(&[new, old], "en-ru", root.path());
+        assert_eq!((status.installed.as_deref(), status.update), (Some("2"), false));
+        assert_eq!(fs::read_dir(root.path()).unwrap().count(), 1);
+    }
+    #[tokio::test]
+    async fn requested_version_must_exist_in_the_catalog() {
+        let (_, model) = fixture_of("2");
+        let root = tempfile::tempdir().unwrap();
+        let error = ensure_with_catalog("en-ru", Some("0.1"), &[], root.path(), Path::new("/missing"), &[model], &mut |_| panic!("no progress")).await.unwrap_err();
+        assert!(error.contains("0.1"), "{error}");
+        assert_eq!(fs::read_dir(root.path()).unwrap().count(), 0);
+    }
     #[tokio::test]
     async fn explicit_path_wins_over_cache_and_firefox() {
         let (explicit, model) = fixture();
@@ -420,6 +560,7 @@ mod tests {
         fs::write(root.path().join("en-ru/marker"), "old").unwrap();
         let result = ensure_with_catalog(
             "en-ru",
+            None,
             &[explicit.path().into()],
             root.path(),
             Path::new("/missing-firefox"),
@@ -435,6 +576,7 @@ mod tests {
         assert_eq!(
             ensure_with_catalog(
                 "en-ru",
+            None,
                 &[PathBuf::from("/missing")],
                 root.path(),
                 Path::new("/missing"),
@@ -459,6 +601,7 @@ mod tests {
         let root = home.path().join("cache");
         let result = ensure_with_catalog(
             "en-ru",
+            None,
             &[],
             &root,
             &firefox,
@@ -513,6 +656,7 @@ mod tests {
         let mut progress = Vec::new();
         let installed = ensure_with_catalog(
             "en-ru",
+            None,
             &[],
             root.path(),
             Path::new("/missing"),
@@ -539,6 +683,7 @@ mod tests {
         let server = server(&mut model, fixture.path(), true);
         let error = ensure_with_catalog(
             "en-ru",
+            None,
             &[],
             root.path(),
             Path::new("/missing"),
@@ -564,6 +709,7 @@ mod tests {
         }
         let error = ensure_with_catalog(
             "en-ru",
+            None,
             &[],
             root.path(),
             Path::new("/missing"),

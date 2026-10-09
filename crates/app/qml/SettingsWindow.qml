@@ -90,6 +90,11 @@ ApplicationWindow {
     }
     function set(key, v) {
         const c = JSON.parse(JSON.stringify(current));
+        // A new recognition language for an engine with downloadable models: once its status says the model is missing,
+        // the user is asked whether to download it (never downloaded unasked).
+        if (key === "recognition.language" && (get(current, "recognition.engine") === "rapidocr" || get(current, "recognition.engine") === "meikiocr")
+                && String(v).split("+")[0].trim() !== String(get(current, key) || "").split("+")[0].trim())
+            rapidOfferWanted = true;
         assign(c, key, v);
         current = c;
     }
@@ -397,12 +402,64 @@ ApplicationWindow {
     // RapidOCR (see Controller.refreshRapid): the model of the recognition language and ONNX Runtime; checked when the
     // engine is chosen, the language or the model variant changes, and after a download or deletion. Nothing is fetched.
     readonly property var rapid: { try { return JSON.parse(controller.rapidJson || "{}") } catch (e) { return ({}) } }
-    readonly property string rapidKey: usesRapid ? (current.recognition.language || "") + "|" + (current.recognition.rapid_variant || "mobile") + "|" + (current.recognition.rapid_threads || 0) : ""
+    readonly property string rapidKey: usesRapid ? (current.recognition.engine || "") + "|" + (current.recognition.language || "") + "|" + (current.recognition.rapid_variant || "mobile") + "|" + (current.recognition.rapid_threads || 0) : ""
     onRapidKeyChanged: if (rapidKey.length > 0) rapidTimer.restart()
     Timer {
         id: rapidTimer
         interval: 500
         onTriggered: if (win.usesRapid) win.controller.refreshRapid()
+    }
+    // Bergamot versions (see Controller.refreshModelVersions): the installed set against the bundled catalog, no network.
+    // Re-read when the pair changes and when an installation starts or ends.
+    readonly property var modelVersions: { try { return JSON.parse(controller.modelVersions || "{}") } catch (e) { return ({}) } }
+    readonly property string modelVersionsKey: current.translation.service === "bergamot"
+        ? (bergamotModel.pair || "") + "|" + (bergamotModel.status || "") + "|" + (controller.modelBusy === true) : ""
+    onModelVersionsKeyChanged: if (modelVersionsKey.length > 0) modelVersionsTimer.restart()
+    Timer {
+        id: modelVersionsTimer
+        interval: 300
+        onTriggered: win.controller.refreshModelVersions()
+    }
+    function modelSize(bytes) { return ((bytes || 0) / 1048576).toFixed(1).replace(".", ",") + " МБ" }
+    function modelVersionLabel(v) {
+        return v.version + " — " + modelSize(v.size) + (v.installed ? " (установлена)" : "") + (v.newest ? " · новейшая" : "")
+    }
+    // Offer to download the model of a language the user has just switched to (RapidOCR and MeikiOCR chosen explicitly;
+    // `auto` has the model and its «Скачать» button in the block of the engine and does not nag).
+    property bool rapidOfferWanted: false
+    property var pendingRapidOffer: null
+    onRapidChanged: offerRapidModel()
+    function offerRapidModel() {
+        if (!rapidOfferWanted)
+            return;
+        const r = rapid, engine = current.recognition.engine;
+        const primary = (current.recognition.language || "").split("+")[0].trim();
+        // A status of another engine or of the previous language is not the answer yet.
+        if (!r.language || r.language !== primary || r.engine !== engine)
+            return;
+        rapidOfferWanted = false;
+        if (!visible || r.supported !== true || !r.selected || r.selected.installed || controller.rapidBusy === true)
+            return;
+        pendingRapidOffer = r.selected;
+        rapidOfferDialog.open();
+    }
+    Dialog {
+        id: rapidOfferDialog
+        objectName: "rapidOfferDialog"
+        title: "Нужна модель распознавания"
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(parent.width - 40, 480)
+        standardButtons: Dialog.Yes | Dialog.No
+        Label {
+            width: parent.width
+            wrapMode: Text.Wrap
+            text: win.pendingRapidOffer ? "Для языка «" + (win.rapid.language || "") + "» нужна модель «" + win.pendingRapidOffer.label + "» ("
+                + win.megabytes(win.pendingRapidOffer.size) + "). Скачать её сейчас?\n\nФайлы берутся "
+                + (win.pendingRapidOffer.engine === "meikiocr" ? "с Hugging Face (rtr46, лицензия LGPL-3.0)" : "из репозитория RapidAI (ModelScope)")
+                + " и проверяются по SHA-256. Без модели " + (win.pendingRapidOffer.engine === "meikiocr" ? "MeikiOCR" : "RapidOCR") + " не прочитает этот язык." : ""
+        }
+        onAccepted: if (win.pendingRapidOffer) win.controller.downloadRapidModel(win.pendingRapidOffer.id)
     }
     function megabytes(bytes) { return Math.round((bytes || 0) / 1e6) + " МБ" }
 
@@ -564,7 +621,7 @@ ApplicationWindow {
     Dialog {
         id: rapidDeleteDialog
         objectName: "rapidDeleteDialog"
-        title: "Удаление модели RapidOCR"
+        title: "Удаление модели OCR"
         modal: true
         anchors.centerIn: parent
         width: Math.min(parent.width - 40, 460)
@@ -572,7 +629,7 @@ ApplicationWindow {
         Label {
             width: parent.width
             wrapMode: Text.Wrap
-            text: win.pendingRapidModel ? "Удалить модель «" + win.pendingRapidModel.label + "» (" + win.pendingRapidModel.variant + ", " + win.megabytes(win.pendingRapidModel.size) + ")?\n\nRapidOCR не сможет читать этот язык, пока модель не будет скачана снова." : ""
+            text: win.pendingRapidModel ? "Удалить модель «" + win.pendingRapidModel.label + "» (" + win.pendingRapidModel.variant + ", " + win.megabytes(win.pendingRapidModel.size) + ")?\n\n" + (win.pendingRapidModel.engine === "meikiocr" ? "MeikiOCR" : "RapidOCR") + " не сможет читать этот язык, пока модель не будет скачана снова." : ""
         }
         onAccepted: if (win.pendingRapidModel) win.controller.deleteRapidModel(win.pendingRapidModel.id)
     }
@@ -609,9 +666,10 @@ ApplicationWindow {
     readonly property string currentGameKey: current.capture.window && current.capture.window.resource_class ? current.capture.window.resource_class.trim().toLowerCase() : ""
     // What the capture backend of the chosen window can do (see CaptureCapabilities in core).
     readonly property bool usesPaddle: current.recognition.engine === "paddleocr" || current.recognition.engine === "auto"
-    readonly property bool usesRapid: current.recognition.engine === "rapidocr" || current.recognition.engine === "auto"
+    readonly property bool usesRapid: current.recognition.engine === "rapidocr" || current.recognition.engine === "meikiocr" || current.recognition.engine === "auto"
+    readonly property string rapidName: current.recognition.engine === "meikiocr" ? "MeikiOCR" : "RapidOCR"
     // Tesseract's languages and packages matter unless the engine is one that reads with its own models.
-    readonly property bool usesTesseract: current.recognition.engine !== "paddleocr" && current.recognition.engine !== "rapidocr"
+    readonly property bool usesTesseract: current.recognition.engine !== "paddleocr" && current.recognition.engine !== "rapidocr" && current.recognition.engine !== "meikiocr"
     readonly property var capabilities: {
         try {
             return JSON.parse(controller.captureCapabilities || "{}");
@@ -1111,7 +1169,7 @@ ApplicationWindow {
                                 onActivated: win.setRegionField(regionFrame.index, "target_language", currentIndex === 0 ? "" : currentText)
                             }
                             FieldLabel {
-                                helpText: "Tesseract, PaddleOCR и RapidOCR распознают текст в области захвата. Автоматический режим повторяет распознавание через RapidOCR (или PaddleOCR, если RapidOCR недоступен) при низкой уверенности Tesseract."
+                                helpText: "Tesseract, PaddleOCR, RapidOCR и MeikiOCR распознают текст в области захвата. MeikiOCR читает только японский (игры и визуальные новеллы). Автоматический режим при низкой уверенности Tesseract повторяет распознавание через MeikiOCR (японский, если его модель скачана), затем RapidOCR или PaddleOCR."
                                 text: "Движок распознавания"
                                 helpControl: recognitionEngineHelpTarget1
                             }
@@ -1119,8 +1177,8 @@ ApplicationWindow {
                                 id: recognitionEngineHelpTarget1
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
-                                readonly property var values: ["", "tesseract", "paddleocr", "rapidocr", "auto"]
-                                model: ["Как в общих настройках", "Tesseract", "PaddleOCR", "RapidOCR", "Авто"]
+                                readonly property var values: ["", "tesseract", "paddleocr", "rapidocr", "meikiocr", "auto"]
+                                model: ["Как в общих настройках", "Tesseract", "PaddleOCR", "RapidOCR", "MeikiOCR", "Авто"]
                                 currentIndex: Math.max(0, values.indexOf(regionFrame.modelData.engine || ""))
                                 onActivated: win.setRegionField(regionFrame.index, "engine", values[currentIndex] || null)
                             }
@@ -1211,7 +1269,7 @@ ApplicationWindow {
                 columnSpacing: 24
                 rowSpacing: 14
                 FieldLabel {
-                    helpText: "Tesseract, PaddleOCR и RapidOCR распознают текст в области захвата. Автоматический режим повторяет распознавание через RapidOCR (или PaddleOCR, если RapidOCR недоступен) при низкой уверенности Tesseract."
+                    helpText: "Tesseract, PaddleOCR, RapidOCR и MeikiOCR распознают текст в области захвата. MeikiOCR читает только японский (игры и визуальные новеллы). Автоматический режим при низкой уверенности Tesseract повторяет распознавание через MeikiOCR (японский, если его модель скачана), затем RapidOCR или PaddleOCR."
                     text: "Движок распознавания"
                     helpControl: recognitionEngineHelpTarget2
                 }
@@ -1220,8 +1278,8 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     objectName: "ocrEngineBox"
-                    readonly property var values: ["tesseract", "paddleocr", "rapidocr", "auto"]
-                    model: ["Tesseract", "PaddleOCR 3.x", "RapidOCR (PP-OCRv5)", "Авто: Tesseract, при сомнении RapidOCR или PaddleOCR"]
+                    readonly property var values: ["tesseract", "paddleocr", "rapidocr", "meikiocr", "auto"]
+                    model: ["Tesseract", "PaddleOCR 3.x", "RapidOCR (PP-OCRv5)", "MeikiOCR (японский, игры)", "Авто: Tesseract, при сомнении MeikiOCR, RapidOCR или PaddleOCR"]
                     currentIndex: Math.max(0, values.indexOf(win.current.recognition.engine))
                     onActivated: win.set("recognition.engine", values[currentIndex])
                 }
@@ -1344,8 +1402,10 @@ ApplicationWindow {
                     }
                 }
                 FieldLabel {
-                    helpText: "Модель PP-OCRv5 для основного языка распознавания. Модели скачиваются только по кнопке «Скачать» из репозитория RapidAI (ModelScope); размер и SHA-256 каждого файла проверяются. Во время распознавания сеть не используется."
-                    text: "Модель RapidOCR"
+                    helpText: win.rapidName === "MeikiOCR"
+                        ? "Модели MeikiOCR (rtr46: детектор и распознаватель японского текста игр, лицензия LGPL-3.0) скачиваются только по кнопке «Скачать» с Hugging Face; размер и SHA-256 каждого файла проверяются. Во время распознавания сеть не используется."
+                        : "Модель PP-OCRv5 для основного языка распознавания. Модели скачиваются только по кнопке «Скачать» из репозитория RapidAI (ModelScope); размер и SHA-256 каждого файла проверяются. Во время распознавания сеть не используется."
+                    text: "Модель " + win.rapidName
                     visible: win.usesRapid
                 }
                 ColumnLayout {
@@ -1365,7 +1425,7 @@ ApplicationWindow {
                         font.bold: true
                         color: rapidCheck.working || win.rapid.ready === undefined ? palette.text : win.rapid.ready ? "#7bd88f" : "#ff6b6b"
                         text: rapidCheck.working ? "Загрузка модели… " + win.controller.rapidProgress + " %"
-                            : win.rapid.ready === undefined ? "Состояние RapidOCR ещё не проверено"
+                            : win.rapid.ready === undefined ? "Состояние " + win.rapidName + " ещё не проверено"
                             : (win.rapid.ready ? "✓ " : "✗ ") + win.rapid.summary
                     }
                     Label {
@@ -1392,7 +1452,7 @@ ApplicationWindow {
                         wrapMode: Text.Wrap
                         visible: (win.rapid.ignored || []).length > 0
                         color: "#ffc23d"
-                        text: "RapidOCR читает только основной язык («" + (win.rapid.language || "") + "»); " + (win.rapid.ignored || []).join(", ") + " распознаёт только Tesseract."
+                        text: win.rapidName + " читает только основной язык («" + (win.rapid.language || "") + "»); " + (win.rapid.ignored || []).join(", ") + " распознаёт только Tesseract."
                     }
                     Label {
                         objectName: "rapidError"
@@ -1412,7 +1472,7 @@ ApplicationWindow {
                             text: "Скачать (" + win.megabytes(rapidCheck.selected ? rapidCheck.selected.size : 0) + ")"
                             ToolTip.visible: hovered
                             ToolTip.delay: 400
-                            ToolTip.text: "Скачать модель из репозитория RapidAI (ModelScope) с проверкой SHA-256"
+                            ToolTip.text: win.rapidName === "MeikiOCR" ? "Скачать модель MeikiOCR с Hugging Face с проверкой SHA-256" : "Скачать модель из репозитория RapidAI (ModelScope) с проверкой SHA-256"
                             onClicked: win.controller.downloadRapidModel(rapidCheck.selected.id)
                         }
                         Button {
@@ -1427,6 +1487,39 @@ ApplicationWindow {
                             text: "Проверить снова"
                             enabled: win.controller.rapidBusy !== true
                             onClicked: win.controller.refreshRapid()
+                        }
+                    }
+                    RowLayout {
+                        objectName: "meikiOffer"
+                        visible: !!win.rapid.optional
+                        Layout.fillWidth: true
+                        readonly property var model: win.rapid.optional || null
+                        readonly property bool working: win.controller.rapidBusy === true && !!model && win.controller.rapidModel === model.id
+                        Label {
+                            objectName: "meikiOfferLabel"
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            wrapMode: Text.Wrap
+                            opacity: 0.85
+                            text: parent.model ? "MeikiOCR для японского (необязательно, лучше читает игры): " + win.megabytes(parent.model.size) + " · "
+                                + (parent.working ? "загрузка " + win.controller.rapidProgress + " %" : parent.model.installed ? "готова, используется в автоматическом режиме" : "не скачана; без неё японский читает RapidOCR") : ""
+                        }
+                        Button {
+                            objectName: "meikiDownload"
+                            visible: !!parent.model && !parent.model.installed
+                            enabled: win.controller.rapidBusy !== true
+                            text: "Скачать"
+                            ToolTip.visible: hovered
+                            ToolTip.delay: 400
+                            ToolTip.text: "Скачать модель MeikiOCR (LGPL-3.0) с Hugging Face с проверкой SHA-256"
+                            onClicked: win.controller.downloadRapidModel(parent.model.id)
+                        }
+                        Button {
+                            objectName: "meikiDelete"
+                            visible: !!parent.model && parent.model.installed
+                            enabled: win.controller.rapidBusy !== true
+                            text: "Удалить"
+                            onClicked: win.askDeleteRapid(parent.model)
                         }
                     }
                     Label {
@@ -1458,7 +1551,7 @@ ApplicationWindow {
                         }
                     }
                     Repeater {
-                        model: (win.rapid.models || []).filter(m => m.installed && (!rapidCheck.selected || m.id !== rapidCheck.selected.id))
+                        model: (win.rapid.models || []).filter(m => m.installed && (!rapidCheck.selected || m.id !== rapidCheck.selected.id) && m.id !== (win.rapid.optional || {}).id)
                         delegate: RowLayout {
                             id: otherModel
                             required property var modelData
@@ -1497,8 +1590,8 @@ ApplicationWindow {
                     onActivated: win.set("recognition.rapid_variant", values[currentIndex])
                 }
                 FieldLabel {
-                    helpText: "Сколько потоков процессора занимает RapidOCR. «Авто» — половина ядер, но не больше 4, чтобы игре хватало процессора. Больше потоков — быстрее распознавание и выше нагрузка."
-                    text: "Потоки RapidOCR"
+                    helpText: "Сколько потоков процессора занимает ONNX Runtime (RapidOCR и MeikiOCR). «Авто» — половина ядер, но не больше 4, чтобы игре хватало процессора. Больше потоков — быстрее распознавание и выше нагрузка."
+                    text: "Потоки ONNX Runtime"
                     visible: win.usesRapid
                     helpControl: rapidThreads
                 }
@@ -1528,8 +1621,8 @@ ApplicationWindow {
                     text: "Авто: " + win.rapid.threads + " " + (win.rapid.threads === 1 ? "поток" : win.rapid.threads < 5 ? "потока" : "потоков") + " — половина ядер процессора, но не больше 4."
                 }
                 FieldLabel {
-                    helpText: "RapidOCR использует видеокарту, если установленная библиотека ONNX Runtime собрана с CUDA, MIGraphX или ROCm. Иначе распознавание идёт на процессоре, а в журнал пишется запись об этом."
-                    text: "RapidOCR на видеокарте"
+                    helpText: "RapidOCR и MeikiOCR используют видеокарту, если установленная библиотека ONNX Runtime собрана с CUDA, MIGraphX или ROCm. Иначе распознавание идёт на процессоре, а в журнал пишется запись об этом."
+                    text: "Видеокарта для RapidOCR и MeikiOCR"
                     visible: win.usesRapid
                     helpControl: rapidGpu
                 }
@@ -2042,6 +2135,46 @@ ApplicationWindow {
                         visible: !!win.bergamotModel.path
                         text: win.bergamotModel.path || ""
                         elide: Text.ElideMiddle
+                    }
+                    Label {
+                        objectName: "bergamotVersion"
+                        Layout.fillWidth: true
+                        visible: !!win.modelVersions.newest
+                        wrapMode: Text.Wrap
+                        text: !win.modelVersions.installed ? "Версия модели: не установлена"
+                            : win.modelVersions.update ? "Установлена версия " + win.modelVersions.installed + " · доступна новая " + win.modelVersions.newest
+                            : "Установлена версия " + win.modelVersions.installed + " — актуальная"
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: (win.modelVersions.versions || []).length > 1
+                        ComboBox {
+                            id: versionBox
+                            objectName: "bergamotVersionBox"
+                            Layout.fillWidth: true
+                            textRole: "text"
+                            valueRole: "value"
+                            enabled: win.controller.modelBusy !== true
+                            model: (win.modelVersions.versions || []).map(function (v) { return ({value: v.version, text: win.modelVersionLabel(v), installed: v.installed}) })
+                            onModelChanged: {
+                                const at = model.findIndex(function (v) { return v.installed })
+                                currentIndex = at >= 0 ? at : 0
+                            }
+                        }
+                        Button {
+                            objectName: "bergamotInstallVersion"
+                            text: "Скачать выбранную версию"
+                            enabled: win.controller.modelBusy !== true && versionBox.currentIndex >= 0
+                                && !(versionBox.model[versionBox.currentIndex] || {installed: true}).installed
+                            onClicked: { win.apply(); win.controller.downloadModelVersion(win.modelVersions.pair, versionBox.currentValue) }
+                        }
+                    }
+                    Button {
+                        objectName: "bergamotUpdate"
+                        visible: win.modelVersions.update === true
+                        text: "Обновить до " + win.modelVersions.newest
+                        enabled: win.controller.modelBusy !== true
+                        onClicked: { win.apply(); win.controller.downloadModelVersion(win.modelVersions.pair, win.modelVersions.newest) }
                     }
                     RowLayout {
                         Button {
@@ -3878,7 +4011,8 @@ ApplicationWindow {
                         { url: "https://github.com/tesseract-ocr/tesseract", role: "распознавание: Tesseract OCR" },
                         { url: "https://github.com/tesseract-ocr/tessdata_fast", role: "языковые модели Tesseract" },
                         { url: "https://github.com/PaddlePaddle/PaddleOCR", role: "распознавание: PaddleOCR" },
-                        { url: "https://github.com/RapidAI/RapidOCR", role: "распознавание: RapidOCR (модели PP-OCRv5 в ONNX)" }
+                        { url: "https://github.com/RapidAI/RapidOCR", role: "распознавание: RapidOCR (модели PP-OCRv5 в ONNX)" },
+                        { url: "https://github.com/rtr46/meikiocr", role: "распознавание: MeikiOCR (японский, модели LGPL-3.0)" }
                     ]
                     delegate: Label {
                         required property var modelData

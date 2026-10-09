@@ -8,8 +8,10 @@
 //! library (default: the system one), `LIPAX_RAPID_TEST_THREADS` the threads. The benchmark also reads with Tesseract
 //! (when it has the language) and PaddleOCR (`LIPAX_RAPID_TEST_PADDLE_PYTHON=/path/to/venv/bin/python`).
 //!
-//! The English and Russian lines are the committed font fixtures; the Japanese one is rendered like in
-//! `ocr_languages.rs` (Python/PIL and the bundled Noto Sans CJK; skipped without them).
+//! The English and Russian lines are the committed font fixtures; the Japanese one is drawn with the bundled Noto Sans
+//! CJK (see `common`; skipped without the font).
+
+mod common;
 
 use image::{DynamicImage, GenericImage, Rgba, RgbaImage};
 use lipa_core::ocr::paddle::PaddleOcr;
@@ -39,17 +41,14 @@ const CASES: [Case; 3] = [
 ];
 
 fn line(case: &Case) -> Option<DynamicImage> {
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
     if let Some(file) = case.fixture {
+        let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
         return Some(image::open(fixtures.join(file)).expect("committed fixture"));
     }
-    let font = Path::new(env!("CARGO_MANIFEST_DIR")).join("../app/assets/fonts/NotoSansCJK-VF.otf");
-    let png = std::env::temp_dir().join(format!("lipax-rapid-{}-{}.png", std::process::id(), case.language));
-    let script = "import sys\nfrom PIL import Image, ImageDraw, ImageFont\nf = ImageFont.truetype(sys.argv[1], 36)\nw = int(f.getlength(sys.argv[2])) + 80\nim = Image.new('RGB', (w, 112), (22, 26, 36))\nImageDraw.Draw(im).text((40, 38), sys.argv[2], font=f, fill=(240, 240, 240))\nim.save(sys.argv[3])";
-    let ok = std::process::Command::new("python3").args(["-c", script]).arg(&font).arg(case.text).arg(&png).status().is_ok_and(|s| s.success());
-    let img = ok.then(|| image::open(&png).ok()).flatten();
-    let _ = std::fs::remove_file(&png);
-    img
+    let text = common::Text::load("NotoSansCJK-VF.otf", 36)?;
+    let mut im = image::RgbImage::from_pixel(text.width(case.text) as u32 + 80, 112, image::Rgb([22, 26, 36]));
+    text.draw(&mut im, 40.0, 38.0, case.text, [240, 240, 240]);
+    Some(DynamicImage::ImageRgb8(im))
 }
 
 fn engine() -> RapidOcr {
@@ -105,7 +104,7 @@ async fn reads_english_russian_and_japanese() {
     let mut report = String::new();
     for case in &CASES {
         let Some(img) = line(case) else {
-            eprintln!("skipped {}: no Python/PIL or font", case.name);
+            eprintln!("skipped {}: no font", case.name);
             continue;
         };
         // The line alone, in game frames (where the orientation classifier once turned an upright Cyrillic line and
@@ -171,7 +170,7 @@ async fn benchmark_frames_against_tesseract_and_paddle() {
     let mut table = String::from("| Кадр | Язык | Движок | Задержка, мс (медиана) | CER | WER |\n|---|---|---|---:|---:|---:|\n");
     for case in &CASES {
         let Some(text) = line(case) else {
-            eprintln!("skipped {}: no Python/PIL or font", case.name);
+            eprintln!("skipped {}: no font", case.name);
             continue;
         };
         for (width, height) in [(1280, 200), (1920, 1080)] {

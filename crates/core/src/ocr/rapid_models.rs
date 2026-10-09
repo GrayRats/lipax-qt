@@ -15,12 +15,23 @@ use std::{
     time::Duration,
 };
 
-/// The files of a model set: detector, text line orientation classifier, recognizer and its dictionary.
+/// The files of a RapidOCR model set: detector, text line orientation classifier, recognizer and its dictionary.
 pub const ROLES: [&str; 4] = ["det", "cls", "rec", "dict"];
+/// The files of a MeikiOCR set: detector, horizontal recognizer, vertical recognizer.
+pub const MEIKI_ROLES: [&str; 3] = ["det", "rec", "vrec"];
+pub const RAPID: &str = "rapidocr";
+pub const MEIKI: &str = "meikiocr";
+
+fn rapid_engine() -> String {
+    RAPID.into()
+}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct OcrModel {
     pub id: String,
+    /// `rapidocr` (default) or `meikiocr`: which engine reads with the files, and so which roles they have.
+    #[serde(default = "rapid_engine")]
+    pub engine: String,
     /// `en`, `latin`, `eslav`, `ch`, …: the recognizer of PP-OCRv5.
     pub script: String,
     /// `mobile` (default) or `server`.
@@ -35,6 +46,16 @@ pub struct OcrModel {
 }
 
 impl OcrModel {
+    /// The roles of the files, in the order they are downloaded.
+    pub fn roles(&self) -> &'static [&'static str] {
+        if self.engine == MEIKI { &MEIKI_ROLES } else { &ROLES }
+    }
+
+    /// The engine as the user knows it.
+    pub fn engine_name(&self) -> &'static str {
+        if self.engine == MEIKI { "MeikiOCR" } else { "RapidOCR" }
+    }
+
     pub fn size(&self) -> u64 {
         self.files.values().map(|f| f.size).sum()
     }
@@ -60,7 +81,13 @@ pub fn parse_catalog(json: &str) -> Result<Vec<OcrModel>, String> {
         if !safe(&model.id) {
             return Err(format!("unsafe model id «{}»", model.id));
         }
-        for role in ROLES {
+        if model.engine != RAPID && model.engine != MEIKI {
+            return Err(format!("{}: unknown engine «{}»", model.id, model.engine));
+        }
+        if model.files.len() != model.roles().len() {
+            return Err(format!("{}: the files do not match the roles of {}", model.id, model.engine));
+        }
+        for &role in model.roles() {
             let file = model.files.get(role).ok_or_else(|| format!("{}: no «{role}» file", model.id))?;
             if Path::new(&file.name).components().count() != 1 || file.name.starts_with('.') || file.name.ends_with(".part") {
                 return Err(format!("{}: unsafe file name «{}»", model.id, file.name));
@@ -79,7 +106,7 @@ pub fn cache_root() -> PathBuf {
 
 /// The script (recognizer) of a Tesseract language code, `None` if no model reads it.
 pub fn script(language: &str) -> Option<&'static str> {
-    catalog().iter().find(|m| m.languages.iter().any(|l| l == language)).map(|m| m.script.as_str())
+    catalog().iter().filter(|m| m.engine == RAPID).find(|m| m.languages.iter().any(|l| l == language)).map(|m| m.script.as_str())
 }
 
 /// The model for the settings: RapidOCR reads the first language of `jpn+eng` only (like PaddleOCR). The `server`
@@ -87,8 +114,15 @@ pub fn script(language: &str) -> Option<&'static str> {
 pub fn select(language_spec: &str, variant: &str) -> Result<&'static OcrModel, String> {
     let language = crate::tesseract::primary_lang(language_spec);
     let script = script(language).ok_or_else(|| format!("RapidOCR: язык «{language}» не поддерживается моделями PP-OCRv5. Выберите другой основной язык или движок Tesseract."))?;
-    let of_script = || catalog().iter().filter(|m| m.script == script);
+    let of_script = || catalog().iter().filter(|m| m.engine == RAPID && m.script == script);
     of_script().find(|m| m.variant == variant).or_else(|| of_script().find(|m| m.variant == "mobile")).ok_or_else(|| format!("RapidOCR: нет модели для «{language}»."))
+}
+
+/// The MeikiOCR model for the settings: it reads Japanese only, and the first language of `jpn+eng` decides.
+pub fn select_meiki(language_spec: &str) -> Result<&'static OcrModel, String> {
+    let language = crate::tesseract::primary_lang(language_spec);
+    catalog().iter().find(|m| m.engine == MEIKI && m.languages.iter().any(|l| l == language))
+        .ok_or_else(|| format!("MeikiOCR: читает только японский, а основной язык «{language}». Выберите японский основным языком или другой движок."))
 }
 
 /// The languages of `jpn+eng` RapidOCR does not read (all but the first).
@@ -99,7 +133,7 @@ pub fn ignored_languages(language_spec: &str) -> Vec<String> {
 
 /// Every file is in place with its size: cheap, for the status in the settings.
 pub fn present(root: &Path, model: &OcrModel) -> bool {
-    ROLES.iter().all(|role| fs::metadata(model.file(root, role)).is_ok_and(|m| m.is_file() && m.len() == model.files[*role].size))
+    model.roles().iter().all(|role| fs::metadata(model.file(root, role)).is_ok_and(|m| m.is_file() && m.len() == model.files[*role].size))
 }
 
 /// Every file is in place and has the size and SHA-256 of the catalog.
@@ -121,7 +155,7 @@ pub fn remove(root: &Path, model: &OcrModel) -> Result<(), String> {
 }
 
 fn offline(model: &OcrModel, error: impl std::fmt::Display) -> String {
-    format!("Не удалось скачать модель RapidOCR «{}» ({}): {error}. Проверьте подключение к сети и повторите загрузку в настройках.", model.label, model.id)
+    format!("Не удалось скачать модель {} «{}» ({}): {error}. Проверьте подключение к сети и повторите загрузку в настройках.", model.engine_name(), model.label, model.id)
 }
 
 /// Download the model set into `root/<id>`. `progress` gets 0..100. An installation that already verifies is kept.
@@ -144,7 +178,7 @@ pub async fn download(model: &OcrModel, root: &Path, mut progress: impl FnMut(i3
     let total = model.size().max(1);
     let (mut done, mut percent) = (0u64, 0);
     progress(0);
-    for role in ROLES {
+    for &role in model.roles() {
         let file = &model.files[role];
         let part = stage.path().join(format!("{}.part", file.name));
         let mut response = client.get(&file.url).send().await.and_then(reqwest::Response::error_for_status).map_err(|e| offline(model, e))?;
@@ -153,7 +187,7 @@ pub async fn download(model: &OcrModel, root: &Path, mut progress: impl FnMut(i3
         while let Some(chunk) = response.chunk().await.map_err(|e| offline(model, e))? {
             size += chunk.len() as u64;
             if size > file.size {
-                return Err(format!("Модель RapidOCR «{}»: файл {} больше ожидаемого; загрузка отменена.", model.label, file.name));
+                return Err(format!("Модель {} «{}»: файл {} больше ожидаемого; загрузка отменена.", model.engine_name(), model.label, file.name));
             }
             out.write_all(&chunk).map_err(|e| e.to_string())?;
             done += chunk.len() as u64;
@@ -166,7 +200,7 @@ pub async fn download(model: &OcrModel, root: &Path, mut progress: impl FnMut(i3
         out.sync_all().map_err(|e| e.to_string())?;
         drop(out);
         if !verify(&part, file) {
-            return Err(format!("Модель RapidOCR «{}»: размер или SHA-256 файла {} не совпадает с каталогом; файл удалён. Повторите загрузку.", model.label, file.name));
+            return Err(format!("Модель {} «{}»: размер или SHA-256 файла {} не совпадает с каталогом; файл удалён. Повторите загрузку.", model.engine_name(), model.label, file.name));
         }
         fs::rename(&part, stage.path().join(&file.name)).map_err(|e| e.to_string())?;
     }
@@ -200,6 +234,7 @@ fn commit(root: &Path, model: &OcrModel, stage: tempfile::TempDir) -> Result<(),
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct ModelState {
     pub id: String,
+    pub engine: String,
     pub label: String,
     pub variant: String,
     pub size: u64,
@@ -209,11 +244,15 @@ pub struct ModelState {
 /// What the settings show for RapidOCR: the model the recognition language needs, the installed ones, the library.
 #[derive(Debug, Clone, Serialize)]
 pub struct RapidStatus {
+    /// The engine the status is about: `rapidocr` or `meikiocr`.
+    pub engine: String,
     pub language: String,
     /// Languages of the setting RapidOCR does not read.
     pub ignored: Vec<String>,
     pub supported: bool,
     pub selected: Option<ModelState>,
+    /// In `auto` with Japanese: the MeikiOCR model, which `auto` uses as the second opinion when it is installed.
+    pub optional: Option<ModelState>,
     /// The script of the language has a `server` model.
     pub server_available: bool,
     /// Every catalog model with its state, for «Delete».
@@ -225,17 +264,18 @@ pub struct RapidStatus {
     pub problems: Vec<String>,
 }
 
-/// The status for the settings. Reads the disk (no hashing of every model: the selected one is verified, the others are
+/// The status for the settings: `engine` is the engine setting (`rapidocr`, `meikiocr` or `auto`). Reads the disk (no hashing of every model: the selected one is verified, the others are
 /// checked by size); run it off the GUI thread.
-pub fn status(language_spec: &str, variant: &str, threads: u32, root: &Path, library: Result<PathBuf, String>) -> RapidStatus {
+pub fn status(engine: &str, language_spec: &str, variant: &str, threads: u32, root: &Path, library: Result<PathBuf, String>) -> RapidStatus {
     let language = crate::tesseract::primary_lang(language_spec).to_owned();
-    let selected = select(language_spec, variant);
-    let state = |m: &OcrModel, installed| ModelState { id: m.id.clone(), label: m.label.clone(), variant: m.variant.clone(), size: m.size(), installed };
+    let selected = if engine == MEIKI { select_meiki(language_spec) } else { select(language_spec, variant) };
+    let state = |m: &OcrModel, installed| ModelState { id: m.id.clone(), engine: m.engine.clone(), label: m.label.clone(), variant: m.variant.clone(), size: m.size(), installed };
     let selected_state = selected.as_ref().ok().map(|m| state(m, verified(root, m)));
     let models = catalog().iter().map(|m| {
         let installed = match &selected_state { Some(s) if s.id == m.id => s.installed, _ => present(root, m) };
         state(m, installed)
     }).collect();
+    let optional = (engine == "auto").then(|| select_meiki(language_spec).ok()).flatten().map(|m| state(m, present(root, m)));
     let mut problems = Vec::new();
     if let Err(e) = &selected { problems.push(e.clone()); }
     if let Some(s) = selected_state.as_ref().filter(|s| !s.installed) {
@@ -248,10 +288,12 @@ pub fn status(language_spec: &str, variant: &str, threads: u32, root: &Path, lib
         _ => problems.first().cloned().unwrap_or_default(),
     };
     RapidStatus {
+        engine: if engine == MEIKI { MEIKI } else { RAPID }.into(),
         ignored: ignored_languages(language_spec),
         supported: selected.is_ok(),
         server_available: selected.as_ref().is_ok_and(|m| catalog().iter().any(|o| o.script == m.script && o.variant == "server")),
         selected: selected_state,
+        optional,
         models,
         library: library.ok().map(|p| p.display().to_string()),
         threads: super::rapid::effective_threads(threads),
@@ -276,16 +318,17 @@ mod tests {
             fs::write(dir.path().join(&name), &data).unwrap();
             (role.to_string(), ModelFile { name, size: data.len() as u64, sha256: format!("{:x}", Sha256::digest(data.as_bytes())), url: String::new() })
         }).collect();
-        let model = OcrModel { id: "test-mobile".into(), script: "test".into(), variant: "mobile".into(), label: "тест".into(),
+        let model = OcrModel { id: "test-mobile".into(), engine: RAPID.into(), script: "test".into(), variant: "mobile".into(), label: "тест".into(),
             languages: vec!["eng".into()], version: "test".into(), license: "Apache-2.0".into(), files };
         (dir, model)
     }
 
     #[test]
     fn catalog_is_complete_pinned_and_safe() {
-        let models = catalog();
+        let all = catalog();
+        let models: Vec<_> = all.iter().filter(|m| m.engine == RAPID).cloned().collect();
         assert!(models.len() >= 6);
-        for model in models {
+        for model in &models {
             assert!(["mobile", "server"].contains(&model.variant.as_str()), "{}", model.id);
             assert_eq!(model.id, format!("{}-{}", model.script, model.variant));
             assert_eq!(model.license, "Apache-2.0");
@@ -295,10 +338,10 @@ mod tests {
             }
             assert!(model.files["rec"].name.starts_with(&model.script) && model.files["dict"].name.ends_with(".txt"));
         }
-        let ids: std::collections::BTreeSet<_> = models.iter().map(|m| &m.id).collect();
-        assert_eq!(ids.len(), models.len(), "unique ids");
+        let ids: std::collections::BTreeSet<_> = all.iter().map(|m| &m.id).collect();
+        assert_eq!(ids.len(), all.len(), "unique ids");
         // A language belongs to one script: the choice of a model never depends on the order of the catalog.
-        for model in models {
+        for model in &models {
             for language in &model.languages {
                 assert!(models.iter().filter(|m| m.languages.contains(language)).all(|m| m.script == model.script), "{language}");
             }
@@ -437,16 +480,53 @@ mod tests {
     #[test]
     fn status_names_the_missing_model_and_the_ignored_languages() {
         let root = tempfile::tempdir().unwrap();
-        let s = status("rus+eng", "mobile", 0, root.path(), Ok(PathBuf::from("/usr/lib/libonnxruntime.so.1")));
+        let s = status(RAPID, "rus+eng", "mobile", 0, root.path(), Ok(PathBuf::from("/usr/lib/libonnxruntime.so.1")));
         assert!(!s.ready && s.supported && !s.server_available);
         assert_eq!(s.selected.as_ref().unwrap().id, "eslav-mobile");
         assert_eq!(s.ignored, ["eng"]);
         assert!(s.summary.contains("не скачана"), "{}", s.summary);
         assert!(s.models.iter().all(|m| !m.installed));
-        let s = status("jpn", "server", 2, root.path(), Err("нет библиотеки".into()));
+        let s = status(RAPID, "jpn", "server", 2, root.path(), Err("нет библиотеки".into()));
         assert!(s.server_available && s.problems.iter().any(|p| p == "нет библиотеки"));
         assert_eq!(s.threads, 2);
-        let s = status("klingon", "mobile", 0, root.path(), Ok(PathBuf::new()));
+        let s = status(RAPID, "klingon", "mobile", 0, root.path(), Ok(PathBuf::new()));
         assert!(!s.supported && s.selected.is_none());
+    }
+
+    #[test]
+    fn auto_offers_meiki_for_japanese_only() {
+        let root = tempfile::tempdir().unwrap();
+        let japanese = status("auto", "jpn+eng", "mobile", 0, root.path(), Ok(PathBuf::new()));
+        assert_eq!(japanese.engine, RAPID, "the status is about RapidOCR, MeikiOCR is the extra");
+        assert_eq!(japanese.optional.as_ref().map(|m| (m.id.as_str(), m.installed)), Some(("meiki-ja", false)));
+        assert!(japanese.problems.iter().all(|p| !p.contains("meiki")), "an optional model is not a problem: {:?}", japanese.problems);
+        assert!(status("auto", "rus", "mobile", 0, root.path(), Ok(PathBuf::new())).optional.is_none());
+        assert!(status(RAPID, "jpn", "mobile", 0, root.path(), Ok(PathBuf::new())).optional.is_none(), "RapidOCR on its own never uses it");
+    }
+
+    #[test]
+    fn meiki_reads_japanese_only_and_has_its_own_set_of_files() {
+        let model = select_meiki("jpn+eng").unwrap();
+        assert_eq!((model.id.as_str(), model.engine.as_str(), model.roles()), ("meiki-ja", MEIKI, &MEIKI_ROLES[..]));
+        assert_eq!(model.license, "LGPL-3.0");
+        assert!(model.files.values().all(|f| f.url.starts_with("https://huggingface.co/rtr46/") && f.url.contains("/resolve/") && !f.url.contains("/main/")));
+        assert!(select_meiki("eng+jpn").unwrap_err().contains("eng"));
+        // RapidOCR never picks the MeikiOCR set, whatever the language.
+        assert_eq!(select("jpn", "mobile").unwrap().id, "ch-mobile");
+        assert!(catalog().iter().filter(|m| m.engine == RAPID).all(|m| m.id != "meiki-ja"));
+        let root = tempfile::tempdir().unwrap();
+        let s = status(MEIKI, "jpn+eng", "mobile", 0, root.path(), Ok(PathBuf::from("/usr/lib/libonnxruntime.so.1")));
+        assert_eq!(s.engine, MEIKI);
+        assert!(!s.ready && s.supported && s.summary.contains("не скачана"), "{}", s.summary);
+        assert_eq!(s.selected.as_ref().unwrap().id, "meiki-ja");
+        let s = status(MEIKI, "rus", "mobile", 0, root.path(), Ok(PathBuf::new()));
+        assert!(!s.supported && s.problems[0].contains("японский"));
+    }
+
+    #[test]
+    fn a_catalog_mixing_up_the_roles_of_an_engine_is_refused() {
+        let good = include_str!("ocr_models_catalog.json");
+        assert!(parse_catalog(&good.replacen("\"engine\": \"meikiocr\"", "\"engine\": \"tesseract\"", 1)).unwrap_err().contains("unknown engine"));
+        assert!(parse_catalog(&good.replacen("\"vrec\": {", "\"dict\": {", 1)).is_err());
     }
 }

@@ -1,7 +1,9 @@
 //! Real Tesseract on rendered game-like text in English, Russian and Japanese (a CJK script), with and without the
-//! image filters. Skipped per language where the model is not installed, and everywhere without Tesseract, Python/PIL
+//! image filters. Skipped per language where the model is not installed, and everywhere without Tesseract
 //! or the bundled fonts. Run with `--nocapture` to see the report. By default a short set runs (about ten seconds);
 //! `LIPAX_OCR_FULL=1` runs every language on every background with every filter preset (about a minute).
+
+mod common;
 
 use image::DynamicImage;
 use lipa_core::ocr::filter::{FrameStats, PRESETS, Preprocess, pick_best, score};
@@ -9,7 +11,6 @@ use lipa_core::ocr::{AnyOcr, Ocr};
 use lipa_core::settings::Settings;
 use lipa_core::tesseract::TesseractManager;
 use lipa_core::text::{normalize, similarity};
-use std::path::Path;
 
 struct Case {
     name: &'static str,
@@ -28,36 +29,24 @@ const CASES: [Case; 5] = [
 ];
 
 /// `flat-dark`, `flat-light` or `busy` (a gradient with a texture, as behind game subtitles).
-fn render(case: &Case, background: &str, png: &Path) -> bool {
-    let fonts = Path::new(env!("CARGO_MANIFEST_DIR")).join("../app/assets/fonts");
-    let script = r#"
-import sys, random, math
-from PIL import Image, ImageDraw, ImageFont
-font, text, size, background, out = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4], sys.argv[5]
-f = ImageFont.truetype(font, size)
-w = int(f.getlength(text)) + 80
-h = size * 2 + 40
-random.seed(7)
-if background == 'flat-light':
-    im = Image.new('RGB', (w, h), (236, 232, 222)); ink = (30, 30, 36)
-elif background == 'busy':
-    im = Image.new('RGB', (w, h)); px = im.load()
-    for y in range(h):
-        for x in range(w):
-            v = 70 + int(22 * math.sin(x / 23.0 + y / 11.0)) + random.randint(-9, 9)
-            px[x, y] = (max(0, v - 10), max(0, v), min(255, v + 25))
-    ink = (250, 250, 245)
-else:
-    im = Image.new('RGB', (w, h), (22, 26, 36)); ink = (240, 240, 240)
-d = ImageDraw.Draw(im)
-if background == 'busy':
-    d.text((41, size // 2 + 21), text, font=f, fill=(0, 0, 0))
-d.text((40, size // 2 + 20), text, font=f, fill=ink)
-im.save(out)
-"#;
-    let font = fonts.join(case.font);
-    std::process::Command::new("python3").args(["-c", script]).arg(&font).arg(case.text).arg(case.size.to_string()).arg(background).arg(png)
-        .status().is_ok_and(|s| s.success())
+fn render(case: &Case, background: &str) -> Option<image::RgbImage> {
+    let text = common::Text::load(case.font, case.size)?;
+    let w = text.width(case.text) as u32 + 80;
+    let h = case.size * 2 + 40;
+    let mut noise = common::Noise::new(7);
+    let (mut im, ink) = match background {
+        "flat-light" => (image::RgbImage::from_pixel(w, h, image::Rgb([236, 232, 222])), [30, 30, 36]),
+        "busy" => (image::RgbImage::from_fn(w, h, |x, y| {
+            let v = 70 + (22.0 * (x as f32 / 23.0 + y as f32 / 11.0).sin()) as i32 + noise.next(9);
+            image::Rgb([(v - 10).clamp(0, 255) as u8, v.clamp(0, 255) as u8, (v + 25).clamp(0, 255) as u8])
+        }), [250, 250, 245]),
+        _ => (image::RgbImage::from_pixel(w, h, image::Rgb([22, 26, 36])), [240, 240, 240]),
+    };
+    if background == "busy" {
+        text.draw(&mut im, 41.0, (case.size / 2 + 21) as f32, case.text, [0, 0, 0]);
+    }
+    text.draw(&mut im, 40.0, (case.size / 2 + 20) as f32, case.text, ink);
+    Some(im)
 }
 
 fn installed(language: &str) -> bool {
@@ -111,10 +100,8 @@ async fn english_russian_and_japanese_are_read_and_auto_tune_finds_the_best_filt
             let hard = background == "busy" && matches!(case.name, "Russian small" | "Japanese");
             if !full && background != "flat-dark" && !hard { continue; }
             let presets: &[(&str, Preprocess)] = if full || hard { &PRESETS } else { &PRESETS[..1] };
-            let png = std::env::temp_dir().join(format!("lipax-lang-{}-{}-{background}.png", std::process::id(), case.language));
-            if !render(case, background, &png) { eprintln!("skipped: no Python/PIL or font"); return; }
-            let img = image::open(&png).unwrap();
-            let _ = std::fs::remove_file(&png);
+            let Some(img) = render(case, background) else { eprintln!("skipped: no font"); return; };
+            let img = DynamicImage::ImageRgb8(img);
             // Every preset, as auto-tune does; the first one is «no filters».
             let mut readings = Vec::new();
             for &(label, filters) in presets {

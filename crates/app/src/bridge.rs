@@ -19,6 +19,8 @@ pub mod qobject {
         #[qproperty(QString, settings_state, cxx_name = "settingsState")]
         #[qproperty(QString, model_state, cxx_name = "modelState")]
         #[qproperty(bool, model_busy, cxx_name = "modelBusy")]
+        /// Bergamot: установленная и доступные версии модели выбранной пары (JSON `PairVersions`); см. `refreshModelVersions`.
+        #[qproperty(QString, model_versions, cxx_name = "modelVersions")]
         #[qproperty(QString, history_json, cxx_name = "historyJson")]
         #[qproperty(QString, diagnostics_json, cxx_name = "diagnosticsJson")]
         #[qproperty(bool, diagnostics_busy, cxx_name = "diagnosticsBusy")]
@@ -120,6 +122,14 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "refreshModels"]
         fn refresh_models(self: Pin<&mut Controller>);
+        /// Узнать, какая версия модели выбранной пары установлена и есть ли новее (по встроенному каталогу, без сети).
+        #[qinvokable]
+        #[cxx_name = "refreshModelVersions"]
+        fn refresh_model_versions(self: Pin<&mut Controller>);
+        /// Скачать и проверить именно эту версию модели из каталога (выбор или обновление); только по кнопке.
+        #[qinvokable]
+        #[cxx_name = "downloadModelVersion"]
+        fn download_model_version(self: Pin<&mut Controller>, pair: &QString, version: &QString);
         #[qinvokable]
         #[cxx_name = "setModelPath"]
         fn set_model_path(self: Pin<&mut Controller>, path: &QString);
@@ -390,6 +400,9 @@ pub struct ControllerRust {
     settings_state: QString,
     model_state: QString,
     model_busy: bool,
+    model_versions: QString,
+    /// Only the answer to the latest version check is published.
+    model_versions_generation: u64,
     model_checked: std::collections::BTreeMap<String, model_controller::ModelPaths>,
     model_results: std::collections::BTreeMap<String, String>,
     history_json: QString,
@@ -458,6 +471,8 @@ impl Default for ControllerRust {
             diagnostics_busy: false,
             model_state: QString::from("{}"),
             model_busy: false,
+            model_versions: QString::from("{}"),
+            model_versions_generation: 0,
             model_checked: Default::default(),
             model_results: Default::default(),
             history,

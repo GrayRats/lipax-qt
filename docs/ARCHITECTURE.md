@@ -53,7 +53,8 @@ LipaX — переводчик игрового текста для KDE Plasma 6
 | `capture/kwin.rs`, `capture/geometry.rs`, `capture/geometry.js` | ScreenShot2 и клиентская геометрия окна |
 | `capture/portal.rs` | запасной ScreenCast / PipeWire / GStreamer |
 | `detect.rs`, `pipeline.rs` | детектор текста, независимое состояние областей, OCR, перевод, повторы |
-| `ocr/mod.rs`, `ocr/paddle.rs` | трейт `Ocr` (`recognize`, `recognize_detailed`: строки, координаты, уверенность), Tesseract (TSV), постоянный Python worker PaddleOCR 3.x, движок `auto` (Tesseract → RapidOCR → PaddleOCR) |
+| `ocr/mod.rs`, `ocr/paddle.rs` | трейт `Ocr` (`recognize`, `recognize_detailed`: строки, координаты, уверенность), Tesseract (TSV), постоянный Python worker PaddleOCR 3.x, движок `auto` (Tesseract → MeikiOCR для японского, если модель скачана → RapidOCR → PaddleOCR) |
+| `ocr/meiki.rs` | MeikiOCR: детектор и распознаватель японского текста игр (ONNX, та же ONNX Runtime; NMS по символам, вертикальные колонки), модели из того же каталога ([MeikiOCR.md](MeikiOCR.md)) |
 | `ocr/rapid.rs`, `ocr/rapid_models.rs` | RapidOCR: PP-OCRv5 (DBNet → ориентация → CTC) в процессе через ONNX Runtime (`ort`, системная `libonnxruntime.so`, `load-dynamic`); каталог моделей `ocr_models_catalog.json` с SHA-256, загрузка только по кнопке ([RapidOCR.md](RapidOCR.md)) |
 | `layout/split.rs` | разделение склеенного блока по шагу строк: `d > k·h_avg`, `k = 1.8`; направление текста и высота строки вдоль нормали |
 | `layout/dto.rs` | `TextLine`, `TextBlock`, `TextBlockId`: данные поля для инспектора (JSON) |
@@ -294,8 +295,8 @@ backend объединяет их с актуальными настройкам
 «Перевод → История…» открывает отдельное окно: время, область, оригинал, перевод,
 копирование, очистка, лимит, отключение записи и сохранения между запусками.
 История в памяти ограничена настройкой; файл записывается атомарно с правами 0600.
-«Статус» проверяет Tesseract, PaddleOCR/Python, ONNX Runtime и модель RapidOCR, PipeWire и GStreamer и
-показывает команды установки. Подключение PaddleOCR описано в [PaddleOCR.md](PaddleOCR.md), RapidOCR — в [RapidOCR.md](RapidOCR.md).
+«Статус» проверяет Tesseract, PaddleOCR/Python, ONNX Runtime и модели RapidOCR/MeikiOCR, PipeWire и GStreamer и
+показывает команды установки. Подключение PaddleOCR описано в [PaddleOCR.md](PaddleOCR.md), RapidOCR — в [RapidOCR.md](RapidOCR.md), MeikiOCR — в [MeikiOCR.md](MeikiOCR.md).
 
 ## Системный трей, единственный экземпляр, Desktop Actions
 

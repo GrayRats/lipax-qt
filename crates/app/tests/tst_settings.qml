@@ -23,6 +23,11 @@ TestCase {
         property string modelPath: ""
         function refreshModels() { modelChecks++ }
         function setModelPath(path) { modelPath = path }
+        property string modelVersions: "{}"
+        property int versionRefreshes: 0
+        property var versionRequests: []
+        function refreshModelVersions() { versionRefreshes++ }
+        function downloadModelVersion(pair, version) { versionRequests = versionRequests.concat([[pair, version]]) }
         property bool hasRegion: false
         property string windowTitle: "Game"
         property string settingsState: ""
@@ -382,10 +387,10 @@ TestCase {
         verify(visualFind(page.contentItem, "aboutDescription").text.indexOf("PaddleOCR") >= 0)
         verify(visualFind(page.contentItem, "aboutRepository").text.indexOf("github.com/GrayRats/lipax-qt") >= 0)
         const links = visualFind(page.contentItem, "aboutLinks")
-        verify(links.count === 6, "six sources")
+        verify(links.count === 7, "seven sources")
         let all = ""
         for (let i = 0; i < links.count; i++) all += links.itemAt(i).text
-        for (const needed of ["tesseract-ocr/tesseract", "tessdata_fast", "PaddlePaddle/PaddleOCR", "RapidAI/RapidOCR", "meikipop", "satix-one/lipa"])
+        for (const needed of ["tesseract-ocr/tesseract", "tessdata_fast", "PaddlePaddle/PaddleOCR", "RapidAI/RapidOCR", "rtr46/meikiocr", "meikipop", "satix-one/lipa"])
             verify(all.indexOf(needed) >= 0, needed)
     }
 
@@ -536,6 +541,144 @@ TestCase {
         settings.set("recognition.rapid_variant", "mobile")
         settings.set("recognition.rapid_threads", 0)
         settings.set("recognition.rapid_use_gpu", false)
+    }
+
+    function meikiReport(installed, extra) {
+        const selected = {id: "meiki-ja", engine: "meikiocr", label: "японский: игры и визуальные новеллы", variant: "v0.1", size: 45970040, installed: installed}
+        return JSON.stringify(Object.assign({engine: "meikiocr", language: "jpn", ignored: ["eng"], supported: true, selected: selected, server_available: false,
+            models: [selected], library: "/usr/lib/libonnxruntime.so.1.29.0", threads: 4, ready: installed,
+            summary: installed ? "Готово: японский · v0.1" : "Модель не скачана. Нажмите «Скачать».", problems: []}, extra || {}))
+    }
+
+    function test_meikiIsCheckedByItselfAndOffersItsModel() {
+        settings.reload()
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 1
+        settings.set("recognition.engine", "tesseract")
+        settings.set("recognition.language", "jpn+eng")
+        const page = findChild(settings, "settingsPage1").contentItem
+        const panel = visualFind(page, "rapidCheck")
+        verify(!panel.visible)
+        controller.rapidChecks = 0
+        controller.rapidCalls = []
+        settings.set("recognition.engine", "meikiocr")
+        verify(panel.visible, "MeikiOCR has the same block of its model as RapidOCR")
+        verify(!settings.usesTesseract, "MeikiOCR reads without Tesseract packages")
+        tryVerify(() => controller.rapidChecks === 1, 3000, "choosing MeikiOCR starts the check")
+        controller.rapidJson = meikiReport(false)
+        verify(visualFind(panel, "rapidModel").text.indexOf("японский") >= 0 && visualFind(panel, "rapidModel").text.indexOf("не скачана") >= 0)
+        verify(visualFind(panel, "rapidLanguages").text.indexOf("MeikiOCR читает только основной язык") >= 0)
+        compare(visualFind(page, "meikiOffer").visible, false, "MeikiOCR chosen: nothing optional is offered")
+        visualFind(panel, "rapidDownload").clicked()
+        compare(JSON.stringify(controller.rapidCalls), JSON.stringify([["download", "meiki-ja"]]))
+        controller.rapidJson = meikiReport(true)
+        visualFind(panel, "rapidDelete").clicked()
+        verify(findChild(settings, "rapidDeleteDialog").opened)
+        verify(findChild(settings, "rapidDeleteDialog").contentItem !== null)
+        findChild(settings, "rapidDeleteDialog").close()
+        controller.rapidJson = meikiReport(false, {supported: false, selected: null, ready: false, summary: "MeikiOCR: читает только японский, а основной язык «eng».", problems: ["MeikiOCR: читает только японский, а основной язык «eng»."]})
+        verify(visualFind(panel, "rapidSummary").text.indexOf("только японский") >= 0)
+        controller.rapidJson = ""
+        controller.rapidCalls = []
+        settings.set("recognition.engine", "tesseract")
+        settings.set("recognition.language", "eng")
+    }
+
+    function test_switchingTheLanguageOffersTheMissingModelAndNeverDownloadsUnasked() {
+        settings.reload()
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 1
+        settings.set("recognition.language", "eng")
+        settings.set("recognition.engine", "rapidocr")
+        controller.rapidCalls = []
+        const dialog = findChild(settings, "rapidOfferDialog")
+        // Opening the settings or choosing the engine offers nothing: only a change of the language does.
+        controller.rapidJson = rapidReport(false, "/usr/lib/libonnxruntime.so.1", {engine: "rapidocr"})
+        verify(!dialog.opened)
+        settings.set("recognition.language", "rus+eng")
+        verify(!dialog.opened, "the status of the previous language is not the answer")
+        controller.rapidJson = rapidReport(false, "/usr/lib/libonnxruntime.so.1", {engine: "rapidocr", threads: 5})
+        tryVerify(() => dialog.opened)
+        verify(settings.pendingRapidOffer.id === "eslav-mobile")
+        compare(JSON.stringify(controller.rapidCalls), "[]", "nothing is downloaded before the answer")
+        dialog.reject()
+        compare(JSON.stringify(controller.rapidCalls), "[]", "«No» downloads nothing")
+        // The next status of the same language does not ask again.
+        controller.rapidJson = rapidReport(false, "/usr/lib/libonnxruntime.so.1", {engine: "rapidocr", threads: 3})
+        verify(!dialog.opened)
+        // Another extra language does not change the model; another main language does, and the user agrees.
+        settings.set("recognition.language", "rus+deu")
+        controller.rapidJson = rapidReport(false, "/usr/lib/libonnxruntime.so.1", {engine: "rapidocr", ignored: ["deu"]})
+        verify(!dialog.opened)
+        settings.set("recognition.language", "ukr")
+        controller.rapidJson = rapidReport(false, "/usr/lib/libonnxruntime.so.1", {engine: "rapidocr", language: "ukr", ignored: []})
+        tryVerify(() => dialog.opened)
+        verify(dialog.contentItem !== null)
+        dialog.accept()
+        compare(JSON.stringify(controller.rapidCalls), JSON.stringify([["download", "eslav-mobile"]]))
+        // A model that is there, an unsupported language, a running download and `auto` ask nothing.
+        controller.rapidCalls = []
+        settings.set("recognition.language", "rus+eng")
+        controller.rapidJson = rapidReport(true, "/usr/lib/libonnxruntime.so.1", {engine: "rapidocr"})
+        verify(!dialog.opened)
+        settings.set("recognition.language", "klingon")
+        controller.rapidJson = JSON.stringify({engine: "rapidocr", language: "klingon", supported: false, selected: null, ready: false, summary: "нет", problems: ["нет"]})
+        verify(!dialog.opened)
+        settings.set("recognition.language", "rus")
+        controller.rapidBusy = true
+        controller.rapidJson = rapidReport(false, "/usr/lib/libonnxruntime.so.1", {engine: "rapidocr"})
+        verify(!dialog.opened)
+        controller.rapidBusy = false
+        settings.set("recognition.engine", "auto")
+        settings.set("recognition.language", "rus+eng")
+        controller.rapidJson = rapidReport(false, "/usr/lib/libonnxruntime.so.1", {engine: "rapidocr"})
+        verify(!dialog.opened, "in auto the block of the engine has its own button")
+        // MeikiOCR chosen: the same question, with its own source and licence.
+        settings.set("recognition.engine", "meikiocr")
+        settings.set("recognition.language", "jpn+eng")
+        controller.rapidJson = meikiReport(false)
+        tryVerify(() => dialog.opened)
+        verify(settings.pendingRapidOffer.id === "meiki-ja")
+        dialog.reject()
+        compare(JSON.stringify(controller.rapidCalls), "[]")
+        controller.rapidJson = ""
+        settings.set("recognition.engine", "tesseract")
+        settings.set("recognition.language", "eng")
+    }
+
+    function test_autoOffersTheOptionalMeikiModelForJapanese() {
+        settings.reload()
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 1
+        settings.set("recognition.language", "jpn+eng")
+        settings.set("recognition.engine", "auto")
+        const page = findChild(settings, "settingsPage1").contentItem
+        const optional = {id: "meiki-ja", engine: "meikiocr", label: "японский: игры и визуальные новеллы", variant: "v0.1", size: 45970040, installed: false}
+        const ch = {id: "ch-mobile", engine: "rapidocr", label: "китайский и японский", variant: "mobile", size: 23000000, installed: true}
+        controller.rapidCalls = []
+        controller.rapidJson = JSON.stringify({engine: "rapidocr", language: "jpn", ignored: ["eng"], supported: true, selected: ch, optional: optional,
+            server_available: true, models: [ch, optional], library: "/usr/lib/libonnxruntime.so.1", threads: 4, ready: true, summary: "Готово", problems: []})
+        const offer = visualFind(page, "meikiOffer")
+        verify(offer.visible)
+        verify(visualFind(offer, "meikiOfferLabel").text.indexOf("без неё японский читает RapidOCR") >= 0, visualFind(offer, "meikiOfferLabel").text)
+        visualFind(offer, "meikiDownload").clicked()
+        compare(JSON.stringify(controller.rapidCalls), JSON.stringify([["download", "meiki-ja"]]))
+        verify(visualFind(page, "rapidOther_meiki-ja") === null, "the offer is not listed twice")
+        optional.installed = true
+        controller.rapidJson = JSON.stringify({engine: "rapidocr", language: "jpn", ignored: [], supported: true, selected: ch, optional: optional,
+            server_available: true, models: [ch, optional], library: "/usr/lib/libonnxruntime.so.1", threads: 4, ready: true, summary: "Готово", problems: []})
+        verify(visualFind(offer, "meikiOfferLabel").text.indexOf("используется в автоматическом режиме") >= 0)
+        verify(!visualFind(offer, "meikiDownload").visible && visualFind(offer, "meikiDelete").visible)
+        visualFind(offer, "meikiDelete").clicked()
+        verify(findChild(settings, "rapidDeleteDialog").opened)
+        findChild(settings, "rapidDeleteDialog").close()
+        // Another language: nothing to offer.
+        controller.rapidJson = JSON.stringify({engine: "rapidocr", language: "rus", ignored: [], supported: true, selected: ch, optional: null, models: [ch], library: "/usr/lib/libonnxruntime.so.1", threads: 4, ready: true, summary: "Готово", problems: []})
+        verify(!offer.visible)
+        controller.rapidJson = ""
+        controller.rapidCalls = []
+        settings.set("recognition.engine", "tesseract")
+        settings.set("recognition.language", "eng")
     }
 
     function test_languagesWithoutAPackageAreDownloadedWithoutAPassword() {
@@ -734,11 +877,13 @@ TestCase {
         findChild(settings, "settingsTabs").currentIndex = 0
         const box = findChild(settings, "ocrEngineBox")
         verify(box !== null)
-        compare(box.count, 4)
+        compare(box.count, 5)
         settings.set("recognition.engine", "tesseract")
         compare(box.currentIndex, 0)
-        settings.set("recognition.engine", "auto")
+        settings.set("recognition.engine", "meikiocr")
         compare(box.currentIndex, 3)
+        settings.set("recognition.engine", "auto")
+        compare(box.currentIndex, 4)
         verify(settings.usesPaddle, "auto may call PaddleOCR: its Python is configurable")
         verify(settings.usesRapid, "auto calls RapidOCR first: its model is shown")
         box.currentIndex = 2
@@ -958,6 +1103,84 @@ TestCase {
         wait(30)
         compare(findChild(settings, "bergamotDownload").enabled, true)
         verify(findChild(settings, "bergamotStatus").text.indexOf("Not Found") >= 0)
+        controller.modelState = "{}"
+    }
+
+    function bergamotVersions(installed) {
+        const sets = [{version: "2.1", size: 35280000, newest: true}, {version: "2.0", size: 47790000, newest: false}]
+        return JSON.stringify({pair: "en-ru", installed: installed, newest: "2.1", update: installed === "2.0",
+            versions: sets.map(function (v) { return ({version: v.version, size: v.size, newest: v.newest, installed: v.version === installed}) })})
+    }
+
+    function test_bergamotOffersVersionsAndUpdate() {
+        settings.reload()
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 2
+        settings.set("translation.service", "bergamot")
+        controller.modelState = JSON.stringify({pair: "en-ru", status: "Found"})
+        controller.versionRequests = []
+        tryVerify(function () { return controller.versionRefreshes > 0 })
+        controller.modelVersions = bergamotVersions("2.0")
+        wait(30)
+        const label = findChild(settings, "bergamotVersion")
+        const box = findChild(settings, "bergamotVersionBox")
+        const install = findChild(settings, "bergamotInstallVersion")
+        const update = findChild(settings, "bergamotUpdate")
+        verify(label.text.indexOf("2.0") >= 0 && label.text.indexOf("2.1") >= 0 && label.text.indexOf("доступна новая") >= 0, label.text)
+        compare(update.visible, true)
+        verify(update.text.indexOf("2.1") >= 0)
+        // The installed version is preselected: nothing to download until another one is chosen.
+        compare(box.count, 2)
+        compare(box.currentValue, "2.0")
+        verify(box.textAt(0).indexOf("33,6 МБ") >= 0 && box.textAt(0).indexOf("новейшая") >= 0, box.textAt(0))
+        verify(box.textAt(1).indexOf("(установлена)") >= 0, box.textAt(1))
+        compare(install.enabled, false)
+        update.clicked()
+        compare(controller.versionRequests.length, 1)
+        compare(controller.versionRequests[0][0], "en-ru")
+        compare(controller.versionRequests[0][1], "2.1")
+        box.currentIndex = 0
+        compare(install.enabled, true)
+        box.currentIndex = 1
+        compare(install.enabled, false)
+        controller.modelBusy = true
+        box.currentIndex = 0
+        wait(30)
+        compare(install.enabled, false)
+        compare(update.enabled, false)
+        controller.modelBusy = false
+        wait(30)
+        install.clicked()
+        compare(controller.versionRequests.length, 2)
+        compare(controller.versionRequests[1][1], "2.1")
+
+        controller.modelVersions = bergamotVersions("2.1")
+        wait(30)
+        compare(update.visible, false)
+        verify(label.text.indexOf("актуальная") >= 0, label.text)
+        compare(box.currentValue, "2.1")
+        controller.modelVersions = bergamotVersions("")
+        wait(30)
+        verify(label.text.indexOf("не установлена") >= 0, label.text)
+        compare(install.enabled, true)
+        compare(label.visible, true)
+        controller.modelVersions = "{}"
+        wait(30)
+        compare(label.visible, false)
+        controller.modelState = "{}"
+    }
+
+    function test_bergamotVersionsAreReReadWhenThePairOrTheStateChanges() {
+        settings.set("translation.service", "bergamot")
+        controller.modelState = JSON.stringify({pair: "en-ru", status: "Found"})
+        wait(450)
+        const before = controller.versionRefreshes
+        controller.modelState = JSON.stringify({pair: "en-de", status: "Found"})
+        tryVerify(function () { return controller.versionRefreshes > before })
+        const after = controller.versionRefreshes
+        controller.modelBusy = true
+        controller.modelBusy = false
+        tryVerify(function () { return controller.versionRefreshes > after })
         controller.modelState = "{}"
     }
 

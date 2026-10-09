@@ -23,3 +23,7 @@ serde_yaml = "0.9"
 tempfile = "3"
 # ONNX Runtime for RapidOCR, loaded at run time from the system library (`load-dynamic`): nothing is linked or downloaded at build time.
 ort = { version = "=2.0.0-rc.13", default-features = false, features = ["std", "load-dynamic", "tracing", "cuda", "rocm", "migraphx"] }
+
+[dev-dependencies]
+# Draws the text of the opt-in OCR tests (no Python): a pure Rust rasterizer, never part of the application.
+ab_glyph = "0.2"

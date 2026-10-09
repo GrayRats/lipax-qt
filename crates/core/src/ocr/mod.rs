@@ -2,6 +2,7 @@
 //! без временных файлов и гонок между запусками.
 
 pub mod filter;
+pub mod meiki;
 pub mod paddle;
 pub mod paddle_env;
 pub mod rapid;
@@ -29,7 +30,7 @@ pub enum OcrError {
     #[error("неизвестный OCR-движок: {0}")]
     UnknownEngine(String),
     /// The engine is set up, but running a model failed on this frame.
-    #[error("RapidOCR: ошибка выполнения модели: {0}")]
+    #[error("ошибка выполнения модели OCR: {0}")]
     Inference(String),
 }
 
@@ -89,6 +90,17 @@ pub const AUTO_ACCEPT: f32 = 60.0;
 const PADDLE_RETRY_AFTER: std::time::Duration = std::time::Duration::from_secs(300);
 /// After RapidOCR failed in `auto` (no model, no ONNX Runtime), PaddleOCR takes its place for this long.
 const RAPID_RETRY_AFTER: std::time::Duration = std::time::Duration::from_secs(300);
+/// After MeikiOCR failed in `auto` (no ONNX Runtime, a broken model), RapidOCR takes its place for this long.
+const MEIKI_RETRY_AFTER: std::time::Duration = std::time::Duration::from_secs(300);
+
+fn is_down(until: &std::sync::Mutex<Option<std::time::Instant>>) -> bool {
+    until.lock().unwrap().is_some_and(|t| std::time::Instant::now() < t)
+}
+
+/// Whether a second reading is surer than the first one (and is a reading at all).
+fn is_better(second: &OcrResult, first: &OcrResult) -> bool {
+    !second.text.trim().is_empty() && second.confidence.is_none_or(|c| c > first.confidence.unwrap_or(0.0))
+}
 
 #[derive(Default)]
 pub struct AnyOcr {
@@ -96,6 +108,8 @@ pub struct AnyOcr {
     paddle_down_until: std::sync::Mutex<Option<std::time::Instant>>,
     rapid: rapid::RapidOcr,
     rapid_down_until: std::sync::Mutex<Option<std::time::Instant>>,
+    meiki: meiki::MeikiOcr,
+    meiki_down_until: std::sync::Mutex<Option<std::time::Instant>>,
     /// When a frame last read as empty both with the automatic filters and without them. A scene without text is
     /// not read twice at every cycle: for `EMPTY_BACKOFF` the raw second reading is skipped.
     last_empty_both: std::sync::Mutex<Option<std::time::Instant>>,
@@ -109,26 +123,42 @@ impl AnyOcr {
         let first = Tesseract.run_detailed_with(img, &settings.recognition.language, filters).await?;
         // A result is good enough unless the engine itself is unsure.
         if first.confidence.is_none_or(|c| c >= AUTO_ACCEPT) { return Ok(first); }
-        // RapidOCR is the second opinion; PaddleOCR only stands in while RapidOCR is unavailable.
-        let rapid_down = self.rapid_down_until.lock().unwrap().is_some_and(|t| std::time::Instant::now() < t);
-        if !rapid_down {
+        // MeikiOCR is the second opinion for Japanese when its model is installed (it is optional, nothing is fetched
+        // for it); otherwise RapidOCR is, and PaddleOCR only stands in while RapidOCR is unavailable.
+        let meiki = self.meiki.installed(&settings.recognition.language) && !is_down(&self.meiki_down_until);
+        let rapid = !is_down(&self.rapid_down_until);
+        if meiki || rapid {
             // Without the automatic binarization (see `FilterPlan::of`): only the filters chosen by hand.
             let manual = filter::FilterPlan::of(&settings.recognition).without_addition();
-            let second = if manual.is_identity() {
-                self.rapid.recognize_detailed(img, settings).await
-            } else {
-                self.rapid.recognize_detailed(&filtered(img, manual).await?, settings).await
-            };
-            match second {
-                Ok(mut second) if !second.text.trim().is_empty() && second.confidence.is_none_or(|c| c > first.confidence.unwrap_or(0.0)) => {
-                    tracing::debug!(engine = "auto", tesseract = ?first.confidence, rapidocr = ?second.confidence, "OCR: RapidOCR is more sure");
-                    second.filters = manual;
-                    return Ok(second);
+            let prepared;
+            let image = if manual.is_identity() { img } else { prepared = filtered(img, manual).await?; &prepared };
+            if meiki {
+                match self.meiki.recognize_detailed(image, settings).await {
+                    Ok(mut second) if is_better(&second, &first) => {
+                        tracing::debug!(engine = "auto", tesseract = ?first.confidence, meikiocr = ?second.confidence, "OCR: MeikiOCR is more sure");
+                        second.filters = manual;
+                        return Ok(second);
+                    }
+                    // Japanese is MeikiOCR's: an empty or unsure reading is not repeated by another engine.
+                    Ok(_) => return Ok(first),
+                    Err(e) => {
+                        tracing::debug!(engine = "auto", error = %e, "OCR: MeikiOCR unavailable, RapidOCR is tried instead");
+                        *self.meiki_down_until.lock().unwrap() = Some(std::time::Instant::now() + MEIKI_RETRY_AFTER);
+                    }
                 }
-                Ok(_) => return Ok(first),
-                Err(e) => {
-                    tracing::debug!(engine = "auto", error = %e, "OCR: RapidOCR unavailable, PaddleOCR is tried instead");
-                    *self.rapid_down_until.lock().unwrap() = Some(std::time::Instant::now() + RAPID_RETRY_AFTER);
+            }
+            if rapid {
+                match self.rapid.recognize_detailed(image, settings).await {
+                    Ok(mut second) if is_better(&second, &first) => {
+                        tracing::debug!(engine = "auto", tesseract = ?first.confidence, rapidocr = ?second.confidence, "OCR: RapidOCR is more sure");
+                        second.filters = manual;
+                        return Ok(second);
+                    }
+                    Ok(_) => return Ok(first),
+                    Err(e) => {
+                        tracing::debug!(engine = "auto", error = %e, "OCR: RapidOCR unavailable, PaddleOCR is tried instead");
+                        *self.rapid_down_until.lock().unwrap() = Some(std::time::Instant::now() + RAPID_RETRY_AFTER);
+                    }
                 }
             }
         }
@@ -157,7 +187,7 @@ impl AnyOcr {
 impl Ocr for AnyOcr {
     async fn recognize(&self, img: &DynamicImage, settings: &Settings) -> Result<String, OcrError> {
         match settings.recognition.engine.as_str() {
-            "tesseract" | "paddleocr" | "rapidocr" | "auto" => Ok(self.recognize_detailed(img, settings).await?.text),
+            "tesseract" | "paddleocr" | "rapidocr" | "meikiocr" | "auto" => Ok(self.recognize_detailed(img, settings).await?.text),
             _ => Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned())),
         }
     }
@@ -211,6 +241,8 @@ impl AnyOcr {
             "paddleocr" => self.paddle.recognize_detailed(&filtered(img, filters).await?, settings).await,
             "rapidocr" if filters.is_identity() => self.rapid.recognize_detailed(img, settings).await,
             "rapidocr" => self.rapid.recognize_detailed(&filtered(img, filters).await?, settings).await,
+            "meikiocr" if filters.is_identity() => self.meiki.recognize_detailed(img, settings).await,
+            "meikiocr" => self.meiki.recognize_detailed(&filtered(img, filters).await?, settings).await,
             "auto" => self.auto(img, settings, filters).await,
             _ => Err(OcrError::UnknownEngine(r.engine.as_str().to_owned())),
         }
@@ -573,6 +605,22 @@ mod tests {
         let error = ocr.recognize_detailed(&DynamicImage::new_rgba8(64, 32), &s).await.unwrap_err();
         assert!(matches!(&error, OcrError::Setup(m) if m.contains("ch-mobile") && m.contains("Скачать")), "{error}");
         assert!(ocr.rapid_down_until.lock().unwrap().is_none(), "only `auto` puts RapidOCR aside");
+    }
+
+    #[tokio::test]
+    async fn an_explicit_meikiocr_without_its_model_says_what_to_do_and_reads_japanese_only() {
+        let models = tempfile::tempdir().unwrap();
+        let ocr = AnyOcr { meiki: meiki::MeikiOcr::new(models.path().into(), None), ..AnyOcr::default() };
+        let mut s = Settings::default();
+        s.recognition.engine = crate::settings::OcrEngine::MeikiOcr;
+        s.recognition.language = "jpn+eng".into();
+        let error = ocr.recognize_detailed(&DynamicImage::new_rgba8(64, 32), &s).await.unwrap_err();
+        assert!(matches!(&error, OcrError::Setup(m) if m.contains("meiki-ja") && m.contains("Скачать")), "{error}");
+        assert!(ocr.meiki_down_until.lock().unwrap().is_none(), "only `auto` puts MeikiOCR aside");
+        s.recognition.language = "eng".into();
+        let error = ocr.recognize_detailed(&DynamicImage::new_rgba8(64, 32), &s).await.unwrap_err();
+        assert!(matches!(&error, OcrError::Setup(m) if m.contains("японский")), "{error}");
+        assert!(!ocr.meiki.installed("jpn"), "an empty cache has no model, so `auto` does not ask MeikiOCR");
     }
 
     #[tokio::test]

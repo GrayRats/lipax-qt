@@ -1,6 +1,6 @@
 //! Font detection on real rendered text (not on drawn rectangles).
 //!
-//! The fixtures are PNGs of real fonts with known labels (packaging/render-font-fixtures.py).
+//! The fixtures are PNGs of real fonts with known labels (`cargo run -p lipa-core --example render_fixtures -- fonts`).
 //! `font_report` prints the confusion table for whatever directory `LIPA_FONT_FIXTURES` points at;
 //! the other tests check the committed set.
 

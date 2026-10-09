@@ -120,17 +120,33 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
         },
         Err(e) => rows.push(row("Python / PaddleOCR", "error", e, "Укажите путь к Python из venv; инструкция: docs/PaddleOCR.md.")),
     }
-    if matches!(s.recognition.engine.as_str(), "rapidocr" | "auto") {
-        use crate::ocr::{rapid, rapid_models};
+    let engine = s.recognition.engine.as_str();
+    let japanese = crate::tesseract::primary_lang(&s.recognition.language) == "jpn";
+    if matches!(engine, "rapidocr" | "meikiocr" | "auto") {
+        use crate::ocr::rapid;
         match rapid::library_path(None) {
-            Ok(path) => rows.push(row("RapidOCR: ONNX Runtime", "ready", path.display().to_string(), "")),
-            Err(e) => rows.push(row("RapidOCR: ONNX Runtime", "error", e, &format!("Arch: {}. Инструкция: docs/RapidOCR.md.", rapid::INSTALL_COMMAND))),
+            Ok(path) => rows.push(row("ONNX Runtime", "ready", path.display().to_string(), "")),
+            Err(e) => rows.push(row("ONNX Runtime", "error", e, &format!("Arch: {}. Инструкция: docs/RapidOCR.md.", rapid::INSTALL_COMMAND))),
         }
+    }
+    if matches!(engine, "rapidocr" | "auto") {
+        use crate::ocr::rapid_models;
         match rapid_models::select(&s.recognition.language, &s.recognition.rapid_variant) {
             Ok(model) if rapid_models::present(&rapid_models::cache_root(), model) => rows.push(row("Модель RapidOCR", "ready", format!("{} ({})", model.label, model.id), "")),
             Ok(model) => rows.push(row("Модель RapidOCR", "error", format!("Не скачана: {} ({}, {:.0} МБ)", model.label, model.id, model.size() as f64 / 1e6),
                 "Скачайте модель: «Настройки → Распознавание → RapidOCR → Скачать».")),
             Err(e) => rows.push(row("Модель RapidOCR", "error", e, "Выберите поддерживаемый основной язык (docs/RapidOCR.md).")),
+        }
+    }
+    // In `auto` MeikiOCR is an optional second opinion for Japanese: without its model RapidOCR reads the language.
+    if engine == "meikiocr" || (engine == "auto" && japanese) {
+        use crate::ocr::rapid_models;
+        let missing = if engine == "auto" { "warning" } else { "error" };
+        match rapid_models::select_meiki(&s.recognition.language) {
+            Ok(model) if rapid_models::present(&rapid_models::cache_root(), model) => rows.push(row("Модель MeikiOCR", "ready", format!("{} ({})", model.label, model.id), "")),
+            Ok(model) => rows.push(row("Модель MeikiOCR", missing, format!("Не скачана: {} ({}, {:.0} МБ)", model.label, model.id, model.size() as f64 / 1e6),
+                "Скачайте модель: «Настройки → Распознавание → MeikiOCR → Скачать».")),
+            Err(e) => rows.push(row("Модель MeikiOCR", "error", e, "Выберите японский основным языком или другой движок (docs/MeikiOCR.md).")),
         }
     }
     let langs = output("tesseract", &["--list-langs"]).await;

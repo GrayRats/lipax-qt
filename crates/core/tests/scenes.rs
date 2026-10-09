@@ -1,5 +1,5 @@
 //! The in-place engine on game-like scenes drawn with real fonts
-//! (packaging/render-scene-fixtures.py): detection of independent fields, font choice, fitting
+//! (`cargo run -p lipa-core --example render_fixtures -- scenes`): detection of independent fields, font choice, fitting
 //! and overlap protection, end to end.
 
 use lipa_core::capture::kwin::WindowGeometry;

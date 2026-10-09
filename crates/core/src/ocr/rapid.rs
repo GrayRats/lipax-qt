@@ -72,10 +72,10 @@ pub fn library_path(explicit: Option<&Path>) -> Result<PathBuf, String> {
     let from_env = |name: &str| std::env::var_os(name).filter(|v| !v.is_empty()).map(PathBuf::from);
     if let Some(path) = explicit.map(Path::to_path_buf).or_else(|| from_env("LIPAX_ORT_LIBRARY")).or_else(|| from_env("ORT_DYLIB_PATH")) {
         return path.canonicalize().ok().filter(|p| p.is_file())
-            .ok_or_else(|| format!("RapidOCR: библиотека ONNX Runtime {} не найдена. Проверьте путь или установите библиотеку: {INSTALL_COMMAND}.", path.display()));
+            .ok_or_else(|| format!("Библиотека ONNX Runtime {} не найдена. Проверьте путь или установите библиотеку: {INSTALL_COMMAND}.", path.display()));
     }
     LIBRARY_CANDIDATES.iter().find_map(|p| Path::new(p).canonicalize().ok().filter(|p| p.is_file()))
-        .ok_or_else(|| format!("RapidOCR: не найдена библиотека ONNX Runtime (libonnxruntime.so). Установите её: {INSTALL_COMMAND} — и нажмите «Проверить снова». Другой путь можно задать переменной окружения LIPAX_ORT_LIBRARY."))
+        .ok_or_else(|| format!("Не найдена библиотека ONNX Runtime (libonnxruntime.so). Установите её: {INSTALL_COMMAND} — и нажмите «Проверить снова». Другой путь можно задать переменной окружения LIPAX_ORT_LIBRARY."))
 }
 
 static RUNTIME: StdMutex<Option<PathBuf>> = StdMutex::new(None);
@@ -89,19 +89,19 @@ pub fn init_runtime(explicit: Option<&Path>) -> Result<PathBuf, OcrError> {
     }
     let path = library_path(explicit).map_err(OcrError::Setup)?;
     let environment = ort::init_from(&path).map_err(|e| OcrError::Setup(format!(
-        "RapidOCR: не удалось загрузить ONNX Runtime из {}: {e}. Переустановите библиотеку: {INSTALL_COMMAND}.", path.display())))?;
+        "Не удалось загрузить ONNX Runtime из {}: {e}. Переустановите библиотеку: {INSTALL_COMMAND}.", path.display())))?;
     let _ = environment.with_name("lipax").commit();
     tracing::info!(component = ENGINE, library = %path.display(), "ONNX Runtime загружен");
     *loaded = Some(path.clone());
     Ok(path)
 }
 
-fn inference(error: impl std::fmt::Display) -> OcrError {
+pub(super) fn inference(error: impl std::fmt::Display) -> OcrError {
     OcrError::Inference(error.to_string())
 }
 
 /// The GPU execution providers the loaded ONNX Runtime was built with (CUDA, MIGraphX, ROCm), best first.
-fn gpu_providers() -> Vec<(&'static str, ExecutionProviderDispatch)> {
+pub(super) fn gpu_providers() -> Vec<(&'static str, ExecutionProviderDispatch)> {
     use ort::ep::{CUDA, ExecutionProvider, MIGraphX, ROCm};
     let mut providers = Vec::new();
     if CUDA::default().is_available().unwrap_or(false) { providers.push(("CUDA", CUDA::default().build())); }
@@ -110,8 +110,8 @@ fn gpu_providers() -> Vec<(&'static str, ExecutionProviderDispatch)> {
     providers
 }
 
-fn session(path: &Path, threads: usize, providers: &[ExecutionProviderDispatch]) -> Result<Session, OcrError> {
-    let fail = |e: String| OcrError::Setup(format!("RapidOCR: не удалось открыть модель {}: {e}. Удалите модель в настройках и скачайте её заново.", path.display()));
+pub(super) fn session(path: &Path, threads: usize, providers: &[ExecutionProviderDispatch]) -> Result<Session, OcrError> {
+    let fail = |e: String| OcrError::Setup(format!("Не удалось открыть модель {}: {e}. Удалите модель в настройках и скачайте её заново.", path.display()));
     // No spinning: idle threads of ONNX Runtime would otherwise keep cores busy between frames, next to the game.
     let mut builder = Session::builder().map_err(|e| fail(e.to_string()))?
         .with_intra_threads(threads).map_err(|e| fail(e.to_string()))?
@@ -122,7 +122,7 @@ fn session(path: &Path, threads: usize, providers: &[ExecutionProviderDispatch])
         builder = match builder.with_execution_providers(providers) {
             Ok(builder) => builder,
             Err(e) => {
-                tracing::warn!(component = ENGINE, error = %e, "GPU недоступен, RapidOCR работает на CPU");
+                tracing::warn!(component = ENGINE, error = %e, "GPU недоступен, модели работают на CPU");
                 e.recover()
             }
         };
@@ -432,7 +432,7 @@ pub fn crop(img: &RgbImage, q: &Quad) -> Option<RgbImage> {
 }
 
 /// Writes `img` into `out` (planes of `stride × height`) in the BGR order the PaddleOCR models were trained on.
-fn write_bgr(img: &RgbImage, mean: [f32; 3], std: [f32; 3], out: &mut [f32], stride: usize, plane: usize) {
+pub(super) fn write_bgr(img: &RgbImage, mean: [f32; 3], std: [f32; 3], out: &mut [f32], stride: usize, plane: usize) {
     for (x, y, pixel) in img.enumerate_pixels() {
         for c in 0..3 {
             let value = pixel.0[2 - c] as f32 / 255.0;
@@ -441,7 +441,7 @@ fn write_bgr(img: &RgbImage, mean: [f32; 3], std: [f32; 3], out: &mut [f32], str
     }
 }
 
-fn resize(img: &RgbImage, width: u32, height: u32) -> RgbImage {
+pub(super) fn resize(img: &RgbImage, width: u32, height: u32) -> RgbImage {
     if img.dimensions() == (width, height) { img.clone() } else { image::imageops::resize(img, width, height, FilterType::Triangle) }
 }
 
@@ -931,7 +931,7 @@ mod tests {
             std::fs::write(dir.join(&name), &data).unwrap();
             (role.to_owned(), rapid_models::ModelFile { name, size: data.len() as u64, sha256: format!("{:x}", sha2::Sha256::digest(&data)), url: String::new() })
         }).collect();
-        OcrModel { id: "fake-mobile".into(), script: "fake".into(), variant: "mobile".into(), label: "fake".into(), languages: vec![], version: "test".into(), license: "test".into(), files }
+        OcrModel { id: "fake-mobile".into(), engine: rapid_models::RAPID.into(), script: "fake".into(), variant: "mobile".into(), label: "fake".into(), languages: vec![], version: "test".into(), license: "test".into(), files }
     }
 
     /// The whole pipeline through the system ONNX Runtime with stand-in models: library loading, sessions with the
