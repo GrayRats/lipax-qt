@@ -62,6 +62,34 @@ pub fn prepare(
     })
 }
 
+/// Download a RapidOCR model set on the calling QThread; only ever started by the user's «Download».
+pub fn download_ocr_model(
+    model: &lipa_core::ocr::rapid_models::OcrModel,
+    cancel: &mut tokio::sync::watch::Receiver<bool>,
+    progress: impl FnMut(i32),
+) -> Result<std::path::PathBuf, String> {
+    use lipa_core::ocr::rapid_models;
+    prepare_catching_panic(|| {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .map_err(|e| e.to_string())?;
+        runtime.block_on(async {
+            if *cancel.borrow() { return Err("Model installation cancelled.".into()); }
+            let root = rapid_models::cache_root();
+            tokio::select! {
+                _ = cancel.changed() => Err("Model installation cancelled.".into()),
+                result = rapid_models::download(model, &root, progress) => result,
+            }
+        })
+    })
+}
+
+pub fn delete_ocr_model(model: &lipa_core::ocr::rapid_models::OcrModel) -> Result<(), String> {
+    use lipa_core::ocr::rapid_models;
+    prepare_catching_panic(|| rapid_models::remove(&rapid_models::cache_root(), model))
+}
+
 fn prepare_catching_panic<T>(work: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(work))
         .unwrap_or_else(|_| Err("Model worker failed. Retry the download in Settings.".into()))

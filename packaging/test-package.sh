@@ -36,6 +36,23 @@ if grep -q 'not found' "$lipa_test_dir/bergamot-libraries.log"; then cat "$lipa_
 [[ -s $lipa_test_dir/root/usr/share/applications/io.lipa.Translator.desktop ]]
 ldd "$lipa_binary" > "$lipa_test_dir/libraries.log"
 if grep -q 'not found' "$lipa_test_dir/libraries.log"; then cat "$lipa_test_dir/libraries.log" >&2; exit 1; fi
+# RapidOCR opens ONNX Runtime at run time (ort, load-dynamic): lipax must not link it, the package carries no model,
+# only the catalog compiled into the binary.
+if grep -q onnxruntime "$lipa_test_dir/libraries.log"; then echo "lipax links ONNX Runtime directly" >&2; exit 1; fi
+if [[ -n $(find "$lipa_test_dir/root" -name '*.onnx' -print -quit) ]]; then echo "OCR models must not be packaged" >&2; exit 1; fi
+grep -aq 'RapidAI/RapidOCR/resolve/' "$lipa_binary"
+[[ -s $lipa_test_dir/root/usr/share/doc/lipax/RapidOCR.md ]]
+# The optional runtime (onnxruntime-cpu), when installed, must resolve all its libraries.
+lipa_ort=
+for lipa_candidate in /usr/lib/libonnxruntime.so.1 /usr/lib/libonnxruntime.so; do
+    if [[ -e $lipa_candidate ]]; then lipa_ort=$lipa_candidate; break; fi
+done
+if [[ -n $lipa_ort ]]; then
+    ldd "$lipa_ort" > "$lipa_test_dir/onnxruntime-libraries.log"
+    if grep -q 'not found' "$lipa_test_dir/onnxruntime-libraries.log"; then cat "$lipa_test_dir/onnxruntime-libraries.log" >&2; exit 1; fi
+else
+    echo "onnxruntime is not installed: the RapidOCR library check is skipped" >&2
+fi
 "$lipa_binary" --version
 export QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software RUST_LOG=info
 export XDG_CONFIG_HOME="$lipa_test_dir/config" XDG_DATA_HOME="$lipa_test_dir/data" XDG_CACHE_HOME="$lipa_test_dir/cache"

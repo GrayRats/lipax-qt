@@ -1,6 +1,6 @@
 pkgname=lipax
-pkgver=1.2.0
-pkgrel=2
+pkgver=1.3.0
+pkgrel=1
 pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')
 url="https://github.com/GrayRats/lipax-qt"
@@ -12,6 +12,7 @@ provides=('LipaXQT' 'lipa')
 conflicts=('LipaXQT' 'lipa')
 optdepends=(
     'python: PaddleOCR in a separate venv (see /usr/share/doc/lipax/PaddleOCR.md)'
+    'onnxruntime: RapidOCR (PP-OCRv5) engine, loaded at run time; models are downloaded in Settings (see /usr/share/doc/lipax/RapidOCR.md)'
     'tesseract-data-rus: Russian OCR'
     'tesseract-data-jpn: Japanese OCR'
     'kwin: window capture with ScreenShot2 and client geometry'
@@ -83,7 +84,7 @@ package() {
     done < <(find "$CARGO_TARGET_DIR/bergamot-source" -type f \( -iname 'license*' -o -iname 'copying*' -o -iname 'notice*' \) -not -path '*/.git/*' -print0)
     install -Dm644 packaging/io.lipa.Translator.desktop "$pkgdir/usr/share/applications/io.lipa.Translator.desktop"
     install -Dm644 crates/app/assets/lipa.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/io.lipa.Translator.svg"
-    for doc in PaddleOCR Bergamot ARCHITECTURE IMPROVEMENTS LOGGING; do
+    for doc in PaddleOCR RapidOCR Bergamot ARCHITECTURE IMPROVEMENTS LOGGING; do
         install -Dm644 "docs/$doc.md" "$pkgdir/usr/share/doc/$pkgname/$doc.md"
     done
     # Fonts were unpacked from assets/fonts/*.xz by build.rs; licences are shipped with them.

@@ -311,12 +311,12 @@ pub enum TranslationSourceLanguage { #[default] RecognitionLanguage, Explicit(St
 /// Unknown engines are retained so diagnostics can explain an invalid configuration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(from = "String", into = "String")]
-pub enum OcrEngine { Tesseract, PaddleOcr, Auto, Unknown(String) }
+pub enum OcrEngine { Tesseract, PaddleOcr, RapidOcr, Auto, Unknown(String) }
 impl OcrEngine {
-    pub fn as_str(&self) -> &str { match self { Self::Tesseract => "tesseract", Self::PaddleOcr => "paddleocr", Self::Auto => "auto", Self::Unknown(name) => name } }
+    pub fn as_str(&self) -> &str { match self { Self::Tesseract => "tesseract", Self::PaddleOcr => "paddleocr", Self::RapidOcr => "rapidocr", Self::Auto => "auto", Self::Unknown(name) => name } }
 }
 impl From<&str> for OcrEngine {
-    fn from(name: &str) -> Self { match name { "tesseract" => Self::Tesseract, "paddleocr" => Self::PaddleOcr, "auto" => Self::Auto, _ => Self::Unknown(name.into()) } }
+    fn from(name: &str) -> Self { match name { "tesseract" => Self::Tesseract, "paddleocr" => Self::PaddleOcr, "rapidocr" => Self::RapidOcr, "auto" => Self::Auto, _ => Self::Unknown(name.into()) } }
 }
 impl From<String> for OcrEngine { fn from(name: String) -> Self { Self::from(name.as_str()) } }
 impl From<OcrEngine> for String { fn from(engine: OcrEngine) -> Self { engine.as_str().into() } }
@@ -483,6 +483,7 @@ pub const REACTIONS: &[(&str, Reaction)] = &{
         ("capture.window", Managed), ("capture.region", Managed),
         // Recognition and translation: the pipeline starts over.
         ("recognition.language", Pipeline), ("translation.target_language", Pipeline), ("translation.source_language", Pipeline), ("recognition.engine", Pipeline), ("recognition.paddle_python", Pipeline),
+        ("recognition.rapid_threads", Pipeline), ("recognition.rapid_use_gpu", Pipeline), ("recognition.rapid_variant", Pipeline),
         ("recognition.minimum_confidence", Pipeline), ("recognition.binarize", Pipeline), ("recognition.auto_invert", Pipeline), ("recognition.contrast", Pipeline), ("recognition.sharpen", Pipeline), ("recognition.filter_noise", Pipeline), ("recognition.auto_filters", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
         ("translation.custom_url", Pipeline), ("capture.portal_fills_monitor", Pipeline), ("translation.custom_api_key", Pipeline), ("translation.deepl_api_key", Pipeline), ("translation.microsoft_api_key", Pipeline), ("translation.microsoft_region", Pipeline), ("translation.bergamot_binary", Pipeline), ("translation.bergamot_models_dir", Pipeline), ("translation.bergamot_model_paths", Pipeline), ("recognition.interval_ms", Pipeline), ("recognition.sensitivity", Pipeline),
         ("recognition.debounce_ms", Pipeline), ("display_mode", Pipeline), ("capture.regions", Pipeline),
@@ -657,6 +658,12 @@ pub struct TextRecognitionSettings {
     pub language: String,
     pub engine: OcrEngine,
     pub paddle_python: String,
+    /// Threads of ONNX Runtime for RapidOCR; 0 is half of the cores, at most 4 (`ocr::rapid::effective_threads`).
+    pub rapid_threads: u32,
+    /// Use a GPU execution provider of ONNX Runtime when the installed library has one; otherwise the CPU.
+    pub rapid_use_gpu: bool,
+    /// PP-OCRv5 models: `mobile` or `server` (where the language has one).
+    pub rapid_variant: String,
     pub minimum_confidence: u32,
     /// Filters before OCR (`ocr::filter::Preprocess`) and removal of stray marks after it.
     pub binarize: bool,
@@ -679,6 +686,9 @@ impl Default for TextRecognitionSettings {
             language: "eng".into(),
             engine: "tesseract".into(),
             paddle_python: "python3".into(),
+            rapid_threads: 0,
+            rapid_use_gpu: false,
+            rapid_variant: "mobile".into(),
             minimum_confidence: 30,
             binarize: false,
             auto_invert: false,
@@ -1022,6 +1032,8 @@ impl Settings {
         self.appearance.window.font_size = self.appearance.window.font_size.clamp(8, 96);
         self.recognition.minimum_confidence = self.recognition.minimum_confidence.min(95);
         self.recognition.contrast = self.recognition.contrast.clamp(-100, 100);
+        self.recognition.rapid_threads = self.recognition.rapid_threads.min(16);
+        if !["mobile", "server"].contains(&self.recognition.rapid_variant.as_str()) { self.recognition.rapid_variant = "mobile".into(); }
         // The translation window uses only fonts shipped with LipaX. Old configurations may
         // name a system font, which must never silently resolve through Qt/fontconfig.
         let bundled = crate::layout::font_database::InstalledFontDatabase::bundled();
@@ -1106,12 +1118,14 @@ impl Settings {
     /// The confidence below which a reading is rejected: the configured threshold, raised to the CJK floor while a
     /// Chinese, Japanese or Korean model is in use (their garbage on a textured background scores 28–30).
     pub fn effective_minimum_confidence(&self) -> u32 {
-        // PaddleOCR reads the first language only; Tesseract (and `auto`, which starts with it) reads all of them.
+        // PaddleOCR and RapidOCR read the first language only; Tesseract (and `auto`, which starts with it) reads all of them.
         let language = match self.recognition.engine.as_str() {
-            "paddleocr" => crate::tesseract::primary_lang(&self.recognition.language),
+            "paddleocr" | "rapidocr" => crate::tesseract::primary_lang(&self.recognition.language),
             _ => self.recognition.language.as_str(),
         };
-        crate::ocr::filter::effective_min_confidence(language, self.recognition.minimum_confidence)
+        let floor = crate::ocr::filter::effective_min_confidence(language, self.recognition.minimum_confidence);
+        // PP-OCR is sure of its garbage more than Tesseract: its own pipelines drop lines below 0.5 (`drop_score`).
+        if self.recognition.engine == OcrEngine::RapidOcr && floor > 0 { floor.max(crate::ocr::filter::RAPID_MIN_CONFIDENCE) } else { floor }
     }
 
     pub fn processing_key(&self) -> String {
@@ -1338,6 +1352,38 @@ overlay_size = [800, 200]
         assert_eq!(s.effective_minimum_confidence(), 30, "PaddleOCR reads only English here");
         s.recognition.language = "jpn+eng".into();
         assert_eq!(s.effective_minimum_confidence(), 38);
+        // RapidOCR reads the first language too, and keeps PP-OCR's own floor; 0 still switches the check off.
+        s.recognition.engine = OcrEngine::RapidOcr;
+        assert_eq!(s.effective_minimum_confidence(), 50);
+        s.recognition.minimum_confidence = 70;
+        assert_eq!(s.effective_minimum_confidence(), 70);
+        s.recognition.minimum_confidence = 0;
+        assert_eq!(s.effective_minimum_confidence(), 0);
+    }
+
+    #[test]
+    fn rapidocr_is_an_engine_with_its_own_settings() {
+        assert_eq!(OcrEngine::from("rapidocr"), OcrEngine::RapidOcr);
+        assert_eq!(OcrEngine::RapidOcr.as_str(), "rapidocr");
+        assert_eq!(String::from(OcrEngine::RapidOcr), "rapidocr");
+        let r = TextRecognitionSettings::default();
+        assert_eq!((r.rapid_threads, r.rapid_use_gpu, r.rapid_variant.as_str()), (0, false, "mobile"));
+        let s = Settings::from_toml("[recognition]\nengine = \"rapidocr\"\nrapid_threads = 3\nrapid_use_gpu = true\nrapid_variant = \"server\"\n[[capture.regions]]\nid = \"menu\"\nengine = \"rapidocr\"\n");
+        assert_eq!(s.recognition.engine, OcrEngine::RapidOcr);
+        assert_eq!((s.recognition.rapid_threads, s.recognition.rapid_use_gpu, s.recognition.rapid_variant.as_str()), (3, true, "server"));
+        assert_eq!(s.capture.regions[0].engine, Some(OcrEngine::RapidOcr));
+        let saved = toml::to_string(&s).unwrap();
+        assert!(saved.contains("engine = \"rapidocr\"") && saved.contains("rapid_threads = 3"), "{saved}");
+        assert_eq!(Settings::from_toml(&saved), s);
+        // Every one of them restarts the pipeline: the next frame is read with the new engine settings.
+        for key in ["recognition.rapid_threads", "recognition.rapid_use_gpu", "recognition.rapid_variant"] {
+            assert_eq!(reaction(key), Some(Reaction::Pipeline), "{key}");
+        }
+        let mut wild = Settings::default();
+        wild.recognition.rapid_threads = 1000;
+        wild.recognition.rapid_variant = "huge".into();
+        wild.sanitize();
+        assert_eq!((wild.recognition.rapid_threads, wild.recognition.rapid_variant.as_str()), (16, "mobile"));
     }
 
     #[test]

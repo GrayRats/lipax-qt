@@ -1,0 +1,524 @@
+[
+  {
+    "id": "en-mobile",
+    "script": "en",
+    "variant": "mobile",
+    "label": "английский",
+    "languages": [
+      "eng"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "en_PP-OCRv5_rec_mobile.onnx",
+        "size": 7872351,
+        "sha256": "c3461add59bb4323ecba96a492ab75e06dda42467c9e3d0c18db5d1d21924be8",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_en_dict.txt",
+        "size": 1416,
+        "sha256": "e025a66d31f327ba0c232e03f407ae8d105e1e709e7ccb3f408aa778c24e70d6",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile/ppocrv5_en_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "latin-mobile",
+    "script": "latin",
+    "variant": "mobile",
+    "label": "латиница (европейские языки)",
+    "languages": [
+      "deu",
+      "fra",
+      "spa",
+      "ita",
+      "por",
+      "pol",
+      "nld",
+      "swe",
+      "dan",
+      "nor",
+      "ces",
+      "slk",
+      "slv",
+      "hrv",
+      "hun",
+      "tur",
+      "ind",
+      "msa",
+      "est",
+      "lit",
+      "isl",
+      "bos",
+      "sqi",
+      "afr",
+      "lat",
+      "cym",
+      "gle"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "latin_PP-OCRv5_rec_mobile.onnx",
+        "size": 7904513,
+        "sha256": "b20bd37c168a570f583afbc8cd7925603890efbcdc000a59e22c269d160b5f5a",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_latin_dict.txt",
+        "size": 1634,
+        "sha256": "3c0a8a79b612653c25f765271714f71281e4e955962c153e272b7b8c1d2b13ff",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile/ppocrv5_latin_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "eslav-mobile",
+    "script": "eslav",
+    "variant": "mobile",
+    "label": "кириллица: русский, украинский, белорусский",
+    "languages": [
+      "rus",
+      "ukr",
+      "bel"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "eslav_PP-OCRv5_rec_mobile.onnx",
+        "size": 7911802,
+        "sha256": "08705d6721849b1347d26187f15a5e362c431963a2a62bfff4feac578c489aab",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/eslav_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_eslav_dict.txt",
+        "size": 1663,
+        "sha256": "3e95f1581557162870cacdba5af91a4c6be2890710d395b0c3c7578e7ee5e6eb",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/eslav_PP-OCRv5_rec_mobile/ppocrv5_eslav_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "cyrillic-mobile",
+    "script": "cyrillic",
+    "variant": "mobile",
+    "label": "кириллица: болгарский, сербский и др.",
+    "languages": [
+      "bul",
+      "srp",
+      "mkd",
+      "kaz",
+      "mon"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "cyrillic_PP-OCRv5_rec_mobile.onnx",
+        "size": 8074092,
+        "sha256": "90f761b4bfcce0c8c561c0cb5c887b0971d3ec01c32164bdf7374a35b0982711",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/cyrillic_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_cyrillic_dict.txt",
+        "size": 2781,
+        "sha256": "db40aa52ceb112055be80c694afdf655d5d2c4f7873704524cc16a447ca913ba",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/cyrillic_PP-OCRv5_rec_mobile/ppocrv5_cyrillic_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "ch-mobile",
+    "script": "ch",
+    "variant": "mobile",
+    "label": "китайский и японский",
+    "languages": [
+      "chi_sim",
+      "chi_tra",
+      "jpn"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "ch_PP-OCRv5_rec_mobile.onnx",
+        "size": 16631306,
+        "sha256": "5825fc7ebf84ae7a412be049820b4d86d77620f204a041697b0494669b1742c5",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_dict.txt",
+        "size": 74012,
+        "sha256": "d1979e9f794c464c0d2e0b70a7fe14dd978e9dc644c0e71f14158cdf8342af1b",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile/ppocrv5_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "ch-server",
+    "script": "ch",
+    "variant": "server",
+    "label": "китайский и японский (server)",
+    "languages": [
+      "chi_sim",
+      "chi_tra",
+      "jpn"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_server.onnx",
+        "size": 88118768,
+        "sha256": "0f8846b1d4bba223a2a2f9d9b44022fbc22cc019051a602b41a7fda9667e4cad",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_server.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x1_0_textline_ori_cls_server.onnx",
+        "size": 6776876,
+        "sha256": "7d3c02ef6c7da8ae08b4347cc7695b2081aae68c325d64375724ecf39c99e743",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x1_0_textline_ori_cls_server.onnx"
+      },
+      "rec": {
+        "name": "ch_PP-OCRv5_rec_server.onnx",
+        "size": 84577022,
+        "sha256": "e09385400eaaaef34ceff54aeb7c4f0f1fe014c27fa8b9905d4709b65746562a",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/ch_PP-OCRv5_rec_server.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_dict.txt",
+        "size": 74012,
+        "sha256": "d1979e9f794c464c0d2e0b70a7fe14dd978e9dc644c0e71f14158cdf8342af1b",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/ch_PP-OCRv5_rec_server/ppocrv5_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "korean-mobile",
+    "script": "korean",
+    "variant": "mobile",
+    "label": "корейский",
+    "languages": [
+      "kor"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "korean_PP-OCRv5_rec_mobile.onnx",
+        "size": 13488748,
+        "sha256": "cd6e2ea50f6943ca7271eb8c56a877a5a90720b7047fe9c41a2e541a25773c9b",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/korean_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_korean_dict.txt",
+        "size": 47451,
+        "sha256": "a88071c68c01707489baa79ebe0405b7beb5cca229f4fc94cc3ef992328802d7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/korean_PP-OCRv5_rec_mobile/ppocrv5_korean_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "el-mobile",
+    "script": "el",
+    "variant": "mobile",
+    "label": "греческий",
+    "languages": [
+      "ell"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "el_PP-OCRv5_rec_mobile.onnx",
+        "size": 7832350,
+        "sha256": "b4368bccd557123c702b7549fee6cd1e94b581337d1c9b65310f109131542b7f",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/el_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_el_dict.txt",
+        "size": 1103,
+        "sha256": "31defc62c0c3ad3674a82da6192226a2ba98ef4ff014a7045cb88d59f9c3de31",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/el_PP-OCRv5_rec_mobile/ppocrv5_el_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "th-mobile",
+    "script": "th",
+    "variant": "mobile",
+    "label": "тайский",
+    "languages": [
+      "tha"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "th_PP-OCRv5_rec_mobile.onnx",
+        "size": 7915294,
+        "sha256": "de541dd83161c241ff426f7ecfd602a0ba77d686cf3ab9a6c255ea82fd08006e",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/th_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_th_dict.txt",
+        "size": 1767,
+        "sha256": "57f5406f94bb6688fb7077f7be65f08bbd71cecf48c01ea26c522cb5c4836b7a",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/th_PP-OCRv5_rec_mobile/ppocrv5_th_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "arabic-mobile",
+    "script": "arabic",
+    "variant": "mobile",
+    "label": "арабское письмо",
+    "languages": [
+      "ara",
+      "fas",
+      "urd"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "arabic_PP-OCRv5_rec_mobile.onnx",
+        "size": 8023828,
+        "sha256": "c1192e632d0baa9146ae5b756a0e635e3dc63c1733737ebfd1629e87144e9295",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/arabic_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_arabic_dict.txt",
+        "size": 2369,
+        "sha256": "7f92f7dbb9b75a4787a83bfb4f6d14a8ab515525130c9d40a9036f61cf6999e9",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/arabic_PP-OCRv5_rec_mobile/ppocrv5_arabic_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "devanagari-mobile",
+    "script": "devanagari",
+    "variant": "mobile",
+    "label": "деванагари",
+    "languages": [
+      "hin",
+      "mar",
+      "nep",
+      "san"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "devanagari_PP-OCRv5_rec_mobile.onnx",
+        "size": 7940361,
+        "sha256": "d6f0a906580e3fa6b324a318718f1f31f268b6ea8ef985f91c2012a37f52c91e",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/devanagari_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_devanagari_dict.txt",
+        "size": 1943,
+        "sha256": "09c7440bfc5477e5c41052304b6b185aff8c4a5e8b2b4c23c1c706f6fe1ee9fc",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/devanagari_PP-OCRv5_rec_mobile/ppocrv5_devanagari_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "ta-mobile",
+    "script": "ta",
+    "variant": "mobile",
+    "label": "тамильский",
+    "languages": [
+      "tam"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "ta_PP-OCRv5_rec_mobile.onnx",
+        "size": 7909926,
+        "sha256": "a42448808b7dea87597336f12438935f40353f1949e8360acd9e06b4da21bfe1",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/ta_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_ta_dict.txt",
+        "size": 1723,
+        "sha256": "85b541352ae18dc6ba6d47152d8bf8adff6b0266e605d2eef2990c1bf466117b",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/ta_PP-OCRv5_rec_mobile/ppocrv5_ta_dict.txt"
+      }
+    }
+  },
+  {
+    "id": "te-mobile",
+    "script": "te",
+    "variant": "mobile",
+    "label": "телугу",
+    "languages": [
+      "tel"
+    ],
+    "version": "PP-OCRv5 (RapidAI/RapidOCR v3.10.0)",
+    "license": "Apache-2.0",
+    "files": {
+      "det": {
+        "name": "ch_PP-OCRv5_det_mobile.onnx",
+        "size": 4819576,
+        "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx"
+      },
+      "cls": {
+        "name": "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx",
+        "size": 1018508,
+        "sha256": "54379ae5174d026780215fc748a7f31910dee36818e63d49e17dc598ecc82df7",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/cls/ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"
+      },
+      "rec": {
+        "name": "te_PP-OCRv5_rec_mobile.onnx",
+        "size": 7923102,
+        "sha256": "a3690451b50028a09a3316a1274f7c05728151ea3f8fd392696397a7fefcbd92",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/te_PP-OCRv5_rec_mobile.onnx"
+      },
+      "dict": {
+        "name": "ppocrv5_te_dict.txt",
+        "size": 1831,
+        "sha256": "42f83f5d3fdb50778e4fa5b66c58d99a59ab7792151c5e74f34b8ffd7b61c9d6",
+        "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv5/rec/te_PP-OCRv5_rec_mobile/ppocrv5_te_dict.txt"
+      }
+    }
+  }
+]

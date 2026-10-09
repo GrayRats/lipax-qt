@@ -911,8 +911,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             let recognizing = Instant::now();
             origins = jobs.iter().map(|j| (j.id, (j.rect, j.origin))).collect();
             let pinned: HashMap<u64, Settings> = if s.recognition.engine == "auto" {
-                jobs.iter().filter(|j| state.field_engine.get(&j.id) == Some(&"paddleocr"))
-                    .map(|j| (j.id, { let mut value = s.clone(); value.recognition.engine = "paddleocr".into(); value })).collect()
+                jobs.iter().filter_map(|j| state.field_engine.get(&j.id).map(|engine| (j.id, *engine)))
+                    .map(|(id, engine)| (id, { let mut value = s.clone(); value.recognition.engine = engine.into(); value })).collect()
             } else { HashMap::new() };
             let pinned = &pinned;
             let all = bounded(jobs, FIELD_CONCURRENCY, |job| {
@@ -933,10 +933,11 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         for (id, result) in recognized {
             if s.recognition.engine == "auto" {
                 match &result {
-                    Ok(r) if r.engine == "paddleocr" => {
+                    // The second opinion of `auto` (RapidOCR, or PaddleOCR in its place) was needed: it reads the field from now on.
+                    Ok(r) if matches!(r.engine, "paddleocr" | "rapidocr") => {
                         if state.field_engine.len() >= 64 { state.field_engine.clear(); }
-                        if state.field_engine.insert(id, "paddleocr").is_none() {
-                            tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, "OCR auto: the field is read with PaddleOCR from now on");
+                        if state.field_engine.insert(id, r.engine) != Some(r.engine) {
+                            tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, engine = r.engine, "OCR auto: the field is read with this engine from now on");
                         }
                     }
                     // Tesseract was sure this time, or the pinned engine failed: decide afresh next time.
@@ -1772,31 +1773,33 @@ mod tests {
 
     #[tokio::test]
     async fn auto_pins_a_field_to_the_engine_that_was_needed() {
-        /// `auto` ends up with PaddleOCR for this text; a call that already names PaddleOCR gets it directly.
-        struct AutoOcr(Arc<Mutex<Vec<String>>>);
+        /// `auto` ends up with the second engine for this text; a call that already names it gets it directly.
+        struct AutoOcr(Arc<Mutex<Vec<String>>>, &'static str);
         impl Ocr for AutoOcr {
             async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok("Hello there".into()) }
             async fn recognize_detailed(&self, _: &DynamicImage, s: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
                 self.0.lock().unwrap().push(s.recognition.engine.as_str().to_owned());
-                Ok(crate::ocr::OcrResult { text: "Hello there".into(), lines: Vec::new(), confidence: Some(90.0), engine: "paddleocr", ..Default::default() })
+                Ok(crate::ocr::OcrResult { text: "Hello there".into(), lines: Vec::new(), confidence: Some(90.0), engine: self.1, ..Default::default() })
             }
         }
-        let seen = Arc::new(Mutex::new(Vec::new()));
-        let cap = Arc::new(MockCapture(Mutex::new(10)));
-        let mut p = Pipeline::new(cap.clone(), AutoOcr(seen.clone()), MockTr(Arc::new(AtomicUsize::new(0))));
-        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value.recognition.engine = "auto".into(); value };
-        let (tx, _rx) = mpsc::unbounded_channel();
-        let t0 = Instant::now();
-        p.tick(&s, false, t0, &tx).await;
-        p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
-        assert_eq!(*seen.lock().unwrap(), ["auto"], "the first read decides");
-        // The text changed; the same field is read again, now straight with PaddleOCR.
-        p.tick(&s, true, t0 + Duration::from_millis(300), &tx).await;
-        assert_eq!(*seen.lock().unwrap(), ["auto", "paddleocr"]);
-        // Another engine setting is not touched by pins.
-        let plain = { let mut value = s.clone(); value.recognition.engine = "tesseract".into(); value };
-        p.tick(&plain, true, t0 + Duration::from_millis(500), &tx).await;
-        assert_eq!(seen.lock().unwrap().last().map(String::as_str), Some("tesseract"));
+        for engine in ["paddleocr", "rapidocr"] {
+            let seen = Arc::new(Mutex::new(Vec::new()));
+            let cap = Arc::new(MockCapture(Mutex::new(10)));
+            let mut p = Pipeline::new(cap.clone(), AutoOcr(seen.clone(), engine), MockTr(Arc::new(AtomicUsize::new(0))));
+            let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value.recognition.engine = "auto".into(); value };
+            let (tx, _rx) = mpsc::unbounded_channel();
+            let t0 = Instant::now();
+            p.tick(&s, false, t0, &tx).await;
+            p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
+            assert_eq!(*seen.lock().unwrap(), ["auto"], "the first read decides");
+            // The text changed; the same field is read again, now straight with the engine that was needed.
+            p.tick(&s, true, t0 + Duration::from_millis(300), &tx).await;
+            assert_eq!(*seen.lock().unwrap(), ["auto", engine]);
+            // Another engine setting is not touched by pins.
+            let plain = { let mut value = s.clone(); value.recognition.engine = "tesseract".into(); value };
+            p.tick(&plain, true, t0 + Duration::from_millis(500), &tx).await;
+            assert_eq!(seen.lock().unwrap().last().map(String::as_str), Some("tesseract"));
+        }
     }
 
     #[tokio::test]

@@ -390,7 +390,21 @@ ApplicationWindow {
         interval: 700
         onTriggered: if (win.usesPaddle) win.controller.refreshPaddle()
     }
-    onVisibleChanged: if (visible && usesPaddle) paddleTimer.restart()
+    onVisibleChanged: {
+        if (visible && usesPaddle) paddleTimer.restart()
+        if (visible && usesRapid) rapidTimer.restart()
+    }
+    // RapidOCR (see Controller.refreshRapid): the model of the recognition language and ONNX Runtime; checked when the
+    // engine is chosen, the language or the model variant changes, and after a download or deletion. Nothing is fetched.
+    readonly property var rapid: { try { return JSON.parse(controller.rapidJson || "{}") } catch (e) { return ({}) } }
+    readonly property string rapidKey: usesRapid ? (current.recognition.language || "") + "|" + (current.recognition.rapid_variant || "mobile") + "|" + (current.recognition.rapid_threads || 0) : ""
+    onRapidKeyChanged: if (rapidKey.length > 0) rapidTimer.restart()
+    Timer {
+        id: rapidTimer
+        interval: 500
+        onTriggered: if (win.usesRapid) win.controller.refreshRapid()
+    }
+    function megabytes(bytes) { return Math.round((bytes || 0) / 1e6) + " МБ" }
 
     readonly property var tess: {
         try {
@@ -404,7 +418,7 @@ ApplicationWindow {
     readonly property var extraLangs: specParts.slice(1)
     // Установленные языки плюс выбранные, но отсутствующие (помечены).
     readonly property var langModel: {
-        if (current.recognition.engine === "paddleocr")
+        if (!usesTesseract)
             return langs.map(c => ({
                         code: c,
                         label: c,
@@ -442,7 +456,7 @@ ApplicationWindow {
             }))
     readonly property var missing: {
         // Зависимость от tesseractJson обновляет сообщения после установки пакета.
-        if (current.recognition.engine === "paddleocr")
+        if (!usesTesseract)
             return [];
         const _ = controller.tesseractJson;
         try {
@@ -541,6 +555,28 @@ ApplicationWindow {
         onAccepted: win.pendingMethod === "download" ? win.controller.installLanguage(win.pendingCode) : win.controller.installPackage(win.pendingPackage)
     }
 
+    property var pendingRapidModel: null
+    function askDeleteRapid(model) {
+        if (!model) return;
+        pendingRapidModel = model;
+        rapidDeleteDialog.open();
+    }
+    Dialog {
+        id: rapidDeleteDialog
+        objectName: "rapidDeleteDialog"
+        title: "Удаление модели RapidOCR"
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(parent.width - 40, 460)
+        standardButtons: Dialog.Yes | Dialog.No
+        Label {
+            width: parent.width
+            wrapMode: Text.Wrap
+            text: win.pendingRapidModel ? "Удалить модель «" + win.pendingRapidModel.label + "» (" + win.pendingRapidModel.variant + ", " + win.megabytes(win.pendingRapidModel.size) + ")?\n\nRapidOCR не сможет читать этот язык, пока модель не будет скачана снова." : ""
+        }
+        onAccepted: if (win.pendingRapidModel) win.controller.deleteRapidModel(win.pendingRapidModel.id)
+    }
+
     readonly property var settingPaths: JSON.parse(controller.editableSettingsPaths())
     function pendingPatch() {
         const previous = JSON.parse(lastApplied || "{}");
@@ -573,6 +609,9 @@ ApplicationWindow {
     readonly property string currentGameKey: current.capture.window && current.capture.window.resource_class ? current.capture.window.resource_class.trim().toLowerCase() : ""
     // What the capture backend of the chosen window can do (see CaptureCapabilities in core).
     readonly property bool usesPaddle: current.recognition.engine === "paddleocr" || current.recognition.engine === "auto"
+    readonly property bool usesRapid: current.recognition.engine === "rapidocr" || current.recognition.engine === "auto"
+    // Tesseract's languages and packages matter unless the engine is one that reads with its own models.
+    readonly property bool usesTesseract: current.recognition.engine !== "paddleocr" && current.recognition.engine !== "rapidocr"
     readonly property var capabilities: {
         try {
             return JSON.parse(controller.captureCapabilities || "{}");
@@ -1072,7 +1111,7 @@ ApplicationWindow {
                                 onActivated: win.setRegionField(regionFrame.index, "target_language", currentIndex === 0 ? "" : currentText)
                             }
                             FieldLabel {
-                                helpText: "Tesseract и PaddleOCR распознают текст в области захвата. Автоматический режим повторяет распознавание через PaddleOCR при низкой уверенности Tesseract."
+                                helpText: "Tesseract, PaddleOCR и RapidOCR распознают текст в области захвата. Автоматический режим повторяет распознавание через RapidOCR (или PaddleOCR, если RapidOCR недоступен) при низкой уверенности Tesseract."
                                 text: "Движок распознавания"
                                 helpControl: recognitionEngineHelpTarget1
                             }
@@ -1080,8 +1119,8 @@ ApplicationWindow {
                                 id: recognitionEngineHelpTarget1
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
-                                readonly property var values: ["", "tesseract", "paddleocr", "auto"]
-                                model: ["Как в общих настройках", "Tesseract", "PaddleOCR", "Авто"]
+                                readonly property var values: ["", "tesseract", "paddleocr", "rapidocr", "auto"]
+                                model: ["Как в общих настройках", "Tesseract", "PaddleOCR", "RapidOCR", "Авто"]
                                 currentIndex: Math.max(0, values.indexOf(regionFrame.modelData.engine || ""))
                                 onActivated: win.setRegionField(regionFrame.index, "engine", values[currentIndex] || null)
                             }
@@ -1172,7 +1211,7 @@ ApplicationWindow {
                 columnSpacing: 24
                 rowSpacing: 14
                 FieldLabel {
-                    helpText: "Tesseract и PaddleOCR распознают текст в области захвата. Автоматический режим повторяет распознавание через PaddleOCR при низкой уверенности Tesseract."
+                    helpText: "Tesseract, PaddleOCR и RapidOCR распознают текст в области захвата. Автоматический режим повторяет распознавание через RapidOCR (или PaddleOCR, если RapidOCR недоступен) при низкой уверенности Tesseract."
                     text: "Движок распознавания"
                     helpControl: recognitionEngineHelpTarget2
                 }
@@ -1181,8 +1220,8 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     objectName: "ocrEngineBox"
-                    readonly property var values: ["tesseract", "paddleocr", "auto"]
-                    model: ["Tesseract", "PaddleOCR 3.x", "Авто: Tesseract, при сомнении PaddleOCR"]
+                    readonly property var values: ["tesseract", "paddleocr", "rapidocr", "auto"]
+                    model: ["Tesseract", "PaddleOCR 3.x", "RapidOCR (PP-OCRv5)", "Авто: Tesseract, при сомнении RapidOCR или PaddleOCR"]
                     currentIndex: Math.max(0, values.indexOf(win.current.recognition.engine))
                     onActivated: win.set("recognition.engine", values[currentIndex])
                 }
@@ -1207,7 +1246,7 @@ ApplicationWindow {
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
                     visible: win.usesPaddle
-                    text: win.current.recognition.engine === "auto" ? "Сначала читает Tesseract; если он сам не уверен в результате (ниже 60 %), текст перечитывает PaddleOCR. Если PaddleOCR не установлен, остаётся результат Tesseract, и повторная попытка будет через несколько минут. Установка: docs/PaddleOCR.md." : "PaddleOCR использует основной язык; дополнительные языки относятся к Tesseract. При первом запуске загружаются модели. Установка: docs/PaddleOCR.md."
+                    text: win.current.recognition.engine === "auto" ? "Сначала читает Tesseract; если он сам не уверен в результате (ниже 60 %), текст перечитывает RapidOCR, а если RapidOCR недоступен (нет модели или ONNX Runtime) — PaddleOCR. Если и он не установлен, остаётся результат Tesseract; недоступный движок пробуется снова через несколько минут. Установка: docs/RapidOCR.md, docs/PaddleOCR.md." : "PaddleOCR использует основной язык; дополнительные языки относятся к Tesseract. При первом запуске загружаются модели. Установка: docs/PaddleOCR.md."
                 }
                 ColumnLayout {
                     objectName: "paddleCheck"
@@ -1305,6 +1344,204 @@ ApplicationWindow {
                     }
                 }
                 FieldLabel {
+                    helpText: "Модель PP-OCRv5 для основного языка распознавания. Модели скачиваются только по кнопке «Скачать» из репозитория RapidAI (ModelScope); размер и SHA-256 каждого файла проверяются. Во время распознавания сеть не используется."
+                    text: "Модель RapidOCR"
+                    visible: win.usesRapid
+                }
+                ColumnLayout {
+                    id: rapidCheck
+                    objectName: "rapidCheck"
+                    visible: win.usesRapid
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    spacing: 6
+                    readonly property var selected: win.rapid.selected || null
+                    readonly property bool working: win.controller.rapidBusy === true && !!selected && win.controller.rapidModel === selected.id
+                    Label {
+                        objectName: "rapidSummary"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        font.bold: true
+                        color: rapidCheck.working || win.rapid.ready === undefined ? palette.text : win.rapid.ready ? "#7bd88f" : "#ff6b6b"
+                        text: rapidCheck.working ? "Загрузка модели… " + win.controller.rapidProgress + " %"
+                            : win.rapid.ready === undefined ? "Состояние RapidOCR ещё не проверено"
+                            : (win.rapid.ready ? "✓ " : "✗ ") + win.rapid.summary
+                    }
+                    Label {
+                        objectName: "rapidModel"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        visible: !!rapidCheck.selected
+                        opacity: 0.85
+                        text: rapidCheck.selected ? rapidCheck.selected.label + " · " + rapidCheck.selected.variant + " · " + win.megabytes(rapidCheck.selected.size) + " · "
+                            + (rapidCheck.working ? "загрузка " + win.controller.rapidProgress + " %" : rapidCheck.selected.installed ? "готова" : "не скачана") : ""
+                    }
+                    ProgressBar {
+                        objectName: "rapidProgress"
+                        Layout.fillWidth: true
+                        visible: rapidCheck.working
+                        from: 0; to: 100
+                        value: win.controller.rapidProgress || 0
+                    }
+                    Label {
+                        objectName: "rapidLanguages"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        visible: (win.rapid.ignored || []).length > 0
+                        color: "#ffc23d"
+                        text: "RapidOCR читает только основной язык («" + (win.rapid.language || "") + "»); " + (win.rapid.ignored || []).join(", ") + " распознаёт только Tesseract."
+                    }
+                    Label {
+                        objectName: "rapidError"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        visible: (win.controller.rapidError || "").length > 0
+                        color: "#ff6b6b"
+                        text: win.controller.rapidError || ""
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Button {
+                            objectName: "rapidDownload"
+                            visible: !!rapidCheck.selected && !rapidCheck.selected.installed
+                            enabled: win.controller.rapidBusy !== true
+                            text: "Скачать (" + win.megabytes(rapidCheck.selected ? rapidCheck.selected.size : 0) + ")"
+                            ToolTip.visible: hovered
+                            ToolTip.delay: 400
+                            ToolTip.text: "Скачать модель из репозитория RapidAI (ModelScope) с проверкой SHA-256"
+                            onClicked: win.controller.downloadRapidModel(rapidCheck.selected.id)
+                        }
+                        Button {
+                            objectName: "rapidDelete"
+                            visible: !!rapidCheck.selected && rapidCheck.selected.installed
+                            enabled: win.controller.rapidBusy !== true
+                            text: "Удалить"
+                            onClicked: win.askDeleteRapid(rapidCheck.selected)
+                        }
+                        Button {
+                            objectName: "rapidRecheck"
+                            text: "Проверить снова"
+                            enabled: win.controller.rapidBusy !== true
+                            onClicked: win.controller.refreshRapid()
+                        }
+                    }
+                    Label {
+                        objectName: "rapidLibrary"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.Wrap
+                        visible: win.rapid.ready !== undefined
+                        opacity: win.rapid.library ? 0.6 : 1
+                        font.pixelSize: win.rapid.library ? 12 : font.pixelSize
+                        color: win.rapid.library ? palette.text : "#ff6b6b"
+                        text: win.rapid.library ? "ONNX Runtime: " + win.rapid.library : "ONNX Runtime не найден. Установите его командой ниже и нажмите «Проверить снова»."
+                    }
+                    RowLayout {
+                        visible: win.rapid.ready !== undefined && !win.rapid.library
+                        Layout.fillWidth: true
+                        TextField {
+                            objectName: "rapidInstallCommand"
+                            Layout.fillWidth: true
+                            readOnly: true
+                            selectByMouse: true
+                            font.family: "monospace"
+                            text: "sudo pacman -S onnxruntime-cpu"
+                        }
+                        Button {
+                            objectName: "rapidCopy"
+                            text: "Копировать"
+                            onClicked: win.controller.copyText("sudo pacman -S onnxruntime-cpu")
+                        }
+                    }
+                    Repeater {
+                        model: (win.rapid.models || []).filter(m => m.installed && (!rapidCheck.selected || m.id !== rapidCheck.selected.id))
+                        delegate: RowLayout {
+                            id: otherModel
+                            required property var modelData
+                            objectName: "rapidOther_" + modelData.id
+                            Layout.fillWidth: true
+                            Label {
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: 0
+                                elide: Text.ElideRight
+                                opacity: 0.75
+                                text: "Также скачана: " + otherModel.modelData.label + " · " + otherModel.modelData.variant + " · " + win.megabytes(otherModel.modelData.size)
+                            }
+                            Button {
+                                text: "Удалить"
+                                enabled: win.controller.rapidBusy !== true
+                                onClicked: win.askDeleteRapid(otherModel.modelData)
+                            }
+                        }
+                    }
+                }
+                FieldLabel {
+                    helpText: "Mobile — быстрые модели PP-OCRv5 (около 23 МБ для китайского и японского). Server — точнее на сложных кадрах, но около 180 МБ и в несколько раз медленнее на CPU. Есть только для китайского и японского."
+                    text: "Модели RapidOCR"
+                    visible: win.usesRapid && win.rapid.server_available === true
+                    helpControl: rapidVariantBox
+                }
+                ComboBox {
+                    id: rapidVariantBox
+                    objectName: "rapidVariantBox"
+                    visible: win.usesRapid && win.rapid.server_available === true
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    readonly property var values: ["mobile", "server"]
+                    model: ["Mobile — быстрее", "Server — точнее, медленнее"]
+                    currentIndex: Math.max(0, values.indexOf(win.current.recognition.rapid_variant || "mobile"))
+                    onActivated: win.set("recognition.rapid_variant", values[currentIndex])
+                }
+                FieldLabel {
+                    helpText: "Сколько потоков процессора занимает RapidOCR. «Авто» — половина ядер, но не больше 4, чтобы игре хватало процессора. Больше потоков — быстрее распознавание и выше нагрузка."
+                    text: "Потоки RapidOCR"
+                    visible: win.usesRapid
+                    helpControl: rapidThreads
+                }
+                SpinBox {
+                    id: rapidThreads
+                    objectName: "rapidThreads"
+                    visible: win.usesRapid
+                    from: 0
+                    to: 16
+                    editable: true
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    value: win.current.recognition.rapid_threads || 0
+                    textFromValue: (v, locale) => v === 0 ? "Авто" : String(v)
+                    valueFromText: (text, locale) => /^\s*авто/i.test(text) ? 0 : Math.max(0, Math.min(16, parseInt(text) || 0))
+                    onValueModified: win.set("recognition.rapid_threads", value)
+                }
+                Label {
+                    objectName: "rapidThreadsAuto"
+                    Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    wrapMode: Text.Wrap
+                    opacity: 0.6
+                    font.pixelSize: 12
+                    visible: win.usesRapid && rapidThreads.value === 0 && !!win.rapid.threads
+                    text: "Авто: " + win.rapid.threads + " " + (win.rapid.threads === 1 ? "поток" : win.rapid.threads < 5 ? "потока" : "потоков") + " — половина ядер процессора, но не больше 4."
+                }
+                FieldLabel {
+                    helpText: "RapidOCR использует видеокарту, если установленная библиотека ONNX Runtime собрана с CUDA, MIGraphX или ROCm. Иначе распознавание идёт на процессоре, а в журнал пишется запись об этом."
+                    text: "RapidOCR на видеокарте"
+                    visible: win.usesRapid
+                    helpControl: rapidGpu
+                }
+                CheckBox {
+                    id: rapidGpu
+                    objectName: "rapidGpu"
+                    visible: win.usesRapid
+                    text: "Использовать GPU, если доступен"
+                    checked: win.current.recognition.rapid_use_gpu === true
+                    onToggled: win.set("recognition.rapid_use_gpu", checked)
+                }
+                FieldLabel {
                     helpText: "Результаты ниже этого порога не переводятся. Значение 0 отключает проверку уверенности."
                     text: "Минимальная уверенность распознавания, %"
                     helpControl: recognitionConfidenceHelpTarget1
@@ -1327,7 +1564,7 @@ ApplicationWindow {
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
                     opacity: 0.75
-                    text: "Текст, в котором сам движок не уверен (мусор из-за фона, анимации, мелкого шрифта), не переводится и не показывается. " + "0 — не проверять. Для японского, китайского и корейского порог автоматически не ниже 38 %: их мусор на текстурном фоне набирает 28–30 %. Работает с Tesseract и PaddleOCR; причина отброшенного текста видна в «Просмотре OCR»."
+                    text: "Текст, в котором сам движок не уверен (мусор из-за фона, анимации, мелкого шрифта), не переводится и не показывается. " + "0 — не проверять. Для японского, китайского и корейского порог автоматически не ниже 38 %: их мусор на текстурном фоне набирает 28–30 %. С RapidOCR порог не ниже 50 %: PP-OCR уверен в мусоре сильнее Tesseract. Работает с Tesseract, PaddleOCR и RapidOCR; причина отброшенного текста видна в «Просмотре OCR»."
                 }
                 Label {
                     text: "Фильтры изображения перед распознаванием"
@@ -1416,7 +1653,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: "Tesseract: состояние и языковые пакеты"
-                    visible: win.current.recognition.engine !== "paddleocr"
+                    visible: win.usesTesseract
                     font.bold: true
                     Layout.columnSpan: 2
                 }
@@ -1425,7 +1662,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
-                    visible: win.current.recognition.engine !== "paddleocr" && (!win.tess.distro || win.tess.installed)
+                    visible: win.usesTesseract && (!win.tess.distro || win.tess.installed)
                     text: !win.tess.distro ? "Проверка…" : "Установлен · " + (win.tess.version ? "версия " + win.tess.version : "версия неизвестна") + "\nПуть: " + win.tess.path + "\ntessdata: " + (win.tess.tessdata || "не определён") + "\nСистема: " + win.tess.distro.name + " · менеджер пакетов: " + win.tess.package_manager + (win.tess.engine_package ? "\nПакет: " + win.tess.engine_package : "") + (win.tess.tessdata_package ? " · данные: " + win.tess.tessdata_package + " и др." : "")
                 }
                 Label {
@@ -1433,7 +1670,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     wrapMode: Text.Wrap
-                    visible: win.current.recognition.engine !== "paddleocr" && !!win.tess.distro && !win.tess.installed
+                    visible: win.usesTesseract && !!win.tess.distro && !win.tess.installed
                     color: "#ff6b6b"
                     text: "Tesseract не установлен" + (win.tess.engine_install_command ? ". Команда установки: " + win.tess.engine_install_command : "")
                 }
@@ -1513,10 +1750,10 @@ ApplicationWindow {
                 }
                 FieldLabel {
                     text: "Установить другой язык"
-                    visible: win.current.recognition.engine !== "paddleocr"
+                    visible: win.usesTesseract
                 }
                 RowLayout {
-                    visible: win.current.recognition.engine !== "paddleocr"
+                    visible: win.usesTesseract
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     ComboBox {
@@ -1555,7 +1792,7 @@ ApplicationWindow {
                 Button {
                     id: unavailableControl6
                     Layout.columnSpan: 2
-                    visible: win.current.recognition.engine !== "paddleocr"
+                    visible: win.usesTesseract
                     text: win.controller.tesseractBusy ? "Проверка…" : "Обновить список языков"
                     enabled: !win.controller.tesseractBusy
                     onClicked: win.controller.refreshTesseract()
@@ -3578,7 +3815,7 @@ ApplicationWindow {
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
                     text: "Переводчик игрового текста в реальном времени для KDE Plasma 6 (KWin, Wayland). Распознаёт текст в выбранном окне "
-                        + "(Tesseract или PaddleOCR), переводит и показывает поверх оригинала или в отдельном окне."
+                        + "(Tesseract, PaddleOCR или RapidOCR), переводит и показывает поверх оригинала или в отдельном окне."
                 }
                 Item {
                     id: tickerViewport
@@ -3589,7 +3826,7 @@ ApplicationWindow {
                         id: tickerText
                         objectName: "aboutTicker"
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "LipaX — распознавание и перевод игрового текста  ·  Qt 6 / QML  ·  KDE Plasma  ·  Wayland  ·  Tesseract  ·  PaddleOCR"
+                        text: "LipaX — распознавание и перевод игрового текста  ·  Qt 6 / QML  ·  KDE Plasma  ·  Wayland  ·  Tesseract  ·  PaddleOCR  ·  RapidOCR"
                         font.pixelSize: 15
                         opacity: 0.85
                         NumberAnimation on x {
@@ -3640,7 +3877,8 @@ ApplicationWindow {
                         { url: "https://github.com/rtr46/meikipop", role: "зависимость" },
                         { url: "https://github.com/tesseract-ocr/tesseract", role: "распознавание: Tesseract OCR" },
                         { url: "https://github.com/tesseract-ocr/tessdata_fast", role: "языковые модели Tesseract" },
-                        { url: "https://github.com/PaddlePaddle/PaddleOCR", role: "распознавание: PaddleOCR" }
+                        { url: "https://github.com/PaddlePaddle/PaddleOCR", role: "распознавание: PaddleOCR" },
+                        { url: "https://github.com/RapidAI/RapidOCR", role: "распознавание: RapidOCR (модели PP-OCRv5 в ONNX)" }
                     ]
                     delegate: Label {
                         required property var modelData

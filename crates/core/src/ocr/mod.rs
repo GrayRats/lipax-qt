@@ -4,6 +4,8 @@
 pub mod filter;
 pub mod paddle;
 pub mod paddle_env;
+pub mod rapid;
+pub mod rapid_models;
 
 use crate::layout::CropRect;
 use crate::settings::Settings;
@@ -26,6 +28,9 @@ pub enum OcrError {
     Setup(String),
     #[error("неизвестный OCR-движок: {0}")]
     UnknownEngine(String),
+    /// The engine is set up, but running a model failed on this frame.
+    #[error("RapidOCR: ошибка выполнения модели: {0}")]
+    Inference(String),
 }
 
 /// One line of text found by the engine, in pixels of the image that was given to it: a crop of the
@@ -77,16 +82,20 @@ pub trait Ocr: Send + Sync {
     }
 }
 
-/// `auto`: Tesseract is fast; below this confidence PaddleOCR gets a chance.
+/// `auto`: Tesseract is fast; below this confidence RapidOCR (or PaddleOCR, when RapidOCR is unavailable) gets a chance.
 pub const AUTO_ACCEPT: f32 = 60.0;
 /// After PaddleOCR failed in `auto` (not installed, no model), it is not tried again for this long:
 /// every attempt costs a Python start.
 const PADDLE_RETRY_AFTER: std::time::Duration = std::time::Duration::from_secs(300);
+/// After RapidOCR failed in `auto` (no model, no ONNX Runtime), PaddleOCR takes its place for this long.
+const RAPID_RETRY_AFTER: std::time::Duration = std::time::Duration::from_secs(300);
 
 #[derive(Default)]
 pub struct AnyOcr {
     paddle: paddle::PaddleOcr,
     paddle_down_until: std::sync::Mutex<Option<std::time::Instant>>,
+    rapid: rapid::RapidOcr,
+    rapid_down_until: std::sync::Mutex<Option<std::time::Instant>>,
     /// When a frame last read as empty both with the automatic filters and without them. A scene without text is
     /// not read twice at every cycle: for `EMPTY_BACKOFF` the raw second reading is skipped.
     last_empty_both: std::sync::Mutex<Option<std::time::Instant>>,
@@ -100,6 +109,29 @@ impl AnyOcr {
         let first = Tesseract.run_detailed_with(img, &settings.recognition.language, filters).await?;
         // A result is good enough unless the engine itself is unsure.
         if first.confidence.is_none_or(|c| c >= AUTO_ACCEPT) { return Ok(first); }
+        // RapidOCR is the second opinion; PaddleOCR only stands in while RapidOCR is unavailable.
+        let rapid_down = self.rapid_down_until.lock().unwrap().is_some_and(|t| std::time::Instant::now() < t);
+        if !rapid_down {
+            // Without the automatic binarization (see `FilterPlan::of`): only the filters chosen by hand.
+            let manual = filter::FilterPlan::of(&settings.recognition).without_addition();
+            let second = if manual.is_identity() {
+                self.rapid.recognize_detailed(img, settings).await
+            } else {
+                self.rapid.recognize_detailed(&filtered(img, manual).await?, settings).await
+            };
+            match second {
+                Ok(mut second) if !second.text.trim().is_empty() && second.confidence.is_none_or(|c| c > first.confidence.unwrap_or(0.0)) => {
+                    tracing::debug!(engine = "auto", tesseract = ?first.confidence, rapidocr = ?second.confidence, "OCR: RapidOCR is more sure");
+                    second.filters = manual;
+                    return Ok(second);
+                }
+                Ok(_) => return Ok(first),
+                Err(e) => {
+                    tracing::debug!(engine = "auto", error = %e, "OCR: RapidOCR unavailable, PaddleOCR is tried instead");
+                    *self.rapid_down_until.lock().unwrap() = Some(std::time::Instant::now() + RAPID_RETRY_AFTER);
+                }
+            }
+        }
         let down = self.paddle_down_until.lock().unwrap().is_some_and(|t| std::time::Instant::now() < t);
         if down { return Ok(first); }
         let second = if filters.is_identity() {
@@ -125,7 +157,7 @@ impl AnyOcr {
 impl Ocr for AnyOcr {
     async fn recognize(&self, img: &DynamicImage, settings: &Settings) -> Result<String, OcrError> {
         match settings.recognition.engine.as_str() {
-            "tesseract" | "paddleocr" | "auto" => Ok(self.recognize_detailed(img, settings).await?.text),
+            "tesseract" | "paddleocr" | "rapidocr" | "auto" => Ok(self.recognize_detailed(img, settings).await?.text),
             _ => Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned())),
         }
     }
@@ -177,6 +209,8 @@ impl AnyOcr {
             "tesseract" => Tesseract.run_detailed_with(img, &r.language, filters).await,
             "paddleocr" if filters.is_identity() => self.paddle.recognize_detailed(img, settings).await,
             "paddleocr" => self.paddle.recognize_detailed(&filtered(img, filters).await?, settings).await,
+            "rapidocr" if filters.is_identity() => self.rapid.recognize_detailed(img, settings).await,
+            "rapidocr" => self.rapid.recognize_detailed(&filtered(img, filters).await?, settings).await,
             "auto" => self.auto(img, settings, filters).await,
             _ => Err(OcrError::UnknownEngine(r.engine.as_str().to_owned())),
         }
@@ -527,6 +561,18 @@ mod tests {
         let img = DynamicImage::ImageRgba8(RgbaImage::from_pixel(10, 5, Rgba([200, 10, 10, 255])));
         let p = preprocess(&img);
         assert_eq!((p.width(), p.height()), (20, 10));
+    }
+
+    #[tokio::test]
+    async fn an_explicit_rapidocr_without_its_model_says_what_to_do_instead_of_reading_with_another_engine() {
+        let models = tempfile::tempdir().unwrap();
+        let ocr = AnyOcr { rapid: rapid::RapidOcr::new(models.path().into(), None), ..AnyOcr::default() };
+        let mut s = Settings::default();
+        s.recognition.engine = crate::settings::OcrEngine::RapidOcr;
+        s.recognition.language = "jpn+eng".into();
+        let error = ocr.recognize_detailed(&DynamicImage::new_rgba8(64, 32), &s).await.unwrap_err();
+        assert!(matches!(&error, OcrError::Setup(m) if m.contains("ch-mobile") && m.contains("Скачать")), "{error}");
+        assert!(ocr.rapid_down_until.lock().unwrap().is_none(), "only `auto` puts RapidOCR aside");
     }
 
     #[tokio::test]

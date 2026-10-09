@@ -21,3 +21,5 @@ httpdate = "1"
 sha2 = "0.10"
 serde_yaml = "0.9"
 tempfile = "3"
+# ONNX Runtime for RapidOCR, loaded at run time from the system library (`load-dynamic`): nothing is linked or downloaded at build time.
+ort = { version = "=2.0.0-rc.13", default-features = false, features = ["std", "load-dynamic", "tracing", "cuda", "rocm", "migraphx"] }

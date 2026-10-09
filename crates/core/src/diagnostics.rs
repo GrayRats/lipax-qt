@@ -120,6 +120,19 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
         },
         Err(e) => rows.push(row("Python / PaddleOCR", "error", e, "Укажите путь к Python из venv; инструкция: docs/PaddleOCR.md.")),
     }
+    if matches!(s.recognition.engine.as_str(), "rapidocr" | "auto") {
+        use crate::ocr::{rapid, rapid_models};
+        match rapid::library_path(None) {
+            Ok(path) => rows.push(row("RapidOCR: ONNX Runtime", "ready", path.display().to_string(), "")),
+            Err(e) => rows.push(row("RapidOCR: ONNX Runtime", "error", e, &format!("Arch: {}. Инструкция: docs/RapidOCR.md.", rapid::INSTALL_COMMAND))),
+        }
+        match rapid_models::select(&s.recognition.language, &s.recognition.rapid_variant) {
+            Ok(model) if rapid_models::present(&rapid_models::cache_root(), model) => rows.push(row("Модель RapidOCR", "ready", format!("{} ({})", model.label, model.id), "")),
+            Ok(model) => rows.push(row("Модель RapidOCR", "error", format!("Не скачана: {} ({}, {:.0} МБ)", model.label, model.id, model.size() as f64 / 1e6),
+                "Скачайте модель: «Настройки → Распознавание → RapidOCR → Скачать».")),
+            Err(e) => rows.push(row("Модель RapidOCR", "error", e, "Выберите поддерживаемый основной язык (docs/RapidOCR.md).")),
+        }
+    }
     let langs = output("tesseract", &["--list-langs"]).await;
     let missing: Vec<_> = s.recognition.language.split('+').filter(|l| !langs.as_ref().is_ok_and(|text| text.lines().any(|line| line.trim() == *l))).collect();
     rows.push(row("Языки Tesseract", if missing.is_empty() { "ready" } else { "error" }, if missing.is_empty() { format!("Готовы: {}", s.recognition.language) } else { format!("Нет языков: {}", missing.join(", ")) }, "Установите языковые пакеты во вкладке «Распознавание». Arch: tesseract-data-<код языка>."));

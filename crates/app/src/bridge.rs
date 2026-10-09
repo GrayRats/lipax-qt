@@ -41,6 +41,14 @@ pub mod qobject {
         /// Состояние окружения PaddleOCR для выбранного Python и языка (JSON `PaddleEnv`); пусто — ещё не проверялось.
         #[qproperty(QString, paddle_json, cxx_name = "paddleJson")]
         #[qproperty(bool, paddle_busy, cxx_name = "paddleBusy")]
+        /// RapidOCR for the recognition language: model, installed models, ONNX Runtime (JSON `RapidStatus`); empty — not checked yet.
+        #[qproperty(QString, rapid_json, cxx_name = "rapidJson")]
+        /// A RapidOCR model is being downloaded or deleted.
+        #[qproperty(bool, rapid_busy, cxx_name = "rapidBusy")]
+        #[qproperty(i32, rapid_progress, cxx_name = "rapidProgress")]
+        /// Id of the model `rapidBusy` is about.
+        #[qproperty(QString, rapid_model, cxx_name = "rapidModel")]
+        #[qproperty(QString, rapid_error, cxx_name = "rapidError")]
         #[qproperty(QString, game_geometry, cxx_name = "gameGeometry")]
         #[qproperty(bool, running)]
         #[qproperty(bool, has_region, cxx_name = "hasRegion")]
@@ -185,6 +193,17 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "refreshPaddle"]
         fn refresh_paddle(self: Pin<&mut Controller>);
+        /// Check the RapidOCR model of the recognition language and ONNX Runtime; result in `rapidJson`. No network.
+        #[qinvokable]
+        #[cxx_name = "refreshRapid"]
+        fn refresh_rapid(self: Pin<&mut Controller>);
+        /// Download a RapidOCR model from the catalog (button «Скачать»): progress in `rapidProgress`, errors in `rapidError`.
+        #[qinvokable]
+        #[cxx_name = "downloadRapidModel"]
+        fn download_rapid_model(self: Pin<&mut Controller>, id: &QString);
+        #[qinvokable]
+        #[cxx_name = "deleteRapidModel"]
+        fn delete_rapid_model(self: Pin<&mut Controller>, id: &QString);
         /// Установить языковой пакет. Вызывается только после подтверждения пользователя в GUI.
         #[qinvokable]
         #[cxx_name = "installPackage"]
@@ -394,6 +413,13 @@ pub struct ControllerRust {
     tesseract_busy: bool,
     paddle_json: QString,
     paddle_busy: bool,
+    rapid_json: QString,
+    rapid_busy: bool,
+    rapid_progress: i32,
+    rapid_model: QString,
+    rapid_error: QString,
+    /// Only the answer to the latest RapidOCR check is published.
+    rapid_generation: u64,
     window_title: QString,
     preview_source: QString,
     preview_title_bar: i32,
@@ -449,6 +475,12 @@ impl Default for ControllerRust {
             tesseract_busy: false,
             paddle_json: QString::default(),
             paddle_busy: false,
+            rapid_json: QString::default(),
+            rapid_busy: false,
+            rapid_progress: 0,
+            rapid_model: QString::default(),
+            rapid_error: QString::default(),
+            rapid_generation: 0,
             window_title: QString::from(
                 settings
                     .capture.window

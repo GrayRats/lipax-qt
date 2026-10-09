@@ -60,6 +60,16 @@ TestCase {
         property bool paddleBusy: false
         property int paddleChecks: 0
         function refreshPaddle() { paddleChecks++ }
+        property string rapidJson: ""
+        property bool rapidBusy: false
+        property int rapidProgress: 0
+        property string rapidModel: ""
+        property string rapidError: ""
+        property int rapidChecks: 0
+        property var rapidCalls: []
+        function refreshRapid() { rapidChecks++ }
+        function downloadRapidModel(id) { rapidCalls = rapidCalls.concat([["download", id]]) }
+        function deleteRapidModel(id) { rapidCalls = rapidCalls.concat([["delete", id]]) }
         property var installCalls: []
         function installLanguage(code) { installCalls = installCalls.concat([["download", code]]) }
         function installPackage(pkg) { installCalls = installCalls.concat([["package", pkg]]) }
@@ -372,10 +382,10 @@ TestCase {
         verify(visualFind(page.contentItem, "aboutDescription").text.indexOf("PaddleOCR") >= 0)
         verify(visualFind(page.contentItem, "aboutRepository").text.indexOf("github.com/GrayRats/lipax-qt") >= 0)
         const links = visualFind(page.contentItem, "aboutLinks")
-        verify(links.count === 5, "five sources")
+        verify(links.count === 6, "six sources")
         let all = ""
         for (let i = 0; i < links.count; i++) all += links.itemAt(i).text
-        for (const needed of ["tesseract-ocr/tesseract", "tessdata_fast", "PaddlePaddle/PaddleOCR", "meikipop", "satix-one/lipa"])
+        for (const needed of ["tesseract-ocr/tesseract", "tessdata_fast", "PaddlePaddle/PaddleOCR", "RapidAI/RapidOCR", "meikipop", "satix-one/lipa"])
             verify(all.indexOf(needed) >= 0, needed)
     }
 
@@ -425,6 +435,107 @@ TestCase {
         settings.set("recognition.engine", "tesseract")
         settings.set("recognition.language", "eng")
         settings.set("recognition.paddle_python", "")
+    }
+
+    function rapidReport(installed, library, extra) {
+        const selected = {id: "eslav-mobile", label: "кириллица: русский, украинский, белорусский", variant: "mobile", size: 13804000, installed: installed}
+        return JSON.stringify(Object.assign({language: "rus", ignored: ["eng"], supported: true, selected: selected, server_available: false,
+            models: [selected, {id: "en-mobile", label: "английский", variant: "mobile", size: 13700000, installed: true}],
+            library: library, threads: 4, ready: installed && !!library,
+            summary: installed ? "Готово: кириллица · mobile" : "Модель не скачана. Нажмите «Скачать».", problems: []}, extra || {}))
+    }
+
+    function test_rapidIsCheckedByItselfAndOffersItsModel() {
+        settings.reload()
+        settings.show()
+        findChild(settings, "settingsTabs").currentIndex = 1
+        settings.set("recognition.engine", "tesseract")
+        const page = findChild(settings, "settingsPage1").contentItem
+        const panel = visualFind(page, "rapidCheck")
+        verify(panel !== null)
+        verify(!panel.visible, "Tesseract needs no RapidOCR model")
+        controller.rapidChecks = 0
+        controller.rapidCalls = []
+        settings.set("recognition.language", "rus+eng")
+        settings.set("recognition.engine", "rapidocr")
+        verify(panel.visible)
+        tryVerify(() => controller.rapidChecks === 1, 3000, "choosing RapidOCR starts the check")
+        // Like PaddleOCR, RapidOCR reads with its own models: no Tesseract packages, a fixed list of languages.
+        compare(settings.langModel.length, 12)
+        verify(!visualFind(page, "rapidVariantBox").visible, "Cyrillic has no server model")
+        // A change of the language checks again (the model depends on it).
+        settings.set("recognition.language", "jpn")
+        tryVerify(() => controller.rapidChecks === 2, 3000)
+        settings.set("recognition.language", "rus+eng")
+        tryVerify(() => controller.rapidChecks === 3, 3000)
+        // Missing model: said so, with a download button that names the size; nothing starts by itself.
+        controller.rapidJson = rapidReport(false, "/usr/lib/libonnxruntime.so.1.29.0")
+        const summary = visualFind(panel, "rapidSummary")
+        verify(summary.text.indexOf("✗ ") === 0, summary.text)
+        verify(visualFind(panel, "rapidModel").text.indexOf("не скачана") >= 0)
+        verify(visualFind(panel, "rapidLanguages").visible && visualFind(panel, "rapidLanguages").text.indexOf("eng") >= 0, "the ignored languages are named")
+        compare(JSON.stringify(controller.rapidCalls), "[]")
+        const download = visualFind(panel, "rapidDownload")
+        verify(download.visible && download.text.indexOf("14 МБ") >= 0, download.text)
+        download.clicked()
+        compare(JSON.stringify(controller.rapidCalls), JSON.stringify([["download", "eslav-mobile"]]))
+        // The download in progress.
+        controller.rapidBusy = true
+        controller.rapidModel = "eslav-mobile"
+        controller.rapidProgress = 42
+        verify(summary.text.indexOf("42 %") >= 0, summary.text)
+        verify(visualFind(panel, "rapidProgress").visible)
+        verify(!download.enabled, "one download at a time")
+        controller.rapidBusy = false
+        // A failed download explains itself.
+        controller.rapidError = "Не удалось скачать модель RapidOCR: нет сети. Проверьте подключение к сети и повторите загрузку в настройках."
+        verify(visualFind(panel, "rapidError").visible)
+        controller.rapidError = ""
+        // Installed: ready, can be deleted after a confirmation; other installed models can be deleted too.
+        controller.rapidJson = rapidReport(true, "/usr/lib/libonnxruntime.so.1.29.0")
+        verify(summary.text.indexOf("✓ Готово") === 0, summary.text)
+        verify(!download.visible)
+        tryVerify(() => visualFind(panel, "rapidOther_en-mobile") !== null)
+        visualFind(panel, "rapidDelete").clicked()
+        const dialog = findChild(settings, "rapidDeleteDialog")
+        tryVerify(() => dialog.opened)
+        compare(controller.rapidCalls.length, 1, "nothing is deleted before the answer")
+        dialog.accept()
+        compare(JSON.stringify(controller.rapidCalls[1]), JSON.stringify(["delete", "eslav-mobile"]))
+        // No ONNX Runtime: the command to install it can be copied.
+        controller.rapidJson = rapidReport(true, null)
+        verify(visualFind(panel, "rapidLibrary").text.indexOf("не найден") >= 0)
+        controller.copied = ""
+        visualFind(panel, "rapidCopy").clicked()
+        compare(controller.copied, "sudo pacman -S onnxruntime-cpu")
+        // The server variant is offered where it exists; threads and GPU are settings.
+        controller.rapidJson = rapidReport(true, "/usr/lib/libonnxruntime.so.1", {server_available: true})
+        const variant = visualFind(page, "rapidVariantBox")
+        verify(variant.visible)
+        variant.currentIndex = 1
+        variant.activated(1)
+        compare(settings.current.recognition.rapid_variant, "server")
+        const threads = visualFind(page, "rapidThreads")
+        compare(threads.displayText, "Авто")
+        const auto = visualFind(page, "rapidThreadsAuto")
+        verify(auto.visible && auto.text.indexOf("4 потока") >= 0, auto.text)
+        threads.value = 2
+        threads.valueModified()
+        compare(settings.current.recognition.rapid_threads, 2)
+        verify(!auto.visible, "a number chosen by hand needs no explanation")
+        visualFind(page, "rapidGpu").toggle()
+        visualFind(page, "rapidGpu").toggled()
+        compare(settings.current.recognition.rapid_use_gpu, true)
+        // `auto` uses RapidOCR as its second opinion: its model is shown there too.
+        settings.set("recognition.engine", "auto")
+        verify(panel.visible)
+        controller.rapidJson = ""
+        controller.rapidCalls = []
+        settings.set("recognition.engine", "tesseract")
+        settings.set("recognition.language", "eng")
+        settings.set("recognition.rapid_variant", "mobile")
+        settings.set("recognition.rapid_threads", 0)
+        settings.set("recognition.rapid_use_gpu", false)
     }
 
     function test_languagesWithoutAPackageAreDownloadedWithoutAPassword() {
@@ -623,12 +734,17 @@ TestCase {
         findChild(settings, "settingsTabs").currentIndex = 0
         const box = findChild(settings, "ocrEngineBox")
         verify(box !== null)
-        compare(box.count, 3)
+        compare(box.count, 4)
         settings.set("recognition.engine", "tesseract")
         compare(box.currentIndex, 0)
         settings.set("recognition.engine", "auto")
-        compare(box.currentIndex, 2)
+        compare(box.currentIndex, 3)
         verify(settings.usesPaddle, "auto may call PaddleOCR: its Python is configurable")
+        verify(settings.usesRapid, "auto calls RapidOCR first: its model is shown")
+        box.currentIndex = 2
+        box.activated(2)
+        compare(settings.current.recognition.engine, "rapidocr")
+        verify(settings.usesRapid && !settings.usesPaddle && !settings.usesTesseract)
         box.currentIndex = 1
         box.activated(1)
         compare(settings.current.recognition.engine, "paddleocr")

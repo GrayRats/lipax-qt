@@ -125,6 +125,10 @@ pub fn clean(mut result: OcrResult, min_confidence: u32, filter_noise: bool) -> 
 /// is 0 = no check). Garbage from a textured background scores 28–30 there, which the default 30 lets through.
 pub const CJK_MIN_CONFIDENCE: u32 = 38;
 
+/// The least threshold while RapidOCR reads (unless the configured one is 0): the drop score of PaddleOCR 2.x and
+/// RapidOCR's own pipeline. PP-OCR rates a clear line at 0.9 and more, and reads textured backgrounds as words of 0.4–0.6.
+pub const RAPID_MIN_CONFIDENCE: u32 = 50;
+
 /// Tesseract (`jpn`, `chi_sim`, `kor`, `jpn+eng`, …) and PaddleOCR (`japan`, `ch`, `korean`, …) language codes of Chinese,
 /// Japanese and Korean. A combination counts if any of its parts does.
 pub fn is_cjk_language(language: &str) -> bool {
@@ -207,7 +211,9 @@ pub struct FilterPlan {
 
 impl FilterPlan {
     pub fn of(r: &TextRecognitionSettings) -> Self {
-        Self { manual: Preprocess::of(r), auto: r.auto_filters }
+        // PP-OCR reads colour and grey better than a binarized frame: for RapidOCR the program adds nothing, only the
+        // filters chosen by hand apply.
+        Self { manual: Preprocess::of(r), auto: r.auto_filters && r.engine != crate::settings::OcrEngine::RapidOcr }
     }
 
     /// The filters for `img`, and whether the program added to the user's choice (so the reading may be checked
@@ -494,6 +500,21 @@ mod tests {
         let (filters, added) = FilterPlan { manual: tuned, auto: true }.resolve(&noisy_frame());
         assert!(added && filters.binarize && filters.auto_invert && filters.sharpen && filters.contrast == 20, "{filters:?}");
         assert_eq!(FilterPlan { manual: tuned, auto: true }.without_addition(), tuned);
+    }
+
+    #[test]
+    fn rapidocr_reads_noisy_frames_without_automatic_binarization() {
+        let mut r = crate::settings::TextRecognitionSettings { engine: crate::settings::OcrEngine::RapidOcr, ..Default::default() };
+        assert!(r.auto_filters);
+        assert_eq!(FilterPlan::of(&r).resolve(&noisy_frame()), (Preprocess::default(), false));
+        // The filters chosen by hand still apply.
+        r.sharpen = true;
+        assert_eq!(FilterPlan::of(&r).resolve(&noisy_frame()), (Preprocess { sharpen: true, ..Preprocess::default() }, false));
+        // Other engines keep the automatic filters.
+        for engine in ["tesseract", "paddleocr", "auto"] {
+            r.engine = engine.into();
+            assert!(FilterPlan::of(&r).resolve(&noisy_frame()).1, "{engine}");
+        }
     }
 
     #[test]
