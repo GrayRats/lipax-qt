@@ -665,9 +665,11 @@ mod tests {
         let id = frame.blocks[0].id;
         let mut images = HashMap::new();
         images.insert(("subtitles".to_string(), id), "file:///x.png?r=1".to_string());
-        let mut s = InplaceSettings::default();
-        s.fill_color = crate::settings::PropertyMode::Manual("#112233".into());
-        s.outline_color = crate::settings::PropertyMode::Manual("#445566".into());
+        let s = InplaceSettings {
+            fill_color: crate::settings::PropertyMode::Manual("#112233".into()),
+            outline_color: crate::settings::PropertyMode::Manual("#445566".into()),
+            ..Default::default()
+        };
         let out = place_regions(&[region(&frame)], &WindowGeometry::from([0.0, 0.0, 1200.0, 800.0]), &s, &images, &ApproxMeasure, &mut PlacementCache::default()).placed;
         let p = out.iter().find(|p| p.block_id == id).unwrap();
         assert_eq!((p.background.color.as_str(), p.outline_color.as_str(), p.background.image.as_str()), ("#112233", "#445566", "file:///x.png?r=1"));

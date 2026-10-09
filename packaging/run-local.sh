@@ -53,6 +53,15 @@ fi
 binary=$(realpath -- "$binary")
 [[ $binary != *$'\n'* ]] || fail "the path contains a newline"
 
+# The package ships the engine as /usr/lib/lipax/bergamot; a local build finds the one from
+# packaging/build-bergamot.sh through PATH. An explicit path in the settings still takes precedence.
+engine_dir=${CARGO_TARGET_DIR:-$root/target}/bergamot-build/app
+if [[ -x $engine_dir/bergamot ]]; then
+    export PATH="$engine_dir:$PATH"
+else
+    echo "run-local: no local Bergamot engine in $engine_dir (packaging/build-bergamot.sh)" >&2
+fi
+
 # A running instance owns the bus name; this start would only hand it a command.
 bus_name=io.lipa.Translator${LIPAX_INSTANCE_ID:+.$LIPAX_INSTANCE_ID}
 if command -v busctl >/dev/null 2>&1 && busctl --user list --no-legend 2>/dev/null | awk '{print $1}' | grep -qx -- "$bus_name"; then

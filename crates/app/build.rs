@@ -49,7 +49,7 @@ fn main() {
     ]))
     // Widgets: the KDE platform theme builds the tray icon from QWidgets, so the app is a QApplication.
     .qt_module("Widgets")
-    .files(["src/bridge.rs", "src/icon.rs", "src/logging.rs"])
+    .files(["src/bridge.rs", "src/icon.rs", "src/logging.rs", "src/model_worker.rs"])
     .include_dir("src")
     .qrc("assets.qrc");
     // KWindowEffects: compositor blur behind the translation overlay.
@@ -57,8 +57,10 @@ fn main() {
     let builder = unsafe { builder.cc_builder(|cc| {
         cc.include("/usr/include/KF6/KWindowSystem");
         cc.file("src/logging.cpp");
+        cc.file("src/model_worker.cpp");
     }) };
     println!("cargo:rerun-if-changed=src/logging.cpp");
+    println!("cargo:rerun-if-changed=src/model_worker.cpp");
     builder.build();
     println!("cargo:rustc-link-lib=KF6WindowSystem");
 }

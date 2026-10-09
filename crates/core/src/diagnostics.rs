@@ -100,6 +100,13 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
         output(&s.recognition.paddle_python, &["-c", include_str!("ocr/paddle_check.py")]),
     );
     let mut rows = vec![tess, gst, pipewire];
+    if s.translation.service == crate::settings::TranslationService::Bergamot {
+        let binary = if s.translation.bergamot_binary.is_empty() { std::env::var("BERGAMOT_BINARY").unwrap_or_default() } else { s.translation.bergamot_binary.clone() };
+        match crate::translate::bergamot::executable(&binary) {
+            Ok(path) => rows.push(command_check("Bergamot", &path.to_string_lossy(), &["--help"], "Движок входит в пакет LipaX; для другого исполняемого файла укажите путь к CLI во вкладке «Перевод»." ).await),
+            Err(error) => rows.push(row("Bergamot", "error", error.to_string(), "Обновите пакет LipaX или укажите исполняемый файл Bergamot.")),
+        }
+    }
     rows.extend(plugins);
     match python {
         Ok(json) => {

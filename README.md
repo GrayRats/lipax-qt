@@ -9,7 +9,7 @@ LipaX помогает читать текст в играх: захватыва
 
 ## Что умеет
 
-- Распознаёт текст через Tesseract; при желании можно подключить PaddleOCR. Переводит через Google, Yandex, DeepL, Microsoft Translator, настраиваемый API или [локальный Bergamot](docs/Bergamot.md). Сетевым сервисам нужен доступ к интернету; для Bergamot нужны нативный CLI и модель нужной языковой пары.
+- Распознаёт текст через Tesseract; при желании можно подключить PaddleOCR. Переводит через Google, Yandex, DeepL, Microsoft Translator, настраиваемый API или [локальный Bergamot](docs/Bergamot.md). Сетевым сервисам нужен доступ к интернету; движок Bergamot входит в Arch-пакет, а модель нужной языковой пары скачивается автоматически.
 - Позволяет задать до трёх областей: например, отдельно для субтитров, диалогов и меню. Каждую область можно временно отключить и настроить отдельно.
 - Показывает результат в отдельном окне поверх игры или накладывает переведённый текст поверх исходного текста. Для второго режима нужна геометрия окна от KWin: при захвате через Portal приложение использует обычное окно перевода.
 - Даёт настроить фон, рамку, прозрачность, скругление и шрифты из комплекта LipaX. Закреплённое окно оставляет доступ к игре; откреплённое можно двигать, видеть в панели задач и прокручивать колёсиком, если текст длинный.
@@ -24,7 +24,7 @@ LipaX помогает читать текст в играх: захватыва
 git clone https://github.com/GrayRats/lipax-qt.git
 cd lipax-qt
 ./packaging/build-local.sh
-sudo pacman -U dist/lipax-1.*.*-1-x86_64.pkg.tar.zst
+sudo pacman -U dist/lipax-1.2.0-2-x86_64.pkg.tar.zst
 ```
 
 Для сборки из клонированного репозитория также подходит `makepkg -si`. Пакет устанавливает команду `lipax`, ярлык приложения и встроенные шрифты. Для распознавания нужного языка установите соответствующий пакет данных Tesseract; [настройка PaddleOCR](docs/PaddleOCR.md) описана отдельно.
@@ -91,7 +91,7 @@ On Arch Linux, build and install the package with:
 git clone https://github.com/GrayRats/lipax-qt.git
 cd lipax-qt
 ./packaging/build-local.sh
-sudo pacman -U dist/lipax-1.0.*-*-x86_64.pkg.tar.zst
+sudo pacman -U dist/lipax-1.2.0-2-x86_64.pkg.tar.zst
 ```
 
 Start `lipax`, choose a game window and text region, configure OCR languages and a translation service, then press “Запустить” (Start). The settings include appearance, regions, shortcuts, and dependency status. The translation window can be pinned or moved; a long translation can be scrolled with the mouse wheel. History storage can be disabled.

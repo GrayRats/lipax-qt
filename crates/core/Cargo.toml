@@ -18,3 +18,6 @@ zbus = { version = "5", default-features = false, features = ["tokio"] }
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 libc = "0.2"
 httpdate = "1"
+sha2 = "0.10"
+serde_yaml = "0.9"
+tempfile = "3"

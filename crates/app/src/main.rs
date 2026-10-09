@@ -1,4 +1,5 @@
 mod bridge;
+mod model_worker;
 mod icon;
 mod instance;
 mod logging;

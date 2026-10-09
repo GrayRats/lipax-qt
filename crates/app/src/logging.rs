@@ -31,7 +31,9 @@ mod ffi {
     unsafe extern "C++" {
         include!("logging.h");
         fn installQtLogHandler();
+        #[allow(dead_code)] // CXX builds one bridge for both the binary and its tests.
         fn emitQtLogProbe(fatal: bool);
+        #[allow(dead_code)] // CXX builds one bridge for both the binary and its tests.
         fn emitQmlLogProbe();
     }
     extern "Rust" {

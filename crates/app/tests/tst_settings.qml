@@ -17,6 +17,12 @@ TestCase {
         property string tesseractJson: JSON.stringify({installed: true, distro: {name: "Arch Linux"},
             version: "5.5", path: "/usr/bin/tesseract", languages: [{code:"eng", name:"English"}, {code:"jpn",name:"Japanese"}], installable: []})
         property bool tesseractBusy: false
+        property string modelState: "{}"
+        property bool modelBusy: false
+        property int modelChecks: 0
+        property string modelPath: ""
+        function refreshModels() { modelChecks++ }
+        function setModelPath(path) { modelPath = path }
         property bool hasRegion: false
         property string windowTitle: "Game"
         property string settingsState: ""
@@ -817,6 +823,26 @@ TestCase {
         compare(JSON.parse(controller.saved).translation_window.auto_shrink, false)
         settings.set("translation_window.auto_shrink", true)
         settings.apply()
+    }
+
+    function test_bergamotProgressAndMissingModelMessage() {
+        settings.set("translation.service", "bergamot")
+        controller.modelBusy = true
+        controller.modelState = JSON.stringify({pair: "en-ru", status: "Downloading...", progress: 45})
+        wait(30)
+        const progress = findChild(settings, "bergamotProgress")
+        verify(progress !== null)
+        compare(progress.value, 45)
+        compare(progress.indeterminate, false)
+        compare(findChild(settings, "bergamotDownload").enabled, false)
+        verify(findChild(settings, "bergamotStatus").text.indexOf("en-ru") >= 0)
+        controller.modelBusy = false
+        controller.modelState = JSON.stringify({pair: "en-ru", status: "Not Found",
+            error: "Translation model for en-ru is missing. Download it in Settings."})
+        wait(30)
+        compare(findChild(settings, "bergamotDownload").enabled, true)
+        verify(findChild(settings, "bergamotStatus").text.indexOf("Not Found") >= 0)
+        controller.modelState = "{}"
     }
 
     function test_reloadDoesNotScheduleAnUnchangedSave() {

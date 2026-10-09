@@ -1,6 +1,9 @@
 //! Мост Rust ↔ Qt. Контроллер тонкий: состояние и логика живут в `lipa-core`,
 //! тяжёлая работа выполняется в tokio-задачах, GUI-поток только получает события.
 
+#[path = "model_controller.rs"]
+mod model_controller;
+
 #[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "C++" {
@@ -14,6 +17,8 @@ pub mod qobject {
         #[qproperty(QString, status)]
         #[qproperty(QString, status_kind, cxx_name = "statusKind")]
         #[qproperty(QString, settings_state, cxx_name = "settingsState")]
+        #[qproperty(QString, model_state, cxx_name = "modelState")]
+        #[qproperty(bool, model_busy, cxx_name = "modelBusy")]
         #[qproperty(QString, history_json, cxx_name = "historyJson")]
         #[qproperty(QString, diagnostics_json, cxx_name = "diagnosticsJson")]
         #[qproperty(bool, diagnostics_busy, cxx_name = "diagnosticsBusy")]
@@ -104,6 +109,12 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "settingsJson"]
         fn settings_json(self: &Controller) -> QString;
+        #[qinvokable]
+        #[cxx_name = "refreshModels"]
+        fn refresh_models(self: Pin<&mut Controller>);
+        #[qinvokable]
+        #[cxx_name = "setModelPath"]
+        fn set_model_path(self: Pin<&mut Controller>, path: &QString);
         #[qinvokable]
         #[cxx_name = "applySettings"]
         fn apply_settings(self: Pin<&mut Controller>, json: &QString);
@@ -266,6 +277,7 @@ fn spawn_service(future: impl std::future::Future<Output = ()> + Send + 'static)
 }
 
 pub fn shutdown() {
+    crate::model_worker::shutdown();
     remove_preview_files();
     let services = std::mem::take(&mut *services().lock().unwrap());
     rt().block_on(async move {
@@ -311,9 +323,10 @@ impl Shared {
             Err(e) => { error = Some(e); false }
         });
         if let Some(e) = error { return Err(e); }
-        if let Err(e) = self.settings.borrow().save() {
+        let saved = self.settings.borrow().save().map_err(|e| {
             tracing::error!(component = "settings", error = %e, "Не удалось сохранить настройки");
-        }
+            e.to_string()
+        });
         if self.settings.borrow().processing_key() != before {
             // Before Reset: whatever the running tick still sends is already stale.
             self.generation.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
@@ -328,7 +341,7 @@ impl Shared {
             }
             changed
         });
-        Ok(())
+        saved
     }
 }
 
@@ -356,6 +369,10 @@ pub struct ControllerRust {
     status: QString,
     status_kind: QString,
     settings_state: QString,
+    model_state: QString,
+    model_busy: bool,
+    model_checked: std::collections::BTreeMap<String, model_controller::ModelPaths>,
+    model_results: std::collections::BTreeMap<String, String>,
     history_json: QString,
     diagnostics_json: QString,
     diagnostics_busy: bool,
@@ -413,6 +430,10 @@ impl Default for ControllerRust {
             history_json: QString::from(serde_json::to_string(&history.entries).unwrap().as_str()),
             diagnostics_json: QString::from("[]"),
             diagnostics_busy: false,
+            model_state: QString::from("{}"),
+            model_busy: false,
+            model_checked: Default::default(),
+            model_results: Default::default(),
             history,
             region_text: Default::default(),
             region_inplace: Default::default(),
@@ -468,6 +489,7 @@ impl Default for ControllerRust {
 
 impl cxx_qt::Initialize for qobject::Controller {
     fn initialize(mut self: Pin<&mut Self>) {
+        self.as_mut().check_models();
         let (mut ev_rx, ev_tx, cmd_rx) = self
             .as_mut()
             .rust_mut()
@@ -882,6 +904,7 @@ impl qobject::Controller {
     }
 
     fn publish_settings(mut self: Pin<&mut Self>) {
+        self.as_mut().check_models();
         self.as_mut().apply_general();
         self.as_mut().publish_display();
         let s = self.rust().shared.settings.borrow().clone();
@@ -1706,7 +1729,7 @@ mod display_tests {
 
     #[test]
     fn inplace_does_not_depend_on_the_translation_window() {
-        let mut s = { let mut value = Settings::default(); value.display_mode = TranslationDisplayMode::Inplace; value };
+        let mut s = Settings { display_mode: TranslationDisplayMode::Inplace, ..Default::default() };
         s.capture.window = Some(WindowKey { uuid: "kwin-game".into(), resource_class: "game".into(), caption: "Game".into() });
         assert_eq!(effective_display(&s), ("inplace", String::new()));
         // Portal capture has no window position: logged fallback to the translation window.

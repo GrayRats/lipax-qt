@@ -97,7 +97,9 @@ ApplicationWindow {
         objectName: "trayIcon"
         visible: !root.closingDown
         icon.source: "qrc:/lipa/icon.svg"
-        tooltip: "LipaX — " + (ctl.running ? "автоперевод запущен" : "автоперевод остановлен")
+        tooltip: ctl.modelBusy ? "LipaX: " + ((JSON.parse(ctl.modelState || "{}").progress ?? -1) < 0
+            ? "Searching for model..." : "Downloading model... " + JSON.parse(ctl.modelState).progress + "%")
+            : "LipaX — " + (ctl.running ? "автоперевод запущен" : "автоперевод остановлен")
         onActivated: (reason) => { if (reason === Platform.SystemTrayIcon.Trigger) root.toggleMain() }
         menu: Platform.Menu {
             Platform.MenuItem { text: "Открыть LipaX"; onTriggered: root.perform("show", "") }

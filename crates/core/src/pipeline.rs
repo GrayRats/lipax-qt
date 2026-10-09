@@ -289,7 +289,7 @@ fn join_messages(first: &str, notes: &[String]) -> String {
 fn cache_source(s: &Settings, src: &str) -> String {
     let service = match s.translation.service {
         crate::settings::TranslationService::Custom => format!("custom:{}", s.translation.custom_url),
-        crate::settings::TranslationService::Bergamot => format!("bergamot:{}:{}", s.translation.bergamot_binary, s.translation.bergamot_models_dir),
+        crate::settings::TranslationService::Bergamot => format!("bergamot:{}:{}:{:?}", s.translation.bergamot_binary, s.translation.bergamot_models_dir, s.translation.bergamot_model_paths),
         other => format!("{other:?}"),
     };
     format!("{service}\u{1}{src}")
@@ -849,7 +849,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                 match tokio::time::timeout_at(deadline, request).await {
                     Ok(Ok(t)) => { self.timings.record("translate", translating.elapsed()); t },
                     Ok(Err(e)) => {
-                        let stop = matches!(&*e, TranslateError::RateLimited { .. });
+                        let stop = e.stops_automatic_retries();
                         state.fail(region, format!("Ошибка перевода ({}): {e}", translation_context(s, &original)), now + started.elapsed(), stop, out);
                         return;
                     }
@@ -1004,7 +1004,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                 match translated.get(&original) {
                     Some(Ok(t)) => { engine.complete(id, Some((original, t.clone())), s); }
                     Some(Err(e)) => {
-                        let stop = matches!(&**e, TranslateError::RateLimited { .. });
+                        let stop = e.stops_automatic_retries();
                         let message = format!("Ошибка перевода ({}): {e}", translation_context(s, &original));
                         if !notes.contains(&message) { notes.push(message.clone()); }
                         // A rate limit stops automatic retries and wins over an earlier soft failure.
@@ -1638,7 +1638,7 @@ mod tests {
         struct TwoTexts(AtomicUsize);
         impl Ocr for TwoTexts {
             async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> {
-                Ok(if self.0.fetch_add(1, Ordering::SeqCst) % 2 == 0 { "the name field".into() } else { "a long line of dialogue".into() })
+                Ok(if self.0.fetch_add(1, Ordering::SeqCst).is_multiple_of(2) { "the name field".into() } else { "a long line of dialogue".into() })
             }
         }
         let mut p = Pipeline::new(Arc::new(SceneCapture), TwoTexts(AtomicUsize::new(0)), Picky);
@@ -1990,6 +1990,31 @@ mod tests {
             let now = Instant::now();
             p.tick(&s, true, now, &tx).await;
             assert!(drain(&mut rx).iter().any(|e| matches!(e, Event::Error { terminal: true, message, .. } if message.contains("429"))), "{display:?}");
+            p.tick(&s, false, now + Duration::from_secs(10), &tx).await;
+            assert_eq!(count.load(Ordering::SeqCst), 1, "{display:?}: no automatic retry");
+        }
+    }
+
+    #[tokio::test]
+    async fn missing_bergamot_engine_stops_retries_in_both_display_modes() {
+        struct MissingEngine(Arc<AtomicUsize>);
+        impl Translate for MissingEngine {
+            async fn translate(&self, _: &Settings, _: &str, _: &str, _: &str) -> Result<String, TranslateError> {
+                self.0.fetch_add(1, Ordering::SeqCst);
+                Err(TranslateError::EngineUnavailable("Движок Bergamot отсутствует".into()))
+            }
+        }
+        for display in [TranslationDisplayMode::Window, TranslationDisplayMode::Inplace] {
+            let count = Arc::new(AtomicUsize::new(0));
+            let mut p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))),
+                MockOcr(Mutex::new("Hello there".into()), Arc::new(AtomicUsize::new(0))), MissingEngine(count.clone()));
+            let mut s = settings();
+            s.display_mode = display;
+            s.translation.service = crate::settings::TranslationService::Bergamot;
+            let (tx, mut rx) = mpsc::unbounded_channel();
+            let now = Instant::now();
+            p.tick(&s, true, now, &tx).await;
+            assert!(drain(&mut rx).iter().any(|e| matches!(e, Event::Error { terminal: true, message, .. } if message.contains("Bergamot отсутствует"))));
             p.tick(&s, false, now + Duration::from_secs(10), &tx).await;
             assert_eq!(count.load(Ordering::SeqCst), 1, "{display:?}: no automatic retry");
         }

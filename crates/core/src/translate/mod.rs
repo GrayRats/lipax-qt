@@ -1,6 +1,7 @@
 //! Движки перевода: Google, Yandex, свой API, DeepL, Microsoft и локальный Bergamot.
 
 pub mod bergamot;
+pub mod models;
 
 use crate::settings::{Settings, TranslationService};
 use serde_json::{Value, json};
@@ -18,8 +19,16 @@ pub enum TranslateError {
     BadResponse,
     #[error("не настроено: {0}")]
     NotConfigured(&'static str),
+    #[error("{0}")]
+    EngineUnavailable(String),
     #[error("локальный перевод: {0}")]
     Local(String),
+}
+
+impl TranslateError {
+    pub fn stops_automatic_retries(&self) -> bool {
+        matches!(self, Self::RateLimited { .. } | Self::NotConfigured(_) | Self::EngineUnavailable(_))
+    }
 }
 
 impl From<reqwest::Error> for TranslateError {
@@ -117,7 +126,7 @@ pub enum Translator {
     Custom { url: String, api_key: String },
     DeepL { api_key: String },
     Microsoft { api_key: String, region: String },
-    Bergamot { binary: String, models_dir: String },
+    Bergamot { binary: String, models_dir: String, model_paths: std::collections::BTreeMap<String, String> },
 }
 
 impl Translator {
@@ -142,6 +151,7 @@ impl Translator {
             TranslationService::Bergamot => Self::Bergamot {
                 binary: configured_key(&s.translation.bergamot_binary, "BERGAMOT_BINARY"),
                 models_dir: configured_key(&s.translation.bergamot_models_dir, "BERGAMOT_MODELS_DIR"),
+                model_paths: s.translation.bergamot_model_paths.clone(),
             },
         }
     }
@@ -221,7 +231,11 @@ impl Translator {
                 if !region.is_empty() { request = request.header("Ocp-Apim-Subscription-Region", region.as_str()); }
                 parse_microsoft(&checked(request.send().await?).await?)
             }
-            Self::Bergamot { binary, models_dir } => bergamot::translate(binary, models_dir, text, src, dst).await,
+            Self::Bergamot { binary, models_dir, model_paths } => {
+                let pair = models::pair(src, dst).map_err(TranslateError::Local)?;
+                let path = model_paths.get(&pair).map(String::as_str).unwrap_or(models_dir);
+                bergamot::translate(binary, path, text, src, dst).await
+            },
         }
     }
 }

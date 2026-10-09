@@ -7,6 +7,7 @@ import QtQuick.Controls.Universal
 ApplicationWindow {
     id: win
     objectName: "settingsWindow"
+    readonly property var bergamotModel: { try { return JSON.parse(controller.modelState || "{}") } catch (e) { return ({}) } }
     property var controller
     property var current: ({
             general: {},
@@ -1762,7 +1763,7 @@ ApplicationWindow {
                 FieldLabel {
                     text: "Bergamot: путь к CLI"
                     visible: tr.currentIndex === 5
-                    helpText: "Нативный исполняемый файл bergamot. Пустое поле означает поиск в PATH или BERGAMOT_BINARY."
+                    helpText: "Нативный исполняемый файл bergamot. Пустое поле использует движок из пакета LipaX; также поддерживаются BERGAMOT_BINARY и PATH."
                 }
                 TextField {
                     visible: tr.currentIndex === 5
@@ -1772,16 +1773,67 @@ ApplicationWindow {
                     onEditingFinished: win.set("translation.bergamot_binary", text)
                 }
                 FieldLabel {
-                    text: "Bergamot: каталог моделей"
+                    text: "Bergamot: модель"
                     visible: tr.currentIndex === 5
-                    helpText: "Каталог с конфигурациями пар en-ru.yml, ja-ru.yml и так далее. Можно задать BERGAMOT_MODELS_DIR."
+                    helpText: "Автоматический поиск: настройки → кэш LipaX → Firefox → загрузка Mozilla. Размеры и SHA-256 проверяются перед установкой."
                 }
-                TextField {
+                ColumnLayout {
                     visible: tr.currentIndex === 5
                     Layout.fillWidth: true
-                    placeholderText: "/путь/к/bergamot-models"
-                    text: win.current.translation.bergamot_models_dir || ""
-                    onEditingFinished: win.set("translation.bergamot_models_dir", text)
+                    Label {
+                        objectName: "bergamotStatus"
+                        Layout.fillWidth: true
+                        text: (win.bergamotModel.pair || "") + " — " + (win.bergamotModel.status || "Not Found")
+                        wrapMode: Text.Wrap
+                    }
+                    ProgressBar {
+                        objectName: "bergamotProgress"
+                        Layout.fillWidth: true
+                        visible: win.controller.modelBusy === true
+                        indeterminate: (win.bergamotModel.progress ?? -1) < 0
+                        from: 0; to: 100
+                        value: win.bergamotModel.progress || 0
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        visible: !!win.bergamotModel.error
+                        text: win.bergamotModel.error || ""
+                        wrapMode: Text.Wrap
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        visible: !!win.bergamotModel.path
+                        text: win.bergamotModel.path || ""
+                        elide: Text.ElideMiddle
+                    }
+                    RowLayout {
+                        Button {
+                            objectName: "bergamotDownload"
+                            text: "Найти / скачать модель"
+                            enabled: win.controller.modelBusy !== true
+                            onClicked: { win.apply(); win.controller.refreshModels() }
+                        }
+                        Button {
+                            objectName: "bergamotManual"
+                            text: "Set model path manually"
+                            onClicked: modelPathRow.visible = !modelPathRow.visible
+                        }
+                    }
+                    RowLayout {
+                        id: modelPathRow
+                        visible: false
+                        Layout.fillWidth: true
+                        TextField {
+                            id: modelPath
+                            objectName: "bergamotPath"
+                            Layout.fillWidth: true
+                            placeholderText: "/путь/к/модели или en-ru.yml"
+                        }
+                        Button {
+                            text: "Применить"
+                            onClicked: { win.apply(); win.controller.setModelPath(modelPath.text) }
+                        }
+                    }
                 }
                 FieldLabel {
                     text: "Автоматический перевод"
