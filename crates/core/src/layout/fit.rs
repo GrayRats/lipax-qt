@@ -74,9 +74,25 @@ pub struct FitResult {
     pub overflow: bool,
 }
 
-/// Высота текста с множителем межстрочного интервала.
-fn text_height(m: &Measured, line_height: f32) -> f32 {
-    if m.lines <= 1 { m.height } else { m.height + (m.lines - 1) as f32 * m.line_spacing * (line_height - 1.0) }
+/// The height of one line as QML `Text` lays it out: the font's line spacing rounded up to a whole pixel.
+fn line_px(m: &Measured) -> f32 {
+    m.line_spacing.ceil().max(1.0)
+}
+
+/// Height of the text as QML `Text` draws it with `lineHeightMode: ProportionalHeight`: every line, the last
+/// one included, is `line_height` times the rounded line spacing, and the last line is never shorter than the
+/// font itself. Checked against Qt for several families, sizes 9–48 px and multipliers 0.85–2: never lower
+/// than what QML draws, so the fitted text is not cut at the bottom of its box.
+pub(crate) fn text_height(m: &Measured, line_height: f32) -> f32 {
+    let lines = m.lines.max(1) as f32;
+    line_px(m) * (line_height * (lines - 1.0) + line_height.max(1.0))
+}
+
+/// How many lines of the same model fit into `height`.
+fn lines_within(m: &Measured, line_height: f32, height: f32) -> u32 {
+    let (line, last) = (line_px(m) * line_height.max(0.1), line_px(m) * line_height.max(1.0));
+    if height < last { return 1; }
+    ((height - last) / line).floor() as u32 + 1
 }
 
 pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> FitResult {
@@ -106,7 +122,7 @@ pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> Fi
     };
     let done = |family: &FontSpec, px: f32, lh: f32, ls: f32, wrap: WrapMode, overflow: bool, m: &Measured| FitResult {
         family: family.family.clone(), font_px: px, line_height: lh, letter_spacing: ls, wrap_mode: wrap,
-        max_lines: ((h / (m.line_spacing * lh).max(1.0)).floor() as u32).max(1), overflow,
+        max_lines: lines_within(m, lh, h), overflow,
     };
 
     // 1–2. Начальный кегль с выбранным переносом; одна строка не поместилась — перенос по словам.
@@ -212,6 +228,21 @@ mod tests {
         let m = ApproxMeasure.measure(text, &input(text, 0.0, 0.0).font, r.font_px, r.letter_spacing, 300.0, r.wrap_mode);
         assert!(m.width <= 300.5 && text_height(&m, r.line_height) <= 60.5, "fits: {m:?}");
         assert!(r.letter_spacing >= -0.04 * r.font_px - 1e-3, "no destructive tracking");
+    }
+
+    #[test]
+    fn the_height_model_is_what_qml_text_draws() {
+        // QML `Text`, DejaVu Sans 20 px (line spacing 23.27), three lines, `ProportionalHeight`: contentHeight
+        // was 72, 108 and 144 for 1.0, 1.5 and 2.0, and 66.8 for 0.9. The old model gave 69.8, 93.1, 116.4, 65.1:
+        // the text was taller than the box it had been fitted to and was cut.
+        let m = Measured { width: 100.0, height: 69.8, lines: 3, line_spacing: 23.265625 };
+        assert_eq!([1.0, 1.5, 2.0].map(|lh| text_height(&m, lh)), [72.0, 108.0, 144.0]);
+        assert!(text_height(&m, 0.9) >= 66.8);
+        let one = Measured { lines: 1, height: 23.27, ..m };
+        assert_eq!(text_height(&one, 1.5), 36.0, "a single line is scaled too");
+        assert_eq!(lines_within(&m, 1.5, 108.0), 3);
+        assert_eq!(lines_within(&m, 1.5, 107.0), 2);
+        assert_eq!(lines_within(&m, 1.0, 5.0), 1, "at least one line");
     }
 
     #[test]

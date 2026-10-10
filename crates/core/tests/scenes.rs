@@ -7,7 +7,7 @@ use image::DynamicImage;
 use lipa_core::layout::engine::{InplaceEngine, InplaceFrame};
 use lipa_core::layout::fit::ApproxMeasure;
 use lipa_core::layout::font_database::InstalledFontDatabase;
-use lipa_core::layout::place::{PlacementCache, RegionInput, place_regions};
+use lipa_core::layout::place::{PlacementCache, RegionInput, Viewport, place_regions};
 use lipa_core::settings::{NormRect, Settings, TranslationDisplayMode};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -69,7 +69,7 @@ fn scene_quality_thresholds() {
             total_style += 1;
         }
         let region = RegionInput { id: "r", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
-        let placed = place_regions(&[region], &WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64]),
+        let placed = place_regions(&[region], &Viewport::window(WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64])),
             &settings().appearance.inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default());
         assert_eq!(placed.placed.len(), expect.fields, "{scene}: translated fields fit without collisions");
         assert!(placed.dropped.is_empty(), "{scene}: nothing is sent to the translation window");
@@ -102,7 +102,7 @@ fn scene_report() {
                 b.font.family, kind(&b.font.family), b.style.font_weight.value(), b.style.italic, b.background.mode, b.style.alignment as u8);
         }
         let region = RegionInput { id: "r", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
-        let placed = place_regions(&[region], &WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64]), &settings().appearance.inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default()).placed;
+        let placed = place_regions(&[region], &Viewport::window(WindowGeometry::from([0.0, 0.0, frame.frame.0 as f64, frame.frame.1 as f64])), &settings().appearance.inplace, &HashMap::new(), &ApproxMeasure, &mut PlacementCache::default()).placed;
         println!("  placed {} of {}", placed.len(), frame.blocks.len());
     }
 }

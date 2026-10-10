@@ -1,0 +1,250 @@
+{
+  "source": "kizurium/src/kizurium_translator/fonts",
+  "fonts": [
+    {
+      "file": "AlumniSans.ttf",
+      "family": "Alumni Sans",
+      "sha256": "9255d5201c7aba5bf1bde1e8521f0fee691f0588b83f40db228a5f9bbaacfbc4",
+      "license": "AlumniSans-OFL.txt",
+      "langs": [
+        "en",
+        "ru"
+      ]
+    },
+    {
+      "file": "Comfortaa.ttf",
+      "family": "Comfortaa",
+      "sha256": "0fc3f45dc48b614db9c39181502544b37217ecbf8bee2fb35886992bc96c5bd3",
+      "license": "Comfortaa-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk",
+        "el"
+      ]
+    },
+    {
+      "file": "Cuprum.ttf",
+      "family": "Cuprum",
+      "sha256": "be75585aa57a5f1c1d10de61305bb4266effa1b9083722d20c26adf97e911534",
+      "license": "Cuprum-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "file": "Exo2.ttf",
+      "family": "Exo 2",
+      "sha256": "205a448676a2586f9c57c25f3d5c58ca8db7e6cf5edf7506783a010c6fe2bfb5",
+      "license": "Exo2-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "file": "GolosText.ttf",
+      "family": "Golos Text",
+      "sha256": "17bb58fb69aec2dfb047a2ebf52534023e9b688c97a6b7ac795b0a72912c2063",
+      "license": "GolosText-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "file": "Michroma.ttf",
+      "family": "Michroma",
+      "sha256": "b62301163788bc5b7f8fcac0b74b184e34e1827e577b499ecb724da065098f87",
+      "license": "Michroma-OFL.txt",
+      "langs": [
+        "en"
+      ]
+    },
+    {
+      "file": "NotoSans.ttf",
+      "sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+      "status": "existing bundled version retained"
+    },
+    {
+      "file": "NotoSerif.ttf",
+      "sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+      "status": "existing bundled version retained"
+    },
+    {
+      "file": "Nunito.ttf",
+      "family": "Nunito",
+      "sha256": "bb55a5ca5c2042335b3991af27c4d0705d0ef41cac6164ac737fd8f2a1e85207",
+      "license": "Nunito-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "file": "Onest.ttf",
+      "family": "Onest",
+      "sha256": "966c5c29b4755da84b6854d5c21dd4eaa2420225d0e9874de602de176d4a9f31",
+      "license": "Onest-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "file": "Orbitron.ttf",
+      "family": "Orbitron",
+      "sha256": "f42db2dd16e642258e35782916eceb1dcdbea06fb958d77ad71dc5963587e8fd",
+      "license": "Orbitron-OFL.txt",
+      "langs": [
+        "en"
+      ]
+    },
+    {
+      "file": "Oswald.ttf",
+      "family": "Oswald",
+      "sha256": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
+      "license": "Oswald-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "file": "PTSerif-Bold.ttf",
+      "sha256": "038ba7336bd7ea14f12ad155bed51a4345cac5153275d521dec3ba04021c526e",
+      "status": "existing bundled version retained"
+    },
+    {
+      "file": "PTSerif-Italic.ttf",
+      "family": "PT Serif",
+      "sha256": "f57e95ff9dc85691a3b2e193f2028db36f6663939a46c0fc4f286d618b80b7ce",
+      "license": "PTSerif-Italic-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "file": "PTSerif-Regular.ttf",
+      "sha256": "a4951fade06ff8f09b7673aa81ffb65a8cd409e24d3289a6dc670bc4dda2557a",
+      "status": "existing bundled version retained"
+    },
+    {
+      "file": "Play-Bold.ttf",
+      "family": "Play",
+      "sha256": "45c572eccda4cf335165b750345258e753035bf48ee2fdf37faa07c7db88bce0",
+      "license": "Play-Bold-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk",
+        "el"
+      ]
+    },
+    {
+      "file": "Play-Regular.ttf",
+      "family": "Play",
+      "sha256": "eed0da79005cab35d6ed0eacab594ed67cc643be0b2632fa9e440b3bc5078dc4",
+      "license": "Play-Regular-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk",
+        "el"
+      ]
+    },
+    {
+      "file": "PressStart2P.ttf",
+      "family": "Press Start 2P",
+      "sha256": "034c77f1f05ec89421e4a63f0e3a4ca1ecf852cc6d2bf611f126f275728e017d",
+      "license": "PressStart2P-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk",
+        "el"
+      ]
+    },
+    {
+      "file": "Rajdhani-Bold.ttf",
+      "family": "Rajdhani",
+      "sha256": "691470dd3286a14e9677940d0bf75796179841ba5215cbda1a2c8910a3226afd",
+      "license": "Rajdhani-Bold-OFL.txt",
+      "langs": [
+        "en"
+      ]
+    },
+    {
+      "file": "Rajdhani-Regular.ttf",
+      "family": "Rajdhani",
+      "sha256": "6e1fc228a8318251a6e569502ec57bac1e4656c582f92f59ccecc4688e039b98",
+      "license": "Rajdhani-Regular-OFL.txt",
+      "langs": [
+        "en"
+      ]
+    },
+    {
+      "file": "Rajdhani-SemiBold.ttf",
+      "family": "Rajdhani",
+      "sha256": "94bbd25a18ca665999feb05a537de9fd2b860dcfb78bbe9ca00270825bf235da",
+      "license": "Rajdhani-SemiBold-OFL.txt",
+      "langs": [
+        "en"
+      ]
+    },
+    {
+      "file": "Rubik.ttf",
+      "family": "Rubik",
+      "sha256": "1b3a7437ba2af80e465e773ed60c5036d1ba6ace492d89046dbcf18fb31e4e88",
+      "license": "Rubik-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "file": "RussoOne.ttf",
+      "family": "Russo One",
+      "sha256": "bc0abcc660bd8b7ad3000ecb2898a27c58a29a50f7ec81652fa12e75148d09df",
+      "license": "RussoOne-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "file": "Tektur.ttf",
+      "family": "Tektur",
+      "sha256": "a4c451e5336874811267c2a514efa09bca7bc8cabf32a310f0b44e111eacb933",
+      "license": "Tektur-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk",
+        "el"
+      ]
+    },
+    {
+      "file": "Unbounded.ttf",
+      "family": "Unbounded",
+      "sha256": "323b511be380c8d474ef030686b71aedde501f8d9cd46da558b7c40454372c3f",
+      "license": "Unbounded-OFL.txt",
+      "langs": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    }
+  ]
+}

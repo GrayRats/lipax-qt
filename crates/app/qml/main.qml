@@ -157,7 +157,14 @@ ApplicationWindow {
         return screen ? JSON.stringify([screen.virtualX, screen.virtualY, screen.width, screen.height]) : ""
     }
     onPortalMonitorGeometryChanged: ctl.reportPortalMonitorGeometry(portalMonitorGeometry)
-    Component.onCompleted: ctl.reportPortalMonitorGeometry(portalMonitorGeometry)
+    // Every screen in logical desktop pixels: Rust keeps the in-place fields to the part of the game window
+    // that is on a screen. Re-reported when a monitor is added, removed, moved or rescaled.
+    readonly property string screensGeometry: JSON.stringify(Qt.application.screens.map(s => [s.virtualX, s.virtualY, s.width, s.height]))
+    onScreensGeometryChanged: ctl.reportScreens(screensGeometry)
+    Component.onCompleted: {
+        ctl.reportPortalMonitorGeometry(portalMonitorGeometry)
+        ctl.reportScreens(screensGeometry)
+    }
     readonly property var inplaceEntries: { try { return JSON.parse(ctl.inplaceJson || "[]") } catch (e) { return [] } }
     // Keyed by "region:field": a stable field keeps its window; only its properties update.
     readonly property string inplaceKeys: JSON.stringify(closingDown ? [] : inplaceEntries.map(e => e.key))
@@ -308,7 +315,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             visible: root.inplaceActive && (root.degradedFields > 0 || root.droppedFields > 0)
             wrapMode: Text.Wrap
-            text: "⚠ Упрощено полей: " + root.degradedFields + "; не показано: " + root.droppedFields + ". Недостаточно места без перекрытия текста."
+            text: "⚠ Упрощено полей: " + root.degradedFields + "; не показано: " + root.droppedFields + ". Недостаточно места в видимой части окна игры без перекрытия текста."
         }
         GridLayout {
             Layout.fillWidth: true

@@ -88,6 +88,11 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "reportPortalMonitorGeometry"]
         fn report_portal_monitor_geometry(self: Pin<&mut Controller>, json: &QString);
+        /// Desktop geometry of every screen, `[[x, y, w, h], …]` in logical pixels: in-place fields are kept
+        /// to the part of the game window that is on a screen.
+        #[qinvokable]
+        #[cxx_name = "reportScreens"]
+        fn report_screens(self: Pin<&mut Controller>, json: &QString);
         #[qinvokable]
         #[cxx_name = "setInplaceVisibility"]
         fn set_inplace_visibility(self: Pin<&mut Controller>, visible: bool, source: &QString);
@@ -274,7 +279,7 @@ use lipa_core::hotkeys::{self, HotkeyAction, HotkeyEvent};
 use lipa_core::ocr::AnyOcr;
 use lipa_core::history::{History, Entry};
 use lipa_core::layout::engine::InplaceFrame;
-use lipa_core::layout::place::{PlacementCache, RegionInput, place_regions};
+use lipa_core::layout::place::{PlacementCache, RegionInput, Viewport, place_regions};
 use lipa_core::pipeline::{Cmd, Event, Pipeline};
 use lipa_core::settings::{CaptureSource, NormRect, Settings};
 use lipa_core::tesseract::{TesseractInfo, TesseractManager};
@@ -423,6 +428,8 @@ pub struct ControllerRust {
     region_inplace: std::collections::BTreeMap<String, Arc<InplaceFrame>>,
     /// Подгонка полей кэшируется: перемещение окна игры и повторные публикации ничего не пересчитывают.
     placement_cache: PlacementCache,
+    /// Screens of the desktop as QML reports them (logical px): the in-place fields stay on them.
+    screens: Vec<lipa_core::layout::DesktopRect>,
     /// PNG подложек: (область, поле) → (ревизия, URL). Файл пишется только при новой ревизии.
     inplace_images: std::collections::HashMap<(String, u64), (u64, String)>,
     inplace_json: QString,
@@ -488,6 +495,7 @@ impl Default for ControllerRust {
             region_text: Default::default(),
             region_inplace: Default::default(),
             placement_cache: PlacementCache::default(),
+            screens: Vec::new(),
             inplace_images: Default::default(),
             inplace_json: QString::from("[]"),
             inplace_fallback_json: QString::from(r#"{"texts":[],"degraded":0}"#),
@@ -911,6 +919,19 @@ impl qobject::Controller {
             self.as_mut().publish_inplace();
         }
     }
+    fn report_screens(mut self: Pin<&mut Self>, json: &QString) {
+        let Ok(list) = serde_json::from_str::<Vec<[f64; 4]>>(&json.to_string()) else {
+            tracing::warn!(target: "inplace.geometry", json = %json, "invalid screen geometry from QML");
+            return;
+        };
+        let screens: Vec<_> = list.into_iter().filter(|g| g.iter().all(|v| v.is_finite()) && g[2] > 0.0 && g[3] > 0.0)
+            .map(|g| lipa_core::layout::DesktopRect::in_space(g[0] as f32, g[1] as f32, g[2] as f32, g[3] as f32)).collect();
+        if screens != self.rust().screens {
+            tracing::debug!(target: "inplace.geometry", screens = ?screens, "screens changed");
+            self.as_mut().rust_mut().screens = screens;
+            self.as_mut().publish_inplace();
+        }
+    }
     fn set_inplace_visibility(mut self: Pin<&mut Self>, visible: bool, source: &QString) {
         if *self.inplace_visible() != visible {
             tracing::debug!(target: "inplace.state", visible, source = %source, "inplace visibility");
@@ -1031,7 +1052,8 @@ impl qobject::Controller {
             Some(window) => {
                 let inputs: Vec<RegionInput> = frames.iter().map(|(id, rect, frame)| RegionInput { id, rect: *rect, frame }).collect();
                 let mut cache = std::mem::take(&mut self.as_mut().rust_mut().placement_cache);
-                let placed = place_regions(&inputs, &lipa_core::capture::kwin::WindowGeometry::from(window), &inplace, &images, &crate::icon::QtMeasure, &mut cache);
+                let view = Viewport::new(lipa_core::capture::kwin::WindowGeometry::from(window), self.rust().screens.clone());
+                let placed = place_regions(&inputs, &view, &inplace, &images, &crate::icon::QtMeasure, &mut cache);
                 self.as_mut().rust_mut().placement_cache = cache;
                 placed
             }

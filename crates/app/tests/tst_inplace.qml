@@ -32,6 +32,16 @@ TestCase {
         compare(inplace.height, 60)
     }
 
+    function test_edgesAreRoundedNotTheSize() {
+        // Fractional geometry (a 125 % screen): the window covers the pixels between the rounded edges,
+        // so it never reaches a pixel past the edge Rust kept the field to.
+        inplace.gameGeometry = "[100.4,50,1000.2,500]"
+        const r = inplace.desktopRect
+        compare(inplace.x, Math.round(r[0]))
+        compare(inplace.x + inplace.width, Math.round(r[0] + r[2]))
+        compare(inplace.y + inplace.height, Math.round(r[1] + r[3]))
+    }
+
     function test_rendersEveryPropertyFromRust() {
         const t = child("inplaceText")
         compare(t.font.family, "DejaVu Serif")

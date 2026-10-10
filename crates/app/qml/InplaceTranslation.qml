@@ -40,16 +40,20 @@ Window {
 
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus
-    width: desktopRect ? Math.max(8, Math.round(desktopRect[2])) : 8
-    height: desktopRect ? Math.max(8, Math.round(desktopRect[3])) : 8
-    x: desktopRect ? Math.round(desktopRect[0]) : 0
-    y: desktopRect ? Math.round(desktopRect[1]) : 0
+    // Edges are rounded, not the size: rounding x and the width separately could grow the window by a
+    // pixel past the edge Rust kept it to. Rust fits the text with a pixel to spare for this rounding.
+    readonly property var pixelRect: desktopRect ? [Math.round(desktopRect[0]), Math.round(desktopRect[1]),
+        Math.round(desktopRect[0] + desktopRect[2]), Math.round(desktopRect[1] + desktopRect[3])] : null
+    width: pixelRect ? Math.max(1, pixelRect[2] - pixelRect[0]) : 8
+    height: pixelRect ? Math.max(1, pixelRect[3] - pixelRect[1]) : 8
+    x: pixelRect ? pixelRect[0] : 0
+    y: pixelRect ? pixelRect[1] : 0
 
     LayerShell.Window.scope: "lipa-inplace"
     LayerShell.Window.layer: LayerShell.Window.LayerOverlay
     LayerShell.Window.anchors: LayerShell.Window.AnchorTop | LayerShell.Window.AnchorLeft
-    LayerShell.Window.margins: ({ left: desktopRect && targetScreen ? Math.round(desktopRect[0] - targetScreen.virtualX) : 0,
-                                  top: desktopRect && targetScreen ? Math.round(desktopRect[1] - targetScreen.virtualY) : 0,
+    LayerShell.Window.margins: ({ left: pixelRect && targetScreen ? pixelRect[0] - targetScreen.virtualX : 0,
+                                  top: pixelRect && targetScreen ? pixelRect[1] - targetScreen.virtualY : 0,
                                   right: 0, bottom: 0 })
     LayerShell.Window.exclusionZone: -1
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityNone

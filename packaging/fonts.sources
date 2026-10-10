@@ -1,3 +1,5 @@
+# Additional fonts imported from kizurium are recorded in packaging/kizurium-fonts.json.
+# Their compressed files and licenses are tracked alongside these fonts; this updater leaves them intact.
 # name  sha256-of-the-uncompressed-upstream-file  pinned-upstream-url
 # Provenance only: the repository stores the files compressed (assets/fonts/*.xz);
 # packaging/update-fonts.sh re-downloads them from here, verifies the checksums and recompresses.

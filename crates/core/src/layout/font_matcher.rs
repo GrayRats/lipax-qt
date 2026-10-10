@@ -16,11 +16,13 @@ use std::collections::BTreeMap;
 
 // Кураторские списки: порядок — приоритет. Содержат только семейства из реестра приложения
 // (`font_database::BUNDLED`); тест `lists_only_name_bundled_families` следит за этим.
-pub const SANS: &[&str] = &["Inter", "Roboto", "Noto Sans", "Open Sans", "Fira Sans", "Montserrat"];
+pub const SANS: &[&str] = &["Inter", "Roboto", "Noto Sans", "Open Sans", "Fira Sans", "Montserrat", "Golos Text", "Onest", "Exo 2", "Play", "Rubik", "Nunito", "Comfortaa"];
 pub const SERIF: &[&str] = &["PT Serif", "Noto Serif", "Source Serif 4", "Literata", "Lora", "EB Garamond"];
 pub const SLAB: &[&str] = &["Roboto Slab", "Bitter"];
-pub const MONO: &[&str] = &["JetBrains Mono", "Source Code Pro", "Fira Code"];
-pub const CONDENSED: &[&str] = &["Roboto Condensed", "Inter"];
+pub const MONO: &[&str] = &["JetBrains Mono", "Source Code Pro", "Fira Code", "Press Start 2P"];
+pub const CONDENSED: &[&str] = &["Roboto Condensed", "Oswald", "Cuprum", "Alumni Sans", "Rajdhani", "Inter"];
+pub const ROUNDED: &[&str] = &["Nunito", "Comfortaa", "Rubik", "Onest"];
+pub const DISPLAY: &[&str] = &["Russo One", "Tektur", "Unbounded", "Orbitron", "Michroma", "Exo 2"];
 /// CJK-шрифт один (Noto Sans CJK, все регионы); CJK-варианта с засечками в комплекте нет.
 pub const CJK_SANS: &[&str] = &["Noto Sans CJK SC"];
 pub const CJK_SERIF: &[&str] = &["Noto Sans CJK SC"];
@@ -54,8 +56,9 @@ pub struct FontCandidateScore {
 
 impl FontCandidateScore {
     pub fn total(&self) -> f32 {
-        self.glyph_coverage + self.language_match + 2.0 * self.category_match + self.block_type_match + self.width_match
-            + self.weight_match + self.monospace_match + self.condensed_match + self.style_match + 3.0 * self.priority_bonus
+        // Proportions must outweigh list order, otherwise new narrow/pixel faces never win.
+        self.glyph_coverage + self.language_match + 2.0 * self.category_match + self.block_type_match + 4.0 * self.width_match
+            + self.weight_match + self.monospace_match + self.condensed_match + self.style_match + self.priority_bonus
     }
 }
 
@@ -96,6 +99,8 @@ impl FontMatcher {
             FontCategory::SlabSerif => SLAB,
             FontCategory::Monospace => MONO,
             FontCategory::Condensed => CONDENSED,
+            FontCategory::Rounded => ROUNDED,
+            FontCategory::Display => DISPLAY,
             FontCategory::Unknown => match block_type {
                 TextBlockType::UiLabel | TextBlockType::Button | TextBlockType::MenuItem | TextBlockType::Notification => UI_SANS,
                 TextBlockType::Dialogue => DIALOGUE_SERIF,
@@ -132,7 +137,7 @@ impl FontMatcher {
             weight_match: if (weight.value() - analysis.weight.value()).abs() <= 100 { 0.5 } else { 0.0 },
             monospace_match: match (analysis.monospace, font.is_monospace) { (true, true) => 1.0, (false, false) => 0.3, (true, false) => -0.5, (false, true) => -1.0 },
             condensed_match: if analysis.condensed == font.is_condensed { 0.3 } else { -0.3 },
-            style_match: if analysis.italic && font.italic_available { 0.3 } else { 0.0 },
+            style_match: if analysis.italic && font.italic_available { 1.0 } else { 0.0 },
             priority_bonus: pos.map(|p| 1.0 - p as f32 / list.len().max(1) as f32).unwrap_or(0.0),
         }
     }
@@ -215,7 +220,7 @@ mod tests {
     #[test]
     fn lists_only_name_bundled_families() {
         let db = InstalledFontDatabase::bundled();
-        for list in [SANS, SERIF, SLAB, MONO, CONDENSED, CJK_SANS, CJK_SERIF, GENERAL, UI_SANS, DIALOGUE_SERIF, SUBTITLE_SANS] {
+        for list in [SANS, SERIF, SLAB, MONO, CONDENSED, ROUNDED, DISPLAY, CJK_SANS, CJK_SERIF, GENERAL, UI_SANS, DIALOGUE_SERIF, SUBTITLE_SANS] {
             for family in list { assert!(db.find(family).is_some(), "{family} is not a bundled family"); }
         }
     }
@@ -283,5 +288,27 @@ mod tests {
         let mut prefs = FontPreferences::default();
         prefs.category_overrides.insert(FontCategory::Serif, "Inter".into());
         assert_eq!(FontMatcher.select_font(&analysis(FontCategory::Serif), Script::Cyrillic, TextBlockType::Dialogue, &db, &prefs).family, "Inter");
+    }
+
+    #[test]
+    fn wide_monospace_text_gets_the_pixel_face() {
+        let db = InstalledFontDatabase::bundled();
+        let a = FontAnalysis { monospace: true, width_ratio: 1.0, ..analysis(FontCategory::Monospace) };
+        let picked = FontMatcher.select_font(&a, Script::Cyrillic, TextBlockType::Unknown, &db, &Default::default());
+        assert_eq!(picked.family, "Press Start 2P");
+    }
+
+    #[test]
+    fn latin_only_preferences_are_skipped_for_cyrillic() {
+        let db = InstalledFontDatabase::bundled();
+        for family in ["Michroma", "Orbitron", "Rajdhani"] {
+            let mut prefs = FontPreferences::default();
+            prefs.category_overrides.insert(FontCategory::Display, family.into());
+            let a = analysis(FontCategory::Display);
+            let latin = FontMatcher.select_font(&a, Script::Latin, TextBlockType::Unknown, &db, &prefs);
+            assert_eq!(latin.family, family);
+            let cyrillic = FontMatcher.select_font(&a, Script::Cyrillic, TextBlockType::Unknown, &db, &prefs);
+            assert!(!cyrillic.generic && db.find(&cyrillic.family).unwrap().supports_cyrillic);
+        }
     }
 }

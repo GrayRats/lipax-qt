@@ -83,7 +83,7 @@ static BUNDLED_AVAILABLE: RwLock<Option<BTreeSet<String>>> = RwLock::new(None);
 
 /// Шрифт, поставляемый с приложением. Единственный источник истины: из этой таблицы строятся
 /// и выбор шрифта, и список в настройках; загрузчик Qt просто читает каталог со шрифтами.
-/// Курсивных файлов нет (ради размера): курсив рисует Qt синтетическим наклоном.
+/// Настоящий курсив доступен для PT Serif; для остальных семейств Qt использует синтетический наклон.
 #[derive(Debug, Clone, Copy)]
 pub struct BundledFont {
     /// Имя семейства, как его сообщает Qt после загрузки файла.
@@ -132,7 +132,8 @@ pub const BUNDLED: &[BundledFont] = &[
     font!("Montserrat", ["Montserrat.ttf"], GeometricSans, W_ALL, 0.73),
     font!("Roboto Condensed", ["RobotoCondensed.ttf"], Condensed, W_ALL, 0.56, condensed),
     font!("Noto Serif", ["NotoSerif.ttf"], TransitionalSerif, W_ALL, 0.75),
-    font!("PT Serif", ["PTSerif-Regular.ttf", "PTSerif-Bold.ttf"], TransitionalSerif, W_REG_BOLD, 0.65),
+    BundledFont { langs: &["en", "ru", "uk"],
+        ..font!("PT Serif", ["PTSerif-Regular.ttf", "PTSerif-Bold.ttf", "PTSerif-Italic.ttf"], TransitionalSerif, W_REG_BOLD, 0.65) },
     font!("Source Serif 4", ["SourceSerif4.ttf"], Serif, W_200_900, 0.65),
     font!("Literata", ["Literata.ttf"], Serif, W_200_900, 0.74),
     font!("Lora", ["Lora.ttf"], Serif, W_400_700, 0.67),
@@ -142,6 +143,41 @@ pub const BUNDLED: &[BundledFont] = &[
     font!("JetBrains Mono", ["JetBrainsMono.ttf"], Monospace, W_100_800, 0.59, mono),
     font!("Fira Code", ["FiraCode.ttf"], Monospace, W_300_700, 0.64, mono),
     font!("Source Code Pro", ["SourceCodePro.ttf"], Monospace, W_200_900, 0.71, mono),
+    // Additional game/UI fonts imported from kizurium; coverage is checked against the actual files.
+    BundledFont { family: "Alumni Sans", files: &["AlumniSans.ttf"], category: FontCategory::Condensed,
+        langs: &["en", "ru"], weights: &[Thin, ExtraLight, Light, Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: true, glyph_width: 0.43 },
+    BundledFont { family: "Comfortaa", files: &["Comfortaa.ttf"], category: FontCategory::Rounded,
+        langs: &["en", "ru", "uk", "el"], weights: &[Light, Normal, Medium, DemiBold, Bold], monospace: false, condensed: false, glyph_width: 0.71 },
+    BundledFont { family: "Cuprum", files: &["Cuprum.ttf"], category: FontCategory::Condensed,
+        langs: &["en", "ru", "uk"], weights: &[Normal, Medium, DemiBold, Bold], monospace: false, condensed: true, glyph_width: 0.53 },
+    BundledFont { family: "Exo 2", files: &["Exo2.ttf"], category: FontCategory::GeometricSans,
+        langs: &["en", "ru", "uk"], weights: &[Thin, ExtraLight, Light, Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: false, glyph_width: 0.65 },
+    BundledFont { family: "Golos Text", files: &["GolosText.ttf"], category: FontCategory::NeoGrotesqueSans,
+        langs: &["en", "ru", "uk"], weights: &[Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: false, glyph_width: 0.72 },
+    BundledFont { family: "Michroma", files: &["Michroma.ttf"], category: FontCategory::Display,
+        langs: &["en"], weights: &[Normal], monospace: false, condensed: false, glyph_width: 0.92 },
+    BundledFont { family: "Nunito", files: &["Nunito.ttf"], category: FontCategory::Rounded,
+        langs: &["en", "ru", "uk"], weights: &[ExtraLight, Light, Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: false, glyph_width: 0.65 },
+    BundledFont { family: "Onest", files: &["Onest.ttf"], category: FontCategory::NeoGrotesqueSans,
+        langs: &["en", "ru", "uk"], weights: &[Thin, ExtraLight, Light, Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: false, glyph_width: 0.70 },
+    BundledFont { family: "Orbitron", files: &["Orbitron.ttf"], category: FontCategory::Display,
+        langs: &["en"], weights: &[Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: false, glyph_width: 0.77 },
+    BundledFont { family: "Oswald", files: &["Oswald.ttf"], category: FontCategory::Condensed,
+        langs: &["en", "ru", "uk"], weights: &[ExtraLight, Light, Normal, Medium, DemiBold, Bold], monospace: false, condensed: true, glyph_width: 0.43 },
+    BundledFont { family: "Play", files: &["Play-Bold.ttf", "Play-Regular.ttf"], category: FontCategory::GeometricSans,
+        langs: &["en", "ru", "uk", "el"], weights: &[Normal, Bold], monospace: false, condensed: false, glyph_width: 0.70 },
+    BundledFont { family: "Press Start 2P", files: &["PressStart2P.ttf"], category: FontCategory::Monospace,
+        langs: &["en", "ru", "uk", "el"], weights: &[Normal], monospace: true, condensed: false, glyph_width: 1.00 },
+    BundledFont { family: "Rajdhani", files: &["Rajdhani-Bold.ttf", "Rajdhani-Regular.ttf", "Rajdhani-SemiBold.ttf"], category: FontCategory::Condensed,
+        langs: &["en"], weights: &[Normal, DemiBold, Bold], monospace: false, condensed: true, glyph_width: 0.60 },
+    BundledFont { family: "Rubik", files: &["Rubik.ttf"], category: FontCategory::Rounded,
+        langs: &["en", "ru", "uk"], weights: &[Light, Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: false, glyph_width: 0.66 },
+    BundledFont { family: "Russo One", files: &["RussoOne.ttf"], category: FontCategory::Display,
+        langs: &["en", "ru", "uk"], weights: &[Normal], monospace: false, condensed: false, glyph_width: 0.77 },
+    BundledFont { family: "Tektur", files: &["Tektur.ttf"], category: FontCategory::Display,
+        langs: &["en", "ru", "uk", "el"], weights: &[Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: false, glyph_width: 0.72 },
+    BundledFont { family: "Unbounded", files: &["Unbounded.ttf"], category: FontCategory::Display,
+        langs: &["en", "ru", "uk"], weights: &[ExtraLight, Light, Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: false, glyph_width: 0.90 },
     BundledFont { family: "Noto Sans CJK SC", files: &["NotoSansCJK-VF.otf"], category: CjkSans, langs: CJK, weights: W_ALL,
         monospace: false, condensed: false, glyph_width: 1.0 },
 ];
@@ -149,13 +185,13 @@ pub const BUNDLED: &[BundledFont] = &[
 fn bundled_info(f: &BundledFont) -> FontInfo {
     FontInfo {
         family: f.family.into(),
-        supports_latin: true,
-        supports_cyrillic: true,
+        supports_latin: f.langs.contains(&"en"),
+        supports_cyrillic: f.langs.contains(&"ru"),
         supports_cjk: f.langs.contains(&"ja"),
         langs: f.langs.iter().map(|l| (*l).to_owned()).collect(),
         category: f.category,
         available_weights: f.weights.to_vec(),
-        italic_available: false,
+        italic_available: f.files.iter().any(|file| file.contains("Italic")),
         is_condensed: f.condensed,
         is_monospace: f.monospace,
         average_glyph_width: f.glyph_width,
@@ -306,13 +342,16 @@ Fancy Latin Only\ten|de|fr\t0\t80\t100\t0\n";
         let cjk = db.find("Noto Sans CJK SC").unwrap();
         assert!(["ja", "ko", "zh-cn", "zh-tw"].iter().all(|l| cjk.covers(l)));
         assert!(!db.find("Inter").unwrap().covers("ja"));
-        // Every family covers the scripts the matcher relies on, and no file is shipped twice.
-        assert!(db.fonts().iter().all(|f| f.covers("en") && f.covers("ru")));
+        // All families cover Latin; Latin-only imports must not be offered for Cyrillic.
+        assert!(db.fonts().iter().all(|f| f.covers("en")));
+        for family in ["Michroma", "Orbitron", "Rajdhani"] {
+            assert!(!db.find(family).unwrap().supports_cyrillic);
+        }
+        assert!(db.find("PT Serif").unwrap().italic_available);
         let mut files: Vec<_> = BUNDLED.iter().flat_map(|f| f.files).collect();
         files.sort();
         assert!(files.windows(2).all(|w| w[0] != w[1]), "duplicate font file in the registry");
-        assert!(files.iter().all(|f| f.ends_with(".ttf") || f.ends_with(".otf")), "no italic or collection files");
-        assert!(BUNDLED.iter().all(|f| f.files.iter().all(|n| !n.to_ascii_lowercase().contains("italic"))));
+        assert!(files.iter().all(|f| f.ends_with(".ttf") || f.ends_with(".otf")), "only individual font files");
         // Every category used by the matcher has at least one bundled family.
         for (name, cat) in [("slab", FontCategory::SlabSerif), ("mono", FontCategory::Monospace), ("condensed", FontCategory::Condensed), ("cjk", FontCategory::CjkSans)] {
             assert!(db.fonts().iter().any(|f| f.category == cat), "no bundled {name} font");

@@ -134,6 +134,15 @@ impl<S: Space> Rect<S> {
         let u = self.area() + o.area() - i;
         if u > 0.0 { i / u } else { 0.0 }
     }
+    /// The part of the rectangle inside `bounds`; empty (zero size, at the nearest edge) if they do not meet.
+    pub fn clipped_to(&self, bounds: &Self) -> Self {
+        let (x0, y0) = (self.x.max(bounds.x), self.y.max(bounds.y));
+        Self::in_space(x0, y0, (self.right().min(bounds.right()) - x0).max(0.0), (self.bottom().min(bounds.bottom()) - y0).max(0.0))
+    }
+    /// Whether `inner` lies inside, within half a pixel (sums of fractions are not exact).
+    pub fn contains(&self, inner: &Self) -> bool {
+        inner.x >= self.x - 0.5 && inner.y >= self.y - 0.5 && inner.right() <= self.right() + 0.5 && inner.bottom() <= self.bottom() + 0.5
+    }
     /// Расширить на `pad` со всех сторон, не выходя за `w`×`h`.
     pub fn expand(&self, pad: f32, w: f32, h: f32) -> Self {
         let (x0, y0) = ((self.x - pad).max(0.0), (self.y - pad).max(0.0));
@@ -194,9 +203,15 @@ impl FrameToDesktop {
         }
     }
 
-    /// The scale of lengths: along x, as the fit of the text uses it.
+    /// The scale of horizontal lengths (widths, letter spacing).
     pub fn scale(&self) -> LogicalScale {
         LogicalScale::new(self.scale.0 as f32)
+    }
+
+    /// The scale of vertical lengths (glyph and line heights). It differs from [`Self::scale`] when the
+    /// frame is not shaped like the place it is shown at, e.g. while the game is changing its resolution.
+    pub fn scale_y(&self) -> LogicalScale {
+        LogicalScale::new(self.scale.1 as f32)
     }
 
     pub fn rect(&self, r: &Rect<FramePx>) -> DesktopRect {
@@ -242,6 +257,22 @@ mod tests {
         let [x, y, w, h] = map.fraction(&on_desktop);
         assert!((x - 0.2).abs() < 1e-6 && (y - 0.2).abs() < 1e-6 && (w - 0.1).abs() < 1e-6 && (h - 0.1).abs() < 1e-6, "{x} {y} {w} {h}");
         assert_eq!(Rect::new(400.0, 100.0, 200.0, 50.0).fraction_of((2000, 500)), [0.2, 0.2, 0.1, 0.1]);
+    }
+
+    #[test]
+    fn each_axis_has_its_own_scale() {
+        // A 1000×500 frame shown 1000×1000: lengths along y are doubled, along x they are not.
+        let map = FrameToDesktop::new(&WindowGeometry { x: 0.0, y: 0.0, w: 1000.0, h: 1000.0 }, NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, (1000, 500));
+        assert_eq!((map.scale(), map.scale_y()), (LogicalScale::new(1.0), LogicalScale::new(2.0)));
+    }
+
+    #[test]
+    fn clipping_keeps_the_common_part_or_nothing() {
+        let screen = DesktopRect::in_space(0.0, 0.0, 1920.0, 1080.0);
+        assert_eq!(DesktopRect::in_space(-300.0, 100.0, 1200.0, 400.0).clipped_to(&screen), DesktopRect::in_space(0.0, 100.0, 900.0, 400.0));
+        assert_eq!(DesktopRect::in_space(-300.0, 100.0, 200.0, 400.0).clipped_to(&screen).area(), 0.0);
+        assert!(screen.contains(&DesktopRect::in_space(1919.6, 0.0, 0.8, 1.0)), "half a pixel of tolerance");
+        assert!(!screen.contains(&DesktopRect::in_space(1919.0, 0.0, 2.0, 1.0)));
     }
 
     #[test]
