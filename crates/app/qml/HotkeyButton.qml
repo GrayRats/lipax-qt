@@ -9,6 +9,7 @@ Button {
     property bool conflict: false
     signal edited(string value)
 
+    HoverHint { control: btn; feature: "Сочетание клавиш"; explanation: "Нажмите и введите новое сочетание. Esc отменяет ввод, Backspace или Delete очищает назначение. Клавиши F1–F24 можно использовать без модификаторов. Изменение регистрируется сразу." }
     text: capturing ? "Нажмите сочетание…" : (value.length ? value : "не назначено")
     property bool capturing: false
     highlighted: capturing

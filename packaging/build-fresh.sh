@@ -8,6 +8,8 @@
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
+bash packaging/check-qt.sh
+
 # The system rust may be broken against the system LLVM; rustup's stable is the supported toolchain.
 if command -v rustup >/dev/null 2>&1 && [[ -z ${RUSTUP_TOOLCHAIN:-} ]]; then export RUSTUP_TOOLCHAIN=stable; fi
 

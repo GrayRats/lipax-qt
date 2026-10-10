@@ -60,6 +60,10 @@ TestCase {
         property string captureCapabilities: "{}"
         property var forgotten: []
         function forgetGameProfile(key) { forgotten = forgotten.concat([key]) }
+        function themePolicy(requested) {
+            const pending = requested !== "light" && requested !== "dark"
+            return JSON.stringify({restartRequired: pending, activeTheme: pending ? "dark" : requested, styleOverridden: false})
+        }
         function appVersion() { return "9.9.9" }
         property string paddleJson: ""
         property bool paddleBusy: false
@@ -83,6 +87,98 @@ TestCase {
     }
     Lipa.SettingsWindow { id: settings; controller: controller }
 
+    function initTestCase() {
+        console.info("Typography: system=" + Qt.application.font.family + " " + Qt.application.font.pointSize
+            + "pt, interface=" + settings.font.pointSize + "pt")
+    }
+
+    function test_previewPersistsAcrossScrollResizeAndAppearanceEdits() {
+        settings.reload()
+        settings.show()
+        const tabs = findChild(settings, "settingsTabs")
+        settings.set("display_mode", "window")
+        for (const width of [600, 880, 1240]) {
+            settings.width = width
+            settings.height = 740
+            tabs.currentIndex = 5
+            wait(100)
+            const preview = findChild(settings, "appearancePreview")
+            const content = findChild(preview, "windowAppearancePreview")
+            verify(preview.visible && preview.width > 100 && preview.height > 60)
+            if (settings.widePreview) {
+                verify(preview.width <= 420, "Wide preview must leave room for the form")
+                verify(findChild(settings, "settingsPage5").width >= 300, "Form remains visible beside the preview")
+            }
+            verify(content.translation.length > 0, "Sample does not require OCR")
+            settings.set("appearance.window.font_size", 29)
+            settings.set("appearance.window.text_color", "#12abef")
+            compare(content.requestedFontSize, 29)
+            compare(content.textColor, "#12abef")
+            const page = findChild(settings, "settingsPage5")
+            const y = preview.y
+            page.contentItem.contentY = 500
+            wait(80)
+            compare(preview.y, y)
+            verify(preview.visible)
+            page.contentItem.contentY = 0
+        }
+        settings.resetKeys(["appearance.window"])
+        settings.apply()
+    }
+
+    function test_uiTypographyIsIndependentAndRestartCanBeCancelled() {
+        settings.reload()
+        settings.show()
+        const before = settings.current.appearance.window.font_size
+        const fontSize = settings.font.pointSize
+        settings.set("general.ui_text_scale", "extra_large")
+        verify(settings.font.pointSize >= fontSize)
+        compare(settings.current.appearance.window.font_size, before)
+        settings.set("general.theme", "fusion")
+        verify(settings.themePolicy.restartRequired)
+        compare(settings.universalTheme, Universal.Dark)
+        settings.set("general.theme", "dark")
+        verify(!settings.themePolicy.restartRequired)
+        settings.set("general.ui_text_scale", "normal")
+        settings.apply()
+    }
+
+    function test_providerExplanationPreservesOtherCredentials() {
+        settings.reload()
+        settings.set("translation.yandex_api_key", "test-only")
+        for (const provider of ["google", "yandex", "custom", "deepl", "microsoft", "bergamot"]) {
+            settings.set("translation.service", provider)
+            verify(settings.providerDescription.length > 70)
+            compare(settings.current.translation.yandex_api_key, "test-only")
+        }
+        verify(settings.providerDescription.includes("fallback отключён"))
+        settings.set("translation.yandex_api_key", "")
+        settings.set("translation.service", "google")
+        settings.apply()
+    }
+
+    function hoverControl(control, hint) {
+        settings.requestActivate()
+        // Wayland configures the surface asynchronously; do not send a pointer to stale layout coordinates.
+        waitForRendering(control)
+        for (let item = control.parent; item; item = item.parent) {
+            if (typeof item.contentY === "number" && item.contentItem) {
+                const position = control.mapToItem(item.contentItem, 0, 0)
+                if (position.y < item.contentY || position.y + control.height > item.contentY + item.height)
+                    item.contentY = Math.max(0, Math.min(item.contentHeight - item.height,
+                        position.y - (item.height - control.height) / 2))
+            }
+        }
+        waitForRendering(control)
+        tryVerify(() => control.width > 0 && control.height > 0 && hint.visible && !hint.moving, 3000)
+        mouseMove(settings.contentItem, 1, 1)
+        const point = control.mapToItem(settings.contentItem, control.width / 2, control.height / 2)
+        tryVerify(() => {
+            mouseMove(settings.contentItem, point.x, point.y)
+            return hint.popupVisible
+        }, 3000, "Tooltip opens over a stable, exposed control")
+    }
+
     function test_captureSelectionUsesTheJustEditedSource() {
         settings.reload()
         const previous = settings.current.capture.source
@@ -105,8 +201,7 @@ TestCase {
         verify(choice.checked, "the desired mode is preserved during fallback")
         verify(hint !== null)
         wait(60)
-        const point = choice.mapToItem(settings.contentItem, choice.width / 2, choice.height / 2)
-        mouseMove(settings.contentItem, point.x, point.y)
+        hoverControl(choice, hint)
         tryVerify(() => hint.popupVisible, 2000, "the tooltip popup actually opens after hovering")
         verify(hint.explanation.includes("Нет глобальных координат окна"))
         verify(hint.explanation.includes("Выберите KWin"))
@@ -140,9 +235,8 @@ TestCase {
             tabs.currentIndex = 3
             wait(80)
             mouseMove(settings.contentItem, 1, 1)
-            const point = entry.choice.mapToItem(settings.contentItem, entry.choice.width / 2, entry.choice.height / 2)
-            mouseMove(settings.contentItem, point.x, point.y)
             const hint = findChild(settings.contentItem, entry.hint)
+            hoverControl(entry.choice, hint)
             tryVerify(() => hint.popupVisible, 2000)
             mouseClick(entry.choice, entry.choice.width / 2, entry.choice.height / 2)
             compare(settings.current.display_mode, entry.mode)
@@ -197,8 +291,7 @@ TestCase {
         verify(hint !== undefined)
         wait(80)
         mouseMove(settings.contentItem, 1, 1)
-        const point = editor.mapToItem(settings.contentItem, editor.width / 2, editor.height / 2)
-        mouseMove(settings.contentItem, point.x, point.y)
+        hoverControl(editor, hint)
         tryVerify(() => hint.popupVisible, 2000)
         verify(hint.explanation.includes("Tesseract"))
         verify(hint.explanation.includes("PaddleOCR"))
@@ -241,7 +334,11 @@ TestCase {
         settings.height = 540
         const tabs = findChild(settings, "settingsTabs")
         tabs.currentIndex = 0
+        settings.requestActivate()
+        waitForRendering(tabs)
+        tryVerify(() => settings.active, 3000)
         tabs.itemAt(0).forceActiveFocus()
+        tryVerify(() => tabs.itemAt(0).activeFocus, 3000)
         keyClick(Qt.Key_Right)
         tryCompare(tabs, "currentIndex", 1)
         tabs.currentIndex = 10
@@ -357,7 +454,7 @@ TestCase {
             problems: problems})
     }
 
-    function test_aboutTabAnimatesOnlyWhileShownAndTellsWhatLipaXIs() {
+    function test_aboutTabRespectsReducedMotionAndTellsWhatLipaXIs() {
         settings.reload()
         settings.show()
         const tabs = findChild(settings, "settingsTabs")
@@ -370,17 +467,13 @@ TestCase {
         wait(200)
         compare(icon.y, 24)
         compare(icon.rotation, 0)
-        // On its own tab the icon floats and sways and the line runs (the tab index is that of "О программе").
         tabs.currentIndex = 10
-        tryVerify(() => icon.y < 20, 3000, "the icon floats")
-        tryVerify(() => icon.rotation !== 0, 3000, "and sways")
         const x = ticker.x
         wait(300)
-        verify(ticker.x < x, "the line runs: " + x + " -> " + ticker.x)
-        // Leaving the tab stops it and puts the icon back.
+        compare(icon.y, 24)
+        compare(icon.rotation, 0)
+        compare(ticker.x, x, "No decorative motion on the About page")
         tabs.currentIndex = 0
-        tryCompare(icon, "y", 24, 3000)
-        tryCompare(icon, "rotation", 0, 3000)
         // What the program is, its version, author, licence and what it stands on.
         compare(visualFind(page.contentItem, "aboutVersion").text, "Версия 9.9.9")
         verify(visualFind(page.contentItem, "aboutDescription").text.indexOf("Переводчик игрового текста") >= 0)
@@ -1033,7 +1126,8 @@ TestCase {
         theme.currentIndex = 2
         theme.activated(2)
         compare(settings.current.general.theme, "fusion")
-        verify(findChild(settings, "generalThemeNote").text.indexOf("перезапуска") >= 0, "other styles need a restart")
+        verify(settings.themePolicy.restartRequired, "other styles need a restart")
+        verify(findChild(settings, "generalThemeNote").text.includes("Требуется перезапуск"))
         settings.set("general.theme", "dark")
         for (const [name, key] of [["generalAutostart", "autostart"], ["generalNotifyErrors", "notify_errors"], ["generalNotifyRetries", "notify_retries"]]) {
             const toggle = findChild(settings, name)

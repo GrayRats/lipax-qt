@@ -28,12 +28,24 @@ fn unpack_fonts() {
 }
 
 fn main() {
+    // Use exactly the discovery implementation used by CXX-Qt (including QMAKE).
+    let qt = qt_build_utils::QtBuild::new(vec!["Core".into()]).expect("System Qt 6.12+ is required");
+    let version = qt.version();
+    assert!(version.major == 6 && version.minor >= 12,
+        "Unsupported Qt {version}: LipaX requires system Qt >= 6.12 and < 7");
+    println!("cargo:rustc-env=LIPAX_BUILD_QT_VERSION={version}");
+    println!("cargo:warning=Building LipaX with system Qt {version}");
+    println!("cargo:rerun-if-env-changed=QMAKE");
     unpack_fonts();
     let builder = CxxQtBuilder::new_qml_module(QmlModule::new("io.lipa").qml_files([
         "qml/main.qml",
         "qml/SettingsWindow.qml",
         "qml/UnavailableHint.qml",
         "qml/HoverHint.qml",
+        "qml/UiTheme.qml",
+        "qml/ActionButton.qml",
+        "qml/AppearancePreview.qml",
+        "qml/InplaceTranslationContent.qml",
         "qml/RegionSelector.qml",
         "qml/TranslationWindow.qml",
         "qml/TranslationWindowContent.qml",
@@ -49,6 +61,8 @@ fn main() {
     ]))
     // Widgets: the KDE platform theme builds the tray icon from QWidgets, so the app is a QApplication.
     .qt_module("Widgets")
+    .qt_module("QuickControls2")
+    .qt_module("Quick")
     .files(["src/bridge.rs", "src/icon.rs", "src/logging.rs", "src/model_worker.rs"])
     .include_dir("src")
     .qrc("assets.qrc");

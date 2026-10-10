@@ -2,6 +2,7 @@
 # Build an Arch package from the current working tree, including uncommitted changes.
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
+bash packaging/check-qt.sh
 lipa_root=$PWD
 # PKGBUILD is what makepkg builds, so its pkgver is the version; Cargo.toml and Cargo.lock follow it.
 lipa_version=$(sed -n 's/^pkgver=//p' PKGBUILD | head -1)

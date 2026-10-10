@@ -11,6 +11,7 @@ Item {
     property string translation: ""
     property string original: ""
     property bool pinned: false
+    property bool previewOnly: false
     signal moveRequested()
     signal pinToggleRequested()
     signal closeRequested()
@@ -161,6 +162,7 @@ Item {
     // Pin handle: stays visible in every frame mode, so there is always a target for MMB.
     Rectangle {
         id: pinHandle
+        visible: !content.previewOnly
         objectName: "pinHandle"
         x: content.handleRect[0]; y: content.handleRect[1]
         width: content.handleSize; height: content.handleSize; radius: width / 2
@@ -175,6 +177,8 @@ Item {
             font.pixelSize: 14
         }
     }
+    HoverHint { control: pinHandle; feature: content.pinned ? "Открепить окно" : "Закрепить окно"; explanation: "Средняя кнопка мыши переключает закрепление. Свободное окно можно перемещать мышью; закреплённое остаётся поверх игры." }
+    HoverHint { control: closeButton; feature: "Скрыть перевод"; explanation: "Скрывает окно перевода. Распознавание продолжается; показать окно можно из главного окна или сочетанием клавиш." }
     Text {
         anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
         text: "⌄"; color: content.settings.appearance.window.text_color || "white"
@@ -184,6 +188,7 @@ Item {
         id: dragArea
         objectName: "translationWindowDragArea"
         anchors.fill: parent
+        enabled: !content.previewOnly
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
         cursorShape: content.pinned ? Qt.ArrowCursor : Qt.SizeAllCursor
         onPressed: (m) => {
@@ -203,7 +208,7 @@ Item {
     Rectangle {
         id: closeButton
         objectName: "closeButton"
-        visible: content.floating
+        visible: content.floating && !content.previewOnly
         x: content.handleRect[0] - width - 4; y: content.handleRect[1]
         width: content.handleSize; height: content.handleSize; radius: width / 2
         color: closeArea.containsMouse ? "#c0d03030" : "#80000000"

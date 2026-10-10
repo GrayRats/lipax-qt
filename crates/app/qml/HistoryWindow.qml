@@ -5,6 +5,8 @@ import QtQuick.Controls.Universal
 
 ApplicationWindow {
     id: win
+    UiTheme { id: ui; surface: win.palette.window; textScale: (win.current.general || {}).ui_text_scale || "normal" }
+    font: ui.body
     property var settingsWindow
     Universal.theme: settingsWindow ? settingsWindow.universalTheme : Universal.Dark
     property var controller: settingsWindow ? settingsWindow.controller : null
@@ -70,7 +72,7 @@ ApplicationWindow {
                         RowLayout {
                             Layout.fillWidth: true
                             Label {
-                                Layout.fillWidth: true; Layout.minimumWidth: 0; elide: Text.ElideRight; opacity: 0.6; font.pixelSize: 12
+                                Layout.fillWidth: true; Layout.minimumWidth: 0; elide: Text.ElideRight; opacity: 0.6; font.pointSize: ui.description.pointSize
                                 text: new Date(modelData.timestamp).toLocaleString(Qt.locale(), "dd.MM HH:mm:ss") + " · " + modelData.region
                             }
                             Button { objectName: "copyTranslation"; text: "Копировать"; flat: true; onClicked: win.controller.copyText(modelData.translation) }

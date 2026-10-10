@@ -463,6 +463,8 @@ fn migrate(table: &mut toml::Table, from: u32) {
 pub enum Reaction {
     /// Read live by the windows or the backend: nothing to restart.
     Immediate,
+    /// Qt Quick Controls style is selected before loading QML; palette-only changes may be live.
+    ApplicationStyle,
     /// The in-place layout is rebuilt from the last frame (no new capture, no OCR).
     Layout,
     /// The pipeline is reset: what was recognised so far no longer describes the new setting.
@@ -487,7 +489,7 @@ pub const REACTIONS: &[(&str, Reaction)] = &{
         ("recognition.minimum_confidence", Pipeline), ("recognition.binarize", Pipeline), ("recognition.auto_invert", Pipeline), ("recognition.contrast", Pipeline), ("recognition.sharpen", Pipeline), ("recognition.filter_noise", Pipeline), ("recognition.auto_filters", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
         ("translation.custom_url", Pipeline), ("capture.portal_fills_monitor", Pipeline), ("translation.custom_api_key", Pipeline), ("translation.deepl_api_key", Pipeline), ("translation.microsoft_api_key", Pipeline), ("translation.microsoft_region", Pipeline), ("translation.bergamot_binary", Pipeline), ("translation.bergamot_models_dir", Pipeline), ("translation.bergamot_model_paths", Pipeline), ("recognition.interval_ms", Pipeline), ("recognition.sensitivity", Pipeline),
         ("recognition.debounce_ms", Pipeline), ("display_mode", Pipeline), ("capture.regions", Pipeline),
-        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("general.theme", Immediate), ("general.autostart", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
+        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("general.theme", ApplicationStyle), ("general.ui_text_scale", Immediate), ("general.autostart", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
         ("hotkeys.toggle", Hotkeys), ("hotkeys.select_region", Hotkeys), ("hotkeys.translate_once", Hotkeys), ("hotkeys.toggle_translation", Hotkeys), ("hotkeys.toggle_pin", Hotkeys),
         // The backend is chosen by the window key at selection time.
         ("capture.source", Reselect),
@@ -880,6 +882,8 @@ impl Default for MainWindowAppearance {
 #[serde(default)]
 pub struct GeneralSettings {
     pub theme: String,
+    /// UI typography only; does not alter translation fonts.
+    pub ui_text_scale: String,
     /// Start LipaX when the user logs in (an autostart entry in `~/.config/autostart`).
     pub autostart: bool,
     /// A desktop notification when an area stops with an error and automatic retries are over.
@@ -892,12 +896,13 @@ pub struct GeneralSettings {
 
 impl Default for GeneralSettings {
     fn default() -> Self {
-        Self { theme: "dark".into(), autostart: false, notify_errors: false, notify_retries: false, log_level: "info".into() }
+        Self { theme: "dark".into(), ui_text_scale: "normal".into(), autostart: false, notify_errors: false, notify_retries: false, log_level: "info".into() }
     }
 }
 
 impl GeneralSettings {
     fn sanitize(&mut self) {
+        if !["small", "normal", "large", "extra_large"].contains(&self.ui_text_scale.as_str()) { self.ui_text_scale = "normal".into(); }
         if !THEMES.contains(&self.theme.as_str()) { self.theme = "dark".into(); }
         if !LOG_LEVELS.contains(&self.log_level.as_str()) { self.log_level = "info".into(); }
     }
@@ -1696,5 +1701,26 @@ overlay_size = [800, 200]
         let s = Settings::from_toml("target_lang = \"de\"");
         assert_eq!(s.translation.target_language, "de");
         assert_eq!(s.recognition.interval_ms, 500);
+    }
+}
+
+#[cfg(test)]
+mod ui_typography_tests {
+    use super::*;
+    #[test]
+    fn ui_scale_migrates_and_does_not_invalidate_recognition() {
+        let mut settings = Settings::from_toml("schema_version = 2\n[general]\ntheme = 'system'\n");
+        assert_eq!(settings.general.ui_text_scale, "normal");
+        let processing = settings.processing_key();
+        let appearance = settings.appearance.clone();
+        settings.general.ui_text_scale = "extra_large".into();
+        settings.sanitize();
+        assert_eq!(settings.processing_key(), processing);
+        assert_eq!(settings.appearance, appearance);
+        let restored = Settings::from_toml(&toml::to_string(&settings).expect("serialize settings"));
+        assert_eq!(restored.general.ui_text_scale, "extra_large");
+        settings.general.ui_text_scale = "invalid".into();
+        settings.sanitize();
+        assert_eq!(settings.general.ui_text_scale, "normal");
     }
 }

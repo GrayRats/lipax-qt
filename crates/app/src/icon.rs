@@ -6,6 +6,8 @@ mod ffi {
         fn execLipaApplication() -> i32;
         fn destroyLipaApplication();
         fn configureLipaApplication();
+        fn lipaRuntimeQtVersion() -> QString;
+        fn lipaQuickStyle() -> QString;
         fn loadLipaFonts(directory: &QString) -> QString;
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
@@ -15,6 +17,8 @@ mod ffi {
         fn activateLipaWindow(object_name: &QString, token: &QString);
         #[allow(dead_code)]
         fn scheduleLipaTestClose(delay_ms: i32);
+        #[allow(dead_code)]
+        fn scheduleLipaTestSnapshot();
         #[allow(dead_code)]
         fn scheduleLipaTestSwitch(delay_ms: i32, patch: &QString);
         #[allow(clippy::too_many_arguments)]
@@ -69,3 +73,9 @@ pub fn activate_window(object_name: &cxx_qt_lib::QString, token: &cxx_qt_lib::QS
 pub fn test_close_after(delay_ms: i32) { ffi::scheduleLipaTestClose(delay_ms); }
 #[cfg(feature = "lifecycle-test")]
 pub fn test_switch_after(delay_ms: i32, patch: &str) { ffi::scheduleLipaTestSwitch(delay_ms, &cxx_qt_lib::QString::from(patch)); }
+
+pub fn qt_version() -> String { ffi::lipaRuntimeQtVersion().to_string() }
+pub fn quick_style() -> String { ffi::lipaQuickStyle().to_string() }
+
+#[cfg(feature = "lifecycle-test")]
+pub fn test_snapshot() { ffi::scheduleLipaTestSnapshot(); }

@@ -1009,6 +1009,7 @@ dependencies = [
  "image",
  "libc",
  "lipa-core",
+ "qt-build-utils",
  "serde_json",
  "tokio",
  "tracing",

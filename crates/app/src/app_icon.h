@@ -9,6 +9,11 @@
 #include <QFontDatabase>
 #include <QDir>
 #include <QDebug>
+#include <QQuickStyle>
+#include <QVersionNumber>
+static_assert(QT_VERSION >= QT_VERSION_CHECK(6, 12, 0), "LipaX requires Qt 6.12+");
+inline QString lipaRuntimeQtVersion() { return QString::fromLatin1(qVersion()); }
+inline QString lipaQuickStyle() { return QQuickStyle::name(); }
 // QApplication, not QGuiApplication: under the KDE platform theme the tray icon and its menu are
 // built from widgets, and without QApplication creating them aborts ("Cannot create a QWidget
 // without QApplication"). The application owns no widget windows itself.
@@ -21,6 +26,8 @@ struct LipaApplication {
 };
 inline LipaApplication &lipaApplication() { static LipaApplication instance; return instance; }
 inline void createLipaApplication(const rust::Vec<rust::String> &args) {
+    if (QVersionNumber::fromString(QString::fromLatin1(qVersion())) < QVersionNumber(6, 12, 0))
+        qFatal("LipaX requires runtime Qt 6.12 or newer");
     LipaApplication &a = lipaApplication();
     for (const rust::String &arg : args) a.storage.push_back(QByteArray(arg.data(), int(arg.size())));
     for (QByteArray &arg : a.storage) a.argv.push_back(arg.data());
@@ -110,6 +117,43 @@ inline void activateLipaWindow(const QString &objectName, const QString &token) 
         KWindowSystem::activateWindow(window);
         return;
     }
+}
+
+// Test-only entry point called exclusively by the lifecycle-test Rust feature.
+#include <QQuickWindow>
+inline void scheduleLipaTestSnapshot() {
+    for (QWindow *window : QGuiApplication::allWindows()) {
+        if (window->objectName() != "mainWindow") continue;
+        QObject *controller = window->findChild<QObject *>("controller");
+        QString result;
+        if (!controller || !QMetaObject::invokeMethod(controller, "appearancePreview", Q_RETURN_ARG(QString, result),
+            Q_ARG(QString, QStringLiteral("{}")), Q_ARG(double, 400.0), Q_ARG(double, 160.0)) || result == "null")
+            qFatal("Appearance preview bridge unavailable");
+        if (!QMetaObject::invokeMethod(controller, "themePolicy", Q_RETURN_ARG(QString, result), Q_ARG(QString, QStringLiteral("fusion"))))
+            qFatal("Theme policy bridge unavailable");
+        if (!QMetaObject::invokeMethod(controller, "qtVersion", Q_RETURN_ARG(QString, result)))
+            qFatal("Qt diagnostics bridge unavailable");
+        qInfo().noquote() << "lipax.test: UI bridge verified" << result;
+    }
+    QTimer::singleShot(700, [] {
+        const QString name = qEnvironmentVariable("LIPAX_TEST_WINDOW", "mainWindow");
+        for (QWindow *window : QGuiApplication::allWindows()) {
+            if (window->objectName() != name) continue;
+            if (name == "settingsWindow") QMetaObject::invokeMethod(window, "openWindow");
+            const int width = qEnvironmentVariableIntValue("LIPAX_TEST_WIDTH");
+            const int height = qEnvironmentVariableIntValue("LIPAX_TEST_HEIGHT");
+            if (width > 0 && height > 0) window->resize(width, height);
+            if (QObject *tabs = window->findChild<QObject *>("settingsTabs"))
+                tabs->setProperty("currentIndex", qEnvironmentVariableIntValue("LIPAX_TEST_TAB"));
+            QTimer::singleShot(900, window, [window] {
+                if (auto *quick = qobject_cast<QQuickWindow *>(window)) {
+                    const auto path = qEnvironmentVariable("LIPAX_TEST_SNAPSHOT");
+                    qInfo().noquote() << "lipax.test: snapshot" << path << quick->grabWindow().save(path);
+                }
+            });
+            break;
+        }
+    });
 }
 
 // Debug-build lifecycle test: deliver the same QWindow::close() event as the title-bar button.

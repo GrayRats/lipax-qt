@@ -28,5 +28,7 @@ cxx-qt-lib = { version = "0.10", features = ["qt_qml", "qt_gui"] }
 [build-dependencies]
 cxx-qt-build = { version = "0.10", features = ["link_qt_object_files"] }
 
+qt-build-utils = "0.10"
+
 [dev-dependencies]
 libc = "0.2"

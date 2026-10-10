@@ -198,6 +198,15 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "appVersion"]
         fn app_version(self: &Controller) -> QString;
+        #[qinvokable]
+        #[cxx_name = "themePolicy"]
+        fn theme_policy(self: &Controller, requested: &QString) -> QString;
+        #[qinvokable]
+        #[cxx_name = "qtVersion"]
+        fn qt_version(self: &Controller) -> QString;
+        #[qinvokable]
+        #[cxx_name = "appearancePreview"]
+        fn appearance_preview(self: &Controller, settings: &QString, width: f64, height: f64) -> QString;
         /// Проверить окружение PaddleOCR (пакеты, версии, способ установки, язык, модели); результат — в `paddleJson`.
         /// Ничего не устанавливает: инструкции показывает интерфейс.
         #[qinvokable]
@@ -1070,8 +1079,11 @@ impl qobject::Controller {
         self.as_mut().set_diagnostics_busy(true);
         let s = self.rust().shared.settings.borrow().clone();
         let qt = self.qt_thread();
+        let qt_detail = self.qt_version().to_string();
         spawn_service(async move {
-            let result = lipa_core::diagnostics::inspect(&s).await;
+            let mut result = lipa_core::diagnostics::inspect(&s).await;
+            result.insert(0, lipa_core::diagnostics::Check { name: "Qt / Qt Quick Controls".into(), state: "ready".into(),
+                detail: qt_detail, instruction: "Используются системные библиотеки Qt 6.12 или новее.".into() });
             let json = serde_json::to_string(&result).unwrap();
             let _ = qt.queue(move |mut o| {
                 o.as_mut().set_diagnostics_json(QString::from(json.as_str()));
@@ -1539,6 +1551,17 @@ fn tesseract_snapshot() -> TesseractInfo {
 }
 
 impl qobject::Controller {
+    fn theme_policy(&self, requested: &QString) -> QString {
+        QString::from(crate::ui_settings::theme_policy(&requested.to_string()).to_string().as_str())
+    }
+    fn qt_version(&self) -> QString {
+        QString::from(format!("Qt {} (сборка {}), стиль {}", crate::icon::qt_version(), env!("LIPAX_BUILD_QT_VERSION"), crate::icon::quick_style()).as_str())
+    }
+    fn appearance_preview(&self, settings: &QString, width: f64, height: f64) -> QString {
+        let entry = serde_json::from_str::<lipa_core::settings::InplaceSettings>(&settings.to_string())
+            .ok().map(|s| lipa_core::layout::place::preview(&s, width as f32, height as f32, &crate::icon::QtMeasure));
+        QString::from(serde_json::to_string(&entry).unwrap_or_default().as_str())
+    }
     fn app_version(&self) -> QString { QString::from(env!("CARGO_PKG_VERSION")) }
 
     fn refresh_paddle(mut self: Pin<&mut Self>) {

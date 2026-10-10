@@ -5,12 +5,13 @@ pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')
 url="https://github.com/GrayRats/lipax-qt"
 license=('MIT' 'OFL-1.1' 'Apache-2.0' 'MPL-2.0' 'BSD-3-Clause')  # Apache-2.0: Roboto Slab; the other bundled fonts are OFL-1.1
-depends=('qt6-base' 'qt6-declarative' 'qt6-svg' 'layer-shell-qt' 'kwindowsystem' 'tesseract' 'tesseract-data-eng' 'pcre2')
+depends=('qt6-base>=6.12' 'qt6-declarative>=6.12' 'qt6-svg>=6.12' 'layer-shell-qt' 'kwindowsystem' 'tesseract' 'tesseract-data-eng' 'pcre2')
 # xz: the bundled fonts are stored compressed and unpacked by crates/app/build.rs
 makedepends=('cargo' 'rust' 'xz' 'git' 'cmake' 'ninja')
 provides=('LipaXQT' 'lipa')
 conflicts=('LipaXQT' 'lipa')
 optdepends=(
+    'qqc2-breeze-style: Breeze style for Qt Quick Controls'
     'python: PaddleOCR in a separate venv (see /usr/share/doc/lipax/PaddleOCR.md)'
     'onnxruntime: RapidOCR (PP-OCRv5) and MeikiOCR engines, loaded at run time; models are downloaded in Settings (see /usr/share/doc/lipax/RapidOCR.md and MeikiOCR.md)'
     'tesseract-data-rus: Russian OCR'

@@ -11,7 +11,7 @@
 [![Автор и проекты](https://img.shields.io/badge/%D0%90%D0%B2%D1%82%D0%BE%D1%80%20%D0%B8%20%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B-364152?style=for-the-badge)](#credits)
 [![English](https://img.shields.io/badge/English-364152?style=for-the-badge)](#english)
 
-LipaX захватывает выбранное окно игры, распознаёт надписи и показывает перевод. Приложение рассчитано на **KDE Plasma 6 / KWin / Wayland**. Интерфейс написан на Qt 6/QML, обработка кадров — на Rust.
+LipaX захватывает выбранное окно игры, распознаёт надписи и показывает перевод. Приложение рассчитано на **KDE Plasma 6 / KWin / Wayland**. Интерфейс написан на системном Qt 6.12+/QML, обработка кадров — на Rust.
 
 ![Главное окно LipaX](docs/screenshots/main.png)
 
@@ -233,3 +233,5 @@ Start `lipax`, set the OCR and translation languages, choose a translation provi
 In-place translation requires KWin window geometry; Portal capture uses the separate translation window. For a local development build, use `packaging/run-local.sh` to register its executable path with KWin. Close any existing LipaX instance first. Fullscreen overlays and mixed-scale monitor placement should be checked with your game and desktop setup.
 
 Use the **«Статус» (Status)** tab and `RUST_LOG=debug lipax` for diagnostics. HTTP 429 means a translation service has rate-limited requests. See the [documentation index](#documentation) for setup guides and technical details.
+
+Подробности интерфейса, политика применения настроек и результаты проверок: [UI-MODERNIZATION.md](docs/UI-MODERNIZATION.md).

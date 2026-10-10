@@ -4,6 +4,7 @@ mod icon;
 mod instance;
 mod logging;
 mod notify;
+mod ui_settings;
 
 use cxx_qt_lib::{QQmlApplicationEngine, QUrl};
 
@@ -58,10 +59,12 @@ fn main() {
     }
     tracing::info!(version = env!("CARGO_PKG_VERSION"), "Запуск LipaX");
     let general = lipa_core::settings::Settings::load().general;
+    ui_settings::initialize(&general.theme);
     apply_style(&general.theme);
     apply_general(&general);
     icon::create_application();
     icon::configure();
+    tracing::info!(build_qt = env!("LIPAX_BUILD_QT_VERSION"), runtime_qt = %icon::qt_version(), style = %icon::quick_style(), "Qt diagnostics");
     let mut engine = QQmlApplicationEngine::new();
     if let Some(engine) = engine.as_mut() {
         engine.load(&QUrl::from("qrc:/qt/qml/io/lipa/qml/main.qml"));
@@ -76,6 +79,8 @@ fn main() {
         .filter(|delay| (1..=30_000).contains(delay)) {
         icon::test_close_after(delay_ms);
     }
+    #[cfg(feature = "lifecycle-test")]
+    if std::env::var_os("LIPAX_TEST_SNAPSHOT").is_some() { icon::test_snapshot(); }
     icon::exec_application();
     // Выход: event loop закончился (QML уже остановил слежение и закрыл окна, значок трея скрыт).
     // Сначала останавливаются задачи backend (захват, OCR, перевод, portal, KWin-скрипт),

@@ -7,6 +7,9 @@ import QtQuick.Controls.Universal
 // before the translation is drawn anywhere. The Controller sends frames only while this window is open.
 ApplicationWindow {
     id: win
+    UiTheme { id: ui; surface: win.palette.window; textScale: win.uiTextScale }
+    font: ui.body
+    property string uiTextScale: "normal"
     objectName: "ocrPreviewWindow"
     property var controller
     // Dark or light, as in the settings (the Universal style switches at once).
@@ -120,7 +123,7 @@ ApplicationWindow {
                             anchors.left: parent.left
                             anchors.bottom: parent.top
                             text: String(parent.index + 1)
-                            font.pixelSize: 11
+                            font.pointSize: ui.description.pointSize
                             font.bold: true
                             color: parent.tone
                         }
@@ -133,13 +136,13 @@ ApplicationWindow {
             visible: !!win.region
             text: win.region ? "Кадр " + win.region.width + "×" + win.region.height + " px · блоков: " + win.boxes.length : ""
             opacity: 0.7
-            font.pixelSize: 12
+            font.pointSize: ui.description.pointSize
         }
         Label {
             objectName: "ocrPreviewTimings"
             visible: !!win.region
             wrapMode: Text.Wrap
-            font.pixelSize: 12
+            font.pointSize: ui.description.pointSize
             opacity: 0.8
             text: !win.region ? "" : "Состояние области захвата: " + win.region.phase + "\n" + (win.region.timings.length === 0 ? "Времена этапов пока не измерены"
                 : "Этапы (последний / p50 / p95, мс): " + win.region.timings.map(t => win.stageName(t.stage) + " "
@@ -212,7 +215,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             visible: !!win.region && win.region.filters_auto === true
             wrapMode: Text.Wrap
-            font.pixelSize: 12
+            font.pointSize: ui.description.pointSize
             opacity: 0.85
             text: "Для этого кадра автоматически включены бинаризация и инверсия: фон шумный. Если результат неуверенный, кадр читается ещё раз без них (подробности — в списке блоков ниже)."
         }
@@ -221,7 +224,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             visible: !!win.region && !!win.tuned
             wrapMode: Text.Wrap
-            font.pixelSize: 12
+            font.pointSize: ui.description.pointSize
             opacity: 0.85
             text: !win.tuned ? "" : (win.tuned.applied ? "Применено: " + win.tuned.results[win.tuned.best].name + ".  " : "Текст не найден ни с одним набором.  ")
                   + win.tuned.results.map(r => r.name + " — " + Math.round(r.score)).join(" · ")

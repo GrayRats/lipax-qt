@@ -675,3 +675,58 @@ mod tests {
         assert_eq!((p.background.color.as_str(), p.outline_color.as_str(), p.background.image.as_str()), ("#112233", "#445566", "file:///x.png?r=1"));
     }
 }
+
+/// Preview-only sample: the same typography resolver, background renderer, fitting and DTO as
+/// real fields. Coordinates describe the sample canvas, never a captured game or its geometry.
+pub fn preview(settings: &InplaceSettings, width: f32, height: f32, measure: &dyn TextMeasure) -> Placed {
+    use super::background::{BackgroundAnalysis, BackgroundInpainter};
+    use super::font_matcher::FontSelection;
+    use super::typography::{LineHeightEstimate, TypographyEstimate, TypographyEstimator};
+    use super::{FontWeight, InkMask, Padding, Script};
+    let (w, h) = (width.clamp(80.0, 1600.0) as u32, height.clamp(60.0, 900.0) as u32);
+    let font = FontSelection { family: "Inter".into(), category: FontCategory::SansSerif,
+        italic_available: true, available_weights: FontWeight::ALL.to_vec(), generic: false,
+        condensed_family: None, confidence: 1.0 };
+    let estimate = TypographyEstimate { cap_height_px: 16.0, lines: 2,
+        line_height: LineHeightEstimate { absolute_px: 28.0, proportional: 1.2, confidence: 1.0 },
+        weight: FontWeight::Normal, italic: false, alignment: TextAlignment::Center,
+        letter_spacing_px: 0.0, text_color: [245; 3], text_color_reliable: true, padding: Padding::uniform(8.0) };
+    let rect = Rect::new(20.0, 20.0, w as f32 - 40.0, h as f32 - 40.0);
+    let canvas = image::RgbaImage::from_pixel(w, h, image::Rgba([38, 49, 61, 255]));
+    let mask = InkMask { w: w as usize, h: h as usize, ink: vec![false; (w * h) as usize], ink_is_dark: false };
+    let analysis = BackgroundAnalysis { median: [38, 49, 61], mean: [38, 49, 61], luminance: 49.0,
+        texture: 0.0, edge_density: 0.0, gradient: 0.0, reliable: true };
+    let background = BackgroundInpainter.render(&canvas, &mask, &rect, 24.0, analysis, settings, TextBlockType::Dialogue);
+    let block = InplaceBlock { id: 0, block_type: TextBlockType::Dialogue, text_rect: rect,
+        original: "The path is clear. Let’s continue our journey.".into(),
+        translation: "Путь свободен. Продолжим наше путешествие.".into(), script: Script::Cyrillic,
+        style: TypographyEstimator.resolve(&estimate, &font, settings), font, background,
+        lines_note: "Демонстрационный пример, не OCR".into(), revision: 0 };
+    let fitted = fit_block(&block, (w, h), LogicalScale::new(1.0), settings, measure);
+    let frame = InplaceFrame { frame: (w, h), blocks: vec![], undrawable: vec![], new_translations: vec![] };
+    let region = RegionInput { id: "preview", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
+    placed_entry(&region, &block, &fitted, (w, h), settings, None)
+}
+
+#[cfg(test)]
+mod preview_tests {
+    use super::*;
+    use crate::settings::PropertyMode;
+    #[test]
+    fn sample_uses_production_typography_and_preserves_configuration() {
+        let mut s = InplaceSettings::default();
+        s.font_size = PropertyMode::Manual(28.0);
+        s.text_color = PropertyMode::Manual("#12abef".into());
+        s.italic = PropertyMode::Manual(true);
+        s.shadow = true;
+        s.fill_opacity = 0.25;
+        let before = s.clone();
+        let p = preview(&s, 420.0, 200.0, &super::super::fit::ApproxMeasure);
+        assert!(!p.text.is_empty());
+        assert_eq!(p.text_color, "#12abef");
+        assert!(p.italic && p.shadow);
+        assert_eq!(p.background.opacity, 0.25);
+        assert_eq!(s, before);
+        assert_eq!(p.region_id, "preview");
+    }
+}
