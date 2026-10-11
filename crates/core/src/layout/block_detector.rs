@@ -27,9 +27,9 @@ pub struct DetectedTextBlock {
 
 impl DetectedTextBlock {
     pub fn line_height(&self) -> f32 {
-        let mut h: Vec<f32> = self.lines.iter().map(|l| l.rect.h).collect();
+        let mut h: Vec<f32> = self.lines.iter().map(|l| l.rect.h).filter(|h| h.is_finite() && *h > 0.0).collect();
         h.sort_by(|a, b| a.total_cmp(b));
-        h[h.len() / 2]
+        h.get(h.len() / 2).copied().unwrap_or(0.0)
     }
 }
 
@@ -83,9 +83,11 @@ fn components(mask: &InkMask) -> Vec<Component> {
     let mut parent: Vec<u32> = Vec::new();
     let mut runs: Vec<(usize, usize, usize, u32)> = Vec::new(); // y, x0, x1, label
     let mut prev: Vec<(usize, usize, u32)> = Vec::new();
+    let mut cur: Vec<(usize, usize, u32)> = Vec::new();
     for y in 0..mask.h {
         let row = &mask.ink[y * mask.w..(y + 1) * mask.w];
-        let mut cur = Vec::new();
+        cur.clear();
+        let mut first_overlap = 0;
         let mut x = 0;
         while x < mask.w {
             if !row[x] { x += 1; continue; }
@@ -93,7 +95,12 @@ fn components(mask: &InkMask) -> Vec<Component> {
             while x < mask.w && row[x] { x += 1; }
             let label = parent.len() as u32;
             parent.push(label);
-            for &(px0, px1, pl) in &prev {
+            // Runs are ordered and disjoint. Skip previous runs that can no longer
+            // touch this or any later run, and stop at the first run to its right.
+            // End coordinates are exclusive: equality still means diagonal contact.
+            while first_overlap < prev.len() && prev[first_overlap].1 < x0 { first_overlap += 1; }
+            for &(px0, px1, pl) in &prev[first_overlap..] {
+                if px0 > x { break; }
                 // 8-связность: серии касаются, если перекрываются с допуском в один пиксель.
                 if px0 <= x && x0 <= px1 {
                     let (a, b) = (find(&mut parent, label), find(&mut parent, pl));
@@ -103,7 +110,7 @@ fn components(mask: &InkMask) -> Vec<Component> {
             cur.push((x0, x, label));
             runs.push((y, x0, x, label));
         }
-        prev = cur;
+        std::mem::swap(&mut prev, &mut cur);
     }
     let mut boxes: std::collections::HashMap<u32, (usize, usize, usize, usize, u32)> = Default::default();
     for (y, x0, x1, label) in runs {
@@ -115,9 +122,16 @@ fn components(mask: &InkMask) -> Vec<Component> {
         e.3 = e.3.max(y + 1);
         e.4 += (x1 - x0) as u32;
     }
-    boxes.into_values()
+    let mut components: Vec<_> = boxes.into_values()
         .map(|(x0, y0, x1, y1, n)| Component { rect: Rect::new(x0 as f32, y0 as f32, (x1 - x0) as f32, (y1 - y0) as f32), pixels: n })
-        .collect()
+        .collect();
+    // Hash-map iteration must not decide ties in the greedy line-band grouping.
+    // Canonical component order makes identical captures produce identical geometry.
+    components.sort_by(|a, b| a.rect.y.total_cmp(&b.rect.y)
+        .then_with(|| a.rect.x.total_cmp(&b.rect.x))
+        .then_with(|| a.rect.h.total_cmp(&b.rect.h))
+        .then_with(|| a.rect.w.total_cmp(&b.rect.w)));
+    components
 }
 
 fn median(mut v: Vec<f32>) -> f32 {
@@ -158,9 +172,11 @@ impl BlockDetector {
         let (fw, fh) = (mask.w as f32, mask.h as f32);
         if mask.w < 8 || mask.h < 8 { return Vec::new(); }
         // Шум и фоновые элементы (рамки панелей, крупные фигуры) — не текст.
+        // Large connected scenery must not compete as a glyph. Keep a 64 px floor
+        // so ordinary type in a short OCR crop is not rejected by a frame-relative limit.
         let comps: Vec<Component> = components(mask).into_iter()
             .filter(|c| c.pixels >= 3)
-            .filter(|c| !(c.rect.w > 0.6 * fw && c.rect.h > 0.4 * fh) && c.rect.h < 0.8 * fh)
+            .filter(|c| !(c.rect.w > 0.6 * fw && c.rect.h > 0.4 * fh) && c.rect.h <= (0.15 * fh).max(64.0))
             .collect();
         if comps.is_empty() { return Vec::new(); }
         let typical = median(comps.iter().filter(|c| c.rect.h >= 4.0).map(|c| c.rect.h).collect());

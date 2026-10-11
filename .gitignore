@@ -11,3 +11,7 @@ target/
 *.pkg.tar.*
 lipa-*.tar.gz
 **/__pycache__/
+
+# Task-specific builds, caches and diagnostics
+/tmp/
+/project/

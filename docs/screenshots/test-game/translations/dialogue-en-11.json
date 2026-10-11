@@ -1,0 +1,1248 @@
+{
+  "block_ocr": [],
+  "blocks": [
+    {
+      "cap_height": 143.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 143.0,
+        "w": 387.0,
+        "x": 1533.0,
+        "y": 0.0
+      }
+    },
+    {
+      "cap_height": 45.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 45.0,
+        "w": 492.0,
+        "x": 11.0,
+        "y": 18.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "Serif",
+      "confidence": 0.8083333969116211,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 62.0,
+        "w": 275.0,
+        "x": 26.0,
+        "y": 81.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "Serif",
+      "confidence": 0.7972223162651062,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 78.0,
+        "w": 278.0,
+        "x": 25.0,
+        "y": 175.0
+      }
+    },
+    {
+      "cap_height": 169.0,
+      "category": "SlabSerif",
+      "confidence": 0.6449999809265137,
+      "font": "Roboto Slab",
+      "rect": {
+        "h": 223.0,
+        "w": 74.0,
+        "x": 1641.0,
+        "y": 375.0
+      }
+    },
+    {
+      "cap_height": 53.0,
+      "category": "Serif",
+      "confidence": 0.47294002771377563,
+      "font": "Literata",
+      "rect": {
+        "h": 288.0,
+        "w": 346.0,
+        "x": 1229.0,
+        "y": 579.0
+      }
+    },
+    {
+      "cap_height": 36.0,
+      "category": "Serif",
+      "confidence": 0.7208333611488342,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 257.0,
+        "w": 139.0,
+        "x": 496.0,
+        "y": 606.0
+      }
+    },
+    {
+      "cap_height": 79.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 79.0,
+        "w": 298.0,
+        "x": 1617.0,
+        "y": 663.0
+      }
+    },
+    {
+      "cap_height": 128.0,
+      "category": "Serif",
+      "confidence": 0.6793802380561829,
+      "font": "Literata",
+      "rect": {
+        "h": 291.0,
+        "w": 616.0,
+        "x": 725.0,
+        "y": 789.0
+      }
+    },
+    {
+      "cap_height": 49.0,
+      "category": "Serif",
+      "confidence": 0.32742002606391907,
+      "font": "Literata",
+      "rect": {
+        "h": 215.0,
+        "w": 160.0,
+        "x": 729.0,
+        "y": 829.0
+      }
+    },
+    {
+      "cap_height": 180.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 180.0,
+        "w": 197.0,
+        "x": 1013.0,
+        "y": 842.0
+      }
+    },
+    {
+      "cap_height": 56.0,
+      "category": "Serif",
+      "confidence": 0.2910400331020355,
+      "font": "Literata",
+      "rect": {
+        "h": 138.0,
+        "w": 185.0,
+        "x": 1344.0,
+        "y": 848.0
+      }
+    },
+    {
+      "cap_height": 113.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 113.0,
+        "w": 210.0,
+        "x": 977.0,
+        "y": 888.0
+      }
+    },
+    {
+      "cap_height": 129.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 129.0,
+        "w": 213.0,
+        "x": 888.0,
+        "y": 913.0
+      }
+    },
+    {
+      "cap_height": 56.0,
+      "category": "Serif",
+      "confidence": 0.254660040140152,
+      "font": "Literata",
+      "rect": {
+        "h": 134.0,
+        "w": 133.0,
+        "x": 1085.0,
+        "y": 925.0
+      }
+    },
+    {
+      "cap_height": 83.0,
+      "category": "Monospace",
+      "confidence": 0.6908770799636841,
+      "font": "Source Code Pro",
+      "rect": {
+        "h": 109.0,
+        "w": 525.0,
+        "x": 10.0,
+        "y": 936.0
+      }
+    }
+  ],
+  "cached_placement_ms": 0.881973,
+  "dropped": 8,
+  "dropped_details": [
+    {
+      "block_id": 6,
+      "original": "fixture 6",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 9,
+      "original": "fixture 9",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 10,
+      "original": "fixture 10",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 11,
+      "original": "fixture 11",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 12,
+      "original": "fixture 12",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 13,
+      "original": "fixture 13",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 14,
+      "original": "fixture 14",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 15,
+      "original": "fixture 15",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    }
+  ],
+  "finish_ms": [
+    0.10284499999999999
+  ],
+  "first_frame_ms": 1261.0489249999998,
+  "fits": 16,
+  "frame_blocks": [
+    {
+      "id": 1,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 143.0,
+        "w": 387.0,
+        "x": 1533.0,
+        "y": 0.0
+      }
+    },
+    {
+      "id": 2,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 45.0,
+        "w": 492.0,
+        "x": 11.0,
+        "y": 18.0
+      }
+    },
+    {
+      "id": 3,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 62.0,
+        "w": 275.0,
+        "x": 26.0,
+        "y": 81.0
+      }
+    },
+    {
+      "id": 4,
+      "lines_note": "",
+      "source_lines": 4,
+      "text_rect": {
+        "h": 78.0,
+        "w": 278.0,
+        "x": 25.0,
+        "y": 175.0
+      }
+    },
+    {
+      "id": 5,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 223.0,
+        "w": 74.0,
+        "x": 1641.0,
+        "y": 375.0
+      }
+    },
+    {
+      "id": 6,
+      "lines_note": "",
+      "source_lines": 4,
+      "text_rect": {
+        "h": 288.0,
+        "w": 346.0,
+        "x": 1229.0,
+        "y": 579.0
+      }
+    },
+    {
+      "id": 7,
+      "lines_note": "",
+      "source_lines": 5,
+      "text_rect": {
+        "h": 257.0,
+        "w": 139.0,
+        "x": 496.0,
+        "y": 606.0
+      }
+    },
+    {
+      "id": 8,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 79.0,
+        "w": 298.0,
+        "x": 1617.0,
+        "y": 663.0
+      }
+    },
+    {
+      "id": 9,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 291.0,
+        "w": 616.0,
+        "x": 725.0,
+        "y": 789.0
+      }
+    },
+    {
+      "id": 10,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 215.0,
+        "w": 160.0,
+        "x": 729.0,
+        "y": 829.0
+      }
+    },
+    {
+      "id": 11,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 180.0,
+        "w": 197.0,
+        "x": 1013.0,
+        "y": 842.0
+      }
+    },
+    {
+      "id": 12,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 138.0,
+        "w": 185.0,
+        "x": 1344.0,
+        "y": 848.0
+      }
+    },
+    {
+      "id": 13,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 113.0,
+        "w": 210.0,
+        "x": 977.0,
+        "y": 888.0
+      }
+    },
+    {
+      "id": 14,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 129.0,
+        "w": 213.0,
+        "x": 888.0,
+        "y": 913.0
+      }
+    },
+    {
+      "id": 15,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 134.0,
+        "w": 133.0,
+        "x": 1085.0,
+        "y": 925.0
+      }
+    },
+    {
+      "id": 16,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 109.0,
+        "w": 525.0,
+        "x": 10.0,
+        "y": 936.0
+      }
+    }
+  ],
+  "hits": 16,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-11/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 30,
+  "ocr": {
+    "engine": "rapidocr",
+    "language": "eng",
+    "latency_ms": 2965.0960299999997,
+    "lines": [
+      {
+        "confidence": 76.25331115722656,
+        "rect": {
+          "h": 40.0,
+          "w": 469.0,
+          "x": 12.0,
+          "y": 18.0
+        },
+        "text": "InvestiGation PHase 0:25"
+      },
+      {
+        "confidence": 95.96385955810547,
+        "rect": {
+          "h": 34.0,
+          "w": 378.0,
+          "x": 1541.0,
+          "y": 17.0
+        },
+        "text": "You Are the Magistrate"
+      },
+      {
+        "confidence": 82.10538482666016,
+        "rect": {
+          "h": 21.0,
+          "w": 85.0,
+          "x": 22.0,
+          "y": 77.0
+        },
+        "text": "NIghT: 1"
+      },
+      {
+        "confidence": 98.38330841064453,
+        "rect": {
+          "h": 27.0,
+          "w": 283.0,
+          "x": 21.0,
+          "y": 97.0
+        },
+        "text": "Buy film from the requisitioner"
+      },
+      {
+        "confidence": 99.86809539794922,
+        "rect": {
+          "h": 22.0,
+          "w": 182.0,
+          "x": 21.0,
+          "y": 121.0
+        },
+        "text": "in the police station"
+      },
+      {
+        "confidence": 99.38025665283203,
+        "rect": {
+          "h": 26.0,
+          "w": 286.0,
+          "x": 21.0,
+          "y": 170.0
+        },
+        "text": "If you run out of things you can"
+      },
+      {
+        "confidence": 98.52308654785156,
+        "rect": {
+          "h": 21.0,
+          "w": 276.0,
+          "x": 21.0,
+          "y": 194.0
+        },
+        "text": "investigate, talk to suspects in"
+      },
+      {
+        "confidence": 99.84907531738281,
+        "rect": {
+          "h": 27.0,
+          "w": 279.0,
+          "x": 20.0,
+          "y": 211.0
+        },
+        "text": "the holding cells to investigate"
+      },
+      {
+        "confidence": 99.9345474243164,
+        "rect": {
+          "h": 23.0,
+          "w": 104.0,
+          "x": 21.0,
+          "y": 233.0
+        },
+        "text": "their alibis"
+      },
+      {
+        "confidence": 95.97317504882812,
+        "rect": {
+          "h": 66.0,
+          "w": 121.0,
+          "x": 1137.0,
+          "y": 212.0
+        },
+        "text": "WATTS"
+      },
+      {
+        "confidence": 99.8363265991211,
+        "rect": {
+          "h": 86.0,
+          "w": 191.0,
+          "x": 1097.0,
+          "y": 244.0
+        },
+        "text": "STEELWORK"
+      },
+      {
+        "confidence": 94.41554260253906,
+        "rect": {
+          "h": 36.0,
+          "w": 79.0,
+          "x": 1156.0,
+          "y": 322.0
+        },
+        "text": "EST1786"
+      },
+      {
+        "confidence": 92.77887725830078,
+        "rect": {
+          "h": 18.0,
+          "w": 168.0,
+          "x": 1708.0,
+          "y": 713.0
+        },
+        "text": "TFIELD'S YARD"
+      },
+      {
+        "confidence": 99.80252075195312,
+        "rect": {
+          "h": 12.0,
+          "w": 50.0,
+          "x": 1638.0,
+          "y": 750.0
+        },
+        "text": "Industrial"
+      },
+      {
+        "confidence": 95.9520492553711,
+        "rect": {
+          "h": 18.0,
+          "w": 71.0,
+          "x": 1839.0,
+          "y": 747.0
+        },
+        "text": "Upper Class"
+      },
+      {
+        "confidence": 99.95088958740234,
+        "rect": {
+          "h": 37.0,
+          "w": 89.0,
+          "x": 4.0,
+          "y": 932.0
+        },
+        "text": "200"
+      },
+      {
+        "confidence": 99.89579772949219,
+        "rect": {
+          "h": 26.0,
+          "w": 227.0,
+          "x": 7.0,
+          "y": 1049.0
+        },
+        "text": "EQUIPPED: Truncheon"
+      },
+      {
+        "confidence": 98.03730010986328,
+        "rect": {
+          "h": 24.0,
+          "w": 287.0,
+          "x": 246.0,
+          "y": 1050.0
+        },
+        "text": "LMB SHOW TRUNCHEON"
+      },
+      {
+        "confidence": 97.3099365234375,
+        "rect": {
+          "h": 28.0,
+          "w": 299.0,
+          "x": 539.0,
+          "y": 1050.0
+        },
+        "text": "RMB INSPECTQDROP"
+      },
+      {
+        "confidence": 88.873046875,
+        "rect": {
+          "h": 25.0,
+          "w": 57.0,
+          "x": 1834.0,
+          "y": 1037.0
+        },
+        "text": "PLAUGHO"
+      },
+      {
+        "confidence": 91.71043395996094,
+        "rect": {
+          "h": 23.0,
+          "w": 114.0,
+          "x": 1499.0,
+          "y": 1056.0
+        },
+        "text": "TabiMAP"
+      },
+      {
+        "confidence": 99.68406677246094,
+        "rect": {
+          "h": 14.0,
+          "w": 73.0,
+          "x": 1622.0,
+          "y": 1065.0
+        },
+        "text": "Lower Class"
+      },
+      {
+        "confidence": 99.41545867919922,
+        "rect": {
+          "h": 11.0,
+          "w": 34.0,
+          "x": 1858.0,
+          "y": 1067.0
+        },
+        "text": "Deeks"
+      }
+    ],
+    "text": "InvestiGation PHase 0:25\nYou Are the Magistrate\nNIghT: 1\nBuy film from the requisitioner\nin the police station\nIf you run out of things you can\ninvestigate, talk to suspects in\nthe holding cells to investigate\ntheir alibis\nWATTS\nSTEELWORK\nEST1786\nTFIELD'S YARD\nIndustrial\nUpper Class\n200\nEQUIPPED: Truncheon\nLMB SHOW TRUNCHEON\nRMB INSPECTQDROP\nPLAUGHO\nTabiMAP\nLower Class\nDeeks"
+  },
+  "ocr_history": [],
+  "ocr_scans": 1,
+  "peak_memory": "VmHWM:\t  408992 kB",
+  "placed": [
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#070809",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 1,
+      "block_type": "button",
+      "box": [
+        0.7838541666666666,
+        0.0,
+        0.21614583333333334,
+        0.15833333333333333
+      ],
+      "font_family": "Inter",
+      "font_px": 37.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.06100000813603401,
+        "generic": false
+      },
+      "font_weight": 100,
+      "inner": [
+        28.0,
+        0.0,
+        0.0,
+        28.0
+      ],
+      "italic": false,
+      "key": "test:1",
+      "letter_spacing": -1.5179201364517212,
+      "line_height": 0.8999999761581421,
+      "max_lines": 3,
+      "original": "fixture 1",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#cec3b0",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#090a09",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 2,
+      "block_type": "button",
+      "box": [
+        0.0,
+        0.0,
+        0.2760416666666667,
+        0.06666666666666667
+      ],
+      "font_family": "Inter",
+      "font_px": 24.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.06100000813603401,
+        "generic": false
+      },
+      "font_weight": 200,
+      "inner": [
+        11.0,
+        18.0,
+        27.0,
+        9.0
+      ],
+      "italic": false,
+      "key": "test:2",
+      "letter_spacing": -0.9780415296554565,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "fixture 2",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#d2c7b3",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#09080a",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 3,
+      "block_type": "unknown",
+      "box": [
+        0.010572916269302369,
+        0.0697222250479239,
+        0.14916667938232422,
+        0.0679629573115596
+      ],
+      "font_family": "Source Serif 4",
+      "font_px": 22.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.8083333969116211,
+        "generic": false
+      },
+      "font_weight": 700,
+      "inner": [
+        5.700000762939453,
+        5.6999969482421875,
+        5.70001220703125,
+        5.6999969482421875
+      ],
+      "italic": false,
+      "key": "test:3",
+      "letter_spacing": -0.75,
+      "line_height": 0.8500000238418579,
+      "max_lines": 2,
+      "original": "fixture 3",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#cfc8bc",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#0c0b0d",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 4,
+      "block_type": "unknown",
+      "box": [
+        0.009895833333333333,
+        0.15648148148148147,
+        0.15104166666666666,
+        0.08333333333333333
+      ],
+      "font_family": "Source Serif 4",
+      "font_px": 22.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.7972223162651062,
+        "generic": false
+      },
+      "font_weight": 700,
+      "inner": [
+        6.0,
+        6.0,
+        6.0,
+        6.0
+      ],
+      "italic": false,
+      "key": "test:4",
+      "letter_spacing": -0.75,
+      "line_height": 0.8500000238418579,
+      "max_lines": 2,
+      "original": "fixture 4",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#d1ccc0",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#242422",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 5,
+      "block_type": "menu_item",
+      "box": [
+        0.8401041666666667,
+        0.3212962962962963,
+        0.06770833333333333,
+        0.25833333333333336
+      ],
+      "font_family": "Roboto Slab",
+      "font_px": 21.0,
+      "font_selection": {
+        "category": "slab_serif",
+        "confidence": 0.6449999809265137,
+        "generic": false
+      },
+      "font_weight": 100,
+      "inner": [
+        28.0,
+        28.0,
+        28.0,
+        28.0
+      ],
+      "italic": false,
+      "key": "test:5",
+      "letter_spacing": -0.8697605133056641,
+      "line_height": 0.8999999761581421,
+      "max_lines": 8,
+      "original": "fixture 5",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#827b71",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#232628",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 7,
+      "block_type": "unknown",
+      "box": [
+        0.25270833969116213,
+        0.5511111224139178,
+        0.08364582061767578,
+        0.2579629403573495
+      ],
+      "font_family": "Source Serif 4",
+      "font_px": 34.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.7208333611488342,
+        "generic": false
+      },
+      "font_weight": 200,
+      "inner": [
+        10.79998779296875,
+        10.79998779296875,
+        10.79998779296875,
+        10.79998779296875
+      ],
+      "italic": false,
+      "key": "test:7",
+      "letter_spacing": -1.3937427997589111,
+      "line_height": 0.8500000238418579,
+      "max_lines": 6,
+      "original": "fixture 7",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#827d74",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#191919",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 8,
+      "block_type": "unknown",
+      "box": [
+        0.8338541666666667,
+        0.5990740740740741,
+        0.16614583333333333,
+        0.10277777777777777
+      ],
+      "font_family": "Noto Sans CJK SC",
+      "font_px": 27.0,
+      "font_selection": {
+        "category": "cjk_sans",
+        "confidence": 0.059166669845581055,
+        "generic": false
+      },
+      "font_weight": 100,
+      "inner": [
+        16.0,
+        16.0,
+        5.0,
+        16.0
+      ],
+      "italic": false,
+      "key": "test:8",
+      "letter_spacing": -1.114007830619812,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 8",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#d3cab7",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#090b0d",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 16,
+      "block_type": "button",
+      "box": [
+        0.0,
+        0.8407407407407408,
+        0.29322916666666665,
+        0.1527777777777778
+      ],
+      "font_family": "Source Code Pro",
+      "font_px": 42.0,
+      "font_selection": {
+        "category": "monospace",
+        "confidence": 0.6908770799636841,
+        "generic": false
+      },
+      "font_weight": 200,
+      "inner": [
+        10.0,
+        28.0,
+        28.0,
+        28.0
+      ],
+      "italic": false,
+      "key": "test:16",
+      "letter_spacing": -1.717881679534912,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 16",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#b0aa9d",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 567.32778,
+  "repeat_frame_ms": 326.945092,
+  "size": [
+    1920,
+    1080
+  ],
+  "timings_ms": [
+    [
+      193.01769199999998,
+      341.750102,
+      0.623093
+    ],
+    [
+      196.823893,
+      309.641462,
+      0.5843079999999999
+    ],
+    [
+      187.567281,
+      326.660122,
+      0.594247
+    ],
+    [
+      197.52709800000002,
+      309.94095100000004,
+      0.687986
+    ],
+    [
+      204.268849,
+      331.009805,
+      0.599748
+    ]
+  ],
+  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
+  "render_ms": 334.0065800002776,
+  "update_ms": 2.068073999907938,
+  "layout_diagnostics": [
+    {
+      "width": 387,
+      "height": 143,
+      "contentWidth": 355.640625,
+      "contentHeight": 129.09999668598175,
+      "lines": 3,
+      "truncated": false
+    },
+    {
+      "width": 492,
+      "height": 45,
+      "contentWidth": 454.015625,
+      "contentHeight": 30.899999260902405,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 275.0000114440918,
+      "height": 62,
+      "contentWidth": 232.734375,
+      "contentHeight": 56.70000147819519,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 278,
+      "height": 78,
+      "contentWidth": 232.734375,
+      "contentHeight": 56.70000147819519,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 74,
+      "height": 223,
+      "contentWidth": 73.265625,
+      "contentHeight": 205.3999946117401,
+      "lines": 8,
+      "truncated": false
+    },
+    {
+      "width": 139,
+      "height": 257,
+      "contentWidth": 129.0625,
+      "contentHeight": 206.7500056028366,
+      "lines": 5,
+      "truncated": false
+    },
+    {
+      "width": 298,
+      "height": 79,
+      "contentWidth": 275.703125,
+      "contentHeight": 75.99999809265137,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 525,
+      "height": 109,
+      "contentWidth": 520.125,
+      "contentHeight": 100.39999747276306,
+      "lines": 2,
+      "truncated": false
+    }
+  ],
+  "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-11.jpg",
+  "approved_reference": false,
+  "translation_service": "none: predefined deterministic test input"
+}

@@ -179,7 +179,7 @@ impl FontMatcher {
             .map(|f| (Self::score(analysis, block_type, &list, f).total(), *f))
             .max_by(|a, b| a.0.total_cmp(&b.0));
         match best {
-            Some((score, f)) => pick(f, (score / 12.0).clamp(0.1, 1.0) * analysis.confidence.max(0.3)),
+            Some((score, f)) => pick(f, (score / 12.0).clamp(0.0, 1.0) * analysis.confidence.clamp(0.0, 1.0)),
             None => {
                 let category = if script.is_cjk() && !analysis.category.is_cjk() { FontCategory::CjkSans } else { analysis.category };
                 FontSelection::generic(category)

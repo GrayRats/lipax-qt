@@ -1,0 +1,2786 @@
+{
+  "Cargo.toml": {
+    "mtime": 1791732605.8591828,
+    "seen": 1791738867.2566652,
+    "ast_hash": "f44533d1eef0b1e068312fce2b24a15f",
+    "semantic_hash": ""
+  },
+  "crates/app/Cargo.toml": {
+    "mtime": 1791564810.2406533,
+    "seen": 1791728887.4015796,
+    "ast_hash": "db306103f75d06594593eb8c26f43dcd",
+    "semantic_hash": "db306103f75d06594593eb8c26f43dcd"
+  },
+  "crates/app/build.rs": {
+    "mtime": 1791730965.7554271,
+    "seen": 1791738867.2566693,
+    "ast_hash": "33e3d90b424db9dd7c41f381a6e1d2cd",
+    "semantic_hash": ""
+  },
+  "crates/app/src/app_icon.h": {
+    "mtime": 1791733120.4226665,
+    "seen": 1791738867.2566721,
+    "ast_hash": "327f503b3732cf83c99b99d427b30319",
+    "semantic_hash": ""
+  },
+  "crates/app/src/bridge.rs": {
+    "mtime": 1791627963.838405,
+    "seen": 1791728887.4015822,
+    "ast_hash": "8f3e678d8e10a38692b3c71841dfc069",
+    "semantic_hash": "8f3e678d8e10a38692b3c71841dfc069"
+  },
+  "crates/app/src/icon.rs": {
+    "mtime": 1791565305.9733098,
+    "seen": 1791728887.4015832,
+    "ast_hash": "0dea7a439bcb269724898314283e53dc",
+    "semantic_hash": "0dea7a439bcb269724898314283e53dc"
+  },
+  "crates/app/src/instance.rs": {
+    "mtime": 1791112032.0345922,
+    "seen": 1791472973.8676324,
+    "ast_hash": "670263c98df546fafcc32b0f959f3a3b",
+    "semantic_hash": "670263c98df546fafcc32b0f959f3a3b"
+  },
+  "crates/app/src/logging.cpp": {
+    "mtime": 1790977838.8354883,
+    "seen": 1791472973.867633,
+    "ast_hash": "3f116e84c561abccbe524406518c82f5",
+    "semantic_hash": "3f116e84c561abccbe524406518c82f5"
+  },
+  "crates/app/src/logging.h": {
+    "mtime": 1790977838.8354883,
+    "seen": 1791472973.8676336,
+    "ast_hash": "803638e8a86dfad36d442dfb0bf91f6f",
+    "semantic_hash": "803638e8a86dfad36d442dfb0bf91f6f"
+  },
+  "crates/app/src/logging.rs": {
+    "mtime": 1791474589.8295476,
+    "seen": 1791728887.4017165,
+    "ast_hash": "11d16426f34eb046080f752585a0a99c",
+    "semantic_hash": "11d16426f34eb046080f752585a0a99c"
+  },
+  "crates/app/src/main.rs": {
+    "mtime": 1791565305.9743097,
+    "seen": 1791728887.4017174,
+    "ast_hash": "7175e96470c93ae15567deceaa341080",
+    "semantic_hash": "7175e96470c93ae15567deceaa341080"
+  },
+  "crates/app/src/notify.rs": {
+    "mtime": 1791326019.6239696,
+    "seen": 1791472973.8676362,
+    "ast_hash": "60c242e815863da05ad47d9596ec1787",
+    "semantic_hash": "60c242e815863da05ad47d9596ec1787"
+  },
+  "crates/app/tests/SettingsFixture.js": {
+    "mtime": 1791564810.2536535,
+    "seen": 1791728887.4017608,
+    "ast_hash": "dce63a52302530c49d627a393900dd23",
+    "semantic_hash": "dce63a52302530c49d627a393900dd23"
+  },
+  "crates/core/Cargo.toml": {
+    "mtime": 1791737065.9395514,
+    "seen": 1791738867.2566917,
+    "ast_hash": "7a995c9273c51da6ed51dc97e18efd1b",
+    "semantic_hash": ""
+  },
+  "crates/core/examples/geometry.rs": {
+    "mtime": 1790961514.258065,
+    "seen": 1791472973.8676386,
+    "ast_hash": "99ee2e8436862effc0c8f562ff1bf84a",
+    "semantic_hash": "99ee2e8436862effc0c8f562ff1bf84a"
+  },
+  "crates/core/examples/hotkeys.rs": {
+    "mtime": 1790937708.2782981,
+    "seen": 1791472973.8676393,
+    "ast_hash": "0c7f1a8ac56b788d6e0a9666038f1e72",
+    "semantic_hash": "0c7f1a8ac56b788d6e0a9666038f1e72"
+  },
+  "crates/core/examples/portal.rs": {
+    "mtime": 1790938725.762522,
+    "seen": 1791472973.8676398,
+    "ast_hash": "92a56b1fe6961b9034f8e634143be700",
+    "semantic_hash": "92a56b1fe6961b9034f8e634143be700"
+  },
+  "crates/core/examples/probe.rs": {
+    "mtime": 1790936371.4654279,
+    "seen": 1791472973.8676405,
+    "ast_hash": "af4b2da0da6577865b0d32a98cfb280b",
+    "semantic_hash": "af4b2da0da6577865b0d32a98cfb280b"
+  },
+  "crates/core/examples/tesseract.rs": {
+    "mtime": 1790937399.5303047,
+    "seen": 1791472973.8676414,
+    "ast_hash": "1c3dd4e72ab26c2e3546acb673068751",
+    "semantic_hash": "1c3dd4e72ab26c2e3546acb673068751"
+  },
+  "crates/core/src/autostart.rs": {
+    "mtime": 1791325915.8357062,
+    "seen": 1791472973.8676422,
+    "ast_hash": "b4942a4c8f34b0d4dd0b28be5afac98a",
+    "semantic_hash": "b4942a4c8f34b0d4dd0b28be5afac98a"
+  },
+  "crates/core/src/cache.rs": {
+    "mtime": 1791471788.0793278,
+    "seen": 1791472973.8676429,
+    "ast_hash": "fbf295ca628b7613b5d004ecff3b5a2b",
+    "semantic_hash": "fbf295ca628b7613b5d004ecff3b5a2b"
+  },
+  "crates/core/src/capture/geometry.js": {
+    "mtime": 1791321903.775104,
+    "seen": 1791472973.8676436,
+    "ast_hash": "ad30acc5eb9aeafe04068f472939937e",
+    "semantic_hash": "ad30acc5eb9aeafe04068f472939937e"
+  },
+  "crates/core/src/capture/geometry.rs": {
+    "mtime": 1791321914.4474156,
+    "seen": 1791472973.8676443,
+    "ast_hash": "2dba19c0f321144df26354c1cbf61fad",
+    "semantic_hash": "2dba19c0f321144df26354c1cbf61fad"
+  },
+  "crates/core/src/capture/kwin.rs": {
+    "mtime": 1791321914.447715,
+    "seen": 1791472973.8676453,
+    "ast_hash": "4f08fc54a4c475e8cde907839184f152",
+    "semantic_hash": "4f08fc54a4c475e8cde907839184f152"
+  },
+  "crates/core/src/capture/mod.rs": {
+    "mtime": 1791169546.543297,
+    "seen": 1791472973.867646,
+    "ast_hash": "af13e47f3a7f69098774206603d0bebe",
+    "semantic_hash": "af13e47f3a7f69098774206603d0bebe"
+  },
+  "crates/core/src/capture/portal.rs": {
+    "mtime": 1791167820.8967392,
+    "seen": 1791472973.8676467,
+    "ast_hash": "29462a3766bb514d1063839b00b909e0",
+    "semantic_hash": "29462a3766bb514d1063839b00b909e0"
+  },
+  "crates/core/src/capture/title_bar.rs": {
+    "mtime": 1791128751.6484907,
+    "seen": 1791472973.8676474,
+    "ast_hash": "b6340807b4d6287553b5c3953f28fcf6",
+    "semantic_hash": "b6340807b4d6287553b5c3953f28fcf6"
+  },
+  "crates/core/src/detect.rs": {
+    "mtime": 1791324691.8155003,
+    "seen": 1791472973.8676484,
+    "ast_hash": "0226e978610fdb12be28d7e1a77ce2c5",
+    "semantic_hash": "0226e978610fdb12be28d7e1a77ce2c5"
+  },
+  "crates/core/src/diagnostics.rs": {
+    "mtime": 1791563629.9627934,
+    "seen": 1791728887.4023507,
+    "ast_hash": "5cec6c814327509ff826e43ad1b0aa57",
+    "semantic_hash": "5cec6c814327509ff826e43ad1b0aa57"
+  },
+  "crates/core/src/history.rs": {
+    "mtime": 1790978092.9479342,
+    "seen": 1791472973.8676498,
+    "ast_hash": "7398daf2077420f367de83ec846c6aa9",
+    "semantic_hash": "7398daf2077420f367de83ec846c6aa9"
+  },
+  "crates/core/src/hotkeys.rs": {
+    "mtime": 1791169510.5307221,
+    "seen": 1791472973.8676505,
+    "ast_hash": "9101368f24b0090bd7518d08fccb6aca",
+    "semantic_hash": "9101368f24b0090bd7518d08fccb6aca"
+  },
+  "crates/core/src/layout/background.rs": {
+    "mtime": 1791081656.736139,
+    "seen": 1791472973.867651,
+    "ast_hash": "e6b1624c5af21fd40fedcbc8994f83fd",
+    "semantic_hash": "e6b1624c5af21fd40fedcbc8994f83fd"
+  },
+  "crates/core/src/layout/block_detector.rs": {
+    "mtime": 1791732912.6293886,
+    "seen": 1791738867.256712,
+    "ast_hash": "e10c99bf3398d2c241db5201f5d77e8e",
+    "semantic_hash": ""
+  },
+  "crates/core/src/layout/collision.rs": {
+    "mtime": 1791627581.9121408,
+    "seen": 1791728887.4025145,
+    "ast_hash": "8035bb27078d204866d03455002e650d",
+    "semantic_hash": "8035bb27078d204866d03455002e650d"
+  },
+  "crates/core/src/layout/dto.rs": {
+    "mtime": 1791260974.5410745,
+    "seen": 1791472973.8676538,
+    "ast_hash": "763252101e51f7eb0da50bf6549b32f0",
+    "semantic_hash": "763252101e51f7eb0da50bf6549b32f0"
+  },
+  "crates/core/src/layout/engine.rs": {
+    "mtime": 1791738264.2976582,
+    "seen": 1791738867.2567146,
+    "ast_hash": "c1347212178ddf365dd25931d59aabc2",
+    "semantic_hash": ""
+  },
+  "crates/core/src/layout/fit.rs": {
+    "mtime": 1791658680.2791371,
+    "seen": 1791728887.4025855,
+    "ast_hash": "8d0543b80c0bbb449a4e5008b8b5b598",
+    "semantic_hash": "8d0543b80c0bbb449a4e5008b8b5b598"
+  },
+  "crates/core/src/layout/font_classifier.rs": {
+    "mtime": 1791732912.6633892,
+    "seen": 1791738867.2567163,
+    "ast_hash": "15a53eee19542278bfc4c8bdcbe42c1a",
+    "semantic_hash": ""
+  },
+  "crates/core/src/layout/font_database.rs": {
+    "mtime": 1791620825.2119815,
+    "seen": 1791728887.402622,
+    "ast_hash": "81cdb8305c995811d41abe3aa79d5a7d",
+    "semantic_hash": "81cdb8305c995811d41abe3aa79d5a7d"
+  },
+  "crates/core/src/layout/font_matcher.rs": {
+    "mtime": 1791730809.2568893,
+    "seen": 1791738867.256718,
+    "ast_hash": "6bce5476a2048f48fb511bc833473c24",
+    "semantic_hash": ""
+  },
+  "crates/core/src/layout/mod.rs": {
+    "mtime": 1791737065.9383569,
+    "seen": 1791738867.2567186,
+    "ast_hash": "335379f165bba04842be0164ee5a6d8b",
+    "semantic_hash": ""
+  },
+  "crates/core/src/layout/place.rs": {
+    "mtime": 1791735946.1379914,
+    "seen": 1791738867.2567203,
+    "ast_hash": "f5d3af9173e5b3bde05417cc225e0c77",
+    "semantic_hash": ""
+  },
+  "crates/core/src/layout/split.rs": {
+    "mtime": 1791262003.5871072,
+    "seen": 1791472973.8676596,
+    "ast_hash": "e98d2c18f55b4609b405dcc8b50d5a35",
+    "semantic_hash": "e98d2c18f55b4609b405dcc8b50d5a35"
+  },
+  "crates/core/src/layout/tracker.rs": {
+    "mtime": 1791737155.792426,
+    "seen": 1791738867.2567222,
+    "ast_hash": "618a5b7ac72b51b8d32224f17dfc8c58",
+    "semantic_hash": ""
+  },
+  "crates/core/src/layout/typography.rs": {
+    "mtime": 1791735551.5056217,
+    "seen": 1791738867.256723,
+    "ast_hash": "c7d6d2cbbeacd1afa77a9a4b3e4610ea",
+    "semantic_hash": ""
+  },
+  "crates/core/src/layout/units.rs": {
+    "mtime": 1791731716.3921525,
+    "seen": 1791738867.2567236,
+    "ast_hash": "e70602a11a2c2361538ad56d8eae64c1",
+    "semantic_hash": ""
+  },
+  "crates/core/src/lib.rs": {
+    "mtime": 1791325915.8350222,
+    "seen": 1791472973.867663,
+    "ast_hash": "72113a28a10427a8b61399f4f570eca6",
+    "semantic_hash": "72113a28a10427a8b61399f4f570eca6"
+  },
+  "crates/core/src/ocr/filter.rs": {
+    "mtime": 1791563621.1914518,
+    "seen": 1791728887.4027958,
+    "ast_hash": "407b6fb4ac6a62e0d06c3f6a71cd87d4",
+    "semantic_hash": "407b6fb4ac6a62e0d06c3f6a71cd87d4"
+  },
+  "crates/core/src/ocr/mod.rs": {
+    "mtime": 1791563655.4925964,
+    "seen": 1791728887.402798,
+    "ast_hash": "7cdd520115ad0244ee4fe609246e1063",
+    "semantic_hash": "7cdd520115ad0244ee4fe609246e1063"
+  },
+  "crates/core/src/ocr/paddle.rs": {
+    "mtime": 1791406186.7569294,
+    "seen": 1791472973.867665,
+    "ast_hash": "e03a34b36c03c85e945884513304c81e",
+    "semantic_hash": "e03a34b36c03c85e945884513304c81e"
+  },
+  "crates/core/src/ocr/paddle_check.py": {
+    "mtime": 1790943916.6125166,
+    "seen": 1791472973.8676662,
+    "ast_hash": "c24421bedcc29c3f28b2d2eb96d23265",
+    "semantic_hash": "c24421bedcc29c3f28b2d2eb96d23265"
+  },
+  "crates/core/src/ocr/paddle_env.py": {
+    "mtime": 1791263769.679671,
+    "seen": 1791472973.867667,
+    "ast_hash": "2c6ca8d1489e142f59cc86ddac16c755",
+    "semantic_hash": "2c6ca8d1489e142f59cc86ddac16c755"
+  },
+  "crates/core/src/ocr/paddle_env.rs": {
+    "mtime": 1791263897.003756,
+    "seen": 1791472973.8676674,
+    "ast_hash": "538a4789a79fe68ac11b783f554f7718",
+    "semantic_hash": "538a4789a79fe68ac11b783f554f7718"
+  },
+  "crates/core/src/ocr/paddle_worker.py": {
+    "mtime": 1791128751.6554909,
+    "seen": 1791472973.8676682,
+    "ast_hash": "79691837f4d29db9b8a2a24ff483d244",
+    "semantic_hash": "79691837f4d29db9b8a2a24ff483d244"
+  },
+  "crates/core/src/pipeline.rs": {
+    "mtime": 1791738264.3436594,
+    "seen": 1791738867.256736,
+    "ast_hash": "a0ef1dacdb1628bf079e3cb3f253be48",
+    "semantic_hash": ""
+  },
+  "crates/core/src/settings.rs": {
+    "mtime": 1791571611.5746114,
+    "seen": 1791728887.4029753,
+    "ast_hash": "48d97e60679599fc091db2abdb1907fd",
+    "semantic_hash": "48d97e60679599fc091db2abdb1907fd"
+  },
+  "crates/core/src/tesseract.rs": {
+    "mtime": 1791406034.1163588,
+    "seen": 1791472973.8676703,
+    "ast_hash": "bdf9d348486d0cd04c9db295c6805c52",
+    "semantic_hash": "bdf9d348486d0cd04c9db295c6805c52"
+  },
+  "crates/core/src/text.rs": {
+    "mtime": 1790935581.4287899,
+    "seen": 1791472973.867671,
+    "ast_hash": "624f61ca662e032f48d8e9530dee4924",
+    "semantic_hash": "624f61ca662e032f48d8e9530dee4924"
+  },
+  "crates/core/src/translate/bergamot.rs": {
+    "mtime": 1791490488.7350523,
+    "seen": 1791728887.4030416,
+    "ast_hash": "1d22222ab1d1dbc15c96edfb9eb8d738",
+    "semantic_hash": "1d22222ab1d1dbc15c96edfb9eb8d738"
+  },
+  "crates/core/src/translate/mod.rs": {
+    "mtime": 1791490079.957408,
+    "seen": 1791728887.4030437,
+    "ast_hash": "9cdb7986a5fe368c3023baa145fcb081",
+    "semantic_hash": "9cdb7986a5fe368c3023baa145fcb081"
+  },
+  "crates/core/tests/fixtures/fonts/manifest.json": {
+    "mtime": 1791082619.1773355,
+    "seen": 1791472973.8676732,
+    "ast_hash": "8c495c9632f2173642ff2d40cbd17b9a",
+    "semantic_hash": "8c495c9632f2173642ff2d40cbd17b9a"
+  },
+  "crates/core/tests/fixtures/scenes/manifest.json": {
+    "mtime": 1791083547.95889,
+    "seen": 1791472973.8676739,
+    "ast_hash": "6e756cf931ee728e99bc1d10abca5c49",
+    "semantic_hash": "6e756cf931ee728e99bc1d10abca5c49"
+  },
+  "crates/core/tests/font_fixtures.rs": {
+    "mtime": 1791564985.7787957,
+    "seen": 1791728887.4031398,
+    "ast_hash": "3bf38864edfd8370b12f87cce90464ad",
+    "semantic_hash": "3bf38864edfd8370b12f87cce90464ad"
+  },
+  "crates/core/tests/ocr_geometry.rs": {
+    "mtime": 1791564585.7005756,
+    "seen": 1791728887.4031422,
+    "ast_hash": "eaacfd47b3db7e53e16d6f5a4d76143c",
+    "semantic_hash": "eaacfd47b3db7e53e16d6f5a4d76143c"
+  },
+  "crates/core/tests/ocr_languages.rs": {
+    "mtime": 1791564579.706006,
+    "seen": 1791728887.4031432,
+    "ast_hash": "078b77ef3a00e7e013c8b3a720b465e7",
+    "semantic_hash": "078b77ef3a00e7e013c8b3a720b465e7"
+  },
+  "crates/core/tests/scenes.rs": {
+    "mtime": 1791627915.6323073,
+    "seen": 1791728887.4031444,
+    "ast_hash": "b261a9c7fb837c4a635c4c1805cb2ff4",
+    "semantic_hash": "b261a9c7fb837c4a635c4c1805cb2ff4"
+  },
+  "packaging/build-fresh.sh": {
+    "mtime": 1791565306.0853121,
+    "seen": 1791728887.4031467,
+    "ast_hash": "68b865e49af187de092848c459b9730c",
+    "semantic_hash": "68b865e49af187de092848c459b9730c"
+  },
+  "packaging/build-local.sh": {
+    "mtime": 1791565306.0853121,
+    "seen": 1791728887.4031475,
+    "ast_hash": "9bd394a75ad43be77287dd76b624dab3",
+    "semantic_hash": "9bd394a75ad43be77287dd76b624dab3"
+  },
+  "packaging/run-local.sh": {
+    "mtime": 1791490816.443907,
+    "seen": 1791728887.4031506,
+    "ast_hash": "c71d6365886ffd507d4866c71acd386b",
+    "semantic_hash": "c71d6365886ffd507d4866c71acd386b"
+  },
+  "packaging/test-process-exit.sh": {
+    "mtime": 1791112032.0365922,
+    "seen": 1791472973.867681,
+    "ast_hash": "f171eb9930c75f70c8571809ad64dec2",
+    "semantic_hash": "f171eb9930c75f70c8571809ad64dec2"
+  },
+  "packaging/test-run-local.sh": {
+    "mtime": 1791169583.721629,
+    "seen": 1791472973.8676817,
+    "ast_hash": "072d37355e1b8324f06f6b6243535375",
+    "semantic_hash": "072d37355e1b8324f06f6b6243535375"
+  },
+  "packaging/update-fonts.sh": {
+    "mtime": 1791081407.4481869,
+    "seen": 1791472973.867683,
+    "ast_hash": "59276a40b652563e5d64f1ee5c789e12",
+    "semantic_hash": "59276a40b652563e5d64f1ee5c789e12"
+  },
+  "crates/app/src/model_worker.cpp": {
+    "mtime": 1791473624.4627562,
+    "seen": 1791728887.4017205,
+    "ast_hash": "7184a2bbd8a67addcebc7572459cdb13",
+    "semantic_hash": "7184a2bbd8a67addcebc7572459cdb13"
+  },
+  "crates/app/src/model_worker.h": {
+    "mtime": 1791473345.4463167,
+    "seen": 1791728887.4017217,
+    "ast_hash": "3daa8a96c367e54bd1eb39cbb7772cb6",
+    "semantic_hash": "3daa8a96c367e54bd1eb39cbb7772cb6"
+  },
+  "crates/app/src/model_worker.rs": {
+    "mtime": 1791556626.5755677,
+    "seen": 1791728887.4017227,
+    "ast_hash": "9248e6802d3c52b3c923c280f51f9cc1",
+    "semantic_hash": "9248e6802d3c52b3c923c280f51f9cc1"
+  },
+  "crates/core/src/translate/bergamot_catalog.json": {
+    "mtime": 1791473220.273193,
+    "seen": 1791728887.4030426,
+    "ast_hash": "b3d0c42687e9eb2e64555f06a1cb0aab",
+    "semantic_hash": "b3d0c42687e9eb2e64555f06a1cb0aab"
+  },
+  "crates/core/src/translate/models.rs": {
+    "mtime": 1791556598.684175,
+    "seen": 1791728887.403045,
+    "ast_hash": "9b2f889aecded2d08563757fa5e210d5",
+    "semantic_hash": "9b2f889aecded2d08563757fa5e210d5"
+  },
+  "README.md": {
+    "mtime": 1791732605.8596704,
+    "seen": 1791738867.2567976,
+    "ast_hash": "ae390137d6eda9859d470f57b34b1e92",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/NotoSansCJK-LICENSE.txt": {
+    "mtime": 1791318417.1637297,
+    "seen": 1791474247.2162044,
+    "ast_hash": "55719faa0112708e946b820b24b14097",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/bitter-OFL.txt": {
+    "mtime": 1791318414.1642919,
+    "seen": 1791728887.4032404,
+    "ast_hash": "db58f5a0efcc29037e31839da245f1f5",
+    "semantic_hash": "db58f5a0efcc29037e31839da245f1f5"
+  },
+  "crates/app/assets/fonts/ebgaramond-OFL.txt": {
+    "mtime": 1791318412.681237,
+    "seen": 1791474247.2162058,
+    "ast_hash": "9166a25d533447579c7c3af6dc8e0bdb",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/firacode-OFL.txt": {
+    "mtime": 1791318415.505656,
+    "seen": 1791474247.2162066,
+    "ast_hash": "c75ca55aa0a5809a854d87db2a8ebf23",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/firasans-OFL.txt": {
+    "mtime": 1791318406.030586,
+    "seen": 1791474247.2162073,
+    "ast_hash": "de28deb2f8c1f23fd4d6918113ac3ddd",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/inter-OFL.txt": {
+    "mtime": 1791318403.5305612,
+    "seen": 1791474247.216209,
+    "ast_hash": "5e95cb23ed621124015c5d23224ba2d3",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/jetbrainsmono-OFL.txt": {
+    "mtime": 1791318414.7388349,
+    "seen": 1791474247.2162097,
+    "ast_hash": "a3c0bd543d9c4224a1af07527a88e497",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/list.txt": {
+    "mtime": 1791081407.3853045,
+    "seen": 1791728887.4032414,
+    "ast_hash": "904bf0b8f5585612a5a34682f2de7a87",
+    "semantic_hash": "904bf0b8f5585612a5a34682f2de7a87"
+  },
+  "crates/app/assets/fonts/literata-OFL.txt": {
+    "mtime": 1791318411.3899603,
+    "seen": 1791474247.2162113,
+    "ast_hash": "1f2ee7e8e16f36be12810c782647fa9b",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/lora-OFL.txt": {
+    "mtime": 1791318412.1075053,
+    "seen": 1791474247.216212,
+    "ast_hash": "804cefa2a9ec3f1ff5a9af3882c18fab",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/montserrat-OFL.txt": {
+    "mtime": 1791318405.6166506,
+    "seen": 1791474247.2162127,
+    "ast_hash": "2fdec60339ef243dcaca42a0c7bce717",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/notosans-OFL.txt": {
+    "mtime": 1791318404.465143,
+    "seen": 1791474247.2162135,
+    "ast_hash": "ead60c8cdf357c455cf69725c35c3b2d",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/notoserif-OFL.txt": {
+    "mtime": 1791318406.7098913,
+    "seen": 1791474247.2162142,
+    "ast_hash": "ead60c8cdf357c455cf69725c35c3b2d",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/opensans-OFL.txt": {
+    "mtime": 1791318405.0522366,
+    "seen": 1791474247.2162151,
+    "ast_hash": "2f74ec5e0b1fbcd6869e9224d7b4d600",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/ptserif-OFL.txt": {
+    "mtime": 1791318413.1347356,
+    "seen": 1791728887.4032426,
+    "ast_hash": "71731de7fdc7b9268b653ba916989fb9",
+    "semantic_hash": "71731de7fdc7b9268b653ba916989fb9"
+  },
+  "crates/app/assets/fonts/roboto-OFL.txt": {
+    "mtime": 1791318403.9911199,
+    "seen": 1791474247.2162166,
+    "ast_hash": "d0d30e4860cc10440e095be065c2b0e3",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/robotocondensed-OFL.txt": {
+    "mtime": 1791318416.7061062,
+    "seen": 1791474247.216217,
+    "ast_hash": "fa7ba941e9cebb2c8c35a057329603ec",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/robotoslab-LICENSE.txt": {
+    "mtime": 1791318413.6670153,
+    "seen": 1791474247.2162178,
+    "ast_hash": "3b83ef96387f14655fc854ddc3c6bd57",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/sourcecodepro-OFL.txt": {
+    "mtime": 1791318416.2459323,
+    "seen": 1791474247.2162187,
+    "ast_hash": "c7c16bdc2c96af797293d68503e5c65c",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/sourceserif4-OFL.txt": {
+    "mtime": 1791318407.1921673,
+    "seen": 1791474247.2162194,
+    "ast_hash": "69db1861e4e8ea4e83fcefd4baeb9e7c",
+    "semantic_hash": ""
+  },
+  "docs/ARCHITECTURE.md": {
+    "mtime": 1791631193.1602578,
+    "seen": 1791728887.4032443,
+    "ast_hash": "86611dfca8d9eeb388064f90382262de",
+    "semantic_hash": "86611dfca8d9eeb388064f90382262de"
+  },
+  "docs/Bergamot.md": {
+    "mtime": 1791564985.7779188,
+    "seen": 1791728887.4032454,
+    "ast_hash": "2f7402c9eb386bba1cb5c847dcae72c6",
+    "semantic_hash": "2f7402c9eb386bba1cb5c847dcae72c6"
+  },
+  "docs/IMPROVEMENTS.md": {
+    "mtime": 1791620891.0848446,
+    "seen": 1791728887.4032464,
+    "ast_hash": "ea5d9dcd8e3dbd65130a1aae215ead1a",
+    "semantic_hash": "ea5d9dcd8e3dbd65130a1aae215ead1a"
+  },
+  "docs/LOGGING.md": {
+    "mtime": 1790978272.5956075,
+    "seen": 1791728887.4032474,
+    "ast_hash": "8305341848a95a49ed36efee1771dd98",
+    "semantic_hash": "8305341848a95a49ed36efee1771dd98"
+  },
+  "docs/PaddleOCR.md": {
+    "mtime": 1791264088.938638,
+    "seen": 1791728887.4032488,
+    "ast_hash": "adab8eb8200e8d61cedb6b12697a1f28",
+    "semantic_hash": "adab8eb8200e8d61cedb6b12697a1f28"
+  },
+  "crates/app/assets/lipa.svg": {
+    "mtime": 1790940512.3893838,
+    "seen": 1791728887.403252,
+    "ast_hash": "d2e77ac138cf7da26f5c58c4163cbee3",
+    "semantic_hash": "d2e77ac138cf7da26f5c58c4163cbee3"
+  },
+  "crates/core/tests/fixtures/fonts/Bitter-cyr-dark.png": {
+    "mtime": 1791082618.569331,
+    "seen": 1791728887.4032586,
+    "ast_hash": "75e8cd7f97e019f874190c1793fcfa6a",
+    "semantic_hash": "75e8cd7f97e019f874190c1793fcfa6a"
+  },
+  "crates/core/tests/fixtures/fonts/Bitter-latin-dark.png": {
+    "mtime": 1791082618.5503306,
+    "seen": 1791728887.40326,
+    "ast_hash": "7030bd225cd0be9fef4b9a51f699473c",
+    "semantic_hash": "7030bd225cd0be9fef4b9a51f699473c"
+  },
+  "crates/core/tests/fixtures/fonts/Bitter-latin-light.png": {
+    "mtime": 1791082618.5623307,
+    "seen": 1791728887.403261,
+    "ast_hash": "6a5923ce287dfbfdf76998b3cf928337",
+    "semantic_hash": "6a5923ce287dfbfdf76998b3cf928337"
+  },
+  "crates/core/tests/fixtures/fonts/Bitter-oblique-latin-dark.png": {
+    "mtime": 1791082618.5563307,
+    "seen": 1791728887.403262,
+    "ast_hash": "fcbc0e0a1424b4e15ed64cc431c8f6b7",
+    "semantic_hash": "fcbc0e0a1424b4e15ed64cc431c8f6b7"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSans-bold-cyr-dark.png": {
+    "mtime": 1791082618.720332,
+    "seen": 1791728887.4032626,
+    "ast_hash": "2e00d65ecdda567cc2f61a87dbf4ef5f",
+    "semantic_hash": "2e00d65ecdda567cc2f61a87dbf4ef5f"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSans-bold-latin-dark.png": {
+    "mtime": 1791082618.703332,
+    "seen": 1791728887.4032638,
+    "ast_hash": "71e2e729ae9daab64a4a3b8e4b30001f",
+    "semantic_hash": "71e2e729ae9daab64a4a3b8e4b30001f"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSans-bold-latin-light.png": {
+    "mtime": 1791082618.7143319,
+    "seen": 1791728887.4032648,
+    "ast_hash": "6783a7c3b1095a9c065d602bf1259c1f",
+    "semantic_hash": "6783a7c3b1095a9c065d602bf1259c1f"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSans-bold-oblique-latin-dark.png": {
+    "mtime": 1791082618.709332,
+    "seen": 1791728887.4032655,
+    "ast_hash": "e158ef425dc19f9ffa4931f753d28e47",
+    "semantic_hash": "e158ef425dc19f9ffa4931f753d28e47"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSans-cyr-dark.png": {
+    "mtime": 1791082618.697332,
+    "seen": 1791728887.4032662,
+    "ast_hash": "3c93ed8dfdfa832463539e8ab367cf02",
+    "semantic_hash": "3c93ed8dfdfa832463539e8ab367cf02"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSans-latin-dark.png": {
+    "mtime": 1791082618.6833317,
+    "seen": 1791728887.4032676,
+    "ast_hash": "b6a67b62002571e56a34bda6779286e3",
+    "semantic_hash": "b6a67b62002571e56a34bda6779286e3"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSans-latin-light.png": {
+    "mtime": 1791082618.6923318,
+    "seen": 1791728887.4032683,
+    "ast_hash": "9b7990355155d03f4f1a26f0bef005ea",
+    "semantic_hash": "9b7990355155d03f4f1a26f0bef005ea"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSans-oblique-latin-dark.png": {
+    "mtime": 1791082618.6873317,
+    "seen": 1791728887.403269,
+    "ast_hash": "b0e3590aa82c8588b4fff125d45fd5a1",
+    "semantic_hash": "b0e3590aa82c8588b4fff125d45fd5a1"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSansCondensed-cyr-dark.png": {
+    "mtime": 1791082619.0873349,
+    "seen": 1791728887.4032702,
+    "ast_hash": "4f18efcf44dce5eec5f647e4ffbf52e8",
+    "semantic_hash": "4f18efcf44dce5eec5f647e4ffbf52e8"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSansCondensed-latin-dark.png": {
+    "mtime": 1791082619.0723348,
+    "seen": 1791728887.403271,
+    "ast_hash": "bb22aeb8be7d643790b50f69afbc363a",
+    "semantic_hash": "bb22aeb8be7d643790b50f69afbc363a"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSansCondensed-latin-light.png": {
+    "mtime": 1791082619.0823348,
+    "seen": 1791728887.4032717,
+    "ast_hash": "bb25c05d7df118cab4443d607c514fe1",
+    "semantic_hash": "bb25c05d7df118cab4443d607c514fe1"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSansCondensed-oblique-latin-dark.png": {
+    "mtime": 1791082619.0773346,
+    "seen": 1791728887.4032724,
+    "ast_hash": "f03cba6232390f4336af3b6cccf06fc2",
+    "semantic_hash": "f03cba6232390f4336af3b6cccf06fc2"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSansMono-cyr-dark.png": {
+    "mtime": 1791082618.8033326,
+    "seen": 1791728887.403273,
+    "ast_hash": "90d4552b20ca9d04431c63eeb6dd6a9b",
+    "semantic_hash": "90d4552b20ca9d04431c63eeb6dd6a9b"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSansMono-latin-dark.png": {
+    "mtime": 1791082618.7883325,
+    "seen": 1791728887.4032745,
+    "ast_hash": "7989c465d75f66bdf7da6a644c8c4daf",
+    "semantic_hash": "7989c465d75f66bdf7da6a644c8c4daf"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSansMono-latin-light.png": {
+    "mtime": 1791082618.7983327,
+    "seen": 1791728887.4032757,
+    "ast_hash": "eee62c7d678cc87bb0aef9aa9b91ac2c",
+    "semantic_hash": "eee62c7d678cc87bb0aef9aa9b91ac2c"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSansMono-oblique-latin-dark.png": {
+    "mtime": 1791082618.7933326,
+    "seen": 1791728887.4032767,
+    "ast_hash": "d38a2eb023a4ce80c838ce7ca20b70c0",
+    "semantic_hash": "d38a2eb023a4ce80c838ce7ca20b70c0"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSerif-cyr-dark.png": {
+    "mtime": 1791082618.7623324,
+    "seen": 1791728887.4032779,
+    "ast_hash": "69000ffa9abe9871b69dffa793368f14",
+    "semantic_hash": "69000ffa9abe9871b69dffa793368f14"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSerif-latin-dark.png": {
+    "mtime": 1791082618.7463322,
+    "seen": 1791728887.4032786,
+    "ast_hash": "551c9fba9d774e9e32062f3e00975a00",
+    "semantic_hash": "551c9fba9d774e9e32062f3e00975a00"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSerif-latin-light.png": {
+    "mtime": 1791082618.7573323,
+    "seen": 1791728887.4032795,
+    "ast_hash": "9fdbf34c2e8b14fa3e6c7b9cfce2f5e1",
+    "semantic_hash": "9fdbf34c2e8b14fa3e6c7b9cfce2f5e1"
+  },
+  "crates/core/tests/fixtures/fonts/DejaVuSerif-oblique-latin-dark.png": {
+    "mtime": 1791082618.7523322,
+    "seen": 1791728887.4032807,
+    "ast_hash": "55627845e4271250ba82d2e8a2434a89",
+    "semantic_hash": "55627845e4271250ba82d2e8a2434a89"
+  },
+  "crates/core/tests/fixtures/fonts/EBGaramond-cyr-dark.png": {
+    "mtime": 1791082618.45133,
+    "seen": 1791728887.4032815,
+    "ast_hash": "cff1eef61d5ab25e7722110a312b92ff",
+    "semantic_hash": "cff1eef61d5ab25e7722110a312b92ff"
+  },
+  "crates/core/tests/fixtures/fonts/EBGaramond-latin-dark.png": {
+    "mtime": 1791082618.43233,
+    "seen": 1791728887.4032822,
+    "ast_hash": "6e4606863c203645989baee105469a6b",
+    "semantic_hash": "6e4606863c203645989baee105469a6b"
+  },
+  "crates/core/tests/fixtures/fonts/EBGaramond-latin-light.png": {
+    "mtime": 1791082618.44433,
+    "seen": 1791728887.4032834,
+    "ast_hash": "452581f5982ebb2d0836c1e2a97d9b93",
+    "semantic_hash": "452581f5982ebb2d0836c1e2a97d9b93"
+  },
+  "crates/core/tests/fixtures/fonts/EBGaramond-oblique-latin-dark.png": {
+    "mtime": 1791082618.43833,
+    "seen": 1791728887.4032843,
+    "ast_hash": "25f628ae0951646bcd599d96791c1e64",
+    "semantic_hash": "25f628ae0951646bcd599d96791c1e64"
+  },
+  "crates/core/tests/fixtures/fonts/FantasqueMono-cyr-dark.png": {
+    "mtime": 1791082618.8983333,
+    "seen": 1791728887.4032853,
+    "ast_hash": "adffc7eb311bd26cd45fa49e278695a1",
+    "semantic_hash": "adffc7eb311bd26cd45fa49e278695a1"
+  },
+  "crates/core/tests/fixtures/fonts/FantasqueMono-latin-dark.png": {
+    "mtime": 1791082618.8803332,
+    "seen": 1791728887.403286,
+    "ast_hash": "fd318bf863646395a8b5db8c1482b496",
+    "semantic_hash": "fd318bf863646395a8b5db8c1482b496"
+  },
+  "crates/core/tests/fixtures/fonts/FantasqueMono-latin-light.png": {
+    "mtime": 1791082618.8923333,
+    "seen": 1791728887.403287,
+    "ast_hash": "6b0fd7807152f2d1c6f53b1d82e3eb4f",
+    "semantic_hash": "6b0fd7807152f2d1c6f53b1d82e3eb4f"
+  },
+  "crates/core/tests/fixtures/fonts/FantasqueMono-oblique-latin-dark.png": {
+    "mtime": 1791082618.8863332,
+    "seen": 1791728887.4032881,
+    "ast_hash": "f632def39e33f1d14488c7ed7e587b29",
+    "semantic_hash": "f632def39e33f1d14488c7ed7e587b29"
+  },
+  "crates/core/tests/fixtures/fonts/FiraCode-cyr-dark.png": {
+    "mtime": 1791082618.6133313,
+    "seen": 1791728887.4032888,
+    "ast_hash": "48cb5109ed8ef2bf0dd74df3f5b32ffd",
+    "semantic_hash": "48cb5109ed8ef2bf0dd74df3f5b32ffd"
+  },
+  "crates/core/tests/fixtures/fonts/FiraCode-latin-dark.png": {
+    "mtime": 1791082618.5963311,
+    "seen": 1791728887.4032898,
+    "ast_hash": "f25c97dacaf56740cdb186ce64ea4a26",
+    "semantic_hash": "f25c97dacaf56740cdb186ce64ea4a26"
+  },
+  "crates/core/tests/fixtures/fonts/FiraCode-latin-light.png": {
+    "mtime": 1791082618.6073313,
+    "seen": 1791728887.4032912,
+    "ast_hash": "2216f5356bebb529f47a1b917fcfd4fa",
+    "semantic_hash": "2216f5356bebb529f47a1b917fcfd4fa"
+  },
+  "crates/core/tests/fixtures/fonts/FiraCode-oblique-latin-dark.png": {
+    "mtime": 1791082618.6023312,
+    "seen": 1791728887.403292,
+    "ast_hash": "787ac8252565df73f6541fdac1286575",
+    "semantic_hash": "787ac8252565df73f6541fdac1286575"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-bold-cyr-dark.png": {
+    "mtime": 1791082618.2933288,
+    "seen": 1791728887.4032927,
+    "ast_hash": "7a3adf8d784b3ba4941af00ed215a0d4",
+    "semantic_hash": "7a3adf8d784b3ba4941af00ed215a0d4"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-bold-latin-dark.png": {
+    "mtime": 1791082618.2733285,
+    "seen": 1791728887.4032934,
+    "ast_hash": "b0270963a17cdfbb2a9ac9e1843277c3",
+    "semantic_hash": "b0270963a17cdfbb2a9ac9e1843277c3"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-bold-latin-light.png": {
+    "mtime": 1791082618.2863288,
+    "seen": 1791728887.4032946,
+    "ast_hash": "e382bd0dc523d738e51f51f852ee03d1",
+    "semantic_hash": "e382bd0dc523d738e51f51f852ee03d1"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-bold-oblique-latin-dark.png": {
+    "mtime": 1791082618.2793286,
+    "seen": 1791728887.4032953,
+    "ast_hash": "8c9bd86e100069c7d0622d61c132ba39",
+    "semantic_hash": "8c9bd86e100069c7d0622d61c132ba39"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-cyr-dark.png": {
+    "mtime": 1791082618.2663286,
+    "seen": 1791728887.403296,
+    "ast_hash": "fd35dc3acc8b428357378e4c7b15f6ff",
+    "semantic_hash": "fd35dc3acc8b428357378e4c7b15f6ff"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-heavy-cyr-dark.png": {
+    "mtime": 1791082619.1393352,
+    "seen": 1791728887.4032967,
+    "ast_hash": "3b79dd0f030192bbae5a0fbc2293435a",
+    "semantic_hash": "3b79dd0f030192bbae5a0fbc2293435a"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-heavy-latin-dark.png": {
+    "mtime": 1791082619.119335,
+    "seen": 1791728887.403298,
+    "ast_hash": "f7851e7075bdc51ebb26cd681d0e6fe0",
+    "semantic_hash": "f7851e7075bdc51ebb26cd681d0e6fe0"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-heavy-latin-light.png": {
+    "mtime": 1791082619.133335,
+    "seen": 1791728887.4032986,
+    "ast_hash": "d34cff53c8db3a3e9c0f91baef208989",
+    "semantic_hash": "d34cff53c8db3a3e9c0f91baef208989"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-heavy-oblique-latin-dark.png": {
+    "mtime": 1791082619.125335,
+    "seen": 1791728887.4032996,
+    "ast_hash": "7628cdf920574e15b7fde4f1ce4ed6d8",
+    "semantic_hash": "7628cdf920574e15b7fde4f1ce4ed6d8"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-latin-dark.png": {
+    "mtime": 1791082618.2493284,
+    "seen": 1791728887.4033003,
+    "ast_hash": "695f094c3de31fb672882064043c8c69",
+    "semantic_hash": "695f094c3de31fb672882064043c8c69"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-latin-light.png": {
+    "mtime": 1791082618.2603285,
+    "seen": 1791728887.4033012,
+    "ast_hash": "b1628ccde399beef06342b24396c3667",
+    "semantic_hash": "b1628ccde399beef06342b24396c3667"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-light-cyr-dark.png": {
+    "mtime": 1791082619.112335,
+    "seen": 1791728887.403302,
+    "ast_hash": "7b4c94e39691bdfd0a27bdbe65b61a80",
+    "semantic_hash": "7b4c94e39691bdfd0a27bdbe65b61a80"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-light-latin-dark.png": {
+    "mtime": 1791082619.0943348,
+    "seen": 1791728887.4033027,
+    "ast_hash": "dc87fcb07caa181157c692bd0a329189",
+    "semantic_hash": "dc87fcb07caa181157c692bd0a329189"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-light-latin-light.png": {
+    "mtime": 1791082619.106335,
+    "seen": 1791728887.4033034,
+    "ast_hash": "1db9bbbf340f7a704e42a9a05f4b8276",
+    "semantic_hash": "1db9bbbf340f7a704e42a9a05f4b8276"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-light-oblique-latin-dark.png": {
+    "mtime": 1791082619.099335,
+    "seen": 1791728887.403304,
+    "ast_hash": "9523c9bed37d223fb533d9bd443eadf4",
+    "semantic_hash": "9523c9bed37d223fb533d9bd443eadf4"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSans-oblique-latin-dark.png": {
+    "mtime": 1791082618.2553284,
+    "seen": 1791728887.4033048,
+    "ast_hash": "21292e37b4b909d090f646b7914a67e2",
+    "semantic_hash": "21292e37b4b909d090f646b7914a67e2"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSansCompressed-cyr-dark.png": {
+    "mtime": 1791082619.0433345,
+    "seen": 1791728887.4033055,
+    "ast_hash": "4b6f0c65d94157f8a546c1db33297bbb",
+    "semantic_hash": "4b6f0c65d94157f8a546c1db33297bbb"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSansCompressed-latin-dark.png": {
+    "mtime": 1791082619.0253344,
+    "seen": 1791728887.4033065,
+    "ast_hash": "c78991bdd95f2638a02ffe8094afac60",
+    "semantic_hash": "c78991bdd95f2638a02ffe8094afac60"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSansCompressed-latin-light.png": {
+    "mtime": 1791082619.0373344,
+    "seen": 1791728887.4033072,
+    "ast_hash": "f99b7bec5fdfbe300a9e53e0a03f0b0b",
+    "semantic_hash": "f99b7bec5fdfbe300a9e53e0a03f0b0b"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSansCompressed-oblique-latin-dark.png": {
+    "mtime": 1791082619.0313344,
+    "seen": 1791728887.4033084,
+    "ast_hash": "201bb4490cc50a3633826de490282cbb",
+    "semantic_hash": "201bb4490cc50a3633826de490282cbb"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSansCondensed-cyr-dark.png": {
+    "mtime": 1791082619.0193343,
+    "seen": 1791728887.403309,
+    "ast_hash": "c7f43aaa05975d2d0cd406450b942960",
+    "semantic_hash": "c7f43aaa05975d2d0cd406450b942960"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSansCondensed-latin-dark.png": {
+    "mtime": 1791082619.0013342,
+    "seen": 1791728887.40331,
+    "ast_hash": "8e5b7be47316cf1707d3fa0e716a301d",
+    "semantic_hash": "8e5b7be47316cf1707d3fa0e716a301d"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSansCondensed-latin-light.png": {
+    "mtime": 1791082619.0133343,
+    "seen": 1791728887.403311,
+    "ast_hash": "fcca63a6fef35f8331c321dc4936b8e9",
+    "semantic_hash": "fcca63a6fef35f8331c321dc4936b8e9"
+  },
+  "crates/core/tests/fixtures/fonts/FiraSansCondensed-oblique-latin-dark.png": {
+    "mtime": 1791082619.0073342,
+    "seen": 1791728887.4033122,
+    "ast_hash": "8f8ce9c64d7874aa86336338883b6ac8",
+    "semantic_hash": "8f8ce9c64d7874aa86336338883b6ac8"
+  },
+  "crates/core/tests/fixtures/fonts/Hack-cyr-dark.png": {
+    "mtime": 1791082618.828333,
+    "seen": 1791728887.403313,
+    "ast_hash": "9c851e0a516a57f26f929a87e018e6a4",
+    "semantic_hash": "9c851e0a516a57f26f929a87e018e6a4"
+  },
+  "crates/core/tests/fixtures/fonts/Hack-latin-dark.png": {
+    "mtime": 1791082618.8093326,
+    "seen": 1791728887.403314,
+    "ast_hash": "6cf630602e254d912983e7f5ac2e1f03",
+    "semantic_hash": "6cf630602e254d912983e7f5ac2e1f03"
+  },
+  "crates/core/tests/fixtures/fonts/Hack-latin-light.png": {
+    "mtime": 1791082618.8223329,
+    "seen": 1791728887.4033153,
+    "ast_hash": "02be38bdb6cc2c79685d1e31c3ab592d",
+    "semantic_hash": "02be38bdb6cc2c79685d1e31c3ab592d"
+  },
+  "crates/core/tests/fixtures/fonts/Hack-oblique-latin-dark.png": {
+    "mtime": 1791082618.8163328,
+    "seen": 1791728887.4033163,
+    "ast_hash": "731459e5e8e6fc33976d00c1bfc5ad71",
+    "semantic_hash": "731459e5e8e6fc33976d00c1bfc5ad71"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-bold-cyr-dark.png": {
+    "mtime": 1791082618.070327,
+    "seen": 1791728887.4033172,
+    "ast_hash": "c65a557e5f306836f33affae88e23bf6",
+    "semantic_hash": "c65a557e5f306836f33affae88e23bf6"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-bold-latin-dark.png": {
+    "mtime": 1791082618.050327,
+    "seen": 1791728887.403318,
+    "ast_hash": "29a7365534a30e68e9aa7c6ab7cd605a",
+    "semantic_hash": "29a7365534a30e68e9aa7c6ab7cd605a"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-bold-latin-light.png": {
+    "mtime": 1791082618.064327,
+    "seen": 1791728887.4033191,
+    "ast_hash": "f92b86d3f4ec0a07158fef695f00b933",
+    "semantic_hash": "f92b86d3f4ec0a07158fef695f00b933"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-bold-oblique-latin-dark.png": {
+    "mtime": 1791082618.057327,
+    "seen": 1791728887.4033198,
+    "ast_hash": "bed25282bac592b1d53c1061ac83b9f7",
+    "semantic_hash": "bed25282bac592b1d53c1061ac83b9f7"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-cyr-dark.png": {
+    "mtime": 1791082618.0433269,
+    "seen": 1791728887.4033206,
+    "ast_hash": "f3b5e40103397136f6246f93cc3f0e30",
+    "semantic_hash": "f3b5e40103397136f6246f93cc3f0e30"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-latin-dark.png": {
+    "mtime": 1791082618.0253267,
+    "seen": 1791728887.4033213,
+    "ast_hash": "6028255329a6a93bb7bbd9760e94c338",
+    "semantic_hash": "6028255329a6a93bb7bbd9760e94c338"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-latin-light.png": {
+    "mtime": 1791082618.0373268,
+    "seen": 1791728887.4033227,
+    "ast_hash": "cbc19aadc4e8b984375d187d4456d365",
+    "semantic_hash": "cbc19aadc4e8b984375d187d4456d365"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-light-cyr-dark.png": {
+    "mtime": 1791082618.0943272,
+    "seen": 1791728887.4033237,
+    "ast_hash": "2b652c6916a97e371f8970401275d773",
+    "semantic_hash": "2b652c6916a97e371f8970401275d773"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-light-latin-dark.png": {
+    "mtime": 1791082618.076327,
+    "seen": 1791728887.4033244,
+    "ast_hash": "a6c7cef897a1118c21707020e652ff26",
+    "semantic_hash": "a6c7cef897a1118c21707020e652ff26"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-light-latin-light.png": {
+    "mtime": 1791082618.0883272,
+    "seen": 1791728887.403325,
+    "ast_hash": "c8d14f735f25c4754281468845359d78",
+    "semantic_hash": "c8d14f735f25c4754281468845359d78"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-light-oblique-latin-dark.png": {
+    "mtime": 1791082618.0823271,
+    "seen": 1791728887.403326,
+    "ast_hash": "c84cbcfdb5446e30153c4cf7d913594f",
+    "semantic_hash": "c84cbcfdb5446e30153c4cf7d913594f"
+  },
+  "crates/core/tests/fixtures/fonts/Inter-oblique-latin-dark.png": {
+    "mtime": 1791082618.0313268,
+    "seen": 1791728887.4033267,
+    "ast_hash": "a5b813aa04cdeddbf64aa836c8a2ab0a",
+    "semantic_hash": "a5b813aa04cdeddbf64aa836c8a2ab0a"
+  },
+  "crates/core/tests/fixtures/fonts/JetBrainsMono-cyr-dark.png": {
+    "mtime": 1791082618.591331,
+    "seen": 1791728887.4033275,
+    "ast_hash": "60fe87f80b0c6eb01e13090d9f2650de",
+    "semantic_hash": "60fe87f80b0c6eb01e13090d9f2650de"
+  },
+  "crates/core/tests/fixtures/fonts/JetBrainsMono-latin-dark.png": {
+    "mtime": 1791082618.575331,
+    "seen": 1791728887.4033282,
+    "ast_hash": "4b8585fb0db0a0eb9840fbbd51bb3cbc",
+    "semantic_hash": "4b8585fb0db0a0eb9840fbbd51bb3cbc"
+  },
+  "crates/core/tests/fixtures/fonts/JetBrainsMono-latin-light.png": {
+    "mtime": 1791082618.5863311,
+    "seen": 1791728887.4033291,
+    "ast_hash": "3b50a3dceee631c64c54457843112f27",
+    "semantic_hash": "3b50a3dceee631c64c54457843112f27"
+  },
+  "crates/core/tests/fixtures/fonts/JetBrainsMono-oblique-latin-dark.png": {
+    "mtime": 1791082618.581331,
+    "seen": 1791728887.40333,
+    "ast_hash": "c462431f8f8c9e1dacb3351fd1e2d362",
+    "semantic_hash": "c462431f8f8c9e1dacb3351fd1e2d362"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationMono-cyr-dark.png": {
+    "mtime": 1791082618.7833326,
+    "seen": 1791728887.4033306,
+    "ast_hash": "5836ff0ef776a48b2b5157a0c3d7b736",
+    "semantic_hash": "5836ff0ef776a48b2b5157a0c3d7b736"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationMono-latin-dark.png": {
+    "mtime": 1791082618.7673323,
+    "seen": 1791728887.4033313,
+    "ast_hash": "5ac60d55fda1459332d41942e374d001",
+    "semantic_hash": "5ac60d55fda1459332d41942e374d001"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationMono-latin-light.png": {
+    "mtime": 1791082618.7783325,
+    "seen": 1791728887.4033322,
+    "ast_hash": "ddd101c28a15f7cbaf312b7a3d0fe0db",
+    "semantic_hash": "ddd101c28a15f7cbaf312b7a3d0fe0db"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationMono-oblique-latin-dark.png": {
+    "mtime": 1791082618.7723324,
+    "seen": 1791728887.4033332,
+    "ast_hash": "4f1bb2e3d5d7eb47e268c129e3d770d8",
+    "semantic_hash": "4f1bb2e3d5d7eb47e268c129e3d770d8"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-bold-cyr-dark.png": {
+    "mtime": 1791082618.9433336,
+    "seen": 1791728887.403334,
+    "ast_hash": "7473305850fce8da2127d4718335596c",
+    "semantic_hash": "7473305850fce8da2127d4718335596c"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-bold-latin-dark.png": {
+    "mtime": 1791082618.9273336,
+    "seen": 1791728887.4033346,
+    "ast_hash": "954ee8a054bb3e4a82775a9163f5d2fa",
+    "semantic_hash": "954ee8a054bb3e4a82775a9163f5d2fa"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-bold-latin-light.png": {
+    "mtime": 1791082618.9373336,
+    "seen": 1791728887.4033353,
+    "ast_hash": "175b8c7dd8cb25abb6f805154f289dd0",
+    "semantic_hash": "175b8c7dd8cb25abb6f805154f289dd0"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-bold-oblique-latin-dark.png": {
+    "mtime": 1791082618.9323337,
+    "seen": 1791728887.4033365,
+    "ast_hash": "c2be058bb6349694cd9f1a6b03b30339",
+    "semantic_hash": "c2be058bb6349694cd9f1a6b03b30339"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-cyr-dark.png": {
+    "mtime": 1791082618.6783316,
+    "seen": 1791728887.4033372,
+    "ast_hash": "b1333b1637d6b08040912f451fb3d476",
+    "semantic_hash": "b1333b1637d6b08040912f451fb3d476"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-italic-cyr-dark.png": {
+    "mtime": 1791082618.9953341,
+    "seen": 1791728887.403338,
+    "ast_hash": "8bcadbfa6c5a66db882f00db0a523093",
+    "semantic_hash": "8bcadbfa6c5a66db882f00db0a523093"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-italic-latin-dark.png": {
+    "mtime": 1791082618.985334,
+    "seen": 1791728887.403339,
+    "ast_hash": "6575cf9436e64493f6c8ee21df7833c9",
+    "semantic_hash": "6575cf9436e64493f6c8ee21df7833c9"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-italic-latin-light.png": {
+    "mtime": 1791082618.990334,
+    "seen": 1791728887.4033399,
+    "ast_hash": "2f2a2b39829e32ef67ff4ad6bc312cb9",
+    "semantic_hash": "2f2a2b39829e32ef67ff4ad6bc312cb9"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-latin-dark.png": {
+    "mtime": 1791082618.6623316,
+    "seen": 1791728887.4033408,
+    "ast_hash": "06a1ff614f87a378f88590c0ef352f18",
+    "semantic_hash": "06a1ff614f87a378f88590c0ef352f18"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-latin-light.png": {
+    "mtime": 1791082618.6723316,
+    "seen": 1791728887.4033418,
+    "ast_hash": "f9f92912134d0989e08a0395a27ad4b4",
+    "semantic_hash": "f9f92912134d0989e08a0395a27ad4b4"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSans-oblique-latin-dark.png": {
+    "mtime": 1791082618.6673317,
+    "seen": 1791728887.4033425,
+    "ast_hash": "b6793e0031d1881a0b39e6c3b2924b58",
+    "semantic_hash": "b6793e0031d1881a0b39e6c3b2924b58"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-bold-cyr-dark.png": {
+    "mtime": 1791082618.9643338,
+    "seen": 1791728887.4033434,
+    "ast_hash": "7b5b75b72fec3c00a92755e0152c1288",
+    "semantic_hash": "7b5b75b72fec3c00a92755e0152c1288"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-bold-latin-dark.png": {
+    "mtime": 1791082618.9483337,
+    "seen": 1791728887.4033442,
+    "ast_hash": "c63b4a1ae8d0df86d845b0fedd132390",
+    "semantic_hash": "c63b4a1ae8d0df86d845b0fedd132390"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-bold-latin-light.png": {
+    "mtime": 1791082618.959334,
+    "seen": 1791728887.4033449,
+    "ast_hash": "9bc9b8b8ced89acdc25cae059a7dfab1",
+    "semantic_hash": "9bc9b8b8ced89acdc25cae059a7dfab1"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-bold-oblique-latin-dark.png": {
+    "mtime": 1791082618.9533339,
+    "seen": 1791728887.4033456,
+    "ast_hash": "e4734d42e7c974490d3564ff10fc5e0c",
+    "semantic_hash": "e4734d42e7c974490d3564ff10fc5e0c"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-cyr-dark.png": {
+    "mtime": 1791082618.7413323,
+    "seen": 1791728887.4033468,
+    "ast_hash": "ba8e2580111dcc9bf374f367d42245f7",
+    "semantic_hash": "ba8e2580111dcc9bf374f367d42245f7"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-italic-cyr-dark.png": {
+    "mtime": 1791082618.980334,
+    "seen": 1791728887.4033475,
+    "ast_hash": "6bce94107da84bebc0da2af0d18fb9a0",
+    "semantic_hash": "6bce94107da84bebc0da2af0d18fb9a0"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-italic-latin-dark.png": {
+    "mtime": 1791082618.9703338,
+    "seen": 1791728887.4033484,
+    "ast_hash": "a481904dddad62f7a30cdf8d8b7f1179",
+    "semantic_hash": "a481904dddad62f7a30cdf8d8b7f1179"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-italic-latin-light.png": {
+    "mtime": 1791082618.975334,
+    "seen": 1791728887.4033492,
+    "ast_hash": "86fbe2b4f57274ea6378ddefef2551c9",
+    "semantic_hash": "86fbe2b4f57274ea6378ddefef2551c9"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-latin-dark.png": {
+    "mtime": 1791082618.7263322,
+    "seen": 1791728887.40335,
+    "ast_hash": "b7669b178331cf119955b1a85b5bc298",
+    "semantic_hash": "b7669b178331cf119955b1a85b5bc298"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-latin-light.png": {
+    "mtime": 1791082618.7363322,
+    "seen": 1791728887.4033508,
+    "ast_hash": "934ff2954ca7a25e1083162d451f904b",
+    "semantic_hash": "934ff2954ca7a25e1083162d451f904b"
+  },
+  "crates/core/tests/fixtures/fonts/LiberationSerif-oblique-latin-dark.png": {
+    "mtime": 1791082618.731332,
+    "seen": 1791728887.4033515,
+    "ast_hash": "a2a02ac6301571bccc3d36622d38fcc9",
+    "semantic_hash": "a2a02ac6301571bccc3d36622d38fcc9"
+  },
+  "crates/core/tests/fixtures/fonts/Literata-cyr-dark.png": {
+    "mtime": 1791082618.4013295,
+    "seen": 1791728887.4033525,
+    "ast_hash": "78e92c844b2abebd3837cd1088b533a9",
+    "semantic_hash": "78e92c844b2abebd3837cd1088b533a9"
+  },
+  "crates/core/tests/fixtures/fonts/Literata-latin-dark.png": {
+    "mtime": 1791082618.3823295,
+    "seen": 1791728887.403354,
+    "ast_hash": "119aad2d111241ec125b1a321ffb05ef",
+    "semantic_hash": "119aad2d111241ec125b1a321ffb05ef"
+  },
+  "crates/core/tests/fixtures/fonts/Literata-latin-light.png": {
+    "mtime": 1791082618.3953295,
+    "seen": 1791728887.4033546,
+    "ast_hash": "b65439b83e46f7208a25a2f60d1b18f7",
+    "semantic_hash": "b65439b83e46f7208a25a2f60d1b18f7"
+  },
+  "crates/core/tests/fixtures/fonts/Literata-oblique-latin-dark.png": {
+    "mtime": 1791082618.3893294,
+    "seen": 1791728887.4033554,
+    "ast_hash": "64fa7c258e7d65aa833dc450a8790496",
+    "semantic_hash": "64fa7c258e7d65aa833dc450a8790496"
+  },
+  "crates/core/tests/fixtures/fonts/Lora-cyr-dark.png": {
+    "mtime": 1791082618.4253297,
+    "seen": 1791728887.4033563,
+    "ast_hash": "6aa15e9a3dea0a58645220dff7d8a8ff",
+    "semantic_hash": "6aa15e9a3dea0a58645220dff7d8a8ff"
+  },
+  "crates/core/tests/fixtures/fonts/Lora-latin-dark.png": {
+    "mtime": 1791082618.4073296,
+    "seen": 1791728887.4033573,
+    "ast_hash": "9630931a2cfe7d38840f0e492780a108",
+    "semantic_hash": "9630931a2cfe7d38840f0e492780a108"
+  },
+  "crates/core/tests/fixtures/fonts/Lora-latin-light.png": {
+    "mtime": 1791082618.4193296,
+    "seen": 1791728887.403358,
+    "ast_hash": "6fc485d7123c28ca670a7dede4ad79e1",
+    "semantic_hash": "6fc485d7123c28ca670a7dede4ad79e1"
+  },
+  "crates/core/tests/fixtures/fonts/Lora-oblique-latin-dark.png": {
+    "mtime": 1791082618.4133296,
+    "seen": 1791728887.4033587,
+    "ast_hash": "bcd7f5f330f29a399485877990bb0ffc",
+    "semantic_hash": "bcd7f5f330f29a399485877990bb0ffc"
+  },
+  "crates/core/tests/fixtures/fonts/Meslo-cyr-dark.png": {
+    "mtime": 1791082618.9213336,
+    "seen": 1791728887.4033597,
+    "ast_hash": "7783cab219168bdbbd4bf24a6c3897dd",
+    "semantic_hash": "7783cab219168bdbbd4bf24a6c3897dd"
+  },
+  "crates/core/tests/fixtures/fonts/Meslo-latin-dark.png": {
+    "mtime": 1791082618.9043334,
+    "seen": 1791728887.4033606,
+    "ast_hash": "d39b5db370066a8b6ceb10b6ff30ec13",
+    "semantic_hash": "d39b5db370066a8b6ceb10b6ff30ec13"
+  },
+  "crates/core/tests/fixtures/fonts/Meslo-latin-light.png": {
+    "mtime": 1791082618.9153335,
+    "seen": 1791728887.4033613,
+    "ast_hash": "a24aa6b8a81d8d09035641380de5b555",
+    "semantic_hash": "a24aa6b8a81d8d09035641380de5b555"
+  },
+  "crates/core/tests/fixtures/fonts/Meslo-oblique-latin-dark.png": {
+    "mtime": 1791082618.9103334,
+    "seen": 1791728887.403362,
+    "ast_hash": "78023bb6ce023bfbbc7eff718e98b95e",
+    "semantic_hash": "78023bb6ce023bfbbc7eff718e98b95e"
+  },
+  "crates/core/tests/fixtures/fonts/Montserrat-cyr-dark.png": {
+    "mtime": 1791082618.2433283,
+    "seen": 1791728887.4033628,
+    "ast_hash": "f471d0699e0926a42a14506f51f458a2",
+    "semantic_hash": "f471d0699e0926a42a14506f51f458a2"
+  },
+  "crates/core/tests/fixtures/fonts/Montserrat-latin-dark.png": {
+    "mtime": 1791082618.2283282,
+    "seen": 1791728887.4033635,
+    "ast_hash": "f3ba050d4e2c10d6fec88be4b8d02ee6",
+    "semantic_hash": "f3ba050d4e2c10d6fec88be4b8d02ee6"
+  },
+  "crates/core/tests/fixtures/fonts/Montserrat-latin-light.png": {
+    "mtime": 1791082618.2383285,
+    "seen": 1791728887.4033647,
+    "ast_hash": "43b29699de2713a114ee42faa8ab1f02",
+    "semantic_hash": "43b29699de2713a114ee42faa8ab1f02"
+  },
+  "crates/core/tests/fixtures/fonts/Montserrat-oblique-latin-dark.png": {
+    "mtime": 1791082618.2333283,
+    "seen": 1791728887.4033654,
+    "ast_hash": "2ffa0c42964a8991ae65281d61cd2c7a",
+    "semantic_hash": "2ffa0c42964a8991ae65281d61cd2c7a"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSans-cyr-dark.png": {
+    "mtime": 1791082618.2033281,
+    "seen": 1791728887.4033663,
+    "ast_hash": "f5b3e4f691deb7c6cb87a78e22824cac",
+    "semantic_hash": "f5b3e4f691deb7c6cb87a78e22824cac"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSans-latin-dark.png": {
+    "mtime": 1791082618.1543276,
+    "seen": 1791728887.4033673,
+    "ast_hash": "6aec1f2f5ec4dee78102169e70d5bc20",
+    "semantic_hash": "6aec1f2f5ec4dee78102169e70d5bc20"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSans-latin-light.png": {
+    "mtime": 1791082618.187328,
+    "seen": 1791728887.4033682,
+    "ast_hash": "df479bbe743dc225c5e684d0f4d78369",
+    "semantic_hash": "df479bbe743dc225c5e684d0f4d78369"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSans-oblique-latin-dark.png": {
+    "mtime": 1791082618.170328,
+    "seen": 1791728887.403369,
+    "ast_hash": "007a41087671452bad5302151710c9e9",
+    "semantic_hash": "007a41087671452bad5302151710c9e9"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSansCJK-latin-dark.png": {
+    "mtime": 1791082619.1703355,
+    "seen": 1791728887.40337,
+    "ast_hash": "8731a987a0d1e9391ee831a895207e5e",
+    "semantic_hash": "8731a987a0d1e9391ee831a895207e5e"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSansCJK-latin-light.png": {
+    "mtime": 1791082619.1763356,
+    "seen": 1791728887.4033709,
+    "ast_hash": "c48336e90ea9253ffb59914ea42bb94d",
+    "semantic_hash": "c48336e90ea9253ffb59914ea42bb94d"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSerif-bold-cyr-dark.png": {
+    "mtime": 1791082618.3493292,
+    "seen": 1791728887.4033716,
+    "ast_hash": "69efd35cab2fddf6adc724bafc808f35",
+    "semantic_hash": "69efd35cab2fddf6adc724bafc808f35"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSerif-bold-latin-dark.png": {
+    "mtime": 1791082618.3273292,
+    "seen": 1791728887.4033725,
+    "ast_hash": "32db40b4c8c16fbc77e505979a13ae19",
+    "semantic_hash": "32db40b4c8c16fbc77e505979a13ae19"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSerif-bold-latin-light.png": {
+    "mtime": 1791082618.3423293,
+    "seen": 1791728887.4033732,
+    "ast_hash": "d7f5d3e514832887bab8b9bb79296e63",
+    "semantic_hash": "d7f5d3e514832887bab8b9bb79296e63"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSerif-bold-oblique-latin-dark.png": {
+    "mtime": 1791082618.335329,
+    "seen": 1791728887.4033742,
+    "ast_hash": "b6b147d87ea8f9a3af76165f2245e5b5",
+    "semantic_hash": "b6b147d87ea8f9a3af76165f2245e5b5"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSerif-cyr-dark.png": {
+    "mtime": 1791082618.320329,
+    "seen": 1791728887.4033751,
+    "ast_hash": "57e9eef2e4808050c19806165bfbaab6",
+    "semantic_hash": "57e9eef2e4808050c19806165bfbaab6"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSerif-latin-dark.png": {
+    "mtime": 1791082618.3003287,
+    "seen": 1791728887.4033759,
+    "ast_hash": "959e42ef4ade2ded3d019e0ca74f4e91",
+    "semantic_hash": "959e42ef4ade2ded3d019e0ca74f4e91"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSerif-latin-light.png": {
+    "mtime": 1791082618.313329,
+    "seen": 1791728887.403377,
+    "ast_hash": "6333d1adb490951c7a50390e710e4d5e",
+    "semantic_hash": "6333d1adb490951c7a50390e710e4d5e"
+  },
+  "crates/core/tests/fixtures/fonts/NotoSerif-oblique-latin-dark.png": {
+    "mtime": 1791082618.306329,
+    "seen": 1791728887.4033778,
+    "ast_hash": "88b87e209c9794b74bee1c7ab2727c6e",
+    "semantic_hash": "88b87e209c9794b74bee1c7ab2727c6e"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSans-cyr-dark.png": {
+    "mtime": 1791082618.2233284,
+    "seen": 1791728887.4033787,
+    "ast_hash": "52c6a54f8e92d092c0991c388f565d36",
+    "semantic_hash": "52c6a54f8e92d092c0991c388f565d36"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSans-latin-dark.png": {
+    "mtime": 1791082618.2083282,
+    "seen": 1791728887.4033794,
+    "ast_hash": "c3bf95ee9c8041ff09a1e9e0a337a81b",
+    "semantic_hash": "c3bf95ee9c8041ff09a1e9e0a337a81b"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSans-latin-light.png": {
+    "mtime": 1791082618.2183282,
+    "seen": 1791728887.4033802,
+    "ast_hash": "4f79b27f713cdfee31e5a23a5ffb3e03",
+    "semantic_hash": "4f79b27f713cdfee31e5a23a5ffb3e03"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSans-light-cyr-dark.png": {
+    "mtime": 1791082619.1643355,
+    "seen": 1791728887.403381,
+    "ast_hash": "e9fab3d60b10fa3207d21d058281a350",
+    "semantic_hash": "e9fab3d60b10fa3207d21d058281a350"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSans-light-latin-dark.png": {
+    "mtime": 1791082619.1453352,
+    "seen": 1791728887.403382,
+    "ast_hash": "06ffa2dc742959133996284d82422226",
+    "semantic_hash": "06ffa2dc742959133996284d82422226"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSans-light-latin-light.png": {
+    "mtime": 1791082619.1583354,
+    "seen": 1791728887.403383,
+    "ast_hash": "faf765e736020f76167b4f8298c642ef",
+    "semantic_hash": "faf765e736020f76167b4f8298c642ef"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSans-light-oblique-latin-dark.png": {
+    "mtime": 1791082619.1523354,
+    "seen": 1791728887.4033837,
+    "ast_hash": "db3990787df0833fb3de1119e7259714",
+    "semantic_hash": "db3990787df0833fb3de1119e7259714"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSans-oblique-latin-dark.png": {
+    "mtime": 1791082618.2133281,
+    "seen": 1791728887.4033852,
+    "ast_hash": "d77b564a16cb2596e5d0697f5e524a8a",
+    "semantic_hash": "d77b564a16cb2596e5d0697f5e524a8a"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSansCondensed-cyr-dark.png": {
+    "mtime": 1791082619.0673347,
+    "seen": 1791728887.4033859,
+    "ast_hash": "b34754dd3a37e85fd28d7e8a5fae01d7",
+    "semantic_hash": "b34754dd3a37e85fd28d7e8a5fae01d7"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSansCondensed-latin-dark.png": {
+    "mtime": 1791082619.0493345,
+    "seen": 1791728887.4033866,
+    "ast_hash": "0f83d80ea471d4d6c2cbd833bcfca368",
+    "semantic_hash": "0f83d80ea471d4d6c2cbd833bcfca368"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSansCondensed-latin-light.png": {
+    "mtime": 1791082619.0613346,
+    "seen": 1791728887.403387,
+    "ast_hash": "b779973cceadbeb36c03e34125746bc1",
+    "semantic_hash": "b779973cceadbeb36c03e34125746bc1"
+  },
+  "crates/core/tests/fixtures/fonts/OpenSansCondensed-oblique-latin-dark.png": {
+    "mtime": 1791082619.0553346,
+    "seen": 1791728887.4033883,
+    "ast_hash": "baa049745cb929a2604be153303cbbab",
+    "semantic_hash": "baa049745cb929a2604be153303cbbab"
+  },
+  "crates/core/tests/fixtures/fonts/PTSerif-bold-cyr-dark.png": {
+    "mtime": 1791082618.4963303,
+    "seen": 1791728887.403389,
+    "ast_hash": "90f82fa8f0538cfa5ace1c433f35f383",
+    "semantic_hash": "90f82fa8f0538cfa5ace1c433f35f383"
+  },
+  "crates/core/tests/fixtures/fonts/PTSerif-bold-latin-dark.png": {
+    "mtime": 1791082618.4783301,
+    "seen": 1791728887.4033897,
+    "ast_hash": "bfd9e0769f07b315c1f1c6049127323e",
+    "semantic_hash": "bfd9e0769f07b315c1f1c6049127323e"
+  },
+  "crates/core/tests/fixtures/fonts/PTSerif-bold-latin-light.png": {
+    "mtime": 1791082618.4903302,
+    "seen": 1791728887.4033904,
+    "ast_hash": "9493588604bb1c2b5c2782f477be03b6",
+    "semantic_hash": "9493588604bb1c2b5c2782f477be03b6"
+  },
+  "crates/core/tests/fixtures/fonts/PTSerif-bold-oblique-latin-dark.png": {
+    "mtime": 1791082618.4843302,
+    "seen": 1791728887.4033916,
+    "ast_hash": "9fd7717cf959aebddba2595f7cf2bd09",
+    "semantic_hash": "9fd7717cf959aebddba2595f7cf2bd09"
+  },
+  "crates/core/tests/fixtures/fonts/PTSerif-cyr-dark.png": {
+    "mtime": 1791082618.4733303,
+    "seen": 1791728887.4033928,
+    "ast_hash": "da5d0d041488f8f9ea53f3c3f12eb1c6",
+    "semantic_hash": "da5d0d041488f8f9ea53f3c3f12eb1c6"
+  },
+  "crates/core/tests/fixtures/fonts/PTSerif-latin-dark.png": {
+    "mtime": 1791082618.45633,
+    "seen": 1791728887.4033935,
+    "ast_hash": "f06ed3ca2a279197c2ea944e14aa95a1",
+    "semantic_hash": "f06ed3ca2a279197c2ea944e14aa95a1"
+  },
+  "crates/core/tests/fixtures/fonts/PTSerif-latin-light.png": {
+    "mtime": 1791082618.4673302,
+    "seen": 1791728887.4033942,
+    "ast_hash": "a2234899775633d60d9ad41ae098ba12",
+    "semantic_hash": "a2234899775633d60d9ad41ae098ba12"
+  },
+  "crates/core/tests/fixtures/fonts/PTSerif-oblique-latin-dark.png": {
+    "mtime": 1791082618.46233,
+    "seen": 1791728887.4033952,
+    "ast_hash": "34799b2f9f160d41359fac226c669c5a",
+    "semantic_hash": "34799b2f9f160d41359fac226c669c5a"
+  },
+  "crates/core/tests/fixtures/fonts/Roboto-bold-cyr-dark.png": {
+    "mtime": 1791082618.1373277,
+    "seen": 1791728887.403396,
+    "ast_hash": "58e2a0de326194920b733596863b6f16",
+    "semantic_hash": "58e2a0de326194920b733596863b6f16"
+  },
+  "crates/core/tests/fixtures/fonts/Roboto-bold-latin-dark.png": {
+    "mtime": 1791082618.1203275,
+    "seen": 1791728887.4033966,
+    "ast_hash": "9dec115aa54e438466e17c0d8d540ac0",
+    "semantic_hash": "9dec115aa54e438466e17c0d8d540ac0"
+  },
+  "crates/core/tests/fixtures/fonts/Roboto-bold-latin-light.png": {
+    "mtime": 1791082618.1313276,
+    "seen": 1791728887.4033973,
+    "ast_hash": "ae2abfb4eb04c99b752894a3d7c4a98d",
+    "semantic_hash": "ae2abfb4eb04c99b752894a3d7c4a98d"
+  },
+  "crates/core/tests/fixtures/fonts/Roboto-bold-oblique-latin-dark.png": {
+    "mtime": 1791082618.1253276,
+    "seen": 1791728887.403398,
+    "ast_hash": "f76976aa8865721ed58c1d3e446d3c4c",
+    "semantic_hash": "f76976aa8865721ed58c1d3e446d3c4c"
+  },
+  "crates/core/tests/fixtures/fonts/Roboto-cyr-dark.png": {
+    "mtime": 1791082618.1153274,
+    "seen": 1791728887.403399,
+    "ast_hash": "ae110bf05466beaa9208fe2b3adc782f",
+    "semantic_hash": "ae110bf05466beaa9208fe2b3adc782f"
+  },
+  "crates/core/tests/fixtures/fonts/Roboto-latin-dark.png": {
+    "mtime": 1791082618.0993273,
+    "seen": 1791728887.4034002,
+    "ast_hash": "d3428977a954beb64cbd160ca98bd26e",
+    "semantic_hash": "d3428977a954beb64cbd160ca98bd26e"
+  },
+  "crates/core/tests/fixtures/fonts/Roboto-latin-light.png": {
+    "mtime": 1791082618.1103275,
+    "seen": 1791728887.403401,
+    "ast_hash": "6394e0e11fed5abe68d6bb4df7a43413",
+    "semantic_hash": "6394e0e11fed5abe68d6bb4df7a43413"
+  },
+  "crates/core/tests/fixtures/fonts/Roboto-oblique-latin-dark.png": {
+    "mtime": 1791082618.1043274,
+    "seen": 1791728887.4034016,
+    "ast_hash": "c8b26b1767b4d4500c60af93746fa293",
+    "semantic_hash": "c8b26b1767b4d4500c60af93746fa293"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoCondensed-cyr-dark.png": {
+    "mtime": 1791082618.6573315,
+    "seen": 1791728887.4034026,
+    "ast_hash": "e6d1f03d37a0d8d36b1d2a30926da67f",
+    "semantic_hash": "e6d1f03d37a0d8d36b1d2a30926da67f"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoCondensed-latin-dark.png": {
+    "mtime": 1791082618.6413314,
+    "seen": 1791728887.4034033,
+    "ast_hash": "f29be11feffa4a488562a5e219c8a8df",
+    "semantic_hash": "f29be11feffa4a488562a5e219c8a8df"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoCondensed-latin-light.png": {
+    "mtime": 1791082618.6523316,
+    "seen": 1791728887.403404,
+    "ast_hash": "a00416d9abaa6f3126652c1546823d83",
+    "semantic_hash": "a00416d9abaa6f3126652c1546823d83"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoCondensed-oblique-latin-dark.png": {
+    "mtime": 1791082618.6473315,
+    "seen": 1791728887.403405,
+    "ast_hash": "b8e0e34d8c4412b51e40735da76042fd",
+    "semantic_hash": "b8e0e34d8c4412b51e40735da76042fd"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoSlab-bold-cyr-dark.png": {
+    "mtime": 1791082618.5443306,
+    "seen": 1791728887.403406,
+    "ast_hash": "8360cdaa1a5741183ab630a3cb6cfd01",
+    "semantic_hash": "8360cdaa1a5741183ab630a3cb6cfd01"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoSlab-bold-latin-dark.png": {
+    "mtime": 1791082618.5253305,
+    "seen": 1791728887.4034066,
+    "ast_hash": "38cfffb3b410999a7a479196560b5ccd",
+    "semantic_hash": "38cfffb3b410999a7a479196560b5ccd"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoSlab-bold-latin-light.png": {
+    "mtime": 1791082618.5383306,
+    "seen": 1791728887.4034073,
+    "ast_hash": "4a24481544556905c8cb9e735675c17b",
+    "semantic_hash": "4a24481544556905c8cb9e735675c17b"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoSlab-bold-oblique-latin-dark.png": {
+    "mtime": 1791082618.5323305,
+    "seen": 1791728887.403408,
+    "ast_hash": "89cb5e3a92d8d007c6a5a4a31f0af552",
+    "semantic_hash": "89cb5e3a92d8d007c6a5a4a31f0af552"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoSlab-cyr-dark.png": {
+    "mtime": 1791082618.5193305,
+    "seen": 1791728887.403409,
+    "ast_hash": "18babeeb4b9de1d42b785700f411dd0c",
+    "semantic_hash": "18babeeb4b9de1d42b785700f411dd0c"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoSlab-latin-dark.png": {
+    "mtime": 1791082618.5023303,
+    "seen": 1791728887.4034097,
+    "ast_hash": "d8a7d40e4cab918e6e86b22bcd3c2277",
+    "semantic_hash": "d8a7d40e4cab918e6e86b22bcd3c2277"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoSlab-latin-light.png": {
+    "mtime": 1791082618.5133305,
+    "seen": 1791728887.4034104,
+    "ast_hash": "c3338ee1199249461c8cd64290ee5828",
+    "semantic_hash": "c3338ee1199249461c8cd64290ee5828"
+  },
+  "crates/core/tests/fixtures/fonts/RobotoSlab-oblique-latin-dark.png": {
+    "mtime": 1791082618.5073304,
+    "seen": 1791728887.4034111,
+    "ast_hash": "03bb461d4cc62ee55ba8d339d08a0906",
+    "semantic_hash": "03bb461d4cc62ee55ba8d339d08a0906"
+  },
+  "crates/core/tests/fixtures/fonts/SourceCodePro-cyr-dark.png": {
+    "mtime": 1791082618.6363313,
+    "seen": 1791728887.4034119,
+    "ast_hash": "4a1cf053755e1ded524e01b808129453",
+    "semantic_hash": "4a1cf053755e1ded524e01b808129453"
+  },
+  "crates/core/tests/fixtures/fonts/SourceCodePro-latin-dark.png": {
+    "mtime": 1791082618.6183312,
+    "seen": 1791728887.4034128,
+    "ast_hash": "5093fb94af41d3c6f518c3b784a686c9",
+    "semantic_hash": "5093fb94af41d3c6f518c3b784a686c9"
+  },
+  "crates/core/tests/fixtures/fonts/SourceCodePro-latin-light.png": {
+    "mtime": 1791082618.6313314,
+    "seen": 1791728887.4034135,
+    "ast_hash": "494eb5fb331c075e9c83dd70e034bd10",
+    "semantic_hash": "494eb5fb331c075e9c83dd70e034bd10"
+  },
+  "crates/core/tests/fixtures/fonts/SourceCodePro-oblique-latin-dark.png": {
+    "mtime": 1791082618.6253314,
+    "seen": 1791728887.4034142,
+    "ast_hash": "c10ca0e411a9e179efdbff3e43886eb0",
+    "semantic_hash": "c10ca0e411a9e179efdbff3e43886eb0"
+  },
+  "crates/core/tests/fixtures/fonts/SourceSerif4-cyr-dark.png": {
+    "mtime": 1791082618.3753295,
+    "seen": 1791728887.403415,
+    "ast_hash": "f19e9f9747fa68b501b69864eecc2973",
+    "semantic_hash": "f19e9f9747fa68b501b69864eecc2973"
+  },
+  "crates/core/tests/fixtures/fonts/SourceSerif4-latin-dark.png": {
+    "mtime": 1791082618.3553293,
+    "seen": 1791728887.4034154,
+    "ast_hash": "6d94102c839d0beb978f421acc574a50",
+    "semantic_hash": "6d94102c839d0beb978f421acc574a50"
+  },
+  "crates/core/tests/fixtures/fonts/SourceSerif4-latin-light.png": {
+    "mtime": 1791082618.3683293,
+    "seen": 1791728887.4034164,
+    "ast_hash": "c2818ead46e34ae7f06caf4fd7159401",
+    "semantic_hash": "c2818ead46e34ae7f06caf4fd7159401"
+  },
+  "crates/core/tests/fixtures/fonts/SourceSerif4-oblique-latin-dark.png": {
+    "mtime": 1791082618.3623292,
+    "seen": 1791728887.4034173,
+    "ast_hash": "c6af169f56e8556edac3396dfb7da498",
+    "semantic_hash": "c6af169f56e8556edac3396dfb7da498"
+  },
+  "crates/core/tests/fixtures/fonts/Vera-latin-dark.png": {
+    "mtime": 1791082618.8333328,
+    "seen": 1791728887.403418,
+    "ast_hash": "b6a67b62002571e56a34bda6779286e3",
+    "semantic_hash": "b6a67b62002571e56a34bda6779286e3"
+  },
+  "crates/core/tests/fixtures/fonts/Vera-latin-light.png": {
+    "mtime": 1791082618.843333,
+    "seen": 1791728887.4034188,
+    "ast_hash": "9b7990355155d03f4f1a26f0bef005ea",
+    "semantic_hash": "9b7990355155d03f4f1a26f0bef005ea"
+  },
+  "crates/core/tests/fixtures/fonts/Vera-oblique-latin-dark.png": {
+    "mtime": 1791082618.838333,
+    "seen": 1791728887.4034197,
+    "ast_hash": "b0e3590aa82c8588b4fff125d45fd5a1",
+    "semantic_hash": "b0e3590aa82c8588b4fff125d45fd5a1"
+  },
+  "crates/core/tests/fixtures/fonts/VeraMono-latin-dark.png": {
+    "mtime": 1791082618.8643332,
+    "seen": 1791728887.4034204,
+    "ast_hash": "7989c465d75f66bdf7da6a644c8c4daf",
+    "semantic_hash": "7989c465d75f66bdf7da6a644c8c4daf"
+  },
+  "crates/core/tests/fixtures/fonts/VeraMono-latin-light.png": {
+    "mtime": 1791082618.8743331,
+    "seen": 1791728887.4034212,
+    "ast_hash": "eee62c7d678cc87bb0aef9aa9b91ac2c",
+    "semantic_hash": "eee62c7d678cc87bb0aef9aa9b91ac2c"
+  },
+  "crates/core/tests/fixtures/fonts/VeraMono-oblique-latin-dark.png": {
+    "mtime": 1791082618.8693333,
+    "seen": 1791728887.4034219,
+    "ast_hash": "d38a2eb023a4ce80c838ce7ca20b70c0",
+    "semantic_hash": "d38a2eb023a4ce80c838ce7ca20b70c0"
+  },
+  "crates/core/tests/fixtures/fonts/VeraSerif-latin-dark.png": {
+    "mtime": 1791082618.848333,
+    "seen": 1791728887.403423,
+    "ast_hash": "551c9fba9d774e9e32062f3e00975a00",
+    "semantic_hash": "551c9fba9d774e9e32062f3e00975a00"
+  },
+  "crates/core/tests/fixtures/fonts/VeraSerif-latin-light.png": {
+    "mtime": 1791082618.858333,
+    "seen": 1791728887.4034238,
+    "ast_hash": "9fdbf34c2e8b14fa3e6c7b9cfce2f5e1",
+    "semantic_hash": "9fdbf34c2e8b14fa3e6c7b9cfce2f5e1"
+  },
+  "crates/core/tests/fixtures/fonts/VeraSerif-oblique-latin-dark.png": {
+    "mtime": 1791082618.853333,
+    "seen": 1791728887.4034245,
+    "ast_hash": "55627845e4271250ba82d2e8a2434a89",
+    "semantic_hash": "55627845e4271250ba82d2e8a2434a89"
+  },
+  "crates/core/tests/fixtures/scenes/dialogue.png": {
+    "mtime": 1791083547.2358656,
+    "seen": 1791728887.4034252,
+    "ast_hash": "30303ca1ca9a39c92291d6deb96b07af",
+    "semantic_hash": "30303ca1ca9a39c92291d6deb96b07af"
+  },
+  "crates/core/tests/fixtures/scenes/menu.png": {
+    "mtime": 1791083547.7408826,
+    "seen": 1791728887.403426,
+    "ast_hash": "6f343fde1f7bb6da4201b30f2963ccab",
+    "semantic_hash": "6f343fde1f7bb6da4201b30f2963ccab"
+  },
+  "crates/core/tests/fixtures/scenes/menu_selected_quit.png": {
+    "mtime": 1791083547.9578898,
+    "seen": 1791728887.403427,
+    "ast_hash": "0f4d1437289f68801184d06a929dfa1e",
+    "semantic_hash": "0f4d1437289f68801184d06a929dfa1e"
+  },
+  "crates/core/tests/fixtures/scenes/subtitles.png": {
+    "mtime": 1791083547.519875,
+    "seen": 1791728887.4034276,
+    "ast_hash": "bf2df6f800a1097aee2c768c46a08ec8",
+    "semantic_hash": "bf2df6f800a1097aee2c768c46a08ec8"
+  },
+  "docs/screenshots/main.png": {
+    "mtime": 1791106666.5936997,
+    "seen": 1791728887.403428,
+    "ast_hash": "a50a5d0a31f5bd4d06e9ed6e21b1fb67",
+    "semantic_hash": "a50a5d0a31f5bd4d06e9ed6e21b1fb67"
+  },
+  "docs/screenshots/settings.png": {
+    "mtime": 1791106798.3786342,
+    "seen": 1791728887.4034288,
+    "ast_hash": "adeb26f1532cb840f4ed008c20785116",
+    "semantic_hash": "adeb26f1532cb840f4ed008c20785116"
+  },
+  "crates/app/src/model_controller.rs": {
+    "mtime": 1791563672.6058872,
+    "seen": 1791728887.4017189,
+    "ast_hash": "21d83610bc99acae3e33b68c18a3eb74",
+    "semantic_hash": "21d83610bc99acae3e33b68c18a3eb74"
+  },
+  "crates/core/src/ocr/ocr_models_catalog.json": {
+    "mtime": 1791563409.4184716,
+    "seen": 1791728887.4027987,
+    "ast_hash": "d16d8f02872d5e3a7b9d23eeb270206c",
+    "semantic_hash": "d16d8f02872d5e3a7b9d23eeb270206c"
+  },
+  "crates/core/src/ocr/rapid.rs": {
+    "mtime": 1791563562.9557173,
+    "seen": 1791728887.4029725,
+    "ast_hash": "0e9b6a65dcf0d0164748bacc58c119f7",
+    "semantic_hash": "0e9b6a65dcf0d0164748bacc58c119f7"
+  },
+  "crates/core/src/ocr/rapid_models.rs": {
+    "mtime": 1791563672.6053212,
+    "seen": 1791728887.4029737,
+    "ast_hash": "4bf0de7135c685281648a32cc335e360",
+    "semantic_hash": "4bf0de7135c685281648a32cc335e360"
+  },
+  "crates/core/tests/bergamot_native.rs": {
+    "mtime": 1791490400.7898178,
+    "seen": 1791728887.403053,
+    "ast_hash": "870f3180b0ab83b278e003b210d739e8",
+    "semantic_hash": "870f3180b0ab83b278e003b210d739e8"
+  },
+  "crates/core/tests/rapid_native.rs": {
+    "mtime": 1791564579.706307,
+    "seen": 1791728887.403144,
+    "ast_hash": "3363147e7dfaba356d122fa0839e0721",
+    "semantic_hash": "3363147e7dfaba356d122fa0839e0721"
+  },
+  "packaging/build-bergamot.sh": {
+    "mtime": 1791490488.7352607,
+    "seen": 1791728887.4031458,
+    "ast_hash": "1a9722b31a46da1fb8c693bb8052ecf4",
+    "semantic_hash": "1a9722b31a46da1fb8c693bb8052ecf4"
+  },
+  "packaging/test-package.sh": {
+    "mtime": 1791494193.9956443,
+    "seen": 1791728887.4031513,
+    "ast_hash": "c43659c723bad3fedbf16b3067042773",
+    "semantic_hash": "c43659c723bad3fedbf16b3067042773"
+  },
+  "docs/RapidOCR.md": {
+    "mtime": 1791565522.8682406,
+    "seen": 1791728887.40325,
+    "ast_hash": "bfdcd3df53716d82839438727af9ae2e",
+    "semantic_hash": "bfdcd3df53716d82839438727af9ae2e"
+  },
+  ".claude/settings.local.json": {
+    "mtime": 1791658547.3951986,
+    "seen": 1791728887.4015756,
+    "ast_hash": "6961e32feb58c65187ac6b0464227f21",
+    "semantic_hash": "6961e32feb58c65187ac6b0464227f21"
+  },
+  "crates/app/src/ui_settings.rs": {
+    "mtime": 1791617831.4829354,
+    "seen": 1791728887.4017594,
+    "ast_hash": "d22a12cc68d249bc485f65ca23242d63",
+    "semantic_hash": "d22a12cc68d249bc485f65ca23242d63"
+  },
+  "crates/core/examples/ocr_model.rs": {
+    "mtime": 1791564499.2169108,
+    "seen": 1791728887.4018288,
+    "ast_hash": "b98cec9a06c59ee57ab1c451aec8d18c",
+    "semantic_hash": "b98cec9a06c59ee57ab1c451aec8d18c"
+  },
+  "crates/core/examples/render_fixtures.rs": {
+    "mtime": 1791565603.2731626,
+    "seen": 1791728887.4019477,
+    "ast_hash": "e8064ecb2c5f777cc7cb580065537869",
+    "semantic_hash": "e8064ecb2c5f777cc7cb580065537869"
+  },
+  "crates/core/examples/update_catalogs.rs": {
+    "mtime": 1791563398.7712483,
+    "seen": 1791728887.4019861,
+    "ast_hash": "34b9a338e71321bb3104e7f82f3928b0",
+    "semantic_hash": "34b9a338e71321bb3104e7f82f3928b0"
+  },
+  "crates/core/src/ocr/meiki.rs": {
+    "mtime": 1791563707.712185,
+    "seen": 1791728887.4027965,
+    "ast_hash": "78c7d677157ac0230d645aa3c00bf915",
+    "semantic_hash": "78c7d677157ac0230d645aa3c00bf915"
+  },
+  "crates/core/tests/bundled_fonts.rs": {
+    "mtime": 1791620945.1916902,
+    "seen": 1791728887.403054,
+    "ast_hash": "9757b109da319899c011fdb52f90a984",
+    "semantic_hash": "9757b109da319899c011fdb52f90a984"
+  },
+  "crates/core/tests/common/mod.rs": {
+    "mtime": 1791565603.268075,
+    "seen": 1791728887.403055,
+    "ast_hash": "fd188a5bb25d96e2c0e660434adaba3e",
+    "semantic_hash": "fd188a5bb25d96e2c0e660434adaba3e"
+  },
+  "crates/core/tests/meiki_native.rs": {
+    "mtime": 1791565603.2735069,
+    "seen": 1791728887.4031408,
+    "ast_hash": "b38426db7cf882295653d22ca319a87a",
+    "semantic_hash": "b38426db7cf882295653d22ca319a87a"
+  },
+  "packaging/check-qt.sh": {
+    "mtime": 1791565306.0173106,
+    "seen": 1791728887.4031482,
+    "ast_hash": "2b0fb7b81f77b00533e58fb142d7bd4b",
+    "semantic_hash": "2b0fb7b81f77b00533e58fb142d7bd4b"
+  },
+  "packaging/kizurium-fonts.json": {
+    "mtime": 1791620777.6049778,
+    "seen": 1791728887.4031494,
+    "ast_hash": "0667bfd1a84ec0ccef87a3f96e827180",
+    "semantic_hash": "0667bfd1a84ec0ccef87a3f96e827180"
+  },
+  "packaging/test-ui.sh": {
+    "mtime": 1791571457.8407702,
+    "seen": 1791728887.4032097,
+    "ast_hash": "1b0d3b2a433a44c3504fb1212fb942db",
+    "semantic_hash": "1b0d3b2a433a44c3504fb1212fb942db"
+  },
+  "README.ru.md": {
+    "mtime": 1791732605.860287,
+    "seen": 1791738867.2567985,
+    "ast_hash": "cad4fffdb65aef11f5126513b22f1d44",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/icons.md": {
+    "mtime": 1791546866.0,
+    "seen": 1791728887.4032433,
+    "ast_hash": "071e0176e22d5f20eacc41d37ccb077c",
+    "semantic_hash": "071e0176e22d5f20eacc41d37ccb077c"
+  },
+  "docs/MeikiOCR.md": {
+    "mtime": 1791565522.8686793,
+    "seen": 1791728887.4032478,
+    "ast_hash": "bfcc3b9badcb654a1b786e2496e7ce0e",
+    "semantic_hash": "bfcc3b9badcb654a1b786e2496e7ce0e"
+  },
+  "docs/UI-MODERNIZATION.md": {
+    "mtime": 1791617831.4839354,
+    "seen": 1791728887.4032507,
+    "ast_hash": "e5e7a7c6fe7dc89a5a0733259a77bb56",
+    "semantic_hash": "e5e7a7c6fe7dc89a5a0733259a77bb56"
+  },
+  "crates/app/assets/ocr-preview.svg": {
+    "mtime": 1791546866.0,
+    "seen": 1791728887.4032528,
+    "ast_hash": "fe83757161e75b9af0801befcc14c9b2",
+    "semantic_hash": "fe83757161e75b9af0801befcc14c9b2"
+  },
+  "crates/app/assets/preview.png": {
+    "mtime": 1791546866.0,
+    "seen": 1791728887.4032536,
+    "ast_hash": "04ad4244e6fc00b1791105ccd4efc93c",
+    "semantic_hash": "04ad4244e6fc00b1791105ccd4efc93c"
+  },
+  "crates/app/assets/select-capture-area.svg": {
+    "mtime": 1791546866.0,
+    "seen": 1791728887.4032545,
+    "ast_hash": "400990607abc9563e0f077b1908f24c3",
+    "semantic_hash": "400990607abc9563e0f077b1908f24c3"
+  },
+  "crates/app/assets/select-window.svg": {
+    "mtime": 1791546866.0,
+    "seen": 1791728887.403255,
+    "ast_hash": "ad7be73bf99d509dc9f304ceea0ae5a5",
+    "semantic_hash": "ad7be73bf99d509dc9f304ceea0ae5a5"
+  },
+  "crates/app/assets/settings.svg": {
+    "mtime": 1791546866.0,
+    "seen": 1791728887.4032557,
+    "ast_hash": "bcbeadad62fb3f5a79acadbc0678fbe8",
+    "semantic_hash": "bcbeadad62fb3f5a79acadbc0678fbe8"
+  },
+  "crates/app/assets/start-translation.svg": {
+    "mtime": 1791546866.0,
+    "seen": 1791728887.4032567,
+    "ast_hash": "90a6ca0e46ce59d8b11cd947ab955387",
+    "semantic_hash": "90a6ca0e46ce59d8b11cd947ab955387"
+  },
+  "crates/app/assets/translation-history.svg": {
+    "mtime": 1791546866.0,
+    "seen": 1791728887.4032574,
+    "ast_hash": "2558612d49a9cc1d802f97bac0ac0bea",
+    "semantic_hash": "2558612d49a9cc1d802f97bac0ac0bea"
+  },
+  "crates/app/qml/InplaceGeometry.js": {
+    "mtime": 1791730733.3074868,
+    "seen": 1791738867.2566707,
+    "ast_hash": "206a3461d9f2e117a5897323be86d22d",
+    "semantic_hash": ""
+  },
+  "crates/app/src/text_measure.h": {
+    "mtime": 1791733120.3716655,
+    "seen": 1791738867.2566884,
+    "ast_hash": "4268b604dbf94cf17ce4d299fcf15fe9",
+    "semantic_hash": ""
+  },
+  "crates/core/src/layout/ocr_geometry.rs": {
+    "mtime": 1791738615.2775745,
+    "seen": 1791738867.2567194,
+    "ast_hash": "57fb8867242db4331760e895c84a11d2",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/CrossxMars.exe-129055--live-rapidocr.json": {
+    "mtime": 1791738651.6573455,
+    "seen": 1791738867.2567549,
+    "ast_hash": "c0e9740e0db204a2588b7a1c6cddf67c",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-1.json": {
+    "mtime": 1791738743.3905709,
+    "seen": 1791738867.256756,
+    "ast_hash": "ecf5f89fcd789b6955e309d592d3ae1c",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-10.json": {
+    "mtime": 1791738755.9091995,
+    "seen": 1791738867.2567568,
+    "ast_hash": "4a6e85d0933d082dc7a2b5c70d7d374c",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-11.json": {
+    "mtime": 1791738765.1119123,
+    "seen": 1791738867.2567573,
+    "ast_hash": "b39d68af077e4670eee52e070771c9c5",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-12.json": {
+    "mtime": 1791738772.3186228,
+    "seen": 1791738867.2567627,
+    "ast_hash": "deedd4748cdf3307041be7921123134a",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--hard-breaks.json": {
+    "mtime": 1791735905.3226748,
+    "seen": 1791738867.2567635,
+    "ast_hash": "bf0b98b5de90f91ea7cc320260df1dd8",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--long-dialogue.json": {
+    "mtime": 1791735890.766289,
+    "seen": 1791738867.256764,
+    "ast_hash": "4d3ef1d42dfb9dcff2d60badbc853fa2",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--long-word.json": {
+    "mtime": 1791735897.64557,
+    "seen": 1791738867.2567647,
+    "ast_hash": "08655fc8dec8ba92e5e2e2eebd3ac6a3",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--mixed-shaping.json": {
+    "mtime": 1791735912.12749,
+    "seen": 1791738867.2567654,
+    "ast_hash": "f1a5a33001c7ae9316dd078e19fd4c64",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--recognized-blocks.json": {
+    "mtime": 1791738637.1375349,
+    "seen": 1791738867.2567658,
+    "ast_hash": "628a1d4a2d503348e78bc2d94119702a",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13.json": {
+    "mtime": 1791738778.9474008,
+    "seen": 1791738867.256767,
+    "ast_hash": "0ec61767ec6a186885d6aab4a17a92f5",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-14.json": {
+    "mtime": 1791738783.1822124,
+    "seen": 1791738867.2567677,
+    "ast_hash": "38007e157a2254233b025f17108fd5c1",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-15.json": {
+    "mtime": 1791738792.5807436,
+    "seen": 1791738867.2567685,
+    "ast_hash": "2eb66df63db6b2cc9059707ae3801fb9",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-2.json": {
+    "mtime": 1791738804.5519085,
+    "seen": 1791738867.2567692,
+    "ast_hash": "7c84a8170721ffdc623a6e97b21034f6",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-3.json": {
+    "mtime": 1791738814.7510436,
+    "seen": 1791738867.2567701,
+    "ast_hash": "5187f4430e1f33e6f3bcc68ab4ffd740",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-4.json": {
+    "mtime": 1791738828.980425,
+    "seen": 1791738867.2567706,
+    "ast_hash": "bb8d541f4d00c1f8136242222ac1f209",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-5.json": {
+    "mtime": 1791738838.8622537,
+    "seen": 1791738867.2567713,
+    "ast_hash": "2b2b2ecc197c6ef55b2857984e6a1bb6",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-6.json": {
+    "mtime": 1791738847.01227,
+    "seen": 1791738867.2567718,
+    "ast_hash": "2107a64129f7ee29581a0b8b3adf63ab",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-7.json": {
+    "mtime": 1791738862.073255,
+    "seen": 1791738867.2567725,
+    "ast_hash": "eae5bc192a8df36f28b66502d44ac1a1",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-8.json": {
+    "mtime": 1791735863.5946338,
+    "seen": 1791738867.2567732,
+    "ast_hash": "5ad76dec7ccd67bd4bfb71986300e2e7",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-9.json": {
+    "mtime": 1791735871.2185385,
+    "seen": 1791738867.256774,
+    "ast_hash": "d4d93f487c30fd4c92f04c073db3e472",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-ru.json": {
+    "mtime": 1791735881.59541,
+    "seen": 1791738867.2567744,
+    "ast_hash": "aaa3173a65e1241b9cf10721ec07fa86",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/engine.exe-100656--live-rapidocr.json": {
+    "mtime": 1791738641.8601727,
+    "seen": 1791738867.2567756,
+    "ast_hash": "8a8af3f3a33cf8f6ff14a3cb4cd82eae",
+    "semantic_hash": ""
+  },
+  "tests/inplace/fixtures/CrossxMars.exe-129055-rapidocr.json": {
+    "mtime": 1791738502.6586857,
+    "seen": 1791738867.2567863,
+    "ast_hash": "fafa2a1c80105bf13a25769cc7e38b47",
+    "semantic_hash": ""
+  },
+  "tests/inplace/fixtures/engine.exe-100656-rapidocr.json": {
+    "mtime": 1791738502.6567435,
+    "seen": 1791738867.2567875,
+    "ast_hash": "50572868ec1605c19b521bc6b5e6597b",
+    "semantic_hash": ""
+  },
+  "tests/inplace/fixtures/translations.json": {
+    "mtime": 1791738377.7812848,
+    "seen": 1791738867.2567883,
+    "ast_hash": "d06f5da047cf5bd728181bb41c5d3ae3",
+    "semantic_hash": ""
+  },
+  "tests/inplace/fixtures/windows.json": {
+    "mtime": 1791738377.7811992,
+    "seen": 1791738867.256789,
+    "ast_hash": "8575426f9b437abc714d41f7df133354",
+    "semantic_hash": ""
+  },
+  "tests/inplace/python/benchmark.py": {
+    "mtime": 1791734920.7306275,
+    "seen": 1791738867.2567897,
+    "ast_hash": "1d764167e7e1e5de65ffca8c7d095bb1",
+    "semantic_hash": ""
+  },
+  "tests/inplace/python/live_capture.py": {
+    "mtime": 1791734298.9310136,
+    "seen": 1791738867.2567906,
+    "ast_hash": "8172c09abf4c185b61cac951e951eaf2",
+    "semantic_hash": ""
+  },
+  "tests/inplace/python/test_inplace_screenshots.py": {
+    "mtime": 1791738502.5640361,
+    "seen": 1791738867.256791,
+    "ast_hash": "5b5b4753ea716b56595f73f1262b4ab7",
+    "semantic_hash": ""
+  },
+  "tests/inplace/qt/measure_server.cpp": {
+    "mtime": 1791733120.489668,
+    "seen": 1791738867.2567918,
+    "ast_hash": "c18a5be5c6ba1ddb7474095b8ec562a6",
+    "semantic_hash": ""
+  },
+  "tests/inplace/qt/text_measure.cpp": {
+    "mtime": 1791731475.9434686,
+    "seen": 1791738867.2567923,
+    "ast_hash": "4438d80626380b530ae8e0b48e903747",
+    "semantic_hash": ""
+  },
+  "tests/inplace/run.sh": {
+    "mtime": 1791733245.6677763,
+    "seen": 1791738867.256793,
+    "ast_hash": "27f011409b42928b1987a4aeba6ce3a8",
+    "semantic_hash": ""
+  },
+  "tests/inplace/rust/bench.rs": {
+    "mtime": 1791738427.3173397,
+    "seen": 1791738867.2567937,
+    "ast_hash": "38d166722f115ec185cfc0e75272a6b1",
+    "semantic_hash": ""
+  },
+  "tests/inplace/rust/ocr_ownership.rs": {
+    "mtime": 1791738698.681451,
+    "seen": 1791738867.2567952,
+    "ast_hash": "fad106e41f5a6b5411827a92fed367d0",
+    "semantic_hash": ""
+  },
+  "tests/inplace/rust/qt_measure.rs": {
+    "mtime": 1791738310.7987094,
+    "seen": 1791738867.2567956,
+    "ast_hash": "2a5b06321ad744778dfa8c954c2a5539",
+    "semantic_hash": ""
+  },
+  "tests/inplace/rust/regression.rs": {
+    "mtime": 1791735925.5574775,
+    "seen": 1791738867.2567964,
+    "ast_hash": "be887c81d76e53e762050856c0a6158e",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/AlumniSans-OFL.txt": {
+    "mtime": 1791620684.4885533,
+    "seen": 1791738867.2567992,
+    "ast_hash": "b6653d54f9aa30f11e306a735588370b",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Comfortaa-OFL.txt": {
+    "mtime": 1791620684.5476272,
+    "seen": 1791738867.2568,
+    "ast_hash": "bc95bc6670537d703a379961b30c2992",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Cuprum-OFL.txt": {
+    "mtime": 1791620684.5836763,
+    "seen": 1791738867.2568007,
+    "ast_hash": "49907feee298b37d0bd56a0cc9c335a4",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Exo2-OFL.txt": {
+    "mtime": 1791620684.6577988,
+    "seen": 1791738867.2568014,
+    "ast_hash": "50335297bda52874b9b87590056f8f27",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/GolosText-OFL.txt": {
+    "mtime": 1791620684.7139342,
+    "seen": 1791738867.2568018,
+    "ast_hash": "b7335fdd88031374822050236d22c569",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Michroma-OFL.txt": {
+    "mtime": 1791620684.7474346,
+    "seen": 1791738867.2568028,
+    "ast_hash": "8b5d5f76440de21c446dd220d2312a70",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Nunito-OFL.txt": {
+    "mtime": 1791620684.8205473,
+    "seen": 1791738867.2568045,
+    "ast_hash": "1be2e7edc99bc4a3d9d56d68c48b5f39",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Onest-OFL.txt": {
+    "mtime": 1791620684.875311,
+    "seen": 1791738867.2568054,
+    "ast_hash": "0aebf585b412226f05605d2ba7c6a39d",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Orbitron-OFL.txt": {
+    "mtime": 1791620684.9051642,
+    "seen": 1791738867.256806,
+    "ast_hash": "e34251b9de1b97f2079d201ea5f39c43",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Oswald-OFL.txt": {
+    "mtime": 1791620684.9624615,
+    "seen": 1791738867.2568066,
+    "ast_hash": "4f4f0cdd50df889344c9bb0d1234cf06",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/PTSerif-Italic-OFL.txt": {
+    "mtime": 1791620685.050107,
+    "seen": 1791738867.256807,
+    "ast_hash": "d675d5717a74605b74f6099ad5bfd259",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Play-Bold-OFL.txt": {
+    "mtime": 1791620685.1078088,
+    "seen": 1791738867.256808,
+    "ast_hash": "3c6bb84f87e043d2ac7745a1a6b890e8",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Play-Regular-OFL.txt": {
+    "mtime": 1791620685.1646218,
+    "seen": 1791738867.2568085,
+    "ast_hash": "3c6bb84f87e043d2ac7745a1a6b890e8",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/PressStart2P-OFL.txt": {
+    "mtime": 1791620685.208899,
+    "seen": 1791738867.2568092,
+    "ast_hash": "8351efe1a06eb0234aaa744d548f99f3",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Rajdhani-Bold-OFL.txt": {
+    "mtime": 1791620685.3066108,
+    "seen": 1791738867.25681,
+    "ast_hash": "782923b251732b19c3b97a2899969693",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Rajdhani-Regular-OFL.txt": {
+    "mtime": 1791620685.4024267,
+    "seen": 1791738867.2568104,
+    "ast_hash": "782923b251732b19c3b97a2899969693",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Rajdhani-SemiBold-OFL.txt": {
+    "mtime": 1791620685.498334,
+    "seen": 1791738867.2568114,
+    "ast_hash": "782923b251732b19c3b97a2899969693",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Rubik-OFL.txt": {
+    "mtime": 1791620685.5751734,
+    "seen": 1791738867.256812,
+    "ast_hash": "b9bfe37ce430a17f0f57a7134faff38f",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/RussoOne-OFL.txt": {
+    "mtime": 1791620685.6033237,
+    "seen": 1791738867.2568128,
+    "ast_hash": "328a6ada1f92b557269c6905933f80d3",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Tektur-OFL.txt": {
+    "mtime": 1791620685.6537802,
+    "seen": 1791738867.2568133,
+    "ast_hash": "b7ce9be8e780866d9003dd7b6177dfef",
+    "semantic_hash": ""
+  },
+  "crates/app/assets/fonts/Unbounded-OFL.txt": {
+    "mtime": 1791620685.8189495,
+    "seen": 1791738867.256814,
+    "ast_hash": "89dfa676d36475955318a4addbd9554b",
+    "semantic_hash": ""
+  },
+  "docs/INPLACE_PHASE_2_3.md": {
+    "mtime": 1791737905.4725108,
+    "seen": 1791738867.2568362,
+    "ast_hash": "b060cc5b705542dd81bf186f307cf8ee",
+    "semantic_hash": ""
+  },
+  "docs/INPLACE_REMAINING_TASKS.md": {
+    "mtime": 1791736122.2999904,
+    "seen": 1791738867.2568367,
+    "ast_hash": "46dbd8ef8f5327782d712eb57c0ddf95",
+    "semantic_hash": ""
+  },
+  "docs/INPLACE_VALIDATION.md": {
+    "mtime": 1791733815.2343109,
+    "seen": 1791738867.2568374,
+    "ast_hash": "363915119f4dec15a8a5c78121706014",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/CrossxMars.exe-129055--live-rapidocr.txt": {
+    "mtime": 1791738651.6576374,
+    "seen": 1791738867.2568426,
+    "ast_hash": "2a1ad901358087ef9417c135ee4d22c3",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-1.txt": {
+    "mtime": 1791738743.3908377,
+    "seen": 1791738867.2568433,
+    "ast_hash": "d0076459a7b12ed674fe0bc6971e2087",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-10.txt": {
+    "mtime": 1791738755.9095101,
+    "seen": 1791738867.256844,
+    "ast_hash": "0713731fa66a37f1f1a271be5d466ab8",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-11.txt": {
+    "mtime": 1791738765.1121762,
+    "seen": 1791738867.2568445,
+    "ast_hash": "1db897a2cb2d3c0b9c27af13525b85d1",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-12.txt": {
+    "mtime": 1791738772.319075,
+    "seen": 1791738867.2568452,
+    "ast_hash": "7ae9d928ab4330490d5008c9d47fa752",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--hard-breaks.txt": {
+    "mtime": 1791735905.3230996,
+    "seen": 1791738867.2568457,
+    "ast_hash": "7b6784796ae066c49ff03d37afadb829",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--long-dialogue.txt": {
+    "mtime": 1791735890.7666638,
+    "seen": 1791738867.2568467,
+    "ast_hash": "19c2da2c89a5d1dfe8079e44650abdf1",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--long-word.txt": {
+    "mtime": 1791735897.6457865,
+    "seen": 1791738867.2568471,
+    "ast_hash": "bfba1d7469a252a9605c7ad2c838d83f",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--mixed-shaping.txt": {
+    "mtime": 1791735912.1277585,
+    "seen": 1791738867.2568476,
+    "ast_hash": "d95aa641643c6d317ac8a21fd1acc080",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--recognized-blocks.txt": {
+    "mtime": 1791738637.1377695,
+    "seen": 1791738867.2568483,
+    "ast_hash": "d5ad47ba50c9cd530ee7e8c15646297c",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13.txt": {
+    "mtime": 1791738778.9476273,
+    "seen": 1791738867.2568488,
+    "ast_hash": "d3a2006c239c84833e4927ada3e91dd0",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-14.txt": {
+    "mtime": 1791738783.182415,
+    "seen": 1791738867.2568493,
+    "ast_hash": "b679c0055600e414decef31f7d6ddf6d",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-15.txt": {
+    "mtime": 1791738792.5810893,
+    "seen": 1791738867.25685,
+    "ast_hash": "49f3260ae6ceb0254db91045ace21179",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-2.txt": {
+    "mtime": 1791738804.5524166,
+    "seen": 1791738867.2568507,
+    "ast_hash": "cdb8de0c515cbf038ab7f0faaf276bb4",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-3.txt": {
+    "mtime": 1791738814.7514114,
+    "seen": 1791738867.2568512,
+    "ast_hash": "dda2a6dd6e03f2f4d9bd5fd22693f3e5",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-4.txt": {
+    "mtime": 1791738828.9824605,
+    "seen": 1791738867.2568517,
+    "ast_hash": "949b97725913b0ea8087eebce5bca4a8",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-5.txt": {
+    "mtime": 1791738838.8625453,
+    "seen": 1791738867.2568521,
+    "ast_hash": "4d10cf38127c2e19fbb07eea3dc54c39",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-6.txt": {
+    "mtime": 1791738847.0124753,
+    "seen": 1791738867.256853,
+    "ast_hash": "8d375769f4484c812b6286e0b49eb070",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-7.txt": {
+    "mtime": 1791738862.073572,
+    "seen": 1791738867.2568536,
+    "ast_hash": "bf6637ac3935d622fe1a41a340a09c82",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-8.txt": {
+    "mtime": 1791735863.5948718,
+    "seen": 1791738867.256854,
+    "ast_hash": "065842c5ec6e210c74779c3990b98cec",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-9.txt": {
+    "mtime": 1791735871.218793,
+    "seen": 1791738867.2568548,
+    "ast_hash": "ec1fe59f6421612f8d283093e02b265b",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-ru.txt": {
+    "mtime": 1791735881.5958214,
+    "seen": 1791738867.2568552,
+    "ast_hash": "0b38c2b76fea88c6b42e54632edf5ba6",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/engine.exe-100656--live-rapidocr.txt": {
+    "mtime": 1791738641.8613195,
+    "seen": 1791738867.256856,
+    "ast_hash": "0f5ebb4c114a73c0da14e67728a774cc",
+    "semantic_hash": ""
+  },
+  "tests/inplace/README.md": {
+    "mtime": 1791736122.301102,
+    "seen": 1791738867.2568567,
+    "ast_hash": "9796cd8a41a8641c31c0954e45a9f160",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-1.png": {
+    "mtime": 1791422858.0,
+    "seen": 1791738867.2570624,
+    "ast_hash": "c2832e5c0b6171ce56c2003f62aab105",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-10.jpg": {
+    "mtime": 1791679556.0,
+    "seen": 1791738867.2570636,
+    "ast_hash": "7bca1d152945ccbf441f5f3cc6dea57d",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-11.jpg": {
+    "mtime": 1791679547.0,
+    "seen": 1791738867.257065,
+    "ast_hash": "ff3c13007a1bd9b0c5e744c45116536a",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-12.jpg": {
+    "mtime": 1791730248.0759342,
+    "seen": 1791738867.2570658,
+    "ast_hash": "26ea1782657db0446222970a261e9ea9",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-13.png": {
+    "mtime": 1791731672.9739385,
+    "seen": 1791738867.2570665,
+    "ast_hash": "04829a4d72115505013596f0b7e4cc46",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-14.png": {
+    "mtime": 1791732002.6946847,
+    "seen": 1791738867.2570672,
+    "ast_hash": "ac854f2e5efb01cdcc74a19bd6e5db86",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-15.png": {
+    "mtime": 1791732059.7868555,
+    "seen": 1791738867.2570677,
+    "ast_hash": "0b29b96a36284f6b3cdb46570f8773d3",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-2.jpg": {
+    "mtime": 1791679580.0,
+    "seen": 1791738867.2570689,
+    "ast_hash": "f03bc04f7a4501619cfc6d3dd065262c",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-3.jpg": {
+    "mtime": 1791679578.0,
+    "seen": 1791738867.2570696,
+    "ast_hash": "38b2ddfd11fccbc910c1f6d64bd33bde",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-4.jpg": {
+    "mtime": 1791679577.0,
+    "seen": 1791738867.2570703,
+    "ast_hash": "707fa3ad9500c18c451111630050163b",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-5.jpg": {
+    "mtime": 1791679576.0,
+    "seen": 1791738867.257071,
+    "ast_hash": "19400468c2e7513179f1e6b27753a1d8",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-6.jpg": {
+    "mtime": 1791679570.0,
+    "seen": 1791738867.257072,
+    "ast_hash": "62b2535deb230f13a6756f2ded4c14b8",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-7.jpg": {
+    "mtime": 1791679565.0,
+    "seen": 1791738867.2570727,
+    "ast_hash": "8ad437d2f0ded2c1222bf160e46886c4",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-8.jpg": {
+    "mtime": 1791679562.0,
+    "seen": 1791738867.2570734,
+    "ast_hash": "5d99469861a7273f3a7a87de474855ac",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-en-9.jpg": {
+    "mtime": 1791679558.0,
+    "seen": 1791738867.2570739,
+    "ast_hash": "6ec0426ca5a33002b5e7f43a040abfc4",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/dialogue-ru.png": {
+    "mtime": 1791422858.0,
+    "seen": 1791738867.2570748,
+    "ast_hash": "31ca18495c7d9901b411c598a8207fc9",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/CrossxMars.exe-129055--live-rapidocr.png": {
+    "mtime": 1791738651.6543932,
+    "seen": 1791738867.2570758,
+    "ast_hash": "cf72f927c857973a4c0af93321d67344",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-1.png": {
+    "mtime": 1791738743.3884566,
+    "seen": 1791738867.2570765,
+    "ast_hash": "5bdf6ec8f72ce0bc90262c70843a8e19",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-10.png": {
+    "mtime": 1791738755.906738,
+    "seen": 1791738867.2570772,
+    "ast_hash": "03d741c17f46cdf747be28aa88b625da",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-11.png": {
+    "mtime": 1791738765.110945,
+    "seen": 1791738867.257078,
+    "ast_hash": "018d47fdd1c6fa5fc6bbe8e6554a8bbf",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-12.png": {
+    "mtime": 1791738772.3151069,
+    "seen": 1791738867.2570784,
+    "ast_hash": "902ee691a13ca43d307bd323f8ad80e3",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--hard-breaks.png": {
+    "mtime": 1791735905.3206847,
+    "seen": 1791738867.2570791,
+    "ast_hash": "83bf65e4afb6521366766d0d458803fb",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--long-dialogue.png": {
+    "mtime": 1791735890.764337,
+    "seen": 1791738867.25708,
+    "ast_hash": "e7933ec3acca8ca4cd5a0689a616c95f",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--long-word.png": {
+    "mtime": 1791735897.6435013,
+    "seen": 1791738867.2570808,
+    "ast_hash": "28ed408adb29a0d6965c030c9f5e164d",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--mixed-shaping.png": {
+    "mtime": 1791735912.125847,
+    "seen": 1791738867.2570817,
+    "ast_hash": "aee83c0caa9e38fdcbdd629fa49ccb7f",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13--recognized-blocks.png": {
+    "mtime": 1791738637.1320665,
+    "seen": 1791738867.2570832,
+    "ast_hash": "240d389945d77c697d9542921ccc74af",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-13.png": {
+    "mtime": 1791738778.945256,
+    "seen": 1791738867.2570844,
+    "ast_hash": "aab9fad2382ff0b38f14bc4f24175d1b",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-14.png": {
+    "mtime": 1791738783.1803513,
+    "seen": 1791738867.257086,
+    "ast_hash": "d3a13e5c6ce360ad1e5b7410773434bb",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-15.png": {
+    "mtime": 1791738792.5785625,
+    "seen": 1791738867.257087,
+    "ast_hash": "20bd441053bdad612e6f905e3ff7486b",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-2.png": {
+    "mtime": 1791738804.5498316,
+    "seen": 1791738867.2570887,
+    "ast_hash": "32bd328e552b144daeaaeb544c852f2d",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-3.png": {
+    "mtime": 1791738814.633058,
+    "seen": 1791738867.2570899,
+    "ast_hash": "881c3220ba66d4a5a3000d1044fd363b",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-4.png": {
+    "mtime": 1791738828.9773805,
+    "seen": 1791738867.2570908,
+    "ast_hash": "e2d45a1842a9b82dcc3ae7c7bbf0be39",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-5.png": {
+    "mtime": 1791738838.8596027,
+    "seen": 1791738867.2570918,
+    "ast_hash": "7eda91e425baa78985d01a661ff65c49",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-6.png": {
+    "mtime": 1791738847.0107858,
+    "seen": 1791738867.2570927,
+    "ast_hash": "2389c3da81a80ccf643accc7a615222e",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-7.png": {
+    "mtime": 1791738862.0701241,
+    "seen": 1791738867.2570937,
+    "ast_hash": "c93b6a2edd9aac93d274443436fb6269",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-8.png": {
+    "mtime": 1791735863.592686,
+    "seen": 1791738867.2570946,
+    "ast_hash": "44f7f22a3e5091492615077728f27b7d",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-en-9.png": {
+    "mtime": 1791735871.2168689,
+    "seen": 1791738867.2570956,
+    "ast_hash": "923f2be702e7f43f452b79d34b8499f2",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/dialogue-ru.png": {
+    "mtime": 1791735881.5921175,
+    "seen": 1791738867.2570968,
+    "ast_hash": "3c0cac99fcf92d65b9b04e318602c6bc",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/test-game/translations/engine.exe-100656--live-rapidocr.png": {
+    "mtime": 1791738641.8591728,
+    "seen": 1791738867.2570977,
+    "ast_hash": "7e4b1391b19d8b3b7dbacfa5122ecd68",
+    "semantic_hash": ""
+  },
+  "tests/inplace/fixtures/CrossxMars.exe-129055.png": {
+    "mtime": 1791738377.7810898,
+    "seen": 1791738867.257099,
+    "ast_hash": "7f194274ce6df255e94963a331eba36d",
+    "semantic_hash": ""
+  },
+  "tests/inplace/fixtures/engine.exe-100656.png": {
+    "mtime": 1791738377.780966,
+    "seen": 1791738867.2571,
+    "ast_hash": "7cac8c5e5890ef9b6d61aba8cafe6dc1",
+    "semantic_hash": ""
+  }
+}

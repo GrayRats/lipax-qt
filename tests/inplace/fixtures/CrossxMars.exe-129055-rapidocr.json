@@ -1,0 +1,1429 @@
+{
+  "provenance": "Observed native RapidOCR cropped readings on the recorded game frame; replay input, NOT manually annotated ground truth. CPU two threads, no GPU.",
+  "settings": {
+    "engine": "rapidocr",
+    "language": "eng",
+    "minimum_confidence": 50
+  },
+  "ocr_history": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.3597412109375,
+      "crop_origin": [
+        789,
+        408
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 147.0,
+        "x": 794.0,
+        "y": 413.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 77.0,
+          "x": 791.0,
+          "y": 409.0
+        },
+        {
+          "h": 26.0,
+          "w": 72.0,
+          "x": 873.0,
+          "y": 410.0
+        }
+      ],
+      "observation_ms": 4.712641,
+      "ocr_ms": 563.56029,
+      "original": "60% Fuel",
+      "raw_original": "60% Fuel",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.60095977783203,
+          "rect": {
+            "h": 27.0,
+            "w": 77.0,
+            "x": 791.0,
+            "y": 409.0
+          },
+          "text": "60%"
+        },
+        {
+          "confidence": 99.92882537841797,
+          "rect": {
+            "h": 26.0,
+            "w": 72.0,
+            "x": 873.0,
+            "y": 410.0
+          },
+          "text": "Fuel"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.5230941772461,
+      "crop_origin": [
+        555,
+        440
+      ],
+      "detector_rect": {
+        "h": 108.0,
+        "w": 277.0,
+        "x": 558.0,
+        "y": 443.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 117.0,
+          "x": 579.0,
+          "y": 442.0
+        },
+        {
+          "h": 11.0,
+          "w": 50.0,
+          "x": 745.0,
+          "y": 441.0
+        },
+        {
+          "h": 15.0,
+          "w": 161.0,
+          "x": 574.0,
+          "y": 455.0
+        },
+        {
+          "h": 13.0,
+          "w": 40.0,
+          "x": 771.0,
+          "y": 456.0
+        },
+        {
+          "h": 13.0,
+          "w": 72.0,
+          "x": 569.0,
+          "y": 471.0
+        },
+        {
+          "h": 13.0,
+          "w": 56.0,
+          "x": 724.0,
+          "y": 472.0
+        },
+        {
+          "h": 14.0,
+          "w": 19.0,
+          "x": 566.0,
+          "y": 487.0
+        },
+        {
+          "h": 13.0,
+          "w": 136.0,
+          "x": 701.0,
+          "y": 486.0
+        },
+        {
+          "h": 13.0,
+          "w": 200.0,
+          "x": 562.0,
+          "y": 504.0
+        },
+        {
+          "h": 13.0,
+          "w": 54.0,
+          "x": 776.0,
+          "y": 503.0
+        },
+        {
+          "h": 18.0,
+          "w": 277.0,
+          "x": 560.0,
+          "y": 518.0
+        },
+        {
+          "h": 14.0,
+          "w": 181.0,
+          "x": 556.0,
+          "y": 537.0
+        },
+        {
+          "h": 12.0,
+          "w": 41.0,
+          "x": 767.0,
+          "y": 538.0
+        }
+      ],
+      "observation_ms": 20.57069,
+      "ocr_ms": 759.2883870000001,
+      "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: engaged ip: 122.115.122.33:E444 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "raw_original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: engaged ip: 122.115.122.33:E444 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 96.90667724609375,
+          "rect": {
+            "h": 11.0,
+            "w": 117.0,
+            "x": 579.0,
+            "y": 442.0
+          },
+          "text": "Fuel heating status:"
+        },
+        {
+          "confidence": 99.9564437866211,
+          "rect": {
+            "h": 11.0,
+            "w": 50.0,
+            "x": 745.0,
+            "y": 441.0
+          },
+          "text": "nominal"
+        },
+        {
+          "confidence": 97.60478973388672,
+          "rect": {
+            "h": 15.0,
+            "w": 161.0,
+            "x": 574.0,
+            "y": 455.0
+          },
+          "text": "Exoskeleton management:"
+        },
+        {
+          "confidence": 99.9775161743164,
+          "rect": {
+            "h": 13.0,
+            "w": 40.0,
+            "x": 771.0,
+            "y": 456.0
+          },
+          "text": "active"
+        },
+        {
+          "confidence": 99.93631744384766,
+          "rect": {
+            "h": 13.0,
+            "w": 72.0,
+            "x": 569.0,
+            "y": 471.0
+          },
+          "text": "Auto-pilot:"
+        },
+        {
+          "confidence": 99.79839324951172,
+          "rect": {
+            "h": 13.0,
+            "w": 56.0,
+            "x": 724.0,
+            "y": 472.0
+          },
+          "text": "engaged"
+        },
+        {
+          "confidence": 94.56551361083984,
+          "rect": {
+            "h": 14.0,
+            "w": 19.0,
+            "x": 566.0,
+            "y": 487.0
+          },
+          "text": "ip:"
+        },
+        {
+          "confidence": 97.12142944335938,
+          "rect": {
+            "h": 13.0,
+            "w": 136.0,
+            "x": 701.0,
+            "y": 486.0
+          },
+          "text": "122.115.122.33:E444"
+        },
+        {
+          "confidence": 98.54814147949219,
+          "rect": {
+            "h": 13.0,
+            "w": 200.0,
+            "x": 562.0,
+            "y": 504.0
+          },
+          "text": "ship name: Hevacel nikonomiko"
+        },
+        {
+          "confidence": 99.80123901367188,
+          "rect": {
+            "h": 13.0,
+            "w": 54.0,
+            "x": 776.0,
+            "y": 503.0
+          },
+          "text": "S38123"
+        },
+        {
+          "confidence": 98.5434799194336,
+          "rect": {
+            "h": 18.0,
+            "w": 277.0,
+            "x": 560.0,
+            "y": 518.0
+          },
+          "text": "Temporary shielding displacement: 333112"
+        },
+        {
+          "confidence": 99.70392608642578,
+          "rect": {
+            "h": 14.0,
+            "w": 181.0,
+            "x": 556.0,
+            "y": 537.0
+          },
+          "text": "Evasive action management:"
+        },
+        {
+          "confidence": 99.99137115478516,
+          "rect": {
+            "h": 12.0,
+            "w": 41.0,
+            "x": 767.0,
+            "y": 538.0
+          },
+          "text": "active"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.45217895507812,
+      "crop_origin": [
+        757,
+        441
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 33.0,
+        "x": 760.0,
+        "y": 444.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 10.0,
+          "w": 38.0,
+          "x": 757.0,
+          "y": 442.0
+        }
+      ],
+      "observation_ms": 1.084047,
+      "ocr_ms": 42.483978,
+      "original": "ominal",
+      "raw_original": "ominal",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.45217895507812,
+          "rect": {
+            "h": 10.0,
+            "w": 38.0,
+            "x": 757.0,
+            "y": 442.0
+          },
+          "text": "ominal"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 98.4366683959961,
+      "crop_origin": [
+        701,
+        452
+      ],
+      "detector_rect": {
+        "h": 59.0,
+        "w": 172.0,
+        "x": 704.0,
+        "y": 455.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 10.0,
+          "w": 31.0,
+          "x": 703.0,
+          "y": 457.0
+        },
+        {
+          "h": 10.0,
+          "w": 36.0,
+          "x": 773.0,
+          "y": 457.0
+        },
+        {
+          "h": 12.0,
+          "w": 56.0,
+          "x": 724.0,
+          "y": 472.0
+        },
+        {
+          "h": 15.0,
+          "w": 172.0,
+          "x": 702.0,
+          "y": 485.0
+        },
+        {
+          "h": 14.0,
+          "w": 59.0,
+          "x": 702.0,
+          "y": 502.0
+        },
+        {
+          "h": 15.0,
+          "w": 53.0,
+          "x": 777.0,
+          "y": 501.0
+        }
+      ],
+      "observation_ms": 12.258488999999999,
+      "ocr_ms": 351.625582,
+      "original": "nent: active engaged 122.:115.122.33:E444:1123 conomiko S38123",
+      "raw_original": "nent: active engaged 122.:115.122.33:E444:1123 conomiko S38123",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.60814666748047,
+          "rect": {
+            "h": 10.0,
+            "w": 31.0,
+            "x": 703.0,
+            "y": 457.0
+          },
+          "text": "nent:"
+        },
+        {
+          "confidence": 99.97881317138672,
+          "rect": {
+            "h": 10.0,
+            "w": 36.0,
+            "x": 773.0,
+            "y": 457.0
+          },
+          "text": "active"
+        },
+        {
+          "confidence": 99.70679473876953,
+          "rect": {
+            "h": 12.0,
+            "w": 56.0,
+            "x": 724.0,
+            "y": 472.0
+          },
+          "text": "engaged"
+        },
+        {
+          "confidence": 97.97581481933594,
+          "rect": {
+            "h": 15.0,
+            "w": 172.0,
+            "x": 702.0,
+            "y": 485.0
+          },
+          "text": "122.:115.122.33:E444:1123"
+        },
+        {
+          "confidence": 96.02349853515625,
+          "rect": {
+            "h": 14.0,
+            "w": 59.0,
+            "x": 702.0,
+            "y": 502.0
+          },
+          "text": "conomiko"
+        },
+        {
+          "confidence": 99.57426452636719,
+          "rect": {
+            "h": 15.0,
+            "w": 53.0,
+            "x": 777.0,
+            "y": 501.0
+          },
+          "text": "S38123"
+        }
+      ],
+      "split": true
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.56147003173828,
+      "crop_origin": [
+        55,
+        697
+      ],
+      "detector_rect": {
+        "h": 42.0,
+        "w": 87.0,
+        "x": 66.0,
+        "y": 708.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 62.0,
+          "w": 108.0,
+          "x": 55.0,
+          "y": 697.0
+        }
+      ],
+      "observation_ms": 1.562294,
+      "ocr_ms": 42.77478,
+      "original": "Mik",
+      "raw_original": "Mik",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.56147003173828,
+          "rect": {
+            "h": 62.0,
+            "w": 108.0,
+            "x": 55.0,
+            "y": 697.0
+          },
+          "text": "Mik"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        966,
+        704
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 28.0,
+        "x": 970.0,
+        "y": 708.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 0.00016999999999999999,
+      "ocr_ms": 6.017978,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 69.0584716796875,
+      "crop_origin": [
+        139,
+        713
+      ],
+      "detector_rect": {
+        "h": 29.0,
+        "w": 35.0,
+        "x": 147.0,
+        "y": 721.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [
+        {
+          "h": 32.0,
+          "w": 45.0,
+          "x": 139.0,
+          "y": 717.0
+        }
+      ],
+      "observation_ms": 0.683216,
+      "ocr_ms": 31.663888,
+      "original": "ca",
+      "raw_original": "ca",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 69.0584716796875,
+          "rect": {
+            "h": 32.0,
+            "w": 45.0,
+            "x": 139.0,
+            "y": 717.0
+          },
+          "text": "ca"
+        }
+      ],
+      "split": true
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        856,
+        728
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 32.0,
+        "x": 859.0,
+        "y": 731.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 0.00019,
+      "ocr_ms": 11.097275,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.0224838256836,
+      "crop_origin": [
+        47,
+        750
+      ],
+      "detector_rect": {
+        "h": 66.0,
+        "w": 993.0,
+        "x": 64.0,
+        "y": 767.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 43.0,
+          "w": 170.0,
+          "x": 58.0,
+          "y": 760.0
+        },
+        {
+          "h": 49.0,
+          "w": 850.0,
+          "x": 216.0,
+          "y": 757.0
+        },
+        {
+          "h": 41.0,
+          "w": 1018.0,
+          "x": 55.0,
+          "y": 808.0
+        }
+      ],
+      "observation_ms": 256.825792,
+      "ocr_ms": 532.466724,
+      "original": "Morning, Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and, guite frankly, I'm upset at it m",
+      "raw_original": "Morning, Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and, guite frankly, I'm upset at it m",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.89382934570312,
+          "rect": {
+            "h": 43.0,
+            "w": 170.0,
+            "x": 58.0,
+            "y": 760.0
+          },
+          "text": "Morning,"
+        },
+        {
+          "confidence": 99.13208770751953,
+          "rect": {
+            "h": 49.0,
+            "w": 850.0,
+            "x": 216.0,
+            "y": 757.0
+          },
+          "text": "Ella. Sometimes I wonder if I'm in the right place"
+        },
+        {
+          "confidence": 96.8675537109375,
+          "rect": {
+            "h": 41.0,
+            "w": 1018.0,
+            "x": 55.0,
+            "y": 808.0
+          },
+          "text": "and-forth gets tiresome and, guite frankly, I'm upset at it m"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.40919494628906,
+      "crop_origin": [
+        1110,
+        758
+      ],
+      "detector_rect": {
+        "h": 34.0,
+        "w": 353.0,
+        "x": 1119.0,
+        "y": 767.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [
+        {
+          "h": 41.0,
+          "w": 353.0,
+          "x": 1114.0,
+          "y": 761.0
+        }
+      ],
+      "observation_ms": 10.311574,
+      "ocr_ms": 88.31837200000001,
+      "original": "all this hauling back-",
+      "raw_original": "all this hauling back-",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.40919494628906,
+          "rect": {
+            "h": 41.0,
+            "w": 353.0,
+            "x": 1114.0,
+            "y": 761.0
+          },
+          "text": "all this hauling back-"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.10784912109375,
+      "crop_origin": [
+        14,
+        733
+      ],
+      "detector_rect": {
+        "h": 196.0,
+        "w": 1389.0,
+        "x": 63.0,
+        "y": 782.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 162.0,
+          "x": 23.0,
+          "y": 733.0
+        },
+        {
+          "h": 44.0,
+          "w": 165.0,
+          "x": 56.0,
+          "y": 759.0
+        },
+        {
+          "h": 36.0,
+          "w": 281.0,
+          "x": 221.0,
+          "y": 762.0
+        },
+        {
+          "h": 47.0,
+          "w": 965.0,
+          "x": 504.0,
+          "y": 758.0
+        },
+        {
+          "h": 36.0,
+          "w": 500.0,
+          "x": 57.0,
+          "y": 817.0
+        },
+        {
+          "h": 48.0,
+          "w": 899.0,
+          "x": 559.0,
+          "y": 811.0
+        },
+        {
+          "h": 43.0,
+          "w": 554.0,
+          "x": 57.0,
+          "y": 867.0
+        }
+      ],
+      "observation_ms": 108.952863,
+      "ocr_ms": 1302.411269,
+      "original": "Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be... but I have the right to be angry!",
+      "raw_original": "MuKa Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be... but I have the right to be angry!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 74.40620422363281,
+          "rect": {
+            "h": 21.0,
+            "w": 162.0,
+            "x": 23.0,
+            "y": 733.0
+          },
+          "text": "MuKa"
+        },
+        {
+          "confidence": 99.94515991210938,
+          "rect": {
+            "h": 44.0,
+            "w": 165.0,
+            "x": 56.0,
+            "y": 759.0
+          },
+          "text": "Morning,"
+        },
+        {
+          "confidence": 94.3951187133789,
+          "rect": {
+            "h": 36.0,
+            "w": 281.0,
+            "x": 221.0,
+            "y": 762.0
+          },
+          "text": "Ella. Sometimes"
+        },
+        {
+          "confidence": 99.34391784667969,
+          "rect": {
+            "h": 47.0,
+            "w": 965.0,
+            "x": 504.0,
+            "y": 758.0
+          },
+          "text": "I wonder if I'm in the right place — all this hauling back-"
+        },
+        {
+          "confidence": 97.30450439453125,
+          "rect": {
+            "h": 36.0,
+            "w": 500.0,
+            "x": 57.0,
+            "y": 817.0
+          },
+          "text": "and-forth gets tiresome and,"
+        },
+        {
+          "confidence": 98.7740707397461,
+          "rect": {
+            "h": 48.0,
+            "w": 899.0,
+            "x": 559.0,
+            "y": 811.0
+          },
+          "text": "quite frankly, I'm upset at it more than I should be..."
+        },
+        {
+          "confidence": 99.58431243896484,
+          "rect": {
+            "h": 43.0,
+            "w": 554.0,
+            "x": 57.0,
+            "y": 867.0
+          },
+          "text": "but I have the right to be angry!"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.76971435546875,
+      "crop_origin": [
+        86,
+        816
+      ],
+      "detector_rect": {
+        "h": 97.0,
+        "w": 150.0,
+        "x": 111.0,
+        "y": 841.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [
+        {
+          "h": 38.0,
+          "w": 199.0,
+          "x": 86.0,
+          "y": 816.0
+        },
+        {
+          "h": 41.0,
+          "w": 199.0,
+          "x": 86.0,
+          "y": 866.0
+        }
+      ],
+      "observation_ms": 1.0602120000000002,
+      "ocr_ms": 105.31689399999999,
+      "original": "nd-forth get ut I have the",
+      "raw_original": "nd-forth get ut I have the",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.33448028564453,
+          "rect": {
+            "h": 38.0,
+            "w": 199.0,
+            "x": 86.0,
+            "y": 816.0
+          },
+          "text": "nd-forth get"
+        },
+        {
+          "confidence": 97.2483901977539,
+          "rect": {
+            "h": 41.0,
+            "w": 199.0,
+            "x": 86.0,
+            "y": 866.0
+          },
+          "text": "ut I have the"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 80.4993667602539,
+      "crop_origin": [
+        518,
+        831
+      ],
+      "detector_rect": {
+        "h": 41.0,
+        "w": 39.0,
+        "x": 529.0,
+        "y": 842.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [
+        {
+          "h": 16.0,
+          "w": 27.0,
+          "x": 519.0,
+          "y": 831.0
+        }
+      ],
+      "observation_ms": 0.049093,
+      "ocr_ms": 46.615176,
+      "original": "Ia",
+      "raw_original": "Ia",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 80.4993667602539,
+          "rect": {
+            "h": 16.0,
+            "w": 27.0,
+            "x": 519.0,
+            "y": 831.0
+          },
+          "text": "Ia"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.94538879394531,
+      "crop_origin": [
+        32,
+        846
+      ],
+      "detector_rect": {
+        "h": 105.0,
+        "w": 606.0,
+        "x": 59.0,
+        "y": 873.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [
+        {
+          "h": 45.0,
+          "w": 554.0,
+          "x": 57.0,
+          "y": 866.0
+        }
+      ],
+      "observation_ms": 0.7495419999999999,
+      "ocr_ms": 161.215644,
+      "original": "but I have the right to be angry!",
+      "raw_original": "but I have the right to be angry!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.94538879394531,
+          "rect": {
+            "h": 45.0,
+            "w": 554.0,
+            "x": 57.0,
+            "y": 866.0
+          },
+          "text": "but I have the right to be angry!"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.22689819335938,
+      "crop_origin": [
+        0,
+        875
+      ],
+      "detector_rect": {
+        "h": 82.0,
+        "w": 217.0,
+        "x": 13.0,
+        "y": 896.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [
+        {
+          "h": 29.0,
+          "w": 175.0,
+          "x": 60.0,
+          "y": 875.0
+        }
+      ],
+      "observation_ms": 0.647809,
+      "ocr_ms": 64.11133199999999,
+      "original": "but I have",
+      "raw_original": "but I have",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 96.22689819335938,
+          "rect": {
+            "h": 29.0,
+            "w": 175.0,
+            "x": 60.0,
+            "y": 875.0
+          },
+          "text": "but I have"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1387,
+        903
+      ],
+      "detector_rect": {
+        "h": 60.0,
+        "w": 167.0,
+        "x": 1402.0,
+        "y": 918.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 0.000161,
+      "ocr_ms": 11.467759,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.0986557006836,
+      "crop_origin": [
+        555,
+        440
+      ],
+      "detector_rect": {
+        "h": 108.0,
+        "w": 318.0,
+        "x": 558.0,
+        "y": 443.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 119.0,
+          "x": 578.0,
+          "y": 442.0
+        },
+        {
+          "h": 11.0,
+          "w": 50.0,
+          "x": 746.0,
+          "y": 441.0
+        },
+        {
+          "h": 15.0,
+          "w": 162.0,
+          "x": 574.0,
+          "y": 455.0
+        },
+        {
+          "h": 13.0,
+          "w": 39.0,
+          "x": 772.0,
+          "y": 456.0
+        },
+        {
+          "h": 13.0,
+          "w": 70.0,
+          "x": 570.0,
+          "y": 471.0
+        },
+        {
+          "h": 11.0,
+          "w": 56.0,
+          "x": 724.0,
+          "y": 473.0
+        },
+        {
+          "h": 14.0,
+          "w": 19.0,
+          "x": 566.0,
+          "y": 487.0
+        },
+        {
+          "h": 13.0,
+          "w": 177.0,
+          "x": 700.0,
+          "y": 486.0
+        },
+        {
+          "h": 13.0,
+          "w": 200.0,
+          "x": 562.0,
+          "y": 504.0
+        },
+        {
+          "h": 13.0,
+          "w": 56.0,
+          "x": 775.0,
+          "y": 503.0
+        },
+        {
+          "h": 16.0,
+          "w": 278.0,
+          "x": 560.0,
+          "y": 519.0
+        },
+        {
+          "h": 14.0,
+          "w": 182.0,
+          "x": 556.0,
+          "y": 537.0
+        },
+        {
+          "h": 12.0,
+          "w": 39.0,
+          "x": 768.0,
+          "y": 538.0
+        }
+      ],
+      "observation_ms": 25.985263,
+      "ocr_ms": 751.512573,
+      "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: engaged ip: 122:115.122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "raw_original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: engaged ip: 122:115.122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 98.1575698852539,
+          "rect": {
+            "h": 11.0,
+            "w": 119.0,
+            "x": 578.0,
+            "y": 442.0
+          },
+          "text": "Fuel heating status:"
+        },
+        {
+          "confidence": 99.96393585205078,
+          "rect": {
+            "h": 11.0,
+            "w": 50.0,
+            "x": 746.0,
+            "y": 441.0
+          },
+          "text": "nominal"
+        },
+        {
+          "confidence": 98.855712890625,
+          "rect": {
+            "h": 15.0,
+            "w": 162.0,
+            "x": 574.0,
+            "y": 455.0
+          },
+          "text": "Exoskeleton management:"
+        },
+        {
+          "confidence": 99.9759750366211,
+          "rect": {
+            "h": 13.0,
+            "w": 39.0,
+            "x": 772.0,
+            "y": 456.0
+          },
+          "text": "active"
+        },
+        {
+          "confidence": 99.92547607421875,
+          "rect": {
+            "h": 13.0,
+            "w": 70.0,
+            "x": 570.0,
+            "y": 471.0
+          },
+          "text": "Auto-pilot:"
+        },
+        {
+          "confidence": 99.79475402832031,
+          "rect": {
+            "h": 11.0,
+            "w": 56.0,
+            "x": 724.0,
+            "y": 473.0
+          },
+          "text": "engaged"
+        },
+        {
+          "confidence": 94.56551361083984,
+          "rect": {
+            "h": 14.0,
+            "w": 19.0,
+            "x": 566.0,
+            "y": 487.0
+          },
+          "text": "ip:"
+        },
+        {
+          "confidence": 99.1164779663086,
+          "rect": {
+            "h": 13.0,
+            "w": 177.0,
+            "x": 700.0,
+            "y": 486.0
+          },
+          "text": "122:115.122.33:E444:1123"
+        },
+        {
+          "confidence": 98.54814147949219,
+          "rect": {
+            "h": 13.0,
+            "w": 200.0,
+            "x": 562.0,
+            "y": 504.0
+          },
+          "text": "ship name: Hevacel nikonomiko"
+        },
+        {
+          "confidence": 99.77642822265625,
+          "rect": {
+            "h": 13.0,
+            "w": 56.0,
+            "x": 775.0,
+            "y": 503.0
+          },
+          "text": "S38123"
+        },
+        {
+          "confidence": 99.18617248535156,
+          "rect": {
+            "h": 16.0,
+            "w": 278.0,
+            "x": 560.0,
+            "y": 519.0
+          },
+          "text": "Temporary shielding displacement: 333112"
+        },
+        {
+          "confidence": 99.68805694580078,
+          "rect": {
+            "h": 14.0,
+            "w": 182.0,
+            "x": 556.0,
+            "y": 537.0
+          },
+          "text": "Evasive action management:"
+        },
+        {
+          "confidence": 99.99271392822266,
+          "rect": {
+            "h": 12.0,
+            "w": 39.0,
+            "x": 768.0,
+            "y": 538.0
+          },
+          "text": "active"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.71088409423828,
+      "crop_origin": [
+        55,
+        697
+      ],
+      "detector_rect": {
+        "h": 42.0,
+        "w": 116.0,
+        "x": 66.0,
+        "y": 708.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 63.0,
+          "w": 137.0,
+          "x": 55.0,
+          "y": 697.0
+        }
+      ],
+      "observation_ms": 2.5373040000000002,
+      "ocr_ms": 45.674441,
+      "original": "Mika",
+      "raw_original": "Mika",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.71088409423828,
+          "rect": {
+            "h": 63.0,
+            "w": 137.0,
+            "x": 55.0,
+            "y": 697.0
+          },
+          "text": "Mika"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        966,
+        704
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 28.0,
+        "x": 970.0,
+        "y": 708.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 0.00013,
+      "ocr_ms": 5.8553,
+      "original": "",
+      "raw_original": "",
+      "scan": 1,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        856,
+        728
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 32.0,
+        "x": 859.0,
+        "y": 731.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 4.9999999999999996e-05,
+      "ocr_ms": 8.343992,
+      "original": "",
+      "raw_original": "",
+      "scan": 1,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1387,
+        903
+      ],
+      "detector_rect": {
+        "h": 60.0,
+        "w": 167.0,
+        "x": 1402.0,
+        "y": 918.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 0.000141,
+      "ocr_ms": 13.911275,
+      "original": "",
+      "raw_original": "",
+      "scan": 1,
+      "spans": [],
+      "split": false
+    }
+  ]
+}

@@ -1,0 +1,1180 @@
+{
+  "block_ocr": [],
+  "blocks": [
+    {
+      "cap_height": 27.0,
+      "category": "Unknown",
+      "confidence": 0.06593827903270721,
+      "font": "Inter",
+      "rect": {
+        "h": 27.0,
+        "w": 80.0,
+        "x": 1498.0,
+        "y": 67.0
+      }
+    },
+    {
+      "cap_height": 26.0,
+      "category": "SansSerif",
+      "confidence": 0.3315261900424957,
+      "font": "Inter",
+      "rect": {
+        "h": 26.0,
+        "w": 109.0,
+        "x": 1724.0,
+        "y": 67.0
+      }
+    },
+    {
+      "cap_height": 22.0,
+      "category": "Unknown",
+      "confidence": 0.07021212577819824,
+      "font": "Inter",
+      "rect": {
+        "h": 22.0,
+        "w": 57.0,
+        "x": 1621.0,
+        "y": 69.0
+      }
+    },
+    {
+      "cap_height": 141.0,
+      "category": "Serif",
+      "confidence": 0.5596888661384583,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 621.0,
+        "w": 439.0,
+        "x": 850.0,
+        "y": 119.0
+      }
+    },
+    {
+      "cap_height": 96.0,
+      "category": "Unknown",
+      "confidence": 0.05583333969116211,
+      "font": "PT Serif",
+      "rect": {
+        "h": 96.0,
+        "w": 16.0,
+        "x": 779.0,
+        "y": 242.0
+      }
+    },
+    {
+      "cap_height": 74.0,
+      "category": "Condensed",
+      "confidence": 0.3754427134990692,
+      "font": "Oswald",
+      "rect": {
+        "h": 296.0,
+        "w": 119.0,
+        "x": 1010.0,
+        "y": 355.0
+      }
+    },
+    {
+      "cap_height": 89.0,
+      "category": "Serif",
+      "confidence": 0.8022472262382507,
+      "font": "PT Serif",
+      "rect": {
+        "h": 140.0,
+        "w": 257.0,
+        "x": 818.0,
+        "y": 370.0
+      }
+    },
+    {
+      "cap_height": 126.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 126.0,
+        "w": 289.0,
+        "x": 1270.0,
+        "y": 430.0
+      }
+    },
+    {
+      "cap_height": 22.0,
+      "category": "Serif",
+      "confidence": 0.3219491243362427,
+      "font": "Literata",
+      "rect": {
+        "h": 47.0,
+        "w": 57.0,
+        "x": 1000.0,
+        "y": 453.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "Unknown",
+      "confidence": 0.06416667252779007,
+      "font": "PT Serif",
+      "rect": {
+        "h": 30.0,
+        "w": 47.0,
+        "x": 793.0,
+        "y": 631.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 34.0,
+        "w": 86.0,
+        "x": 1091.0,
+        "y": 780.0
+      }
+    },
+    {
+      "cap_height": 26.0,
+      "category": "SansSerif",
+      "confidence": 0.35531312227249146,
+      "font": "Inter",
+      "rect": {
+        "h": 39.0,
+        "w": 81.0,
+        "x": 1263.0,
+        "y": 780.0
+      }
+    },
+    {
+      "cap_height": 84.0,
+      "category": "Unknown",
+      "confidence": 0.0672539696097374,
+      "font": "Inter",
+      "rect": {
+        "h": 84.0,
+        "w": 80.0,
+        "x": 781.0,
+        "y": 792.0
+      }
+    },
+    {
+      "cap_height": 36.0,
+      "category": "Condensed",
+      "confidence": 0.40026670694351196,
+      "font": "Roboto Condensed",
+      "rect": {
+        "h": 70.0,
+        "w": 86.0,
+        "x": 780.0,
+        "y": 850.0
+      }
+    },
+    {
+      "cap_height": 31.0,
+      "category": "SansSerif",
+      "confidence": 0.31216391921043396,
+      "font": "Inter",
+      "rect": {
+        "h": 40.0,
+        "w": 98.0,
+        "x": 396.0,
+        "y": 946.0
+      }
+    },
+    {
+      "cap_height": 26.0,
+      "category": "Condensed",
+      "confidence": 0.8344871997833252,
+      "font": "Roboto Condensed",
+      "rect": {
+        "h": 78.0,
+        "w": 1039.0,
+        "x": 573.0,
+        "y": 949.0
+      }
+    }
+  ],
+  "cached_placement_ms": 0.575742,
+  "dropped": 7,
+  "dropped_details": [
+    {
+      "block_id": 4,
+      "original": "fixture 4",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 6,
+      "original": "fixture 6",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 7,
+      "original": "fixture 7",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 8,
+      "original": "fixture 8",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 9,
+      "original": "fixture 9",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 13,
+      "original": "fixture 13",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 14,
+      "original": "fixture 14",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    }
+  ],
+  "finish_ms": [
+    0.065915
+  ],
+  "first_frame_ms": 875.466874,
+  "fits": 16,
+  "frame_blocks": [
+    {
+      "id": 1,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 27.0,
+        "w": 80.0,
+        "x": 1498.0,
+        "y": 67.0
+      }
+    },
+    {
+      "id": 2,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 26.0,
+        "w": 109.0,
+        "x": 1724.0,
+        "y": 67.0
+      }
+    },
+    {
+      "id": 3,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 22.0,
+        "w": 57.0,
+        "x": 1621.0,
+        "y": 69.0
+      }
+    },
+    {
+      "id": 4,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 621.0,
+        "w": 439.0,
+        "x": 850.0,
+        "y": 119.0
+      }
+    },
+    {
+      "id": 5,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 96.0,
+        "w": 16.0,
+        "x": 779.0,
+        "y": 242.0
+      }
+    },
+    {
+      "id": 6,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 296.0,
+        "w": 119.0,
+        "x": 1010.0,
+        "y": 355.0
+      }
+    },
+    {
+      "id": 7,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 140.0,
+        "w": 257.0,
+        "x": 818.0,
+        "y": 370.0
+      }
+    },
+    {
+      "id": 8,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 126.0,
+        "w": 289.0,
+        "x": 1270.0,
+        "y": 430.0
+      }
+    },
+    {
+      "id": 9,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 47.0,
+        "w": 57.0,
+        "x": 1000.0,
+        "y": 453.0
+      }
+    },
+    {
+      "id": 10,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 30.0,
+        "w": 47.0,
+        "x": 793.0,
+        "y": 631.0
+      }
+    },
+    {
+      "id": 11,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 34.0,
+        "w": 86.0,
+        "x": 1091.0,
+        "y": 780.0
+      }
+    },
+    {
+      "id": 12,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 39.0,
+        "w": 81.0,
+        "x": 1263.0,
+        "y": 780.0
+      }
+    },
+    {
+      "id": 13,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 84.0,
+        "w": 80.0,
+        "x": 781.0,
+        "y": 792.0
+      }
+    },
+    {
+      "id": 14,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 70.0,
+        "w": 86.0,
+        "x": 780.0,
+        "y": 850.0
+      }
+    },
+    {
+      "id": 15,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 40.0,
+        "w": 98.0,
+        "x": 396.0,
+        "y": 946.0
+      }
+    },
+    {
+      "id": 16,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 78.0,
+        "w": 1039.0,
+        "x": 573.0,
+        "y": 949.0
+      }
+    }
+  ],
+  "hits": 16,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-1/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 30,
+  "ocr": {
+    "engine": "rapidocr",
+    "language": "eng",
+    "latency_ms": 2599.293642,
+    "lines": [
+      {
+        "confidence": 99.97562408447266,
+        "rect": {
+          "h": 39.0,
+          "w": 88.0,
+          "x": 1495.0,
+          "y": 60.0
+        },
+        "text": "AUTO"
+      },
+      {
+        "confidence": 92.96492004394531,
+        "rect": {
+          "h": 33.0,
+          "w": 69.0,
+          "x": 1615.0,
+          "y": 63.0
+        },
+        "text": "OFF"
+      },
+      {
+        "confidence": 99.98412322998047,
+        "rect": {
+          "h": 40.0,
+          "w": 123.0,
+          "x": 1714.0,
+          "y": 60.0
+        },
+        "text": "SKIP"
+      },
+      {
+        "confidence": 92.26830291748047,
+        "rect": {
+          "h": 72.0,
+          "w": 40.0,
+          "x": 922.0,
+          "y": 501.0
+        },
+        "text": "HODES"
+      },
+      {
+        "confidence": 20.849782943725586,
+        "rect": {
+          "h": 34.0,
+          "w": 28.0,
+          "x": 849.0,
+          "y": 520.0
+        },
+        "text": "C3"
+      },
+      {
+        "confidence": 99.55213928222656,
+        "rect": {
+          "h": 92.0,
+          "w": 39.0,
+          "x": 944.0,
+          "y": 570.0
+        },
+        "text": "ISLAND"
+      },
+      {
+        "confidence": 75.74992370605469,
+        "rect": {
+          "h": 23.0,
+          "w": 40.0,
+          "x": 781.0,
+          "y": 791.0
+        },
+        "text": "CO"
+      },
+      {
+        "confidence": 99.98410034179688,
+        "rect": {
+          "h": 60.0,
+          "w": 119.0,
+          "x": 387.0,
+          "y": 935.0
+        },
+        "text": "Amiya"
+      },
+      {
+        "confidence": 97.06287384033203,
+        "rect": {
+          "h": 41.0,
+          "w": 1046.0,
+          "x": 569.0,
+          "y": 944.0
+        },
+        "text": "However, you'll always be the most important person to me, Doctor. No matter"
+      },
+      {
+        "confidence": 99.04859924316406,
+        "rect": {
+          "h": 40.0,
+          "w": 501.0,
+          "x": 568.0,
+          "y": 990.0
+        },
+        "text": "what happens, this will never change."
+      }
+    ],
+    "text": "AUTO\nOFF\nSKIP\nHODES\nC3\nISLAND\nCO\nAmiya\nHowever, you'll always be the most important person to me, Doctor. No matter\nwhat happens, this will never change."
+  },
+  "ocr_history": [],
+  "ocr_scans": 1,
+  "peak_memory": "VmHWM:\t  429320 kB",
+  "placed": [
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#1b1f23",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 1,
+      "block_type": "button",
+      "box": [
+        0.7717708587646485,
+        0.04703703633061162,
+        0.05854161580403646,
+        0.05499999788072374
+      ],
+      "font_family": "Roboto Condensed",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.20639128983020782,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        16.199951171875,
+        16.200000762939453,
+        16.199951171875,
+        16.199996948242188
+      ],
+      "italic": false,
+      "key": "test:1",
+      "letter_spacing": -0.35771021246910095,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 1",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#c7c7c8",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#1d2225",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 2,
+      "block_type": "button",
+      "box": [
+        0.8897916793823242,
+        0.04759259400544343,
+        0.07302080790201823,
+        0.05296296013726128
+      ],
+      "font_family": "Inter",
+      "font_px": 9.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.3315261900424957,
+        "generic": false
+      },
+      "font_weight": 500,
+      "inner": [
+        15.5999755859375,
+        15.599998474121094,
+        15.5999755859375,
+        15.599998474121094
+      ],
+      "italic": false,
+      "key": "test:2",
+      "letter_spacing": 0.02783501148223877,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 2",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#cccccd",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#1b1e22",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 3,
+      "block_type": "button",
+      "box": [
+        0.8373958587646484,
+        0.05166666596024125,
+        0.04343744913736979,
+        0.05407407195479782
+      ],
+      "expanded": true,
+      "font_family": "Roboto Condensed",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.07021212577819824,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        13.199951171875,
+        13.200000762939453,
+        13.199951171875,
+        13.199996948242188
+      ],
+      "italic": false,
+      "key": "test:3",
+      "letter_spacing": -0.3509189486503601,
+      "line_height": 0.8999999761581421,
+      "max_lines": 3,
+      "original": "fixture 3",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#a2a2a4",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#435252",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 5,
+      "block_type": "unknown",
+      "box": [
+        0.39739583333333334,
+        0.20925925925925926,
+        0.025,
+        0.15925925925925927
+      ],
+      "expanded": true,
+      "font_family": "PT Serif",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "transitional_serif",
+        "confidence": 0.05583333969116211,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        16.0,
+        16.0,
+        16.0,
+        16.0
+      ],
+      "italic": false,
+      "key": "test:5",
+      "letter_spacing": -0.34380918741226196,
+      "line_height": 0.8999999761581421,
+      "max_lines": 13,
+      "original": "fixture 5",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#ffffff",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#171c1d",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 10,
+      "block_type": "unknown",
+      "box": [
+        0.4083333333333333,
+        0.575925925925926,
+        0.03177083333333333,
+        0.06481481481481481
+      ],
+      "expanded": true,
+      "font_family": "PT Serif",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "transitional_serif",
+        "confidence": 0.06416667252779007,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        9.0,
+        9.0,
+        5.0,
+        9.0
+      ],
+      "italic": true,
+      "key": "test:10",
+      "letter_spacing": -0.34945738315582275,
+      "line_height": 0.8999999761581421,
+      "max_lines": 5,
+      "original": "fixture 10",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#a09b8c",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#222e4f",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 11,
+      "block_type": "button",
+      "box": [
+        0.5576041539510092,
+        0.7037037037037037,
+        0.06604169209798177,
+        0.07814817075376157
+      ],
+      "expanded": true,
+      "font_family": "Inter",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.06100000813603401,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        20.4000244140625,
+        20.0,
+        20.4000244140625,
+        20.4000244140625
+      ],
+      "italic": false,
+      "key": "test:11",
+      "letter_spacing": 2.8365979194641113,
+      "line_height": 0.8999999761581421,
+      "max_lines": 4,
+      "original": "fixture 11",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#8b9bb1",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#161c28",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 12,
+      "block_type": "button",
+      "box": [
+        0.6456249872843425,
+        0.7037037037037037,
+        0.0665625254313151,
+        0.07629631890190972
+      ],
+      "font_family": "Inter",
+      "font_px": 9.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.35531312227249146,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        23.4000244140625,
+        20.0,
+        23.4000244140625,
+        23.4000244140625
+      ],
+      "italic": false,
+      "key": "test:12",
+      "letter_spacing": -0.38983896374702454,
+      "line_height": 0.8999999761581421,
+      "max_lines": 3,
+      "original": "fixture 12",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#8b8a92",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#070808",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 15,
+      "block_type": "unknown",
+      "box": [
+        0.2,
+        0.8648148148148148,
+        0.06354166666666666,
+        0.05925925925925926
+      ],
+      "font_family": "Inter",
+      "font_px": 10.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.31216391921043396,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        12.0,
+        12.0,
+        12.0,
+        12.0
+      ],
+      "italic": false,
+      "key": "test:15",
+      "letter_spacing": -0.43691954016685486,
+      "line_height": 0.8999999761581421,
+      "max_lines": 3,
+      "original": "fixture 15",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#888888",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#010202",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 16,
+      "block_type": "dialogue",
+      "box": [
+        0.29328123728434247,
+        0.8695370144314236,
+        0.5514583587646484,
+        0.0905556007667824
+      ],
+      "font_family": "Roboto Condensed",
+      "font_px": 36.0,
+      "font_selection": {
+        "category": "condensed",
+        "confidence": 0.8344871997833252,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        9.9000244140625,
+        9.9000244140625,
+        9.9000244140625,
+        9.9000244140625
+      ],
+      "italic": false,
+      "key": "test:16",
+      "letter_spacing": -1.3000000715255737,
+      "line_height": 1.0227272510528564,
+      "max_lines": 1,
+      "original": "fixture 16",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#d6d7d7",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 2065.23828,
+  "repeat_frame_ms": 193.45195700000002,
+  "size": [
+    1920,
+    1080
+  ],
+  "timings_ms": [
+    [
+      88.598739,
+      207.296343,
+      0.605359
+    ],
+    [
+      86.238991,
+      218.01002,
+      1.1911999999999998
+    ],
+    [
+      100.857257,
+      232.674373,
+      1.308703
+    ],
+    [
+      95.375386,
+      212.77226399999998,
+      0.6329509999999999
+    ],
+    [
+      86.88118,
+      204.845043,
+      0.625837
+    ]
+  ],
+  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
+  "render_ms": 421.0944030000974,
+  "update_ms": 2.2485259996756213,
+  "layout_diagnostics": [
+    {
+      "width": 80,
+      "height": 27,
+      "contentWidth": 74.109375,
+      "contentHeight": 19.899999499320984,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 109,
+      "height": 26,
+      "contentWidth": 102.734375,
+      "contentHeight": 21.699999451637268,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 57,
+      "height": 32,
+      "contentWidth": 53.140625,
+      "contentHeight": 28.899999260902405,
+      "lines": 3,
+      "truncated": false
+    },
+    {
+      "width": 16,
+      "height": 140,
+      "contentWidth": 15.875,
+      "contentHeight": 109.89999711513519,
+      "lines": 11,
+      "truncated": false
+    },
+    {
+      "width": 47,
+      "height": 52,
+      "contentWidth": 43.6875,
+      "contentHeight": 40.59999895095825,
+      "lines": 4,
+      "truncated": false
+    },
+    {
+      "width": 86,
+      "height": 44,
+      "contentWidth": 71.578125,
+      "contentHeight": 37.899999022483826,
+      "lines": 4,
+      "truncated": false
+    },
+    {
+      "width": 81,
+      "height": 38.999999999999986,
+      "contentWidth": 77.671875,
+      "contentHeight": 32.49999916553497,
+      "lines": 3,
+      "truncated": false
+    },
+    {
+      "width": 98,
+      "height": 40,
+      "contentWidth": 95.828125,
+      "contentHeight": 36.09999907016754,
+      "lines": 3,
+      "truncated": false
+    },
+    {
+      "width": 1039,
+      "height": 78,
+      "contentWidth": 588.921875,
+      "contentHeight": 47.0454535484314,
+      "lines": 1,
+      "truncated": false
+    }
+  ],
+  "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-1.png",
+  "approved_reference": false,
+  "translation_service": "none: predefined deterministic test input"
+}

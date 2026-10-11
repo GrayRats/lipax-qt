@@ -3,7 +3,8 @@
 //! Поле сохраняет свой id при сдвиге на несколько пикселей и небольшом изменении размера
 //! (IoU, расстояние между центрами, близкие размеры и высота строк). Пропавшее поле живёт ещё
 //! `ttl` (гистерезис: один неудачный кадр не уничтожает состояние). Всё, что решено для поля
-//! один раз, — прежде всего шрифт — хранится здесь и переживает смену текста и перевода.
+//! для поля, хранится здесь и переживает смену текста и перевода; подтверждённая смена
+//! оформления сбрасывает только шрифт и типографику, сохраняя идентичность поля.
 
 use super::background::BackgroundResult;
 use super::block_detector::DetectedTextBlock;
@@ -25,14 +26,23 @@ pub struct TrackedTextBlock {
     pub original_text: String,
     pub translated_text: String,
     pub detected_language: Script,
-    /// Признаки шрифта с первого удачного анализа поля.
+    /// Последние подтверждённые признаки шрифта поля.
     pub font_analysis: Option<FontAnalysis>,
-    /// Выбранный шрифт. `Some` — выбор заблокирован до сброса идентичности поля.
+    /// Выбранный шрифт. Стабилен до явного сброса или подтверждённой смены оформления.
     pub font: Option<FontSelection>,
+    /// Two confident observations are required before changing a tracked style.
+    pending_font_analysis: Option<FontAnalysis>,
+    pub last_font_probe: Option<Instant>,
     pub typography: Option<TypographyEstimate>,
     /// Lines as the OCR engine found them (frame pixels, top to bottom): the primary source of the
     /// line structure while they still agree with the detected block.
     pub ocr_lines: Option<Vec<Rect>>,
+    /// Accepted, source-associated OCR spans; used for geometry ownership, never exact font identity.
+    pub(crate) ocr_field: Option<super::ocr_geometry::OcrField>,
+    pub(crate) ocr_detector_rect: Option<Rect>,
+    pub(crate) ocr_owner: Option<u64>,
+    /// A confirmed empty/rejected reading is briefly cached; OCR failures never set this.
+    pub(crate) rejected_ocr_at: Option<Instant>,
     /// For the inspector: how the line structure was decided.
     pub lines_note: String,
     /// Where the glyphs really are according to the OCR lines (frame pixels), when that differs from
@@ -74,8 +84,14 @@ impl TrackedTextBlock {
             detected_language: Script::Other,
             font_analysis: None,
             font: None,
+            pending_font_analysis: None,
+            last_font_probe: None,
             typography: None,
             ocr_lines: None,
+            ocr_field: None,
+            ocr_detector_rect: None,
+            ocr_owner: None,
+            rejected_ocr_at: None,
             lines_note: String::new(),
             ocr_bounds: None,
             refined_rect: None,
@@ -99,6 +115,30 @@ impl TrackedTextBlock {
 
     pub fn font_selection_locked(&self) -> bool {
         self.font.is_some()
+    }
+
+    /// Update independently of OCR text. One noisy frame never changes the selected family.
+    pub fn observe_font(&mut self, analysis: FontAnalysis, now: Instant) {
+        self.last_font_probe = Some(now);
+        let Some(old) = self.font_analysis.as_ref() else {
+            self.font_analysis = Some(analysis);
+            return;
+        };
+        let changed = analysis.confidence >= 0.6 && (analysis.category != old.category
+            || analysis.weight != old.weight || analysis.italic != old.italic
+            || (analysis.width_ratio - old.width_ratio).abs() > 0.15
+            || (analysis.cap_height_px - old.cap_height_px).abs() > 0.2 * old.cap_height_px.max(1.0));
+        if !changed { self.pending_font_analysis = None; return; }
+        let confirmed = self.pending_font_analysis.as_ref().is_some_and(|p|
+            p.category == analysis.category && p.weight == analysis.weight && p.italic == analysis.italic
+            && (p.width_ratio - analysis.width_ratio).abs() <= 0.1);
+        if confirmed {
+            self.font_analysis = Some(analysis);
+            self.pending_font_analysis = None;
+            self.font = None;
+            self.typography = None;
+            self.revision += 1;
+        } else { self.pending_font_analysis = Some(analysis); }
     }
 
     /// Поле видно в последнем обработанном кадре.
@@ -249,6 +289,8 @@ impl TextBlockTracker {
         for b in &mut self.blocks {
             b.font = None;
             b.font_analysis = None;
+            b.pending_font_analysis = None;
+            b.last_font_probe = None;
             b.revision += 1;
         }
     }

@@ -951,7 +951,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                     failure.get_or_insert((message, false));
                 }
                 Ok(result) => {
-                    let original = text::normalize(&result.text);
+                    let mut original = text::normalize(&result.text);
                     let (rect, origin) = origins.get(&id).copied().unwrap_or_default();
                     if let Some(c) = unsure(result.confidence, s.effective_minimum_confidence()) {
                         // The engine is not sure what it read: keep the field as it was, do not translate noise.
@@ -959,14 +959,15 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                         let details = vec![format!("OCR ({}) отброшен: уверенность {c:.0}% ниже порога {}%", result.engine, s.effective_minimum_confidence())];
                         state.ignored.insert(id, (now, PreviewBox { rect, original: original.clone(), translation: String::new(), details, block: None, confidence: result.confidence }));
                         newly_ignored = true;
-                        engine.complete(id, None, s);
+                        engine.reject_ocr(id, s);
                         continue;
                     }
                     state.ignored.remove(&id);
                     // The lines the engine found describe the structure of the field better than the picture does.
-                    let lines: Vec<crate::layout::Rect> = result.lines.iter().map(|l| l.rect.in_frame(origin)).collect();
-                    if engine.observe_ocr_lines(id, &lines, s) == crate::layout::engine::LinesVerdict::Split {
-                        // Not published as one field: it is read again as its parts on the very next tick.
+                    let observation = engine.observe_ocr_result(id, &result, origin, s);
+                    original = observation.text;
+                    if observation.verdict == crate::layout::engine::LinesVerdict::Split {
+                        // Read the corrected split/union crops on the next tick before translating.
                         state.rescan = true;
                         state.field_ocr.remove(&id);
                         continue;
@@ -977,7 +978,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                         None => format!("OCR ({}): уверенность не сообщается", if result.engine.is_empty() { "?" } else { result.engine }),
                     };
                     state.field_ocr.insert(id, match filters_note(&result) { Some(note) => format!("{read}; {note}"), None => read });
-                    if !text::is_meaningful(&original) { engine.complete(id, None, s); continue; }
+                    if !text::is_meaningful(&original) { engine.reject_ocr(id, s); continue; }
                     match engine.cached_translation(id, &original).or_else(|| self.cached(s, &src, &s.translation.target_language, &original)) {
                         Some(t) => engine.complete(id, Some((original, t)), s),
                         None => pending.push((id, original)),
@@ -985,6 +986,9 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                 }
             }
         }
+        // Crops queued for regrouping are read again before translation: never concatenate guesses.
+        if engine.needs_rescan() { state.rescan = true; }
+        pending.retain(|(id,_)| !engine.is_regrouping(*id));
         // 3. Translation of the distinct texts.
         if !pending.is_empty() && !matches!(failure, Some((_, true))) {
             state.enter(&region.id, Phase::Translating);

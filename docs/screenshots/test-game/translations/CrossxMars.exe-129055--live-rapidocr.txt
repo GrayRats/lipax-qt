@@ -1,0 +1,17 @@
+[1] 60% Fuel
+→ 60% топлива
+
+[2] Fuel heating status: nominal Exoskeleton management: active Auto-pilot: engaged ip: 122:115.122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active
+→ Нагрев топлива: штатно
+Управление экзоскелетом: активно
+Автопилот: включён
+ip: 122:115.122.33:E444:1123
+Имя корабля: Hevacel nikonomiko S38123
+Временное смещение щита: 333112
+Управление уклонением: активно
+
+[5] Mika
+→ Мика
+
+[11] Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be... but I have the right to be angry!
+→ Доброе утро, Элла. Иногда я сомневаюсь, что нахожусь на своём месте — эти перевозки туда-сюда утомляют, и, честно говоря, я расстраиваюсь из-за них сильнее, чем следовало бы… Но я имею право злиться!

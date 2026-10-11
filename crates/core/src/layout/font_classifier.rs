@@ -129,16 +129,20 @@ fn best_slant(mask: &InkMask, lines: &[&Rect]) -> (f32, f32) {
         let (y0, y1) = (line.y as usize, (line.bottom() as usize + 1).min(mask.h));
         if x1 <= x0 || y1 <= y0 { continue; }
         let bins = (x1 - x0) + (y1 - y0) + 8;
+        // Read the mask once. Reuse the histogram for all angles; keep the same
+        // rounding and scores so the classifier's calibrated thresholds do not move.
+        let rows: Vec<Vec<usize>> = (y0..y1).map(|y| {
+            (x0..x1).filter(|&x| mask.at(x, y)).map(|x| x - x0).collect()
+        }).collect();
+        let mut hist = vec![0u32; bins];
         for (i, total) in score.iter_mut().enumerate() {
             let s = -0.06 + 0.02 * i as f32;
-            let mut hist = vec![0u32; bins];
-            for y in y0..y1 {
-                let shift = -s * (y1 - y) as f32;
-                for x in x0..x1 {
-                    if mask.at(x, y) {
-                        let b = ((x - x0) as f32 + shift).round() as i64 + 4 + (y1 - y0) as i64 / 2;
-                        if let Some(c) = hist.get_mut(b.max(0) as usize) { *c += 1; }
-                    }
+            hist.fill(0);
+            for (row, xs) in rows.iter().enumerate() {
+                let shift = -s * (y1 - y0 - row) as f32;
+                for &x in xs {
+                    let b = (x as f32 + shift).round() as i64 + 4 + (y1 - y0) as i64 / 2;
+                    if let Some(c) = hist.get_mut(b.max(0) as usize) { *c += 1; }
                 }
             }
             *total += hist.iter().map(|c| (*c as f64).powi(2)).sum::<f64>();
@@ -201,6 +205,9 @@ impl Coverage {
 
 impl FontClassifier {
     pub fn features(&self, img: &RgbaImage, mask: &InkMask, block: &DetectedTextBlock) -> FontFeatures {
+        if block.lines.is_empty() || mask.w == 0 || mask.h == 0 {
+            return FontFeatures::default();
+        }
         let cover = Coverage::new(img, mask, &block.rect);
         let line_rects: Vec<&Rect> = block.lines.iter().map(|l| &l.rect).collect();
         let per_line: Vec<Vec<Rect>> = block.lines.iter().map(|l| merge_glyphs(l.glyphs.clone())).collect();

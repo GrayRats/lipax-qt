@@ -1,0 +1,341 @@
+{
+  "block_ocr": [],
+  "blocks": [
+    {
+      "cap_height": 85.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 94.0,
+        "w": 877.0,
+        "x": 486.0,
+        "y": 449.0
+      }
+    }
+  ],
+  "cached_placement_ms": 0.087777,
+  "dropped": 0,
+  "dropped_details": [],
+  "finish_ms": [
+    0.06335099999999999
+  ],
+  "first_frame_ms": 218.55187700000002,
+  "fits": 1,
+  "frame_blocks": [
+    {
+      "id": 1,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 94.0,
+        "w": 877.0,
+        "x": 486.0,
+        "y": 449.0
+      }
+    }
+  ],
+  "hits": 1,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-14/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 30,
+  "ocr": {
+    "engine": "rapidocr",
+    "language": "eng",
+    "latency_ms": 2654.678017,
+    "lines": [
+      {
+        "confidence": 99.77458953857422,
+        "rect": {
+          "h": 55.0,
+          "w": 83.0,
+          "x": 67.0,
+          "y": 14.0
+        },
+        "text": "Day"
+      },
+      {
+        "confidence": 99.90365600585938,
+        "rect": {
+          "h": 42.0,
+          "w": 71.0,
+          "x": 324.0,
+          "y": 27.0
+        },
+        "text": "Skip"
+      },
+      {
+        "confidence": 52.99011993408203,
+        "rect": {
+          "h": 71.0,
+          "w": 76.0,
+          "x": 1343.0,
+          "y": 49.0
+        },
+        "text": "A"
+      },
+      {
+        "confidence": 99.32009887695312,
+        "rect": {
+          "h": 61.0,
+          "w": 147.0,
+          "x": 226.0,
+          "y": 782.0
+        },
+        "text": "Gorna"
+      },
+      {
+        "confidence": 94.9266586303711,
+        "rect": {
+          "h": 90.0,
+          "w": 208.0,
+          "x": 47.0,
+          "y": 870.0
+        },
+        "text": "Finally"
+      },
+      {
+        "confidence": 99.60971069335938,
+        "rect": {
+          "h": 67.0,
+          "w": 196.0,
+          "x": 255.0,
+          "y": 886.0
+        },
+        "text": "opened"
+      },
+      {
+        "confidence": 67.74937438964844,
+        "rect": {
+          "h": 71.0,
+          "w": 84.0,
+          "x": 455.0,
+          "y": 886.0
+        },
+        "text": "WP"
+      },
+      {
+        "confidence": 99.99311828613281,
+        "rect": {
+          "h": 64.0,
+          "w": 172.0,
+          "x": 543.0,
+          "y": 883.0
+        },
+        "text": "after"
+      },
+      {
+        "confidence": 99.9984359741211,
+        "rect": {
+          "h": 64.0,
+          "w": 136.0,
+          "x": 714.0,
+          "y": 882.0
+        },
+        "text": "that"
+      },
+      {
+        "confidence": 95.56552124023438,
+        "rect": {
+          "h": 63.0,
+          "w": 259.0,
+          "x": 857.0,
+          "y": 883.0
+        },
+        "text": "incident,"
+      },
+      {
+        "confidence": 99.99523162841797,
+        "rect": {
+          "h": 60.0,
+          "w": 110.0,
+          "x": 1121.0,
+          "y": 885.0
+        },
+        "text": "the"
+      },
+      {
+        "confidence": 99.96519470214844,
+        "rect": {
+          "h": 60.0,
+          "w": 149.0,
+          "x": 1235.0,
+          "y": 885.0
+        },
+        "text": "idiot"
+      },
+      {
+        "confidence": 88.4680404663086,
+        "rect": {
+          "h": 68.0,
+          "w": 201.0,
+          "x": 1385.0,
+          "y": 883.0
+        },
+        "text": "broke D"
+      },
+      {
+        "confidence": 93.24459075927734,
+        "rect": {
+          "h": 54.0,
+          "w": 77.0,
+          "x": 1556.0,
+          "y": 896.0
+        },
+        "text": "my"
+      },
+      {
+        "confidence": 93.89928436279297,
+        "rect": {
+          "h": 65.0,
+          "w": 226.0,
+          "x": 55.0,
+          "y": 953.0
+        },
+        "text": "counter:"
+      },
+      {
+        "confidence": 99.9985580444336,
+        "rect": {
+          "h": 71.0,
+          "w": 134.0,
+          "x": 306.0,
+          "y": 950.0
+        },
+        "text": "with"
+      },
+      {
+        "confidence": 99.98918151855469,
+        "rect": {
+          "h": 70.0,
+          "w": 100.0,
+          "x": 443.0,
+          "y": 947.0
+        },
+        "text": "his"
+      },
+      {
+        "confidence": 93.78873443603516,
+        "rect": {
+          "h": 74.0,
+          "w": 198.0,
+          "x": 545.0,
+          "y": 948.0
+        },
+        "text": "head.."
+      }
+    ],
+    "text": "Day\nSkip\nA\nGorna\nFinally\nopened\nWP\nafter\nthat\nincident,\nthe\nidiot\nbroke D\nmy\ncounter:\nwith\nhis\nhead.."
+  },
+  "ocr_history": [],
+  "ocr_scans": 1,
+  "peak_memory": "VmHWM:\t  385420 kB",
+  "placed": [
+    {
+      "alignment": "center",
+      "background": {
+        "color": "#6d3947",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 1,
+      "block_type": "unknown",
+      "box": [
+        0.2517407605784681,
+        0.40733772342427094,
+        0.4868773433315479,
+        0.11853245531514581
+      ],
+      "font_family": "Noto Sans CJK SC",
+      "font_px": 37.0,
+      "font_selection": {
+        "category": "cjk_sans",
+        "confidence": 0.059166669845581055,
+        "generic": false
+      },
+      "font_weight": 900,
+      "inner": [
+        16.0,
+        16.0,
+        16.0,
+        16.0
+      ],
+      "italic": false,
+      "key": "test:1",
+      "letter_spacing": 1.3699991703033447,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "fixture 1",
+      "outline": false,
+      "outline_color": "#0d0000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        933.5,
+        531.5
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#c69885",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 60.188576,
+  "repeat_frame_ms": 93.652055,
+  "size": [
+    1867,
+    1063
+  ],
+  "timings_ms": [
+    [
+      77.005212,
+      67.250715,
+      0.138773
+    ],
+    [
+      122.196172,
+      50.541731999999996,
+      0.14958300000000002
+    ],
+    [
+      84.88350899999999,
+      48.878868,
+      0.111161
+    ],
+    [
+      78.78106,
+      49.489747,
+      0.119207
+    ],
+    [
+      88.924085,
+      46.087201,
+      0.170213
+    ]
+  ],
+  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
+  "render_ms": 166.7665550012316,
+  "update_ms": 2.030131998253637,
+  "layout_diagnostics": [
+    {
+      "width": 877,
+      "height": 94,
+      "contentWidth": 852.3125,
+      "contentHeight": 53.59999871253967,
+      "lines": 1,
+      "truncated": false
+    }
+  ],
+  "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-14.png",
+  "approved_reference": false,
+  "translation_service": "none: predefined deterministic test input"
+}

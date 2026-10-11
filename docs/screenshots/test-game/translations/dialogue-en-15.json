@@ -1,0 +1,1177 @@
+{
+  "block_ocr": [],
+  "blocks": [
+    {
+      "cap_height": 20.0,
+      "category": "SansSerif",
+      "confidence": 0.35785001516342163,
+      "font": "Inter",
+      "rect": {
+        "h": 20.0,
+        "w": 147.0,
+        "x": 789.0,
+        "y": 432.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "SansSerif",
+      "confidence": 0.6683333516120911,
+      "font": "Inter",
+      "rect": {
+        "h": 108.0,
+        "w": 277.0,
+        "x": 553.0,
+        "y": 462.0
+      }
+    },
+    {
+      "cap_height": 22.0,
+      "category": "Serif",
+      "confidence": 0.37148869037628174,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 29.0,
+        "w": 52.0,
+        "x": 721.0,
+        "y": 488.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "Serif",
+      "confidence": 0.6692963242530823,
+      "font": "Literata",
+      "rect": {
+        "h": 27.0,
+        "w": 116.0,
+        "x": 755.0,
+        "y": 506.0
+      }
+    },
+    {
+      "cap_height": 41.0,
+      "category": "SansSerif",
+      "confidence": 0.27931416034698486,
+      "font": "Inter",
+      "rect": {
+        "h": 43.0,
+        "w": 172.0,
+        "x": 5.0,
+        "y": 727.0
+      }
+    },
+    {
+      "cap_height": 18.0,
+      "category": "SansSerif",
+      "confidence": 0.2534700334072113,
+      "font": "Inter",
+      "rect": {
+        "h": 27.0,
+        "w": 74.0,
+        "x": 674.0,
+        "y": 727.0
+      }
+    },
+    {
+      "cap_height": 21.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 21.0,
+        "w": 52.0,
+        "x": 956.0,
+        "y": 727.0
+      }
+    },
+    {
+      "cap_height": 19.0,
+      "category": "SansSerif",
+      "confidence": 0.27225950360298157,
+      "font": "Inter",
+      "rect": {
+        "h": 19.0,
+        "w": 50.0,
+        "x": 785.0,
+        "y": 735.0
+      }
+    },
+    {
+      "cap_height": 7.0,
+      "category": "Serif",
+      "confidence": 0.2910400331020355,
+      "font": "Literata",
+      "rect": {
+        "h": 11.0,
+        "w": 58.0,
+        "x": 829.0,
+        "y": 748.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "SansSerif",
+      "confidence": 0.7670988440513611,
+      "font": "Inter",
+      "rect": {
+        "h": 61.0,
+        "w": 993.0,
+        "x": 59.0,
+        "y": 786.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "SansSerif",
+      "confidence": 0.7705555558204651,
+      "font": "Inter",
+      "rect": {
+        "h": 34.0,
+        "w": 339.0,
+        "x": 1114.0,
+        "y": 786.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "SansSerif",
+      "confidence": 0.8122222423553467,
+      "font": "Inter",
+      "rect": {
+        "h": 195.0,
+        "w": 1389.0,
+        "x": 58.0,
+        "y": 801.0
+      }
+    },
+    {
+      "cap_height": 136.0,
+      "category": "Unknown",
+      "confidence": 0.06222549080848694,
+      "font": "Inter",
+      "rect": {
+        "h": 136.0,
+        "w": 246.0,
+        "x": 10.0,
+        "y": 860.0
+      }
+    },
+    {
+      "cap_height": 90.0,
+      "category": "Unknown",
+      "confidence": 0.06381481885910034,
+      "font": "Inter",
+      "rect": {
+        "h": 98.0,
+        "w": 149.0,
+        "x": 413.0,
+        "y": 861.0
+      }
+    },
+    {
+      "cap_height": 104.0,
+      "category": "Serif",
+      "confidence": 0.6063333749771118,
+      "font": "Literata",
+      "rect": {
+        "h": 104.0,
+        "w": 605.0,
+        "x": 55.0,
+        "y": 892.0
+      }
+    },
+    {
+      "cap_height": 59.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 59.0,
+        "w": 167.0,
+        "x": 1397.0,
+        "y": 937.0
+      }
+    }
+  ],
+  "cached_placement_ms": 3.062491,
+  "dropped": 11,
+  "dropped_details": [
+    {
+      "block_id": 2,
+      "original": "fixture 2",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 3,
+      "original": "fixture 3",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 4,
+      "original": "fixture 4",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 8,
+      "original": "fixture 8",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 9,
+      "original": "fixture 9",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 10,
+      "original": "fixture 10",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 12,
+      "original": "fixture 12",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 13,
+      "original": "fixture 13",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 14,
+      "original": "fixture 14",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 15,
+      "original": "fixture 15",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 16,
+      "original": "fixture 16",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    }
+  ],
+  "finish_ms": [
+    0.556756
+  ],
+  "first_frame_ms": 1043.8305429999998,
+  "fits": 16,
+  "frame_blocks": [
+    {
+      "id": 1,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 20.0,
+        "w": 147.0,
+        "x": 789.0,
+        "y": 432.0
+      }
+    },
+    {
+      "id": 2,
+      "lines_note": "",
+      "source_lines": 7,
+      "text_rect": {
+        "h": 108.0,
+        "w": 277.0,
+        "x": 553.0,
+        "y": 462.0
+      }
+    },
+    {
+      "id": 3,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 29.0,
+        "w": 52.0,
+        "x": 721.0,
+        "y": 488.0
+      }
+    },
+    {
+      "id": 4,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 27.0,
+        "w": 116.0,
+        "x": 755.0,
+        "y": 506.0
+      }
+    },
+    {
+      "id": 5,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 43.0,
+        "w": 172.0,
+        "x": 5.0,
+        "y": 727.0
+      }
+    },
+    {
+      "id": 6,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 27.0,
+        "w": 74.0,
+        "x": 674.0,
+        "y": 727.0
+      }
+    },
+    {
+      "id": 7,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 21.0,
+        "w": 52.0,
+        "x": 956.0,
+        "y": 727.0
+      }
+    },
+    {
+      "id": 8,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 19.0,
+        "w": 50.0,
+        "x": 785.0,
+        "y": 735.0
+      }
+    },
+    {
+      "id": 9,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 11.0,
+        "w": 58.0,
+        "x": 829.0,
+        "y": 748.0
+      }
+    },
+    {
+      "id": 10,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 61.0,
+        "w": 993.0,
+        "x": 59.0,
+        "y": 786.0
+      }
+    },
+    {
+      "id": 11,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 34.0,
+        "w": 339.0,
+        "x": 1114.0,
+        "y": 786.0
+      }
+    },
+    {
+      "id": 12,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 195.0,
+        "w": 1389.0,
+        "x": 58.0,
+        "y": 801.0
+      }
+    },
+    {
+      "id": 13,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 136.0,
+        "w": 246.0,
+        "x": 10.0,
+        "y": 860.0
+      }
+    },
+    {
+      "id": 14,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 98.0,
+        "w": 149.0,
+        "x": 413.0,
+        "y": 861.0
+      }
+    },
+    {
+      "id": 15,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 104.0,
+        "w": 605.0,
+        "x": 55.0,
+        "y": 892.0
+      }
+    },
+    {
+      "id": 16,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 59.0,
+        "w": 167.0,
+        "x": 1397.0,
+        "y": 937.0
+      }
+    }
+  ],
+  "hits": 16,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-15/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 30,
+  "ocr": {
+    "engine": "rapidocr",
+    "language": "eng",
+    "latency_ms": 3572.808446,
+    "lines": [
+      {
+        "confidence": 99.4791488647461,
+        "rect": {
+          "h": 13.0,
+          "w": 80.0,
+          "x": 824.0,
+          "y": 0.0
+        },
+        "text": "Cross x Mars"
+      },
+      {
+        "confidence": 99.75892639160156,
+        "rect": {
+          "h": 29.0,
+          "w": 155.0,
+          "x": 786.0,
+          "y": 427.0
+        },
+        "text": "60% Fuel"
+      },
+      {
+        "confidence": 97.70172119140625,
+        "rect": {
+          "h": 16.0,
+          "w": 119.0,
+          "x": 572.0,
+          "y": 458.0
+        },
+        "text": "Fuel heating status:"
+      },
+      {
+        "confidence": 99.92166900634766,
+        "rect": {
+          "h": 10.0,
+          "w": 48.0,
+          "x": 741.0,
+          "y": 461.0
+        },
+        "text": "nominal"
+      },
+      {
+        "confidence": 99.51473236083984,
+        "rect": {
+          "h": 16.0,
+          "w": 161.0,
+          "x": 569.0,
+          "y": 474.0
+        },
+        "text": "Exoskeleton management:"
+      },
+      {
+        "confidence": 99.72030639648438,
+        "rect": {
+          "h": 15.0,
+          "w": 39.0,
+          "x": 766.0,
+          "y": 473.0
+        },
+        "text": "active"
+      },
+      {
+        "confidence": 99.95708465576172,
+        "rect": {
+          "h": 16.0,
+          "w": 70.0,
+          "x": 566.0,
+          "y": 489.0
+        },
+        "text": "Auto-pilot:"
+      },
+      {
+        "confidence": 68.2317886352539,
+        "rect": {
+          "h": 8.0,
+          "w": 12.0,
+          "x": 721.0,
+          "y": 494.0
+        },
+        "text": "cr"
+      },
+      {
+        "confidence": 99.54383087158203,
+        "rect": {
+          "h": 9.0,
+          "w": 14.0,
+          "x": 760.0,
+          "y": 492.0
+        },
+        "text": "ed"
+      },
+      {
+        "confidence": 98.41067504882812,
+        "rect": {
+          "h": 14.0,
+          "w": 18.0,
+          "x": 562.0,
+          "y": 506.0
+        },
+        "text": "ip:"
+      },
+      {
+        "confidence": 87.68009948730469,
+        "rect": {
+          "h": 15.0,
+          "w": 41.0,
+          "x": 696.0,
+          "y": 504.0
+        },
+        "text": "122.:1"
+      },
+      {
+        "confidence": 99.1637954711914,
+        "rect": {
+          "h": 20.0,
+          "w": 121.0,
+          "x": 752.0,
+          "y": 502.0
+        },
+        "text": "122.33:E444:1123"
+      },
+      {
+        "confidence": 99.1408462524414,
+        "rect": {
+          "h": 16.0,
+          "w": 199.0,
+          "x": 558.0,
+          "y": 521.0
+        },
+        "text": "ship name: Hevacel nikonomiko"
+      },
+      {
+        "confidence": 99.94571685791016,
+        "rect": {
+          "h": 16.0,
+          "w": 54.0,
+          "x": 772.0,
+          "y": 520.0
+        },
+        "text": "S38123"
+      },
+      {
+        "confidence": 98.88581085205078,
+        "rect": {
+          "h": 18.0,
+          "w": 278.0,
+          "x": 554.0,
+          "y": 537.0
+        },
+        "text": "Temporary shielding displacement: 333112"
+      },
+      {
+        "confidence": 99.76615905761719,
+        "rect": {
+          "h": 14.0,
+          "w": 182.0,
+          "x": 551.0,
+          "y": 556.0
+        },
+        "text": "Evasive action management:"
+      },
+      {
+        "confidence": 99.99028778076172,
+        "rect": {
+          "h": 11.0,
+          "w": 37.0,
+          "x": 764.0,
+          "y": 557.0
+        },
+        "text": "active"
+      },
+      {
+        "confidence": 87.6958999633789,
+        "rect": {
+          "h": 14.0,
+          "w": 78.0,
+          "x": 547.0,
+          "y": 573.0
+        },
+        "text": "Engine itate"
+      },
+      {
+        "confidence": 96.5849380493164,
+        "rect": {
+          "h": 15.0,
+          "w": 110.0,
+          "x": 543.0,
+          "y": 591.0
+        },
+        "text": "Relative velocity"
+      },
+      {
+        "confidence": 96.59528350830078,
+        "rect": {
+          "h": 27.0,
+          "w": 167.0,
+          "x": 935.0,
+          "y": 604.0
+        },
+        "text": "rSpeed: 5 ms"
+      },
+      {
+        "confidence": 98.31732177734375,
+        "rect": {
+          "h": 30.0,
+          "w": 155.0,
+          "x": 942.0,
+          "y": 637.0
+        },
+        "text": "Temp: 20 C"
+      },
+      {
+        "confidence": 98.33837890625,
+        "rect": {
+          "h": 30.0,
+          "w": 296.0,
+          "x": 566.0,
+          "y": 674.0
+        },
+        "text": "1-unread message"
+      },
+      {
+        "confidence": 99.86176300048828,
+        "rect": {
+          "h": 61.0,
+          "w": 185.0,
+          "x": 0.0,
+          "y": 717.0
+        },
+        "text": "Mika"
+      },
+      {
+        "confidence": 95.05487060546875,
+        "rect": {
+          "h": 35.0,
+          "w": 213.0,
+          "x": 677.0,
+          "y": 725.0
+        },
+        "text": ">Tracking"
+      },
+      {
+        "confidence": 99.98161315917969,
+        "rect": {
+          "h": 38.0,
+          "w": 118.0,
+          "x": 902.0,
+          "y": 723.0
+        },
+        "text": "Earth"
+      },
+      {
+        "confidence": 23.328174591064453,
+        "rect": {
+          "h": 13.0,
+          "w": 17.0,
+          "x": 1025.0,
+          "y": 735.0
+        },
+        "text": "V"
+      },
+      {
+        "confidence": 99.67996978759766,
+        "rect": {
+          "h": 49.0,
+          "w": 164.0,
+          "x": 50.0,
+          "y": 776.0
+        },
+        "text": "Morning,"
+      },
+      {
+        "confidence": 77.80817413330078,
+        "rect": {
+          "h": 54.0,
+          "w": 164.0,
+          "x": 1528.0,
+          "y": 767.0
+        },
+        "text": "KKx"
+      },
+      {
+        "confidence": 98.20117950439453,
+        "rect": {
+          "h": 36.0,
+          "w": 282.0,
+          "x": 219.0,
+          "y": 781.0
+        },
+        "text": "Ella. Sometimes"
+      },
+      {
+        "confidence": 98.46102905273438,
+        "rect": {
+          "h": 44.0,
+          "w": 993.0,
+          "x": 482.0,
+          "y": 780.0
+        },
+        "text": "s I wonder if I'm in the right place — all this hauling back-"
+      },
+      {
+        "confidence": 99.32280731201172,
+        "rect": {
+          "h": 36.0,
+          "w": 500.0,
+          "x": 53.0,
+          "y": 837.0
+        },
+        "text": "and-forth gets tiresome and,"
+      },
+      {
+        "confidence": 99.41588592529297,
+        "rect": {
+          "h": 43.0,
+          "w": 894.0,
+          "x": 553.0,
+          "y": 833.0
+        },
+        "text": "quite frankly, I'm upset at it more than I should be.."
+      },
+      {
+        "confidence": 98.58645629882812,
+        "rect": {
+          "h": 41.0,
+          "w": 555.0,
+          "x": 52.0,
+          "y": 887.0
+        },
+        "text": "but I have the right to be angry!"
+      }
+    ],
+    "text": "Cross x Mars\n60% Fuel\nFuel heating status:\nnominal\nExoskeleton management:\nactive\nAuto-pilot:\ncr\ned\nip:\n122.:1\n122.33:E444:1123\nship name: Hevacel nikonomiko\nS38123\nTemporary shielding displacement: 333112\nEvasive action management:\nactive\nEngine itate\nRelative velocity\nrSpeed: 5 ms\nTemp: 20 C\n1-unread message\nMika\n>Tracking\nEarth\nV\nMorning,\nKKx\nElla. Sometimes\ns I wonder if I'm in the right place — all this hauling back-\nand-forth gets tiresome and,\nquite frankly, I'm upset at it more than I should be..\nbut I have the right to be angry!"
+  },
+  "ocr_history": [],
+  "ocr_scans": 1,
+  "peak_memory": "VmHWM:\t  425440 kB",
+  "placed": [
+    {
+      "alignment": "center",
+      "background": {
+        "color": "#114c6e",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 1,
+      "block_type": "unknown",
+      "box": [
+        0.4520785219399538,
+        0.42771084337349397,
+        0.0918013856812933,
+        0.03112449799196787
+      ],
+      "font_family": "Roboto Condensed",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.35785001516342163,
+        "generic": false
+      },
+      "font_weight": 800,
+      "inner": [
+        6.0,
+        6.0,
+        6.0,
+        5.0
+      ],
+      "italic": false,
+      "key": "test:1",
+      "letter_spacing": -0.3393799066543579,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "fixture 1",
+      "outline": false,
+      "outline_color": "#00000e",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#1eadbb",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#463d2e",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 5,
+      "block_type": "character_name",
+      "box": [
+        0.0,
+        0.7169678469738329,
+        0.10964202880859375,
+        0.06415665101813504
+      ],
+      "font_family": "Inter",
+      "font_px": 16.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.27931416034698486,
+        "generic": false
+      },
+      "font_weight": 600,
+      "inner": [
+        5.0,
+        12.9000244140625,
+        12.899993896484375,
+        8.0
+      ],
+      "italic": false,
+      "key": "test:5",
+      "letter_spacing": -0.6539852023124695,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 5",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#b8a890",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#416c87",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 6,
+      "block_type": "button",
+      "box": [
+        0.3797921407580651,
+        0.7036144455752699,
+        0.061431884765625,
+        0.06947792390264182
+      ],
+      "expanded": true,
+      "font_family": "Inter",
+      "font_px": 9.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.2534700334072113,
+        "generic": false
+      },
+      "font_weight": 500,
+      "inner": [
+        16.20001220703125,
+        16.20001220703125,
+        16.20001220703125,
+        16.0
+      ],
+      "italic": false,
+      "key": "test:6",
+      "letter_spacing": -0.39121660590171814,
+      "line_height": 0.8999999761581421,
+      "max_lines": 3,
+      "original": "fixture 6",
+      "outline": false,
+      "outline_color": "#000c27",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#ffffff",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#40718e",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 7,
+      "block_type": "button",
+      "box": [
+        0.544688235804886,
+        0.6935743462129769,
+        0.0445727200761403,
+        0.07650597507216365
+      ],
+      "expanded": true,
+      "font_family": "Inter",
+      "font_px": 9.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.22671669721603394,
+        "generic": false
+      },
+      "font_weight": 700,
+      "inner": [
+        12.5999755859375,
+        12.5999755859375,
+        12.5999755859375,
+        12.5999755859375
+      ],
+      "italic": false,
+      "key": "test:7",
+      "letter_spacing": -0.379094660282135,
+      "line_height": 0.8999999761581421,
+      "max_lines": 4,
+      "original": "fixture 7",
+      "outline": false,
+      "outline_color": "#00112e",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#ffffff",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#494949",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 11,
+      "block_type": "unknown",
+      "box": [
+        0.6431870669745958,
+        0.7055221006094691,
+        0.19630484988452657,
+        0.07510038935037024
+      ],
+      "degraded": "beside-original",
+      "font_family": "Inter",
+      "font_px": 25.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.7705555558204651,
+        "generic": false
+      },
+      "font_weight": 600,
+      "inner": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "italic": false,
+      "key": "test:11",
+      "letter_spacing": -1.0241364240646362,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 11",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#d4dbde",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 1448.415841,
+  "repeat_frame_ms": 181.57136400000002,
+  "size": [
+    1732,
+    996
+  ],
+  "timings_ms": [
+    [
+      99.662549,
+      280.991163,
+      0.692454
+    ],
+    [
+      81.662137,
+      285.238131,
+      0.898455
+    ],
+    [
+      89.087175,
+      258.977627,
+      0.667396
+    ],
+    [
+      81.234325,
+      258.35921299999995,
+      0.705488
+    ],
+    [
+      81.618704,
+      281.11154100000005,
+      0.672786
+    ]
+  ],
+  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
+  "render_ms": 315.5270469997049,
+  "update_ms": 1.5092640005605062,
+  "layout_diagnostics": [
+    {
+      "width": 147,
+      "height": 20,
+      "contentWidth": 130.296875,
+      "contentHeight": 10.899999737739563,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 172,
+      "height": 43.00000000000001,
+      "contentWidth": 169.453125,
+      "contentHeight": 38.899999022483826,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 74,
+      "height": 37,
+      "contentWidth": 72.34375,
+      "contentHeight": 31.59999918937683,
+      "lines": 3,
+      "truncated": false
+    },
+    {
+      "width": 52,
+      "height": 51,
+      "contentWidth": 48.8125,
+      "contentHeight": 41.499998927116394,
+      "lines": 4,
+      "truncated": false
+    },
+    {
+      "width": 332,
+      "height": 66.79998779296875,
+      "contentWidth": 264.421875,
+      "contentHeight": 59.69999849796295,
+      "lines": 2,
+      "truncated": false
+    }
+  ],
+  "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-15.png",
+  "approved_reference": false,
+  "translation_service": "none: predefined deterministic test input"
+}

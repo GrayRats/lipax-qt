@@ -203,28 +203,20 @@ inline void scheduleLipaTestSwitch(int delayMs, const QString &patch) {
 // ── Font metrics for fitting the in-place translation (layout::fit::TextMeasure) ──
 #include <QFont>
 #include <QFontMetricsF>
+#include "text_measure.h"
 #include <cmath>
 inline QFont lipaFont(rust::Str family, int weight, bool italic, double px, double letterSpacing) {
-    QFont f(QString::fromUtf8(family.data(), int(family.size())));
-    f.setStyleStrategy(QFont::NoFontMerging);
-    f.setPixelSize(qMax(1, int(std::floor(px))));
-    f.setWeight(QFont::Weight(weight));
-    f.setItalic(italic);
-    f.setLetterSpacing(QFont::AbsoluteSpacing, letterSpacing);
-    return f;
+    return lipa::textFont(QString::fromUtf8(family.data(), int(family.size())), weight, italic, px, letterSpacing);
 }
 // wrap: 0 word, 1 anywhere, 2 none. out: width, height, line spacing, line count.
 inline void measureLipaText(rust::Str family, int weight, bool italic, double px, double letterSpacing,
                             double width, int wrap, rust::Str text, rust::Slice<double> out) {
-    const QFontMetricsF fm(lipaFont(family, weight, italic, px, letterSpacing));
-    const int flags = wrap == 0 ? Qt::TextWordWrap : wrap == 1 ? Qt::TextWrapAnywhere : 0;
-    const QRectF r = fm.boundingRect(QRectF(0, 0, wrap == 2 ? 1e7 : width, 1e7), flags,
-                                     QString::fromUtf8(text.data(), int(text.size())));
-    const double spacing = fm.lineSpacing();
-    out[0] = r.width();
-    out[1] = r.height();
-    out[2] = spacing;
-    out[3] = spacing > 0 ? qMax(1.0, std::round(r.height() / spacing)) : 1.0;
+    const auto extent = lipa::measureText(QString::fromUtf8(text.data(), int(text.size())),
+        lipaFont(family, weight, italic, px, letterSpacing), width, wrap);
+    out[0] = extent.width;
+    out[1] = extent.height;
+    out[2] = extent.spacing;
+    out[3] = extent.lines;
 }
 // Cap height relative to the pixel size; 0.7 if the font does not report it.
 inline double lipaCapRatio(rust::Str family, int weight, bool italic) {

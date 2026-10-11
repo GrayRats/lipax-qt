@@ -1,0 +1,65 @@
+{
+  "screens": [
+    [
+      0,
+      0,
+      2560,
+      1080
+    ]
+  ],
+  "windows": [
+    {
+      "uuid": "{fffb2d71-6712-447a-ac21-39d5986ec256}",
+      "pid": 100656,
+      "caption": "Hold Me Tight All Night, Onii-chan!",
+      "resourceClass": "steam_app_default",
+      "client": [
+        421,
+        43,
+        1718,
+        985
+      ],
+      "frame": [
+        421,
+        15,
+        1718,
+        1013
+      ],
+      "buffer": [
+        421,
+        43,
+        1718,
+        985
+      ],
+      "minimized": true,
+      "capture": "engine.exe-100656.png"
+    },
+    {
+      "uuid": "{7400ea24-d8cf-4076-98ca-571155193b58}",
+      "pid": 129055,
+      "caption": "Cross x Mars",
+      "resourceClass": "steam_app_default",
+      "client": [
+        410,
+        65,
+        1739,
+        978
+      ],
+      "frame": [
+        410,
+        37,
+        1739,
+        1006
+      ],
+      "buffer": [
+        410,
+        65,
+        1739,
+        978
+      ],
+      "minimized": false,
+      "capture": "CrossxMars.exe-129055.png"
+    }
+  ],
+  "provenance": "Real authorized Spectacle/KWin selected-window captures. Recorded geometry, not manually annotated OCR ground truth. PID identifies the original session only."
+}

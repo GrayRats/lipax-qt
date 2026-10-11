@@ -75,6 +75,37 @@ fn spread(v: &[f32]) -> f32 {
     (v.iter().map(|x| (x - m).powi(2)).sum::<f32>() / v.len() as f32).sqrt()
 }
 
+/// OCR backends need not return boxes in reading order. Reject unusable geometry
+/// before it reaches unions, pitch estimates or alignment, and count duplicates once.
+pub(crate) fn normalized_lines(lines: &[Rect]) -> Vec<Rect> {
+    let mut out: Vec<_> = lines.iter().copied().filter(|r| {
+        [r.x, r.y, r.w, r.h, r.right(), r.bottom()].iter().all(|v| v.is_finite())
+            && r.w > 0.0 && r.h > 0.0
+    }).collect();
+    out.sort_by(|a, b| a.y.total_cmp(&b.y).then_with(|| a.x.total_cmp(&b.x))
+        .then_with(|| a.h.total_cmp(&b.h)).then_with(|| a.w.total_cmp(&b.w)));
+    out.dedup();
+    out
+}
+
+/// Reconstruct a row when OCR returns words or horizontal fragments rather than whole lines.
+/// Comparable ink heights, substantial vertical overlap and a bounded word gap are required:
+/// distant labels and neighbouring baselines remain independent.
+pub(crate) fn reconstructed_ocr_lines(lines: &[Rect]) -> Vec<Rect> {
+    let mut rows: Vec<Rect> = Vec::new();
+    for item in normalized_lines(lines) {
+        let row = rows.iter_mut().find(|row| {
+            let low = row.h.min(item.h);
+            let high = row.h.max(item.h);
+            let overlap = row.bottom().min(item.bottom()) - row.y.max(item.y);
+            let gap = (item.x - row.right()).max(row.x - item.right()).max(0.0);
+            low >= high * 0.6 && overlap >= low * 0.6 && gap <= high * 2.0
+        });
+        if let Some(row) = row { *row = row.union(&item); }
+        else { rows.push(item); }
+    }
+    normalized_lines(&rows)
+}
 
 impl TypographyEstimator {
     /// `frame_w` — ширина кадра области: одиночную строку выравнивают по её положению в кадре.
@@ -87,10 +118,10 @@ impl TypographyEstimator {
     /// lines better than the picture analysis. The detector still supplies everything else
     /// (letter gaps, colour) and is the fallback when the engine gave no geometry.
     pub fn estimate_from(&self, block: &DetectedTextBlock, analysis: &FontAnalysis, background: [u8; 3], frame_w: f32, ocr_lines: Option<&[Rect]>) -> TypographyEstimate {
-        let lines: Vec<&Rect> = match ocr_lines {
-            Some(found) if !found.is_empty() => found.iter().collect(),
-            _ => block.lines.iter().map(|l| &l.rect).collect(),
-        };
+        let mut lines = ocr_lines.map(reconstructed_ocr_lines).unwrap_or_default();
+        if lines.is_empty() {
+            lines = normalized_lines(&block.lines.iter().map(|l| l.rect).collect::<Vec<_>>());
+        }
         let cap = analysis.cap_height_px.max(1.0);
         // Межстрочный: медиана расстояний между верхами соседних строк.
         let mut steps: Vec<f32> = lines.windows(2).map(|p| p[1].y - p[0].y).filter(|d| *d > 0.0).collect();

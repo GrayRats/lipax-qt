@@ -1,0 +1,11 @@
+[4] 0
+→ 0
+
+[6] Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my
+→ Учитывая, сколько времени я провёл в постели из-за болезни, можно без преувеличения сказать, что моя
+
+[9] Q Q SAVE LOAD
+→ Q Q СОХРАНИТЬ ЗАГРУЗИТЬ
+
+[10] king-sized bed was my whole world back then.
+→ огромная кровать тогда была для меня целым миром.

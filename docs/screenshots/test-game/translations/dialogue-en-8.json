@@ -1,0 +1,936 @@
+{
+  "block_ocr": [],
+  "blocks": [
+    {
+      "cap_height": 85.0,
+      "category": "Unknown",
+      "confidence": 0.06172172352671623,
+      "font": "Roboto Slab",
+      "rect": {
+        "h": 85.0,
+        "w": 76.0,
+        "x": 586.0,
+        "y": 0.0
+      }
+    },
+    {
+      "cap_height": 123.0,
+      "category": "Serif",
+      "confidence": 0.5457000136375427,
+      "font": "Literata",
+      "rect": {
+        "h": 629.0,
+        "w": 489.0,
+        "x": 1431.0,
+        "y": 279.0
+      }
+    },
+    {
+      "cap_height": 179.0,
+      "category": "Unknown",
+      "confidence": 0.05898044630885124,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 296.0,
+        "w": 223.0,
+        "x": 0.0,
+        "y": 316.0
+      }
+    },
+    {
+      "cap_height": 139.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 188.0,
+        "w": 222.0,
+        "x": 1358.0,
+        "y": 326.0
+      }
+    },
+    {
+      "cap_height": 50.0,
+      "category": "Serif",
+      "confidence": 0.2910400331020355,
+      "font": "Literata",
+      "rect": {
+        "h": 155.0,
+        "w": 271.0,
+        "x": 1089.0,
+        "y": 328.0
+      }
+    },
+    {
+      "cap_height": 145.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 145.0,
+        "w": 196.0,
+        "x": 862.0,
+        "y": 344.0
+      }
+    },
+    {
+      "cap_height": 96.0,
+      "category": "Unknown",
+      "confidence": 0.06481944769620895,
+      "font": "Inter",
+      "rect": {
+        "h": 100.0,
+        "w": 184.0,
+        "x": 1721.0,
+        "y": 468.0
+      }
+    },
+    {
+      "cap_height": 63.0,
+      "category": "Unknown",
+      "confidence": 0.06734921783208847,
+      "font": "Inter",
+      "rect": {
+        "h": 65.0,
+        "w": 139.0,
+        "x": 1099.0,
+        "y": 485.0
+      }
+    },
+    {
+      "cap_height": 96.0,
+      "category": "Unknown",
+      "confidence": 0.06725000590085983,
+      "font": "Inter",
+      "rect": {
+        "h": 96.0,
+        "w": 100.0,
+        "x": 1374.0,
+        "y": 586.0
+      }
+    },
+    {
+      "cap_height": 91.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 91.0,
+        "w": 127.0,
+        "x": 4.0,
+        "y": 614.0
+      }
+    },
+    {
+      "cap_height": 84.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 84.0,
+        "w": 114.0,
+        "x": 127.0,
+        "y": 616.0
+      }
+    },
+    {
+      "cap_height": 71.0,
+      "category": "SansSerif",
+      "confidence": 0.3621000647544861,
+      "font": "Inter",
+      "rect": {
+        "h": 147.0,
+        "w": 280.0,
+        "x": 591.0,
+        "y": 711.0
+      }
+    },
+    {
+      "cap_height": 100.0,
+      "category": "Unknown",
+      "confidence": 0.06866667419672012,
+      "font": "Inter",
+      "rect": {
+        "h": 100.0,
+        "w": 113.0,
+        "x": 1537.0,
+        "y": 718.0
+      }
+    },
+    {
+      "cap_height": 111.0,
+      "category": "Unknown",
+      "confidence": 0.06400301307439804,
+      "font": "Inter",
+      "rect": {
+        "h": 111.0,
+        "w": 103.0,
+        "x": 1363.0,
+        "y": 726.0
+      }
+    },
+    {
+      "cap_height": 225.0,
+      "category": "Serif",
+      "confidence": 0.2577672600746155,
+      "font": "PT Serif",
+      "rect": {
+        "h": 225.0,
+        "w": 114.0,
+        "x": 651.0,
+        "y": 776.0
+      }
+    },
+    {
+      "cap_height": 90.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 90.0,
+        "w": 92.0,
+        "x": 582.0,
+        "y": 779.0
+      }
+    }
+  ],
+  "cached_placement_ms": 0.874659,
+  "dropped": 12,
+  "dropped_details": [
+    {
+      "block_id": 2,
+      "original": "fixture 2",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 4,
+      "original": "fixture 4",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 5,
+      "original": "fixture 5",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 7,
+      "original": "fixture 7",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 9,
+      "original": "fixture 9",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 10,
+      "original": "fixture 10",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 11,
+      "original": "fixture 11",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 12,
+      "original": "fixture 12",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 13,
+      "original": "fixture 13",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 14,
+      "original": "fixture 14",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 15,
+      "original": "fixture 15",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 16,
+      "original": "fixture 16",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    }
+  ],
+  "finish_ms": [
+    0.153391
+  ],
+  "first_frame_ms": 1104.6439320000002,
+  "fits": 16,
+  "frame_blocks": [
+    {
+      "id": 1,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 85.0,
+        "w": 76.0,
+        "x": 586.0,
+        "y": 0.0
+      }
+    },
+    {
+      "id": 2,
+      "lines_note": "",
+      "source_lines": 5,
+      "text_rect": {
+        "h": 629.0,
+        "w": 489.0,
+        "x": 1431.0,
+        "y": 279.0
+      }
+    },
+    {
+      "id": 3,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 296.0,
+        "w": 223.0,
+        "x": 0.0,
+        "y": 316.0
+      }
+    },
+    {
+      "id": 4,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 188.0,
+        "w": 222.0,
+        "x": 1358.0,
+        "y": 326.0
+      }
+    },
+    {
+      "id": 5,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 155.0,
+        "w": 271.0,
+        "x": 1089.0,
+        "y": 328.0
+      }
+    },
+    {
+      "id": 6,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 145.0,
+        "w": 196.0,
+        "x": 862.0,
+        "y": 344.0
+      }
+    },
+    {
+      "id": 7,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 100.0,
+        "w": 184.0,
+        "x": 1721.0,
+        "y": 468.0
+      }
+    },
+    {
+      "id": 8,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 65.0,
+        "w": 139.0,
+        "x": 1099.0,
+        "y": 485.0
+      }
+    },
+    {
+      "id": 9,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 96.0,
+        "w": 100.0,
+        "x": 1374.0,
+        "y": 586.0
+      }
+    },
+    {
+      "id": 10,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 91.0,
+        "w": 127.0,
+        "x": 4.0,
+        "y": 614.0
+      }
+    },
+    {
+      "id": 11,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 84.0,
+        "w": 114.0,
+        "x": 127.0,
+        "y": 616.0
+      }
+    },
+    {
+      "id": 12,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 147.0,
+        "w": 280.0,
+        "x": 591.0,
+        "y": 711.0
+      }
+    },
+    {
+      "id": 13,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 100.0,
+        "w": 113.0,
+        "x": 1537.0,
+        "y": 718.0
+      }
+    },
+    {
+      "id": 14,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 111.0,
+        "w": 103.0,
+        "x": 1363.0,
+        "y": 726.0
+      }
+    },
+    {
+      "id": 15,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 225.0,
+        "w": 114.0,
+        "x": 651.0,
+        "y": 776.0
+      }
+    },
+    {
+      "id": 16,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 90.0,
+        "w": 92.0,
+        "x": 582.0,
+        "y": 779.0
+      }
+    }
+  ],
+  "hits": 16,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-8/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 30,
+  "ocr": {
+    "engine": "rapidocr",
+    "language": "eng",
+    "latency_ms": 2539.695431,
+    "lines": [
+      {
+        "confidence": 99.3552474975586,
+        "rect": {
+          "h": 11.0,
+          "w": 10.0,
+          "x": 55.0,
+          "y": 53.0
+        },
+        "text": "<"
+      },
+      {
+        "confidence": 86.96478271484375,
+        "rect": {
+          "h": 32.0,
+          "w": 105.0,
+          "x": 114.0,
+          "y": 50.0
+        },
+        "text": "AMAIFR"
+      },
+      {
+        "confidence": 98.25555419921875,
+        "rect": {
+          "h": 53.0,
+          "w": 1112.0,
+          "x": 324.0,
+          "y": 100.0
+        },
+        "text": "At Rhodes Island, we actually will receive occasional requests from"
+      },
+      {
+        "confidence": 99.37836456298828,
+        "rect": {
+          "h": 47.0,
+          "w": 1086.0,
+          "x": 322.0,
+          "y": 154.0
+        },
+        "text": "outside parties in addition to our routine internal and maintenance"
+      },
+      {
+        "confidence": 99.99333953857422,
+        "rect": {
+          "h": 49.0,
+          "w": 107.0,
+          "x": 321.0,
+          "y": 201.0
+        },
+        "text": "work."
+      },
+      {
+        "confidence": 99.9738998413086,
+        "rect": {
+          "h": 12.0,
+          "w": 69.0,
+          "x": 925.0,
+          "y": 475.0
+        },
+        "text": "OPERATION"
+      },
+      {
+        "confidence": 99.93696594238281,
+        "rect": {
+          "h": 49.0,
+          "w": 68.0,
+          "x": 927.0,
+          "y": 490.0
+        },
+        "text": "0-1"
+      },
+      {
+        "confidence": 99.9806900024414,
+        "rect": {
+          "h": 17.0,
+          "w": 61.0,
+          "x": 1241.0,
+          "y": 616.0
+        },
+        "text": "TUTORIAL"
+      },
+      {
+        "confidence": 99.99647521972656,
+        "rect": {
+          "h": 42.0,
+          "w": 77.0,
+          "x": 1233.0,
+          "y": 636.0
+        },
+        "text": "TR-1"
+      },
+      {
+        "confidence": 99.9775390625,
+        "rect": {
+          "h": 40.0,
+          "w": 111.0,
+          "x": 1557.0,
+          "y": 944.0
+        },
+        "text": "Progress"
+      },
+      {
+        "confidence": 99.95673370361328,
+        "rect": {
+          "h": 26.0,
+          "w": 89.0,
+          "x": 1738.0,
+          "y": 964.0
+        },
+        "text": "EPISODE"
+      },
+      {
+        "confidence": 94.01256561279297,
+        "rect": {
+          "h": 23.0,
+          "w": 87.0,
+          "x": 1584.0,
+          "y": 978.0
+        },
+        "text": "EPISODE"
+      },
+      {
+        "confidence": 57.252681732177734,
+        "rect": {
+          "h": 48.0,
+          "w": 78.0,
+          "x": 1588.0,
+          "y": 1001.0
+        },
+        "text": "00"
+      },
+      {
+        "confidence": 86.97994995117188,
+        "rect": {
+          "h": 56.0,
+          "w": 75.0,
+          "x": 1744.0,
+          "y": 997.0
+        },
+        "text": "01"
+      },
+      {
+        "confidence": 89.74626922607422,
+        "rect": {
+          "h": 43.0,
+          "w": 83.0,
+          "x": 1832.0,
+          "y": 1023.0
+        },
+        "text": "PLAUGROUND"
+      }
+    ],
+    "text": "<\nAMAIFR\nAt Rhodes Island, we actually will receive occasional requests from\noutside parties in addition to our routine internal and maintenance\nwork.\nOPERATION\n0-1\nTUTORIAL\nTR-1\nProgress\nEPISODE\nEPISODE\n00\n01\nPLAUGROUND"
+  },
+  "ocr_history": [],
+  "ocr_scans": 1,
+  "peak_memory": "VmHWM:\t  415212 kB",
+  "placed": [
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#c08d8e",
+        "image": "file:///home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-8/background-1.png",
+        "mode": "inpaint_blur",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 1,
+      "block_type": "unknown",
+      "box": [
+        0.296875,
+        0.0,
+        0.05625,
+        0.09351851851851851
+      ],
+      "font_family": "Roboto Slab",
+      "font_px": 13.0,
+      "font_selection": {
+        "category": "slab_serif",
+        "confidence": 0.06172172352671623,
+        "generic": false
+      },
+      "font_weight": 800,
+      "inner": [
+        16.0,
+        0.0,
+        16.0,
+        16.0
+      ],
+      "italic": false,
+      "key": "test:1",
+      "letter_spacing": -0.5301790237426758,
+      "line_height": 0.8999999761581421,
+      "max_lines": 5,
+      "original": "fixture 1",
+      "outline": false,
+      "outline_color": "#ffedee",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#514c4d",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#83959d",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 3,
+      "block_type": "unknown",
+      "box": [
+        0.0,
+        0.2777777777777778,
+        0.12447916666666667,
+        0.2898148148148148
+      ],
+      "font_family": "Noto Sans CJK SC",
+      "font_px": 42.0,
+      "font_selection": {
+        "category": "cjk_sans",
+        "confidence": 0.05898044630885124,
+        "generic": false
+      },
+      "font_weight": 200,
+      "inner": [
+        0.0,
+        16.0,
+        16.0,
+        1.0
+      ],
+      "italic": false,
+      "key": "test:3",
+      "letter_spacing": -1.717881679534912,
+      "line_height": 1.015467643737793,
+      "max_lines": 4,
+      "original": "fixture 3",
+      "outline": false,
+      "outline_color": "#e3f5fd",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "center",
+      "background": {
+        "color": "#9d979d",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 6,
+      "block_type": "button",
+      "box": [
+        0.434375,
+        0.29259259259259257,
+        0.12473958333333333,
+        0.18611111111111112
+      ],
+      "font_family": "Inter",
+      "font_px": 29.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.2165500372648239,
+        "generic": false
+      },
+      "font_weight": 100,
+      "inner": [
+        28.0,
+        28.0,
+        15.5,
+        28.0
+      ],
+      "italic": true,
+      "key": "test:6",
+      "letter_spacing": -1.1851147413253784,
+      "line_height": 0.8999999761581421,
+      "max_lines": 4,
+      "original": "fixture 6",
+      "outline": false,
+      "outline_color": "#fdf7fd",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#4d4041",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#b18083",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 8,
+      "block_type": "button",
+      "box": [
+        0.56171875,
+        0.44814814814814813,
+        0.09765625,
+        0.08703703703703704
+      ],
+      "font_family": "Inter",
+      "font_px": 13.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.06734921783208847,
+        "generic": false
+      },
+      "font_weight": 500,
+      "inner": [
+        20.5,
+        1.0,
+        28.0,
+        28.0
+      ],
+      "italic": false,
+      "key": "test:8",
+      "letter_spacing": 5.952061176300049,
+      "line_height": 0.8999999761581421,
+      "max_lines": 4,
+      "original": "fixture 8",
+      "outline": false,
+      "outline_color": "#ffe0e3",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 1219.088216,
+  "repeat_frame_ms": 215.330523,
+  "size": [
+    1920,
+    1080
+  ],
+  "timings_ms": [
+    [
+      105.23498000000001,
+      309.370213,
+      0.605468
+    ],
+    [
+      110.05944400000001,
+      291.873396,
+      0.635205
+    ],
+    [
+      101.446733,
+      287.08455100000003,
+      0.7473879999999999
+    ],
+    [
+      113.97004299999999,
+      297.147514,
+      0.69052
+    ],
+    [
+      109.71104299999999,
+      378.310392,
+      0.695168
+    ]
+  ],
+  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
+  "render_ms": 366.2822709993634,
+  "update_ms": 2.155169000616297,
+  "layout_diagnostics": [
+    {
+      "width": 76,
+      "height": 85,
+      "contentWidth": 69.59375,
+      "contentHeight": 65.79999828338623,
+      "lines": 4,
+      "truncated": false
+    },
+    {
+      "width": 223,
+      "height": 296,
+      "contentWidth": 217.265625,
+      "contentHeight": 247.77410507202148,
+      "lines": 4,
+      "truncated": false
+    },
+    {
+      "width": 196,
+      "height": 145,
+      "contentWidth": 163.46875,
+      "contentHeight": 133.4999965429306,
+      "lines": 4,
+      "truncated": false
+    },
+    {
+      "width": 139,
+      "height": 65,
+      "contentWidth": 129.75,
+      "contentHeight": 59.499998450279236,
+      "lines": 4,
+      "truncated": false
+    }
+  ],
+  "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-8.jpg",
+  "approved_reference": false,
+  "translation_service": "none: predefined deterministic test input"
+}

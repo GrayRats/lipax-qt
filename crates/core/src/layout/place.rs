@@ -77,6 +77,9 @@ pub struct Placed {
     pub text_opacity: f32,
     pub background: PlacedBackground,
     pub font_selection: PlacedFont,
+    /// A point of the desktop inside the visible part of the window the field was kept to (logical px). QML
+    /// opens the field on the screen that contains it: the same screen Rust chose, however far the plate grew.
+    pub screen_point: [f32; 2],
     /// The translation did not fit the box of the original even at the minimum size and was given more
     /// room next to it: free space of the game window, never over other text.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
@@ -433,6 +436,7 @@ fn placed_entry(region: &RegionInput, b: &InplaceBlock, fit: &FitResult, box_rec
             image: image.unwrap_or("").to_owned(),
         },
         font_selection: PlacedFont { category: b.font.category, generic: b.font.generic, confidence: b.font.confidence },
+        screen_point: [0.0, 0.0],
         expanded: false,
         degraded: None,
     }
@@ -489,6 +493,20 @@ fn accepted(trial: &[Candidate], before: &[Option<collision::Placement>], index:
     (after[index].is_some() && before.iter().zip(&after).all(|(old, new)| old.is_none() || new.is_some())).then_some(after)
 }
 
+/// Conservative duplicate ownership: geometry alone must never suppress an unrelated HUD field.
+/// Only an exact normalized substring of a longer OCR reading in the same capture, almost entirely
+/// contained in its glyph box, is redundant. Equal readings use the stable block id to break ties.
+fn duplicate_owner(blocks: &[InplaceBlock], readings: &[String], index: usize) -> bool {
+    let item = &blocks[index];
+    let reading = &readings[index];
+    if reading.chars().count() < 3 || item.text_rect.area() <= 0.0 { return false; }
+    blocks.iter().enumerate().any(|(j, other)| {
+        j != index && readings[j].contains(reading.as_str())
+            && (readings[j].len() > reading.len() || (readings[j] == *reading && other.id < item.id))
+            && other.text_rect.intersection(&item.text_rect) >= item.text_rect.area() * 0.9
+    })
+}
+
 /// Размещает все поля всех областей в видимой части окна игры `view` (логические пиксели рабочего
 /// стола). `images` — готовые URL подложек по (область, поле).
 ///
@@ -524,11 +542,22 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
             tracing::warn!(target: "inplace.fallback", block = u.id, reason = u.reason, "field cannot be drawn: left out (the translation window is not used in the in-place mode)");
             dropped.push(DroppedText { region_id: region.id.to_owned(), block_id: u.id, text: u.translation.clone(), original: u.original.clone(), reason: u.reason });
         }
-        for b in &region.frame.blocks {
+        let readings: Vec<String> = region.frame.blocks.iter().map(|b|
+            b.original.chars().filter(|c| !c.is_whitespace()).flat_map(char::to_lowercase).collect()).collect();
+        for (index, b) in region.frame.blocks.iter().enumerate() {
+            if duplicate_owner(&region.frame.blocks, &readings, index) {
+                dropped.push(DroppedText { region_id: region.id.to_owned(), block_id: b.id,
+                    text: b.translation.clone(), original: b.original.clone(), reason: "повторный OCR того же текста" });
+                continue;
+            }
             let key = (region.id.to_owned(), b.id);
             live.insert(key.clone());
             let source = map.rect(&b.text_rect);
-            let placed = view.bounds_for(&source).map(|bounds| (bounds, base_boxes(b, &map, &bounds, frame, settings)));
+            let capture = map.rect(&super::Rect::new(0.0, 0.0, frame.0 as f32, frame.1 as f32));
+            let placed = view.bounds_for(&source).map(|bounds| {
+                let bounds = bounds.clipped_to(&capture);
+                (bounds, base_boxes(b, &map, &bounds, frame, settings))
+            });
             let Some((bounds, boxes)) = placed.filter(|(_, boxes)| boxes.plate.w >= 1.0 && boxes.plate.h >= 1.0) else {
                 tracing::debug!(target: "inplace.fallback", block = b.id, source = ?source, "the original is off the screen: the field is not shown");
                 dropped.push(DroppedText { region_id: region.id.to_owned(), block_id: b.id, text: b.translation.clone(),
@@ -649,6 +678,7 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
         let plate = place.background_rect.union(&place.text_rect);
         let fit = chip_fit[i].as_ref().unwrap_or(&owner.fit);
         let mut entry = placed_entry(owner.region, owner.block, fit, owner.map.fraction(&plate), inner_of(&plate, &place.text_rect), settings, owner.image);
+        entry.screen_point = { let c = candidates[i].bounds.center(); [c.0, c.1] };
         if let Some(tier) = tiers[i].or(owner.plain.then_some("plain-plate")) {
             tracing::info!(target: "inplace.fallback", block = %candidates[i].id, tier, "field shown in a simpler form");
             // A plain plate carries the text itself: no restored picture, no outline halo.

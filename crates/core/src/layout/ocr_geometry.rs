@@ -1,0 +1,287 @@
+//! OCR geometry and duplicate ownership. Image coordinates remain typed frame pixels.
+//! A nested detector box alone is not sufficient evidence to suppress an independent label.
+use super::{
+    Rect,
+    typography::{normalized_lines, reconstructed_ocr_lines},
+};
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct OcrSpan {
+    rect: Rect,
+    text: String,
+    confidence: f32,
+}
+
+impl OcrSpan {
+    /// Reject invalid geometry, empty/noise readings and confidence outside the OCR 0..100 scale.
+    #[must_use]
+    pub fn new(rect: Rect, text: &str, confidence: f32) -> Option<Self> {
+        let text = crate::text::normalize(text);
+        ([rect.x, rect.y, rect.w, rect.h, rect.right(), rect.bottom()]
+            .iter()
+            .all(|x| x.is_finite())
+            && rect.w > 0.0
+            && rect.h > 0.0
+            && confidence.is_finite()
+            && (0.0..=100.0).contains(&confidence)
+            && crate::text::is_meaningful(&text))
+        .then_some(Self {
+            rect,
+            text,
+            confidence,
+        })
+    }
+    pub fn rect(&self) -> Rect {
+        self.rect
+    }
+    pub fn text(&self) -> &str {
+        &self.text
+    }
+    pub fn confidence(&self) -> f32 {
+        self.confidence
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct OcrField {
+    id: u64,
+    spans: Vec<OcrSpan>,
+    text: String,
+    bounds: Rect,
+    cap_height: f32,
+}
+
+fn words(text: &str) -> Vec<String> {
+    text.split(|c: char| !c.is_alphanumeric())
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_lowercase())
+        .collect()
+}
+
+fn word_similarity(word: &str, other: &str) -> f32 {
+    if word == other {
+        return 1.0;
+    }
+    let n = word.chars().count();
+    let chars: Vec<char> = other.chars().collect();
+    let m = chars.len();
+    let full = if n.min(m) * 2 >= n.max(m) {
+        crate::text::similarity(word, other)
+    } else {
+        0.0
+    };
+    if n < 3 || m < n || m > 3 * n {
+        return full;
+    }
+    chars
+        .windows(n)
+        .map(|part| crate::text::similarity(word, &part.iter().collect::<String>()))
+        .fold(full, f32::max)
+}
+
+/// Partial crops can read a suffix/prefix of a word and occasional OCR substitutions.
+/// Score whole word evidence, not a character subsequence of an arbitrarily long paragraph.
+fn text_support(fragment: &str, owner: &str) -> f32 {
+    let source = words(fragment);
+    let target = words(owner);
+    let total: usize = source.iter().map(|s| s.chars().count()).sum();
+    if total == 0 {
+        return 0.0;
+    }
+    let matched: f32 = source
+        .iter()
+        .map(|word| {
+            let n = word.chars().count();
+            let best = target
+                .iter()
+                .map(|other| word_similarity(word, other))
+                .fold(0.0_f32, f32::max);
+            best * n as f32
+        })
+        .sum();
+    matched / total as f32
+}
+
+/// Exact union coverage: overlapping parent spans must not count their pixels twice.
+fn covered_area(rect: Rect, spans: &[OcrSpan]) -> f32 {
+    let overlaps: Vec<Rect> = spans
+        .iter()
+        .filter(|s| {
+            let a = rect.h.min(s.rect.h);
+            let b = rect.h.max(s.rect.h);
+            a >= b * 0.25 && (rect.center().1 - s.rect.center().1).abs() <= b * 0.3
+        })
+        .map(|s| s.rect.clipped_to(&rect))
+        .filter(|r| r.area() > 0.0)
+        .collect();
+    let mut xs: Vec<f32> = overlaps.iter().flat_map(|r| [r.x, r.right()]).collect();
+    xs.sort_by(f32::total_cmp);
+    xs.dedup();
+    let mut area = 0.0;
+    let mut ys = Vec::with_capacity(overlaps.len());
+    for x in xs.windows(2) {
+        ys.clear();
+        ys.extend(
+            overlaps
+                .iter()
+                .filter(|r| r.x < x[1] && r.right() > x[0])
+                .map(|r| (r.y, r.bottom())),
+        );
+        ys.sort_by(|a, b| a.0.total_cmp(&b.0));
+        let mut end = f32::NEG_INFINITY;
+        let mut length = 0.0;
+        for &(lo, hi) in &ys {
+            length += (hi - lo.max(end)).max(0.0);
+            end = end.max(hi);
+        }
+        area += (x[1] - x[0]) * length;
+    }
+    area
+}
+
+impl OcrField {
+    #[must_use]
+    pub fn new(id: u64, spans: Vec<OcrSpan>, cap_height: f32) -> Option<Self> {
+        if !cap_height.is_finite() || cap_height < 0.0 {
+            return None;
+        }
+        let first = spans.first()?;
+        let bounds = spans
+            .iter()
+            .skip(1)
+            .fold(first.rect, |r, s| r.union(&s.rect));
+        if ![
+            bounds.x,
+            bounds.y,
+            bounds.w,
+            bounds.h,
+            bounds.right(),
+            bounds.bottom(),
+        ]
+        .iter()
+        .all(|x| x.is_finite())
+        {
+            return None;
+        }
+        let text = spans
+            .iter()
+            .map(|s| s.text.as_str())
+            .collect::<Vec<_>>()
+            .join(" ");
+        Some(Self {
+            id,
+            spans,
+            bounds,
+            text,
+            cap_height,
+        })
+    }
+    pub fn id(&self) -> u64 {
+        self.id
+    }
+    pub fn text(&self) -> &str {
+        &self.text
+    }
+    pub fn bounds(&self) -> Rect {
+        self.bounds
+    }
+    pub fn spans(&self) -> &[OcrSpan] {
+        &self.spans
+    }
+    pub fn mean_confidence(&self) -> f32 {
+        self.spans.iter().map(|s| s.confidence).sum::<f32>() / self.spans.len() as f32
+    }
+    pub fn rows(&self) -> Vec<Rect> {
+        // The spans already belong to one source field. Its label/value columns can have a
+        // wide horizontal gap while sharing a baseline; counting them as successive lines
+        // produces a false 1px line pitch. Independent fields are never combined here.
+        let fragments =
+            reconstructed_ocr_lines(&self.spans.iter().map(|s| s.rect).collect::<Vec<_>>());
+        let mut rows: Vec<Rect> = Vec::new();
+        for fragment in fragments {
+            if let Some(row) = rows.iter_mut().find(|row| {
+                let low = row.h.min(fragment.h);
+                let high = row.h.max(fragment.h);
+                let overlap = row.bottom().min(fragment.bottom()) - row.y.max(fragment.y);
+                low >= high * 0.6 && overlap >= low * 0.6
+            }) {
+                *row = row.union(&fragment);
+            } else {
+                rows.push(fragment);
+            }
+        }
+        normalized_lines(&rows)
+    }
+    pub(crate) fn translate(&mut self, dx: f32, dy: f32) {
+        for span in &mut self.spans {
+            span.rect.x += dx;
+            span.rect.y += dy;
+        }
+        self.bounds.x += dx;
+        self.bounds.y += dy;
+    }
+
+    /// Related overlapping crops which must be read again together: neither reading owns all
+    /// the source pixels. The detector must independently confirm overlapping source support.
+    #[must_use]
+    pub fn needs_join(&self, other: &Self) -> bool {
+        if self.id == other.id || self.duplicate_of(other) || other.duplicate_of(self) {
+            return false;
+        }
+        let (small, big) = if self.bounds.area() <= other.bounds.area() {
+            (self, other)
+        } else {
+            (other, self)
+        };
+        let area: f32 = small.spans.iter().map(|s| s.rect.area()).sum();
+        let shared: f32 = small
+            .spans
+            .iter()
+            .map(|s| covered_area(s.rect, &big.spans))
+            .sum();
+        let similar_text = text_support(small.text(), big.text()) >= 0.65 && shared >= 0.6 * area;
+        let single_word = self.spans.len() == 1
+            && other.spans.len() == 1
+            && self.text.chars().all(char::is_alphabetic)
+            && other.text.chars().all(char::is_alphabetic)
+            && self.text.chars().count() <= 16
+            && other.text.chars().count() <= 16
+            && self.cap_height.min(other.cap_height) > 0.0
+            && self.cap_height.max(other.cap_height) <= 1.5 * self.cap_height.min(other.cap_height)
+            && (self.bounds.bottom() - other.bounds.bottom()).abs()
+                <= 0.3 * self.bounds.h.max(other.bounds.h)
+            && self.bounds.intersection(&other.bounds)
+                >= 0.4 * self.bounds.area().min(other.bounds.area());
+        similar_text || single_word
+    }
+
+    /// Both text evidence and shared source pixels are required. Short, severely clipped glyph
+    /// fragments can be owned by the complete reading, but a genuine short label is retained.
+    #[must_use]
+    pub fn duplicate_of(&self, owner: &Self) -> bool {
+        if self.id == owner.id
+            || owner.mean_confidence() < 70.0
+            || owner.mean_confidence() + 10.0 < self.mean_confidence()
+        {
+            return false;
+        }
+        let n = self.text.chars().count();
+        let m = owner.text.chars().count();
+        if m < n || (m == n && owner.id >= self.id) {
+            return false;
+        }
+        if self.bounds.intersection(&owner.bounds) < 0.7 * self.bounds.area() {
+            return false;
+        }
+        let clipped_glyph = n <= 2
+            && self.spans.len() == 1
+            && self.cap_height > 2.0 * self.spans[0].rect.h
+            && owner.bounds.area() > 20.0 * self.bounds.area();
+        if !clipped_glyph && text_support(&self.text, &owner.text) < 0.8 {
+            return false;
+        }
+        self.spans
+            .iter()
+            .all(|s| covered_area(s.rect, &owner.spans) >= 0.8 * s.rect.area())
+    }
+}

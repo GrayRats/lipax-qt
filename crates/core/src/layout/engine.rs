@@ -7,9 +7,9 @@
 //!
 //! Что пересчитывается:
 //! - то же поле, тот же текст — почти ничего (только проверка подписи фона);
-//! - то же поле, другой текст — OCR, перевод; шрифт и категория остаются;
+//! - то же поле, другой текст — OCR, перевод; шрифт стабилен до подтверждённой смены оформления;
 //! - то же поле, подвижный фон — только фон;
-//! - новое поле — всё, включая однократный выбор шрифта.
+//! - новое поле — всё; оформление повторно проверяется с гистерезисом каждые 500 мс.
 
 use super::background::{BackgroundAnalyzer, BackgroundInpainter};
 use super::block_detector::{BlockDetector, DetectedTextBlock};
@@ -54,6 +54,33 @@ pub struct OcrJob {
     /// Where `image` was cut out of the frame: OCR geometry is relative to it.
     pub origin: (u32, u32),
     pub image: DynamicImage,
+}
+
+/// OCR box padding must not make separately detected fields collide. Bound refinement at
+/// the midpoint of the original free strip, while keeping overlapping detections ambiguous.
+fn bounded_refinement(mut refined: Rect, detected: &Rect, neighbors: impl Iterator<Item = Rect>) -> Rect {
+    for other in neighbors {
+        let overlap_x = detected.x < other.right() && detected.right() > other.x;
+        let overlap_y = detected.y < other.bottom() && detected.bottom() > other.y;
+        if overlap_x && !overlap_y {
+            if detected.bottom() <= other.y {
+                refined.h = (refined.bottom().min((detected.bottom() + other.y) * 0.5) - refined.y).max(0.0);
+            } else {
+                let top = refined.y.max((other.bottom() + detected.y) * 0.5);
+                refined.h = (refined.bottom() - top).max(0.0);
+                refined.y = top;
+            }
+        } else if overlap_y && !overlap_x {
+            if detected.right() <= other.x {
+                refined.w = (refined.right().min((detected.right() + other.x) * 0.5) - refined.x).max(0.0);
+            } else {
+                let left = refined.x.max((other.right() + detected.x) * 0.5);
+                refined.w = (refined.right() - left).max(0.0);
+                refined.x = left;
+            }
+        }
+    }
+    refined
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -135,6 +162,11 @@ pub struct InplaceEngine {
     cuts: Vec<CutMemory>,
     /// When the last `begin` ran: the age of `cuts`.
     last_scan: Option<Instant>,
+    ocr_dirty: bool,
+    joins: Vec<JoinMemory>,
+    pending_joins: HashSet<u64>,
+    joined_aliases: HashMap<u64,u64>,
+    recognition_policy: Option<crate::settings::TextRecognitionSettings>,
 }
 
 /// A block the detector keeps seeing as one that the OCR engine showed to be several fields: the parts
@@ -146,17 +178,32 @@ struct CutMemory {
     seen: Instant,
 }
 
+struct JoinMemory {
+    members: Vec<Rect>,
+    seen: Instant,
+}
+
 /// A memory not applied for this long is forgotten: the scene it described is gone.
 const CUT_TTL: std::time::Duration = std::time::Duration::from_secs(3);
+/// Recheck uncertain/empty source candidates periodically without rerunning them every tick.
+const REJECTED_OCR_TTL: std::time::Duration = std::time::Duration::from_secs(5);
 
 /// What the OCR engine's lines mean for the field they were read from.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LinesVerdict {
     /// The field stands: its structure is settled by the lines (or by the detector).
     Normal,
-    /// The lines show several fields where the detector saw one. The parts are remembered and appear on the
-    /// next scan; the field must not be published as it is and has to be read again.
+    /// OCR requires regrouping (split fields or join overlapping crops). The new regions appear
+    /// on the next scan; the current reading must not be translated or published as settled.
     Split,
+}
+
+/// Text associated with the source field after validating crop-to-frame OCR evidence.
+#[must_use]
+#[derive(Debug, Clone, PartialEq)]
+pub struct OcrObservation {
+    pub text: String,
+    pub verdict: LinesVerdict,
 }
 
 /// Typical glyph height of a detected block: the floor of the line-pitch rule for text in capitals.
@@ -215,7 +262,8 @@ impl InplaceEngine {
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
             applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new(),
-            cuts: Vec::new(), last_scan: None }
+            cuts: Vec::new(), last_scan: None, ocr_dirty: false, joins: Vec::new(),
+            pending_joins: HashSet::new(), joined_aliases: HashMap::new(), recognition_policy: None }
     }
 
     pub fn with_fonts(db: impl Into<Arc<InstalledFontDatabase>>) -> Self {
@@ -233,6 +281,9 @@ impl InplaceEngine {
         self.published.clear();
         self.cuts.clear();
         self.missing_font_warned.clear();
+        self.ocr_dirty = false;
+        self.joins.clear(); self.pending_joins.clear(); self.joined_aliases.clear();
+        self.recognition_policy = None;
     }
 
     /// Пользователь попросил определить шрифты заново: анализ повторится на следующем кадре.
@@ -250,13 +301,28 @@ impl InplaceEngine {
     pub fn begin(&mut self, frame: DynamicImage, s: &Settings, now: Instant, force: bool) -> Vec<OcrJob> {
         // The frame is moved in: an RGBA8 capture is kept as is, with no copy.
         let image = frame.into_rgba8();
+        let frame_changed = self.snapshot.as_ref().is_some_and(|old| old.image.dimensions() != image.dimensions());
+        let recognition_changed = self.recognition_policy.as_ref() != Some(&s.recognition);
+        if recognition_changed { self.recognition_policy = Some(s.recognition.clone()); }
         self.pending_signatures.clear();
         let mask = BlockDetector::ink_mask(&image);
         self.detector.line_gap_factor = s.appearance.inplace.line_gap_factor;
         let detected = self.detector.detect_text_blocks(&image, &mask);
         self.last_scan = Some(now);
+        if frame_changed { self.joins.clear(); }
+        self.pending_joins.clear();
+        self.joined_aliases.clear();
         let detected = self.apply_cuts(detected, now, (image.width() as f32, image.height() as f32));
+        let detected = self.apply_joins(detected, now);
         let assignments = self.tracker.update(&detected, now);
+        for memory in &self.joins {
+            let union = memory.members.iter().skip(1).fold(memory.members[0], |r,m| r.union(m));
+            if let Some(owner) = assignments.iter().find(|a| detected[a.detection].rect.iou(&union) >= 0.8) {
+                for old in self.tracker.blocks().iter().filter(|t| t.misses > 0 && memory.members.iter().any(|r| r.iou(&t.current_rect)>=0.5)) {
+                    self.joined_aliases.insert(old.id,owner.id);
+                }
+            }
+        }
         self.missing_font_warned.retain(|id| self.tracker.get(*id).is_some());
         let (fw, fh) = (image.width() as f32, image.height() as f32);
         let bg_changed = self.applied.background != Fingerprints::of(s).background;
@@ -266,21 +332,57 @@ impl InplaceEngine {
             let d = &detected[a.detection];
             let Some(t) = self.tracker.get_mut(a.id) else { continue };
             let lh = d.line_height();
+            let signature = content_signature(&image, &d.rect);
+            let mut ocr_invalidated = false;
+            if let Some(old) = t.ocr_detector_rect {
+                // A union can retain the old track id and almost the same sampled signature.
+                // Its new source pixels still require a complete reading, even at high IoU.
+                let regrouped = old != d.rect && self.joins.iter().any(|m| {
+                    let union = m.members.iter().skip(1).fold(m.members[0], |r, b| r.union(b));
+                    union.iou(&d.rect) >= 0.8 && m.members.iter().any(|r| r.iou(&old) >= 0.5)
+                });
+                if frame_changed || recognition_changed || regrouped || old.iou(&d.rect) < 0.8 || signature_changed(&signature, &t.content_signature) {
+                    t.ocr_field = None;
+                    t.ocr_detector_rect = None;
+                    t.ocr_owner = None;
+                    t.ocr_bounds = None;
+                    t.refined_rect = None;
+                    t.ocr_lines = None;
+                    self.ocr_dirty = true;
+                    ocr_invalidated = true;
+                } else if old != d.rect {
+                    let (dx,dy) = (d.rect.x-old.x,d.rect.y-old.y);
+                    if let Some(field) = &mut t.ocr_field { field.translate(dx,dy); }
+                    for rect in [&mut t.ocr_bounds, &mut t.refined_rect].into_iter().flatten() { rect.x += dx; rect.y += dy; }
+                    if let Some(rows) = &mut t.ocr_lines { for rect in rows { rect.x += dx; rect.y += dy; } }
+                    t.ocr_detector_rect = Some(d.rect);
+                    self.ocr_dirty = true;
+                }
+            }
             // Содержимое поля изменилось — распознать заново.
             // Where the glyphs are: the OCR lines' boundary while it agrees with the detected block.
-            let rect = t.ocr_bounds.filter(|b| b.iou(&d.rect) >= LINES_AGREE_IOU).and_then(|b| refine_bounds(&[b], &d.rect, lh)).unwrap_or(d.rect);
+            // Cached bounds already include the OCR ink margin: validate, do not pad again.
+            let rect = t.ocr_field.as_ref().map(|f| t.ocr_bounds.unwrap_or_else(|| {
+                    let r = f.bounds(); Rect::new(r.x-1.0,r.y-1.0,r.w+2.0,r.h+2.0)
+                }))
+                .or_else(|| t.ocr_bounds.filter(|b| b.iou(&d.rect) >= LINES_AGREE_IOU
+                && refine_bounds(&[*b], &d.rect, lh).is_some())
+                .map(|r| bounded_refinement(r, &d.rect, detected.iter().map(|b| b.rect)))).unwrap_or(d.rect);
             t.refined_rect = (rect != d.rect).then_some(rect);
-            let signature = content_signature(&image, &d.rect);
-            if force || t.original_text.is_empty() || signature_changed(&signature, &t.content_signature) {
+            let empty_due = t.rejected_ocr_at.map_or_else(|| t.original_text.is_empty(), |last|
+                now.saturating_duration_since(last) >= REJECTED_OCR_TTL);
+            if force || frame_changed || recognition_changed || ocr_invalidated || empty_due || signature_changed(&signature, &t.content_signature) {
                 let (x, y, w, h) = d.rect.expand((0.25 * lh).max(3.0), fw, fh).pixels(image.width(), image.height());
                 jobs.push(OcrJob { id: a.id, rect: d.rect, origin: (x, y), image: DynamicImage::ImageRgba8(image::imageops::crop_imm(&image, x, y, w, h).to_image()) });
                 // Remembered only when the field is completed (see `complete`): a failed or cancelled
                 // recognition must leave the field due for the next scan.
                 self.pending_signatures.insert(a.id, signature);
             }
-            // Признаки шрифта — один раз за жизнь поля (до сброса идентичности или явного запроса).
-            if t.font_analysis.is_none() {
-                t.font_analysis = Some(FontClassifier.classify(&image, &mask, d));
+            // Probe appearance periodically even when OCR reads identical text. Keep the family
+            // stable until two confident probes agree; expensive classification is not per frame.
+            if t.font_analysis.is_none() || t.last_font_probe.is_none_or(|last|
+                now.saturating_duration_since(last) >= std::time::Duration::from_millis(500)) {
+                t.observe_font(FontClassifier.classify(&image, &mask, d), now);
             }
             // Фон — только если он заметно изменился (подвижная сцена) или сменили режим.
             let margin = BackgroundAnalyzer::margin(lh);
@@ -300,7 +402,7 @@ impl InplaceEngine {
             // Типографика — для нового поля и при заметной смене размера или числа строк.
             let resized = (t.typography_rect.w - d.rect.w).abs() > 0.1 * d.rect.w || (t.typography_rect.h - d.rect.h).abs() > 0.1 * d.rect.h;
             // The lines the OCR engine found count while they still lie on the detected block.
-            if t.ocr_lines.as_ref().is_some_and(|lines| !lines_agree(lines, &d.rect)) {
+            if t.ocr_field.is_none() && t.ocr_lines.as_ref().is_some_and(|lines| !lines_agree(lines, &d.rect)) {
                 t.ocr_lines = None;
                 t.ocr_bounds = None;
                 t.refined_rect = None;
@@ -352,12 +454,187 @@ impl InplaceEngine {
         out
     }
 
+    fn apply_joins(&mut self, mut detected: Vec<DetectedTextBlock>, now: Instant) -> Vec<DetectedTextBlock> {
+        self.joins.retain(|m| now.saturating_duration_since(m.seen)<=CUT_TTL);
+        for memory in &mut self.joins {
+            let mut indices = Vec::new();
+            for member in &memory.members {
+                if let Some((index,_)) = detected.iter().enumerate().filter(|(i,_)| !indices.contains(i))
+                    .filter(|(_,d)| member.iou(&d.rect)>=0.5).max_by(|(_,a),(_,b)| member.iou(&a.rect).total_cmp(&member.iou(&b.rect))) {
+                    indices.push(index);
+                }
+            }
+            if indices.len()!=memory.members.len() { continue; }
+            indices.sort_unstable();
+            let mut combined = detected[indices[0]].clone();
+            for &index in indices.iter().skip(1) {
+                combined.rect = combined.rect.union(&detected[index].rect);
+                combined.lines.extend(detected[index].lines.clone());
+            }
+            combined.lines.sort_by(|a,b| a.rect.y.total_cmp(&b.rect.y).then_with(|| a.rect.x.total_cmp(&b.rect.x)));
+            combined.lines.dedup();
+            for &index in indices.iter().rev() { detected.remove(index); }
+            detected.push(combined);
+            memory.seen = now;
+        }
+        detected.sort_by(|a,b| a.rect.y.total_cmp(&b.rect.y).then_with(|| a.rect.x.total_cmp(&b.rect.x)));
+        detected
+    }
+
+    /// A regrouped crop must be OCR-read again before it may supply a translation.
+    pub fn needs_rescan(&self) -> bool { !self.pending_joins.is_empty() }
+    pub(crate) fn is_regrouping(&self, id: u64) -> bool { self.pending_joins.contains(&id) }
+
+    fn request_join(&mut self, id: u64) -> bool {
+        let Some(snapshot) = &self.snapshot else { return false };
+        let Some(item) = self.tracker.get(id).and_then(|t| t.ocr_field.as_ref()) else { return false };
+        let Some(d) = snapshot.blocks.get(&id) else { return false };
+        let peer = self.tracker.blocks().iter().filter(|t| t.id!=id && t.misses==0)
+            .filter_map(|t| t.ocr_field.as_ref()).find(|other| snapshot.blocks.get(&other.id()).is_some_and(|other_d|
+                d.rect.intersection(&other_d.rect)>0.0 && item.needs_join(other)));
+        let Some(peer) = peer else { return false };
+        let members = vec![d.rect,snapshot.blocks[&peer.id()].rect];
+        let union = members[0].union(&members[1]);
+        if self.joins.iter().any(|m| m.members.iter().skip(1).fold(m.members[0],|r,b|r.union(b)).iou(&union)>=0.8) {
+            return false;
+        }
+        self.pending_joins.insert(id); self.pending_joins.insert(peer.id());
+        self.joins.push(JoinMemory { members, seen: self.last_scan.unwrap_or_else(Instant::now) });
+        true
+    }
+
+    /// Keep per-span text/confidence and source coordinates before translation. OCR outside the
+    /// detected glyph support is excluded from the source reading (including text in crop margins).
+    pub fn observe_ocr_result(&mut self, id: u64, result: &crate::ocr::OcrResult,
+                              origin: (u32, u32), s: &Settings) -> OcrObservation {
+        if result.lines.is_empty() {
+            if let Some(t) = self.tracker.get_mut(id) {
+                if t.ocr_field.take().is_some() {
+                    t.ocr_detector_rect = None;
+                    t.ocr_owner = None;
+                    t.ocr_bounds = None;
+                    t.refined_rect = None;
+                    t.ocr_lines = None;
+                    // A backend without geometry uses the detector again, including its plate.
+                    if let Some((snapshot, d)) = self.snapshot.as_ref().and_then(|snap|
+                        snap.blocks.get(&id).map(|d| (snap, d))) {
+                        let lh = d.line_height();
+                        let margin = BackgroundAnalyzer::margin(lh);
+                        let analysis = BackgroundAnalyzer.analyze(&snapshot.image, &snapshot.mask, &d.rect, margin);
+                        t.background = Some(BackgroundInpainter.render(&snapshot.image, &snapshot.mask, &d.rect, lh,
+                            analysis, &s.appearance.inplace, d.block_type));
+                        t.background_for = d.rect;
+                        t.background_signature = Some(BackgroundAnalyzer::signature(&snapshot.image, &d.rect, margin));
+                        if let Some(font) = &t.font_analysis {
+                            t.typography = Some(TypographyEstimator.estimate(d, font, t.background.as_ref().unwrap().color,
+                                snapshot.image.width() as f32));
+                        }
+                        t.lines_note = "геометрия по детектору: OCR без координат".into();
+                    }
+                    t.revision += 1;
+                    self.ocr_dirty = true;
+                }
+            }
+            return OcrObservation { text: crate::text::normalize(&result.text), verdict: LinesVerdict::Normal };
+        }
+        let Some(snapshot) = &self.snapshot else {
+            return OcrObservation { text: String::new(), verdict: LinesVerdict::Normal };
+        };
+        let Some(d) = snapshot.blocks.get(&id) else {
+            return OcrObservation { text: String::new(), verdict: LinesVerdict::Normal };
+        };
+        let detector_rect = d.rect;
+        let cap = self.tracker.get(id).and_then(|t| t.font_analysis.as_ref()).map_or_else(|| typical_glyph_height(d), |a| a.cap_height_px);
+        let support = d.rect.expand(0.5 * cap.max(1.0), snapshot.image.width() as f32, snapshot.image.height() as f32);
+        let spans: Vec<_> = result.lines.iter().filter_map(|line| {
+            let rect = line.rect.in_frame(origin);
+            let center = rect.center();
+            (line.confidence >= s.effective_minimum_confidence() as f32
+                && center.0 >= support.x && center.0 <= support.right()
+                && center.1 >= support.y && center.1 <= support.bottom())
+                .then(|| super::ocr_geometry::OcrSpan::new(rect.clipped_to(&Rect::new(0.0, 0.0,
+                    snapshot.image.width() as f32, snapshot.image.height() as f32)), &line.text, line.confidence)).flatten()
+        }).collect();
+        let text = if spans.len() == result.lines.len() { crate::text::normalize(&result.text) }
+            else { spans.iter().map(|span| span.text()).collect::<Vec<_>>().join(" ") };
+        let field = super::ocr_geometry::OcrField::new(id, spans, cap);
+        let lines = field.as_ref().map(|f| f.rows()).unwrap_or_default();
+        let verdict = self.observe_ocr_lines(id, &lines, s);
+        if let Some(t) = self.tracker.get_mut(id) {
+            t.ocr_field = if verdict == LinesVerdict::Normal { field } else { None };
+            t.ocr_detector_rect = t.ocr_field.as_ref().map(|_| detector_rect);
+            t.ocr_owner = None;
+            t.revision += 1;
+            self.ocr_dirty = true;
+        }
+        let verdict = if verdict==LinesVerdict::Normal && self.request_join(id) { LinesVerdict::Split } else { verdict };
+        OcrObservation { text, verdict }
+    }
+
+    /// Resolve repeated reads of the same source pixels before placement. Canonical OCR geometry
+    /// replaces noisy component bounds; independent labels remain collision obstacles.
+    fn reconcile_ocr(&mut self, s: &Settings) {
+        if !self.ocr_dirty { return; }
+        self.ocr_dirty = false;
+        let Some(snapshot) = &self.snapshot else { return };
+        let fields: Vec<_> = self.tracker.blocks().iter().filter(|t| t.misses <= 1 && !t.translated_text.is_empty())
+            .filter_map(|t| t.ocr_field.clone()).collect();
+        let owners: Vec<Option<u64>> = fields.iter().map(|f| fields.iter().filter(|other| f.duplicate_of(other))
+            .max_by_key(|other| (other.text().chars().count(), std::cmp::Reverse(other.id()))).map(|other| other.id())
+            .or_else(|| self.joined_aliases.get(&f.id()).copied().filter(|id| fields.iter().any(|other| other.id()==*id)))).collect();
+        let mut rects: Vec<Rect> = fields.iter().map(|f| {
+            let r = f.bounds(); Rect::new(r.x-1.0,r.y-1.0,r.w+2.0,r.h+2.0)
+        }).collect();
+        // Adjacent rows can have a few pixels of OCR padding in common. Split that narrow strip;
+        // substantial overlaps between independent fields are still handled by collision refusal.
+        for i in 0..fields.len() { for j in i+1..fields.len() {
+            if owners[i].is_some() || owners[j].is_some() { continue; }
+            let (a,b) = (rects[i],rects[j]);
+            let overlap_y = a.bottom().min(b.bottom()) - a.y.max(b.y);
+            if a.x < b.right() && a.right() > b.x && overlap_y > 0.0 && overlap_y <= 0.15*a.h.min(b.h) {
+                if a.center().1 < b.center().1 {
+                    let mid = (a.bottom()+b.y)*0.5; rects[i].h = mid-a.y;
+                    rects[j].h = b.bottom()-mid; rects[j].y = mid;
+                } else {
+                    let mid = (b.bottom()+a.y)*0.5; rects[j].h = mid-b.y;
+                    rects[i].h = a.bottom()-mid; rects[i].y = mid;
+                }
+            }
+        } }
+        for (i,field) in fields.iter().enumerate() {
+            let Some(t) = self.tracker.get_mut(field.id()) else { continue };
+            if t.ocr_owner != owners[i] { t.ocr_owner = owners[i]; t.revision += 1; }
+            if owners[i].is_some() { continue; }
+            let Some(d) = snapshot.blocks.get(&field.id()) else { continue };
+            let rect = rects[i];
+            let rows = field.rows();
+            if t.refined_rect != Some(rect) || t.ocr_lines.as_ref() != Some(&rows) {
+                let lh = rows.iter().map(|r| r.h).sum::<f32>() / rows.len().max(1) as f32;
+                let analysis = BackgroundAnalyzer.analyze(&snapshot.image, &snapshot.mask, &rect, BackgroundAnalyzer::margin(lh));
+                t.background = Some(BackgroundInpainter.render(&snapshot.image, &snapshot.mask, &rect, lh, analysis, &s.appearance.inplace, d.block_type));
+                t.background_for = rect;
+                t.background_signature = Some(BackgroundAnalyzer::signature(&snapshot.image, &rect, BackgroundAnalyzer::margin(lh)));
+                t.ocr_bounds = Some(rect);
+                t.refined_rect = Some(rect);
+                t.ocr_lines = Some(rows);
+                if let Some(font) = &t.font_analysis {
+                    t.typography = Some(TypographyEstimator.estimate_from(d, font, t.background.as_ref().unwrap().color,
+                        snapshot.image.width() as f32, t.ocr_lines.as_deref()));
+                }
+                t.lines_note = "строки и границы по валидированным OCR-фрагментам".into();
+                t.revision += 1;
+            }
+        }
+    }
+
     /// What the OCR engine says about the lines of a field it has just read (`lines` in frame pixels,
     /// top to bottom). If they lie on the detected block, they decide the line structure — how many
     /// lines, the step between them, the alignment — and the typography is estimated again; if they
     /// do not, the detector's lines stay and the inspector says why. No lines (an engine without
     /// geometry) changes nothing.
     pub fn observe_ocr_lines(&mut self, id: u64, lines: &[Rect], s: &Settings) -> LinesVerdict {
+        let normalized = super::typography::reconstructed_ocr_lines(lines);
+        let lines = normalized.as_slice();
         if lines.is_empty() { return LinesVerdict::Normal; }
         let Some(snapshot) = &self.snapshot else { return LinesVerdict::Normal };
         let Some(d) = snapshot.blocks.get(&id) else { return LinesVerdict::Normal };
@@ -390,7 +667,8 @@ impl InplaceEngine {
             tracing::debug!(target: "inplace.lines", block_id = id, ocr_lines = lines.len(), detected = d.lines.len(), "OCR and the detector disagree on the lines; OCR decides");
         }
         // The boundary of the glyphs: the lines' union, if it stays close to the detected block.
-        let refined = refine_bounds(lines, &d.rect, d.line_height());
+        let refined = refine_bounds(lines, &d.rect, d.line_height())
+            .map(|r| bounded_refinement(r, &d.rect, snapshot.blocks.values().map(|b| b.rect)));
         t.ocr_bounds = refined;
         let rect = refined.unwrap_or(d.rect);
         if refined.is_none() { t.lines_note.push_str("; граница блока по детектору (OCR расходится больше допуска)"); }
@@ -453,10 +731,12 @@ impl InplaceEngine {
         // The field was handled (recognised, or recognised as empty): remember what it looked like.
         if let Some(signature) = self.pending_signatures.remove(&id) { t.content_signature = signature; }
         let Some((original, translation)) = result else { return };
+        t.rejected_ocr_at = None;
         if original != t.original_text || translation != t.translated_text {
             if translation != t.translated_text { self.new_translations.push((original.clone(), translation.clone())); }
             t.original_text = original;
             t.translated_text = translation;
+            self.ocr_dirty = true;
             t.detected_language = Script::of_text(&t.original_text);
             t.revision += 1;
         }
@@ -464,9 +744,18 @@ impl InplaceEngine {
         self.lock_font(id, s);
     }
 
+    /// Cache a successfully observed empty/noise/low-confidence crop, retaining the prior overlay.
+    /// Content, dimensions, recognition settings, forced scans and the 5s timeout invalidate it.
+    /// I/O errors and cancelled OCR must use neither this method nor a negative cache entry.
+    pub fn reject_ocr(&mut self, id: u64, s: &Settings) {
+        self.complete(id, None, s);
+        if let Some(t) = self.tracker.get_mut(id) { t.rejected_ocr_at = self.last_scan; }
+    }
+
     /// Поля для отрисовки. `None`, если с прошлой отправки ничего видимого не изменилось.
     pub fn finish(&mut self, s: &Settings) -> Option<InplaceFrame> {
         self.apply_settings(s);
+        self.reconcile_ocr(s);
         let font_db = self.font_db();
         let snap = self.snapshot.as_ref()?;
         let mut blocks = Vec::new();
@@ -474,6 +763,16 @@ impl InplaceEngine {
         for t in self.tracker.blocks() {
             // Пропуск одного кадра не гасит поле: короткие сбои распознавания не мигают.
             if t.misses > 1 || t.translated_text.is_empty() { continue; }
+            if self.pending_joins.contains(&t.id) {
+                undrawable.push(UndrawableField { id:t.id, original:t.original_text.clone(), translation:t.translated_text.clone(),
+                    reason:"объединение OCR-полей; требуется повторное распознавание" });
+                continue;
+            }
+            if t.ocr_owner.is_some() {
+                undrawable.push(UndrawableField { id: t.id, original: t.original_text.clone(), translation: t.translated_text.clone(),
+                    reason: "повторный OCR того же текста" });
+                continue;
+            }
             let (Some(font), Some(est), Some(bg)) = (t.font.as_ref(), t.typography.as_ref(), t.background.as_ref()) else {
                 // Not lost: a field with a translation that cannot be drawn in place is handed on.
                 if t.font.is_none() && t.typography.is_some() {

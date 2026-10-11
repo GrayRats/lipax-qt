@@ -1,0 +1,1948 @@
+{
+  "block_ocr": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        868,
+        328
+      ],
+      "detector_rect": {
+        "h": 87.0,
+        "w": 195.0,
+        "x": 890.0,
+        "y": 350.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 493.665954,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        62,
+        390
+      ],
+      "detector_rect": {
+        "h": 96.0,
+        "w": 412.0,
+        "x": 86.0,
+        "y": 414.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [],
+      "observation_ms": 0.00014000000000000001,
+      "ocr_ms": 57.968681000000004,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        87,
+        751
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 77.0,
+        "x": 94.0,
+        "y": 758.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 8e-05,
+      "ocr_ms": 9.753495,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 51.506935119628906,
+      "crop_origin": [
+        0,
+        752
+      ],
+      "detector_rect": {
+        "h": 71.0,
+        "w": 265.0,
+        "x": 8.0,
+        "y": 770.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 9.0,
+          "w": 9.0,
+          "x": 264.0,
+          "y": 820.0
+        }
+      ],
+      "observation_ms": 0.029757,
+      "ocr_ms": 48.831236,
+      "original": "0",
+      "raw_original": "0",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 51.506935119628906,
+          "rect": {
+            "h": 9.0,
+            "w": 9.0,
+            "x": 264.0,
+            "y": 820.0
+          },
+          "text": "0"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1366,
+        765
+      ],
+      "detector_rect": {
+        "h": 57.0,
+        "w": 310.0,
+        "x": 1381.0,
+        "y": 780.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 8.999999999999999e-05,
+      "ocr_ms": 29.571274000000003,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.059814453125,
+      "crop_origin": [
+        352,
+        793
+      ],
+      "detector_rect": {
+        "h": 76.0,
+        "w": 895.0,
+        "x": 361.0,
+        "y": 802.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [
+        {
+          "h": 44.0,
+          "w": 882.0,
+          "x": 359.0,
+          "y": 796.0
+        },
+        {
+          "h": 45.0,
+          "w": 857.0,
+          "x": 356.0,
+          "y": 836.0
+        },
+        {
+          "h": 34.0,
+          "w": 46.0,
+          "x": 1210.0,
+          "y": 845.0
+        }
+      ],
+      "observation_ms": 41.599466,
+      "ocr_ms": 391.082717,
+      "original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my",
+      "raw_original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.62433624267578,
+          "rect": {
+            "h": 44.0,
+            "w": 882.0,
+            "x": 359.0,
+            "y": 796.0
+          },
+          "text": "Considering the amount of time I spent lying prone"
+        },
+        {
+          "confidence": 98.43497467041016,
+          "rect": {
+            "h": 45.0,
+            "w": 857.0,
+            "x": 356.0,
+            "y": 836.0
+          },
+          "text": "due to illness, it's no exaggeration to say that"
+        },
+        {
+          "confidence": 99.94290161132812,
+          "rect": {
+            "h": 34.0,
+            "w": 46.0,
+            "x": 1210.0,
+            "y": 845.0
+          },
+          "text": "my"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1530,
+        815
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 41.0,
+        "x": 1535.0,
+        "y": 820.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 6.494041,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        81,
+        828
+      ],
+      "detector_rect": {
+        "h": 148.0,
+        "w": 264.0,
+        "x": 90.0,
+        "y": 837.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 0.00011999999999999999,
+      "ocr_ms": 40.397414,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.73701477050781,
+      "crop_origin": [
+        1356,
+        830
+      ],
+      "detector_rect": {
+        "h": 98.0,
+        "w": 310.0,
+        "x": 1381.0,
+        "y": 855.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 69.0,
+          "w": 82.0,
+          "x": 1406.0,
+          "y": 856.0
+        },
+        {
+          "h": 56.0,
+          "w": 60.0,
+          "x": 1587.0,
+          "y": 861.0
+        },
+        {
+          "h": 49.0,
+          "w": 116.0,
+          "x": 1394.0,
+          "y": 911.0
+        },
+        {
+          "h": 50.0,
+          "w": 118.0,
+          "x": 1561.0,
+          "y": 910.0
+        }
+      ],
+      "observation_ms": 19.709845,
+      "ocr_ms": 165.425636,
+      "original": "Q Q SAVE LOAD",
+      "raw_original": "Q Q SAVE LOAD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.32015228271484,
+          "rect": {
+            "h": 69.0,
+            "w": 82.0,
+            "x": 1406.0,
+            "y": 856.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 99.28829956054688,
+          "rect": {
+            "h": 56.0,
+            "w": 60.0,
+            "x": 1587.0,
+            "y": 861.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 99.83531951904297,
+          "rect": {
+            "h": 49.0,
+            "w": 116.0,
+            "x": 1394.0,
+            "y": 911.0
+          },
+          "text": "SAVE"
+        },
+        {
+          "confidence": 99.85511779785156,
+          "rect": {
+            "h": 50.0,
+            "w": 118.0,
+            "x": 1561.0,
+            "y": 910.0
+          },
+          "text": "LOAD"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.90531158447266,
+      "crop_origin": [
+        349,
+        870
+      ],
+      "detector_rect": {
+        "h": 52.0,
+        "w": 766.0,
+        "x": 362.0,
+        "y": 883.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [
+        {
+          "h": 33.0,
+          "w": 183.0,
+          "x": 362.0,
+          "y": 881.0
+        },
+        {
+          "h": 31.0,
+          "w": 63.0,
+          "x": 549.0,
+          "y": 882.0
+        },
+        {
+          "h": 23.0,
+          "w": 60.0,
+          "x": 620.0,
+          "y": 888.0
+        },
+        {
+          "h": 23.0,
+          "w": 46.0,
+          "x": 690.0,
+          "y": 888.0
+        },
+        {
+          "h": 35.0,
+          "w": 383.0,
+          "x": 739.0,
+          "y": 880.0
+        }
+      ],
+      "observation_ms": 22.598405,
+      "ocr_ms": 272.563134,
+      "original": "king-sized bed was my whole world back then.",
+      "raw_original": "king-sized bed was my whole world back then.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.97721862792969,
+          "rect": {
+            "h": 33.0,
+            "w": 183.0,
+            "x": 362.0,
+            "y": 881.0
+          },
+          "text": "king-sized"
+        },
+        {
+          "confidence": 99.97064971923828,
+          "rect": {
+            "h": 31.0,
+            "w": 63.0,
+            "x": 549.0,
+            "y": 882.0
+          },
+          "text": "bed"
+        },
+        {
+          "confidence": 99.98175811767578,
+          "rect": {
+            "h": 23.0,
+            "w": 60.0,
+            "x": 620.0,
+            "y": 888.0
+          },
+          "text": "was"
+        },
+        {
+          "confidence": 99.95748901367188,
+          "rect": {
+            "h": 23.0,
+            "w": 46.0,
+            "x": 690.0,
+            "y": 888.0
+          },
+          "text": "my"
+        },
+        {
+          "confidence": 99.63943481445312,
+          "rect": {
+            "h": 35.0,
+            "w": 383.0,
+            "x": 739.0,
+            "y": 880.0
+          },
+          "text": "whole world back then."
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.63591766357422,
+      "crop_origin": [
+        1593,
+        921
+      ],
+      "detector_rect": {
+        "h": 18.0,
+        "w": 67.0,
+        "x": 1598.0,
+        "y": 926.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 76.0,
+          "x": 1593.0,
+          "y": 921.0
+        }
+      ],
+      "observation_ms": 1.5967799999999999,
+      "ocr_ms": 40.945755,
+      "original": "OAD",
+      "raw_original": "OAD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.63591766357422,
+          "rect": {
+            "h": 27.0,
+            "w": 76.0,
+            "x": 1593.0,
+            "y": 921.0
+          },
+          "text": "OAD"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        140,
+        965
+      ],
+      "detector_rect": {
+        "h": 16.0,
+        "w": 34.0,
+        "x": 144.0,
+        "y": 969.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 0.000141,
+      "ocr_ms": 9.634299,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        196,
+        967
+      ],
+      "detector_rect": {
+        "h": 14.0,
+        "w": 29.0,
+        "x": 200.0,
+        "y": 971.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 8e-05,
+      "ocr_ms": 6.267761999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        254,
+        971
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 23.0,
+        "x": 257.0,
+        "y": 974.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 0.000361,
+      "ocr_ms": 7.238623,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    }
+  ],
+  "blocks": [
+    {
+      "cap_height": 87.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 87.0,
+        "w": 195.0,
+        "x": 890.0,
+        "y": 350.0
+      }
+    },
+    {
+      "cap_height": 96.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 96.0,
+        "w": 412.0,
+        "x": 86.0,
+        "y": 414.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 27.0,
+        "w": 77.0,
+        "x": 94.0,
+        "y": 758.0
+      }
+    },
+    {
+      "cap_height": 37.0,
+      "category": "Monospace",
+      "confidence": 0.5688567757606506,
+      "font": "Source Code Pro",
+      "rect": {
+        "h": 71.0,
+        "w": 265.0,
+        "x": 8.0,
+        "y": 770.0
+      }
+    },
+    {
+      "cap_height": 57.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 57.0,
+        "w": 310.0,
+        "x": 1381.0,
+        "y": 780.0
+      }
+    },
+    {
+      "cap_height": 32.0,
+      "category": "SansSerif",
+      "confidence": 0.5680833458900452,
+      "font": "Inter",
+      "rect": {
+        "h": 76.0,
+        "w": 895.0,
+        "x": 361.0,
+        "y": 802.0
+      }
+    },
+    {
+      "cap_height": 17.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 17.0,
+        "w": 41.0,
+        "x": 1535.0,
+        "y": 820.0
+      }
+    },
+    {
+      "cap_height": 33.0,
+      "category": "SansSerif",
+      "confidence": 0.5344567894935608,
+      "font": "Inter",
+      "rect": {
+        "h": 148.0,
+        "w": 264.0,
+        "x": 90.0,
+        "y": 837.0
+      }
+    },
+    {
+      "cap_height": 98.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 98.0,
+        "w": 310.0,
+        "x": 1381.0,
+        "y": 855.0
+      }
+    },
+    {
+      "cap_height": 31.0,
+      "category": "SansSerif",
+      "confidence": 0.48280003666877747,
+      "font": "Inter",
+      "rect": {
+        "h": 52.0,
+        "w": 766.0,
+        "x": 362.0,
+        "y": 883.0
+      }
+    },
+    {
+      "cap_height": 18.0,
+      "category": "Unknown",
+      "confidence": 0.06655555963516235,
+      "font": "Inter",
+      "rect": {
+        "h": 18.0,
+        "w": 67.0,
+        "x": 1598.0,
+        "y": 926.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 16.0,
+        "w": 34.0,
+        "x": 144.0,
+        "y": 969.0
+      }
+    },
+    {
+      "cap_height": 14.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 14.0,
+        "w": 29.0,
+        "x": 200.0,
+        "y": 971.0
+      }
+    },
+    {
+      "cap_height": 11.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 11.0,
+        "w": 23.0,
+        "x": 257.0,
+        "y": 974.0
+      }
+    }
+  ],
+  "cached_placement_ms": 0.103586,
+  "dropped": 1,
+  "dropped_details": [
+    {
+      "block_id": 11,
+      "original": "OAD",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    }
+  ],
+  "finish_ms": [
+    52.702631
+  ],
+  "first_frame_ms": 576.682759,
+  "fits": 4,
+  "frame_blocks": [
+    {
+      "id": 4,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 11.0,
+        "w": 11.0,
+        "x": 263.0,
+        "y": 819.0
+      }
+    },
+    {
+      "id": 6,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 85.5,
+        "w": 902.0,
+        "x": 355.0,
+        "y": 795.0
+      }
+    },
+    {
+      "id": 9,
+      "lines_note": "строк: 2 по OCR, детектор насчитал 1; граница блока по OCR",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 106.0,
+        "w": 287.0,
+        "x": 1393.0,
+        "y": 855.0
+      }
+    },
+    {
+      "id": 10,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 35.5,
+        "w": 762.0,
+        "x": 361.0,
+        "y": 880.5
+      }
+    }
+  ],
+  "hits": 4,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/engine.exe-100656/live-rapidocr/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 50,
+  "ocr": {
+    "engine": "rapidocr",
+    "language": "eng",
+    "latency_ms": 2195.180144,
+    "lines": [
+      {
+        "confidence": 95.42919158935547,
+        "rect": {
+          "h": 16.0,
+          "w": 185.0,
+          "x": 1.0,
+          "y": 3.0
+        },
+        "text": "File Screen Control Text Help"
+      },
+      {
+        "confidence": 99.99198150634766,
+        "rect": {
+          "h": 39.0,
+          "w": 204.0,
+          "x": 359.0,
+          "y": 798.0
+        },
+        "text": "Considering"
+      },
+      {
+        "confidence": 99.90679931640625,
+        "rect": {
+          "h": 33.0,
+          "w": 66.0,
+          "x": 567.0,
+          "y": 802.0
+        },
+        "text": "the"
+      },
+      {
+        "confidence": 99.99211120605469,
+        "rect": {
+          "h": 31.0,
+          "w": 115.0,
+          "x": 638.0,
+          "y": 803.0
+        },
+        "text": "amount"
+      },
+      {
+        "confidence": 99.9749755859375,
+        "rect": {
+          "h": 37.0,
+          "w": 70.0,
+          "x": 756.0,
+          "y": 799.0
+        },
+        "text": "of"
+      },
+      {
+        "confidence": 96.35090637207031,
+        "rect": {
+          "h": 41.0,
+          "w": 231.0,
+          "x": 805.0,
+          "y": 797.0
+        },
+        "text": "time I spent"
+      },
+      {
+        "confidence": 96.81858825683594,
+        "rect": {
+          "h": 42.0,
+          "w": 125.0,
+          "x": 1019.0,
+          "y": 798.0
+        },
+        "text": "lying"
+      },
+      {
+        "confidence": 74.94547271728516,
+        "rect": {
+          "h": 30.0,
+          "w": 35.0,
+          "x": 1525.0,
+          "y": 795.0
+        },
+        "text": "\")"
+      },
+      {
+        "confidence": 99.961181640625,
+        "rect": {
+          "h": 31.0,
+          "w": 114.0,
+          "x": 1125.0,
+          "y": 805.0
+        },
+        "text": "prone"
+      },
+      {
+        "confidence": 98.57594299316406,
+        "rect": {
+          "h": 45.0,
+          "w": 902.0,
+          "x": 356.0,
+          "y": 836.0
+        },
+        "text": "due to illness, it's no exaggeration to say that my"
+      },
+      {
+        "confidence": 99.99069213867188,
+        "rect": {
+          "h": 36.0,
+          "w": 189.0,
+          "x": 357.0,
+          "y": 881.0
+        },
+        "text": "king-sized"
+      },
+      {
+        "confidence": 99.95384216308594,
+        "rect": {
+          "h": 34.0,
+          "w": 69.0,
+          "x": 547.0,
+          "y": 883.0
+        },
+        "text": "bed"
+      },
+      {
+        "confidence": 99.98457336425781,
+        "rect": {
+          "h": 31.0,
+          "w": 68.0,
+          "x": 616.0,
+          "y": 885.0
+        },
+        "text": "was"
+      },
+      {
+        "confidence": 99.06522369384766,
+        "rect": {
+          "h": 39.0,
+          "w": 356.0,
+          "x": 683.0,
+          "y": 880.0
+        },
+        "text": "my whole world back"
+      },
+      {
+        "confidence": 89.53433990478516,
+        "rect": {
+          "h": 34.0,
+          "w": 97.0,
+          "x": 1035.0,
+          "y": 883.0
+        },
+        "text": "then."
+      },
+      {
+        "confidence": 97.4730224609375,
+        "rect": {
+          "h": 47.0,
+          "w": 112.0,
+          "x": 1397.0,
+          "y": 911.0
+        },
+        "text": "SAVE"
+      },
+      {
+        "confidence": 99.85486602783203,
+        "rect": {
+          "h": 48.0,
+          "w": 118.0,
+          "x": 1560.0,
+          "y": 910.0
+        },
+        "text": "LOAD"
+      }
+    ],
+    "text": "File Screen Control Text Help\nConsidering\nthe\namount\nof\ntime I spent\nlying\n\")\nprone\ndue to illness, it's no exaggeration to say that my\nking-sized\nbed\nwas\nmy whole world back\nthen.\nSAVE\nLOAD"
+  },
+  "ocr_history": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        868,
+        328
+      ],
+      "detector_rect": {
+        "h": 87.0,
+        "w": 195.0,
+        "x": 890.0,
+        "y": 350.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 493.665954,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        62,
+        390
+      ],
+      "detector_rect": {
+        "h": 96.0,
+        "w": 412.0,
+        "x": 86.0,
+        "y": 414.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [],
+      "observation_ms": 0.00014000000000000001,
+      "ocr_ms": 57.968681000000004,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        87,
+        751
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 77.0,
+        "x": 94.0,
+        "y": 758.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 8e-05,
+      "ocr_ms": 9.753495,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 51.506935119628906,
+      "crop_origin": [
+        0,
+        752
+      ],
+      "detector_rect": {
+        "h": 71.0,
+        "w": 265.0,
+        "x": 8.0,
+        "y": 770.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 9.0,
+          "w": 9.0,
+          "x": 264.0,
+          "y": 820.0
+        }
+      ],
+      "observation_ms": 0.029757,
+      "ocr_ms": 48.831236,
+      "original": "0",
+      "raw_original": "0",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 51.506935119628906,
+          "rect": {
+            "h": 9.0,
+            "w": 9.0,
+            "x": 264.0,
+            "y": 820.0
+          },
+          "text": "0"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1366,
+        765
+      ],
+      "detector_rect": {
+        "h": 57.0,
+        "w": 310.0,
+        "x": 1381.0,
+        "y": 780.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 8.999999999999999e-05,
+      "ocr_ms": 29.571274000000003,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.059814453125,
+      "crop_origin": [
+        352,
+        793
+      ],
+      "detector_rect": {
+        "h": 76.0,
+        "w": 895.0,
+        "x": 361.0,
+        "y": 802.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [
+        {
+          "h": 44.0,
+          "w": 882.0,
+          "x": 359.0,
+          "y": 796.0
+        },
+        {
+          "h": 45.0,
+          "w": 857.0,
+          "x": 356.0,
+          "y": 836.0
+        },
+        {
+          "h": 34.0,
+          "w": 46.0,
+          "x": 1210.0,
+          "y": 845.0
+        }
+      ],
+      "observation_ms": 41.599466,
+      "ocr_ms": 391.082717,
+      "original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my",
+      "raw_original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.62433624267578,
+          "rect": {
+            "h": 44.0,
+            "w": 882.0,
+            "x": 359.0,
+            "y": 796.0
+          },
+          "text": "Considering the amount of time I spent lying prone"
+        },
+        {
+          "confidence": 98.43497467041016,
+          "rect": {
+            "h": 45.0,
+            "w": 857.0,
+            "x": 356.0,
+            "y": 836.0
+          },
+          "text": "due to illness, it's no exaggeration to say that"
+        },
+        {
+          "confidence": 99.94290161132812,
+          "rect": {
+            "h": 34.0,
+            "w": 46.0,
+            "x": 1210.0,
+            "y": 845.0
+          },
+          "text": "my"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1530,
+        815
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 41.0,
+        "x": 1535.0,
+        "y": 820.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 6.494041,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        81,
+        828
+      ],
+      "detector_rect": {
+        "h": 148.0,
+        "w": 264.0,
+        "x": 90.0,
+        "y": 837.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 0.00011999999999999999,
+      "ocr_ms": 40.397414,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.73701477050781,
+      "crop_origin": [
+        1356,
+        830
+      ],
+      "detector_rect": {
+        "h": 98.0,
+        "w": 310.0,
+        "x": 1381.0,
+        "y": 855.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 69.0,
+          "w": 82.0,
+          "x": 1406.0,
+          "y": 856.0
+        },
+        {
+          "h": 56.0,
+          "w": 60.0,
+          "x": 1587.0,
+          "y": 861.0
+        },
+        {
+          "h": 49.0,
+          "w": 116.0,
+          "x": 1394.0,
+          "y": 911.0
+        },
+        {
+          "h": 50.0,
+          "w": 118.0,
+          "x": 1561.0,
+          "y": 910.0
+        }
+      ],
+      "observation_ms": 19.709845,
+      "ocr_ms": 165.425636,
+      "original": "Q Q SAVE LOAD",
+      "raw_original": "Q Q SAVE LOAD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.32015228271484,
+          "rect": {
+            "h": 69.0,
+            "w": 82.0,
+            "x": 1406.0,
+            "y": 856.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 99.28829956054688,
+          "rect": {
+            "h": 56.0,
+            "w": 60.0,
+            "x": 1587.0,
+            "y": 861.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 99.83531951904297,
+          "rect": {
+            "h": 49.0,
+            "w": 116.0,
+            "x": 1394.0,
+            "y": 911.0
+          },
+          "text": "SAVE"
+        },
+        {
+          "confidence": 99.85511779785156,
+          "rect": {
+            "h": 50.0,
+            "w": 118.0,
+            "x": 1561.0,
+            "y": 910.0
+          },
+          "text": "LOAD"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.90531158447266,
+      "crop_origin": [
+        349,
+        870
+      ],
+      "detector_rect": {
+        "h": 52.0,
+        "w": 766.0,
+        "x": 362.0,
+        "y": 883.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [
+        {
+          "h": 33.0,
+          "w": 183.0,
+          "x": 362.0,
+          "y": 881.0
+        },
+        {
+          "h": 31.0,
+          "w": 63.0,
+          "x": 549.0,
+          "y": 882.0
+        },
+        {
+          "h": 23.0,
+          "w": 60.0,
+          "x": 620.0,
+          "y": 888.0
+        },
+        {
+          "h": 23.0,
+          "w": 46.0,
+          "x": 690.0,
+          "y": 888.0
+        },
+        {
+          "h": 35.0,
+          "w": 383.0,
+          "x": 739.0,
+          "y": 880.0
+        }
+      ],
+      "observation_ms": 22.598405,
+      "ocr_ms": 272.563134,
+      "original": "king-sized bed was my whole world back then.",
+      "raw_original": "king-sized bed was my whole world back then.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.97721862792969,
+          "rect": {
+            "h": 33.0,
+            "w": 183.0,
+            "x": 362.0,
+            "y": 881.0
+          },
+          "text": "king-sized"
+        },
+        {
+          "confidence": 99.97064971923828,
+          "rect": {
+            "h": 31.0,
+            "w": 63.0,
+            "x": 549.0,
+            "y": 882.0
+          },
+          "text": "bed"
+        },
+        {
+          "confidence": 99.98175811767578,
+          "rect": {
+            "h": 23.0,
+            "w": 60.0,
+            "x": 620.0,
+            "y": 888.0
+          },
+          "text": "was"
+        },
+        {
+          "confidence": 99.95748901367188,
+          "rect": {
+            "h": 23.0,
+            "w": 46.0,
+            "x": 690.0,
+            "y": 888.0
+          },
+          "text": "my"
+        },
+        {
+          "confidence": 99.63943481445312,
+          "rect": {
+            "h": 35.0,
+            "w": 383.0,
+            "x": 739.0,
+            "y": 880.0
+          },
+          "text": "whole world back then."
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.63591766357422,
+      "crop_origin": [
+        1593,
+        921
+      ],
+      "detector_rect": {
+        "h": 18.0,
+        "w": 67.0,
+        "x": 1598.0,
+        "y": 926.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 76.0,
+          "x": 1593.0,
+          "y": 921.0
+        }
+      ],
+      "observation_ms": 1.5967799999999999,
+      "ocr_ms": 40.945755,
+      "original": "OAD",
+      "raw_original": "OAD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.63591766357422,
+          "rect": {
+            "h": 27.0,
+            "w": 76.0,
+            "x": 1593.0,
+            "y": 921.0
+          },
+          "text": "OAD"
+        }
+      ],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        140,
+        965
+      ],
+      "detector_rect": {
+        "h": 16.0,
+        "w": 34.0,
+        "x": 144.0,
+        "y": 969.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 0.000141,
+      "ocr_ms": 9.634299,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        196,
+        967
+      ],
+      "detector_rect": {
+        "h": 14.0,
+        "w": 29.0,
+        "x": 200.0,
+        "y": 971.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 8e-05,
+      "ocr_ms": 6.267761999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        254,
+        971
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 23.0,
+        "x": 257.0,
+        "y": 974.0
+      },
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 0.000361,
+      "ocr_ms": 7.238623,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false
+    }
+  ],
+  "ocr_scans": 1,
+  "peak_memory": "VmHWM:\t  433200 kB",
+  "placed": [
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#00aceb",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 4,
+      "block_type": "button",
+      "box": [
+        0.1499417785715585,
+        0.8259898229298858,
+        0.012689166352135477,
+        0.02213202926713198
+      ],
+      "font_family": "Roboto Condensed",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "monospace",
+        "confidence": 0.5688567757606506,
+        "generic": false
+      },
+      "font_weight": 900,
+      "inner": [
+        5.4000244140625,
+        5.4000244140625,
+        5.39996337890625,
+        5.4000244140625
+      ],
+      "italic": false,
+      "key": "test:4",
+      "letter_spacing": 4.768181800842285,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "0",
+      "outline": false,
+      "outline_color": "#60ffff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        1280.0,
+        535.5
+      ],
+      "shadow": false,
+      "text": "0",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#00abea",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 6,
+      "block_type": "dialogue",
+      "box": [
+        0.19886497346569412,
+        0.793553324278236,
+        0.5405704023119179,
+        0.10035530516338832
+      ],
+      "font_family": "Inter",
+      "font_px": 26.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.5680833458900452,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        13.3499755859375,
+        13.3499755859375,
+        13.3499755859375,
+        0.0
+      ],
+      "italic": false,
+      "key": "test:6",
+      "letter_spacing": 3.8804123401641846,
+      "line_height": 0.8500000238418579,
+      "max_lines": 2,
+      "original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my",
+      "outline": false,
+      "outline_color": "#60ffff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        1280.0,
+        535.5
+      ],
+      "shadow": false,
+      "text": "Учитывая, сколько времени я провёл в постели из-за болезни, можно без преувеличения сказать, что моя",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "center",
+      "background": {
+        "color": "#0ab1ee",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 9,
+      "block_type": "button",
+      "box": [
+        0.7945285215366705,
+        0.8395939086294416,
+        0.19965075669383003,
+        0.16040609137055836
+      ],
+      "font_family": "Inter",
+      "font_px": 35.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.06100000813603401,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        28.0,
+        28.0,
+        28.0,
+        24.0
+      ],
+      "italic": false,
+      "key": "test:9",
+      "letter_spacing": -1.4268450736999512,
+      "line_height": 0.8500000238418579,
+      "max_lines": 2,
+      "original": "Q Q SAVE LOAD",
+      "outline": false,
+      "outline_color": "#6affff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        1280.0,
+        535.5
+      ],
+      "shadow": false,
+      "text": "Q Q СОХРАНИТЬ ЗАГРУЗИТЬ",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#00a2e6",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 10,
+      "block_type": "subtitle",
+      "box": [
+        0.2070285144312973,
+        0.8939086294416244,
+        0.4497380462042528,
+        0.04144671290053934
+      ],
+      "degraded": "plain-plate",
+      "font_family": "Inter",
+      "font_px": 20.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.48280003666877747,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        5.32501220703125,
+        0.0,
+        5.324951171875,
+        5.32501220703125
+      ],
+      "italic": false,
+      "key": "test:10",
+      "letter_spacing": 4.071649551391602,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "king-sized bed was my whole world back then.",
+      "outline": false,
+      "outline_color": "#60ffff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        1280.0,
+        535.5
+      ],
+      "shadow": false,
+      "text": "огромная кровать тогда была для меня целым миром.",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 108.450288,
+  "repeat_frame_ms": 151.994564,
+  "repeat_ocr_jobs": 0,
+  "size": [
+    1718,
+    985
+  ],
+  "timings_ms": [
+    [
+      72.374574,
+      160.790852,
+      0.599167
+    ],
+    [
+      74.822468,
+      162.01570600000002,
+      0.668959
+    ],
+    [
+      72.153213,
+      158.566593,
+      0.6537999999999999
+    ],
+    [
+      74.160422,
+      166.675627,
+      1.810195
+    ],
+    [
+      81.729823,
+      158.769467,
+      0.6132540000000001
+    ]
+  ],
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "render_ms": 326.245262998782,
+  "update_ms": 2.182551001169486,
+  "layout_diagnostics": [
+    {
+      "width": 11,
+      "height": 11,
+      "contentWidth": 9.703125,
+      "contentHeight": 9.999999761581421,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 901.9999999999999,
+      "height": 85.5,
+      "contentWidth": 878.1875,
+      "contentHeight": 58.400001525878906,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 287,
+      "height": 106,
+      "contentWidth": 271.234375,
+      "contentHeight": 79.10000205039978,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 762,
+      "height": 35.5,
+      "contentWidth": 735.875,
+      "contentHeight": 24.499999403953552,
+      "lines": 1,
+      "truncated": false
+    }
+  ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 5,
+    "rendered": 4,
+    "missing": [
+      {
+        "id": 11,
+        "original": "OAD",
+        "confidence": 99.63591766357422,
+        "reason": "повторный OCR того же текста"
+      }
+    ],
+    "source_coverage": [
+      {
+        "id": 4,
+        "original": "0",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 6,
+        "original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my",
+        "rendered": true,
+        "plate_coverage": 0.9945716204061456
+      },
+      {
+        "id": 9,
+        "original": "Q Q SAVE LOAD",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 10,
+        "original": "king-sized bed was my whole world back then.",
+        "rendered": true,
+        "plate_coverage": 0.9919655968114118
+      },
+      {
+        "id": 11,
+        "original": "OAD",
+        "rendered": false,
+        "plate_coverage": 0.0
+      }
+    ],
+    "fallbacks": [
+      {
+        "id": 10,
+        "mode": "plain-plate"
+      }
+    ],
+    "placement_diagnostic": "no failure in this diagnostic",
+    "uncovered_text_blocks": []
+  },
+  "source": "/home/art/DEV/LipaX-QT/tests/inplace/fixtures/engine.exe-100656.png",
+  "approved_reference": false,
+  "translation_service": "none: predefined deterministic test input"
+}

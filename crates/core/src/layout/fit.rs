@@ -95,16 +95,25 @@ fn lines_within(m: &Measured, line_height: f32, height: f32) -> u32 {
     ((height - last) / line).floor() as u32 + 1
 }
 
+/// Tolerance of the fit test, px. The caller keeps a pixel in reserve for the rounding of the window edges, so a
+/// larger tolerance would use that reserve up.
+const FIT_EPS: f32 = 0.01;
+/// Width kept free at the end of every line, as a share of the font size.
+const WIDTH_SLACK: f32 = 0.02;
+
 pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> FitResult {
     let (w, h) = (input.width.max(1.0), input.height.max(1.0));
     let start = input.manual_px.unwrap_or_else(|| input.cap_height_px / measure.cap_ratio(&input.font).max(0.3))
         .clamp(input.min_px, input.max_px.max(input.min_px));
-    let fits = |m: &Measured, lh: f32| m.width <= w + 0.5 && text_height(m, lh) <= h + 0.5;
+    // Lines are broken a little short of the box: QML lays text out with its own rounding of advances, and a line
+    // that is a hair too wide there would wrap or be elided although it fitted here.
+    let slack = |px: f32| (WIDTH_SLACK * px).min(0.25 * w);
+    let fits = |m: &Measured, lh: f32| m.width <= w + FIT_EPS && text_height(m, lh) <= h + FIT_EPS;
     // Перенос: CJK — по символам; одна строка, если и оригинал в одну и перевод помещается.
     let mut wrap = input.manual_wrap.unwrap_or_else(|| {
         if input.script.is_cjk() { return WrapMode::WrapAnywhere; }
         let single = measure.measure(input.text, &input.font, start, input.letter_spacing, w, WrapMode::NoWrap);
-        if input.source_lines <= 1 && single.width <= w + 0.5 { WrapMode::NoWrap } else { WrapMode::WordWrap }
+        if input.source_lines <= 1 && single.width <= w - slack(start) { WrapMode::NoWrap } else { WrapMode::WordWrap }
     });
     let natural_lh = |px: f32, font: &FontSpec| {
         let m = measure.measure("Hg", font, px, 0.0, f32::MAX, WrapMode::NoWrap);
@@ -117,7 +126,7 @@ pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> Fi
     let mut line_height = natural_lh(start, &input.font);
     let mut spacing = input.letter_spacing;
     let try_size = |family: &FontSpec, px: f32, lh: f32, ls: f32, wrap: WrapMode| {
-        let m = measure.measure(input.text, family, px, ls, w, wrap);
+        let m = measure.measure(input.text, family, px, ls, w - slack(px), wrap);
         (fits(&m, lh), m)
     };
     let done = |family: &FontSpec, px: f32, lh: f32, ls: f32, wrap: WrapMode, overflow: bool, m: &Measured| FitResult {

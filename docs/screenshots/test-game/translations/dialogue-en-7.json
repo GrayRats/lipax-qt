@@ -1,0 +1,1432 @@
+{
+  "block_ocr": [],
+  "blocks": [
+    {
+      "cap_height": 96.0,
+      "category": "Serif",
+      "confidence": 0.41565003991127014,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 201.0,
+        "w": 101.0,
+        "x": 1029.0,
+        "y": 109.0
+      }
+    },
+    {
+      "cap_height": 237.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 237.0,
+        "w": 654.0,
+        "x": 410.0,
+        "y": 140.0
+      }
+    },
+    {
+      "cap_height": 111.0,
+      "category": "Serif",
+      "confidence": 0.627583384513855,
+      "font": "Literata",
+      "rect": {
+        "h": 686.0,
+        "w": 1197.0,
+        "x": 423.0,
+        "y": 172.0
+      }
+    },
+    {
+      "cap_height": 105.0,
+      "category": "Serif",
+      "confidence": 0.2610916793346405,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 105.0,
+        "w": 100.0,
+        "x": 1386.0,
+        "y": 187.0
+      }
+    },
+    {
+      "cap_height": 18.0,
+      "category": "Condensed",
+      "confidence": 0.8401852250099182,
+      "font": "Roboto Condensed",
+      "rect": {
+        "h": 123.0,
+        "w": 468.0,
+        "x": 414.0,
+        "y": 259.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Condensed",
+      "confidence": 0.8408333659172058,
+      "font": "Roboto Condensed",
+      "rect": {
+        "h": 48.0,
+        "w": 205.0,
+        "x": 113.0,
+        "y": 419.0
+      }
+    },
+    {
+      "cap_height": 17.0,
+      "category": "SansSerif",
+      "confidence": 0.5680833458900452,
+      "font": "Inter",
+      "rect": {
+        "h": 49.0,
+        "w": 189.0,
+        "x": 1403.0,
+        "y": 676.0
+      }
+    },
+    {
+      "cap_height": 18.0,
+      "category": "Serif",
+      "confidence": 0.6063333749771118,
+      "font": "Literata",
+      "rect": {
+        "h": 42.0,
+        "w": 166.0,
+        "x": 1036.0,
+        "y": 683.0
+      }
+    },
+    {
+      "cap_height": 48.0,
+      "category": "SansSerif",
+      "confidence": 0.32589003443717957,
+      "font": "Inter",
+      "rect": {
+        "h": 91.0,
+        "w": 171.0,
+        "x": 427.0,
+        "y": 719.0
+      }
+    },
+    {
+      "cap_height": 66.0,
+      "category": "Serif",
+      "confidence": 0.4070182144641876,
+      "font": "Literata",
+      "rect": {
+        "h": 197.0,
+        "w": 75.0,
+        "x": 1806.0,
+        "y": 730.0
+      }
+    },
+    {
+      "cap_height": 130.0,
+      "category": "Serif",
+      "confidence": 0.572711169719696,
+      "font": "Literata",
+      "rect": {
+        "h": 192.0,
+        "w": 331.0,
+        "x": 832.0,
+        "y": 733.0
+      }
+    },
+    {
+      "cap_height": 79.0,
+      "category": "Serif",
+      "confidence": 0.2910400331020355,
+      "font": "Literata",
+      "rect": {
+        "h": 140.0,
+        "w": 213.0,
+        "x": 555.0,
+        "y": 746.0
+      }
+    },
+    {
+      "cap_height": 79.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 79.0,
+        "w": 139.0,
+        "x": 1232.0,
+        "y": 807.0
+      }
+    },
+    {
+      "cap_height": 201.0,
+      "category": "Serif",
+      "confidence": 0.254660040140152,
+      "font": "Literata",
+      "rect": {
+        "h": 234.0,
+        "w": 323.0,
+        "x": 1596.0,
+        "y": 846.0
+      }
+    },
+    {
+      "cap_height": 63.0,
+      "category": "SansSerif",
+      "confidence": 0.2534700334072113,
+      "font": "Inter",
+      "rect": {
+        "h": 63.0,
+        "w": 167.0,
+        "x": 417.0,
+        "y": 862.0
+      }
+    },
+    {
+      "cap_height": 46.0,
+      "category": "SansSerif",
+      "confidence": 0.7118116021156311,
+      "font": "Inter",
+      "rect": {
+        "h": 188.0,
+        "w": 410.0,
+        "x": 1290.0,
+        "y": 863.0
+      }
+    }
+  ],
+  "cached_placement_ms": 0.5449539999999999,
+  "dropped": 15,
+  "dropped_details": [
+    {
+      "block_id": 1,
+      "original": "fixture 1",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 2,
+      "original": "fixture 2",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 3,
+      "original": "fixture 3",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 4,
+      "original": "fixture 4",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 5,
+      "original": "fixture 5",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 7,
+      "original": "fixture 7",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 8,
+      "original": "fixture 8",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 9,
+      "original": "fixture 9",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 10,
+      "original": "fixture 10",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 11,
+      "original": "fixture 11",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 12,
+      "original": "fixture 12",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 13,
+      "original": "fixture 13",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 14,
+      "original": "fixture 14",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 15,
+      "original": "fixture 15",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    },
+    {
+      "block_id": 16,
+      "original": "fixture 16",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Перевод длиннее оригинала. Hello 日本語"
+    }
+  ],
+  "finish_ms": [
+    0.08561200000000001
+  ],
+  "first_frame_ms": 3925.331913,
+  "fits": 16,
+  "frame_blocks": [
+    {
+      "id": 1,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 201.0,
+        "w": 101.0,
+        "x": 1029.0,
+        "y": 109.0
+      }
+    },
+    {
+      "id": 2,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 237.0,
+        "w": 654.0,
+        "x": 410.0,
+        "y": 140.0
+      }
+    },
+    {
+      "id": 3,
+      "lines_note": "",
+      "source_lines": 5,
+      "text_rect": {
+        "h": 686.0,
+        "w": 1197.0,
+        "x": 423.0,
+        "y": 172.0
+      }
+    },
+    {
+      "id": 4,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 105.0,
+        "w": 100.0,
+        "x": 1386.0,
+        "y": 187.0
+      }
+    },
+    {
+      "id": 5,
+      "lines_note": "",
+      "source_lines": 4,
+      "text_rect": {
+        "h": 123.0,
+        "w": 468.0,
+        "x": 414.0,
+        "y": 259.0
+      }
+    },
+    {
+      "id": 6,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 48.0,
+        "w": 205.0,
+        "x": 113.0,
+        "y": 419.0
+      }
+    },
+    {
+      "id": 7,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 49.0,
+        "w": 189.0,
+        "x": 1403.0,
+        "y": 676.0
+      }
+    },
+    {
+      "id": 8,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 42.0,
+        "w": 166.0,
+        "x": 1036.0,
+        "y": 683.0
+      }
+    },
+    {
+      "id": 9,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 91.0,
+        "w": 171.0,
+        "x": 427.0,
+        "y": 719.0
+      }
+    },
+    {
+      "id": 10,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 197.0,
+        "w": 75.0,
+        "x": 1806.0,
+        "y": 730.0
+      }
+    },
+    {
+      "id": 11,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 192.0,
+        "w": 331.0,
+        "x": 832.0,
+        "y": 733.0
+      }
+    },
+    {
+      "id": 12,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 140.0,
+        "w": 213.0,
+        "x": 555.0,
+        "y": 746.0
+      }
+    },
+    {
+      "id": 13,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 79.0,
+        "w": 139.0,
+        "x": 1232.0,
+        "y": 807.0
+      }
+    },
+    {
+      "id": 14,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 234.0,
+        "w": 323.0,
+        "x": 1596.0,
+        "y": 846.0
+      }
+    },
+    {
+      "id": 15,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 63.0,
+        "w": 167.0,
+        "x": 417.0,
+        "y": 862.0
+      }
+    },
+    {
+      "id": 16,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 188.0,
+        "w": 410.0,
+        "x": 1290.0,
+        "y": 863.0
+      }
+    }
+  ],
+  "hits": 16,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-7/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 30,
+  "ocr": {
+    "engine": "rapidocr",
+    "language": "eng",
+    "latency_ms": 4807.941381,
+    "lines": [
+      {
+        "confidence": 58.775146484375,
+        "rect": {
+          "h": 29.0,
+          "w": 35.0,
+          "x": 1852.0,
+          "y": 94.0
+        },
+        "text": "X"
+      },
+      {
+        "confidence": 98.8592300415039,
+        "rect": {
+          "h": 37.0,
+          "w": 233.0,
+          "x": 423.0,
+          "y": 199.0
+        },
+        "text": "7-day Sign-in Event"
+      },
+      {
+        "confidence": 99.97148895263672,
+        "rect": {
+          "h": 24.0,
+          "w": 157.0,
+          "x": 166.0,
+          "y": 212.0
+        },
+        "text": "Consecutive Sign-in"
+      },
+      {
+        "confidence": 64.20880889892578,
+        "rect": {
+          "h": 15.0,
+          "w": 17.0,
+          "x": 144.0,
+          "y": 228.0
+        },
+        "text": "V"
+      },
+      {
+        "confidence": 99.5672378540039,
+        "rect": {
+          "h": 32.0,
+          "w": 318.0,
+          "x": 409.0,
+          "y": 255.0
+        },
+        "text": "Sign in for 7 days consecutively"
+      },
+      {
+        "confidence": 98.2411117553711,
+        "rect": {
+          "h": 30.0,
+          "w": 271.0,
+          "x": 414.0,
+          "y": 289.0
+        },
+        "text": "to get the 5-star Operator"
+      },
+      {
+        "confidence": 96.15644073486328,
+        "rect": {
+          "h": 27.0,
+          "w": 127.0,
+          "x": 679.0,
+          "y": 287.0
+        },
+        "text": "\"Cliffheart\"."
+      },
+      {
+        "confidence": 78.5312271118164,
+        "rect": {
+          "h": 59.0,
+          "w": 52.0,
+          "x": 1205.0,
+          "y": 284.0
+        },
+        "text": "A"
+      },
+      {
+        "confidence": 89.69992065429688,
+        "rect": {
+          "h": 66.0,
+          "w": 248.0,
+          "x": 1265.0,
+          "y": 281.0
+        },
+        "text": "Cliffheart"
+      },
+      {
+        "confidence": 99.93194580078125,
+        "rect": {
+          "h": 32.0,
+          "w": 157.0,
+          "x": 167.0,
+          "y": 315.0
+        },
+        "text": "Rookie Mission"
+      },
+      {
+        "confidence": 97.88356018066406,
+        "rect": {
+          "h": 31.0,
+          "w": 410.0,
+          "x": 409.0,
+          "y": 321.0
+        },
+        "text": "Your progress will be reset if you miss a"
+      },
+      {
+        "confidence": 97.3808364868164,
+        "rect": {
+          "h": 37.0,
+          "w": 554.0,
+          "x": 409.0,
+          "y": 351.0
+        },
+        "text": "sign-in day. Previous rewards cannot be claimed again."
+      },
+      {
+        "confidence": 67.923095703125,
+        "rect": {
+          "h": 112.0,
+          "w": 66.0,
+          "x": 468.0,
+          "y": 398.0
+        },
+        "text": "1"
+      },
+      {
+        "confidence": 99.99434661865234,
+        "rect": {
+          "h": 131.0,
+          "w": 99.0,
+          "x": 663.0,
+          "y": 389.0
+        },
+        "text": "2"
+      },
+      {
+        "confidence": 99.9691390991211,
+        "rect": {
+          "h": 124.0,
+          "w": 99.0,
+          "x": 861.0,
+          "y": 393.0
+        },
+        "text": "3"
+      },
+      {
+        "confidence": 99.99015045166016,
+        "rect": {
+          "h": 122.0,
+          "w": 103.0,
+          "x": 1063.0,
+          "y": 396.0
+        },
+        "text": "4"
+      },
+      {
+        "confidence": 99.97734069824219,
+        "rect": {
+          "h": 129.0,
+          "w": 96.0,
+          "x": 1266.0,
+          "y": 392.0
+        },
+        "text": "5"
+      },
+      {
+        "confidence": 99.97412872314453,
+        "rect": {
+          "h": 129.0,
+          "w": 101.0,
+          "x": 1466.0,
+          "y": 393.0
+        },
+        "text": "6"
+      },
+      {
+        "confidence": 99.95704650878906,
+        "rect": {
+          "h": 120.0,
+          "w": 91.0,
+          "x": 1669.0,
+          "y": 393.0
+        },
+        "text": "7"
+      },
+      {
+        "confidence": 56.9202880859375,
+        "rect": {
+          "h": 39.0,
+          "w": 44.0,
+          "x": 116.0,
+          "y": 426.0
+        },
+        "text": "V"
+      },
+      {
+        "confidence": 99.94607543945312,
+        "rect": {
+          "h": 20.0,
+          "w": 14.0,
+          "x": 70.0,
+          "y": 436.0
+        },
+        "text": "!"
+      },
+      {
+        "confidence": 99.78112030029297,
+        "rect": {
+          "h": 29.0,
+          "w": 154.0,
+          "x": 167.0,
+          "y": 432.0
+        },
+        "text": "Cumulative Sign-in"
+      },
+      {
+        "confidence": 99.96332550048828,
+        "rect": {
+          "h": 36.0,
+          "w": 46.0,
+          "x": 423.0,
+          "y": 476.0
+        },
+        "text": "Day"
+      },
+      {
+        "confidence": 99.98274230957031,
+        "rect": {
+          "h": 32.0,
+          "w": 45.0,
+          "x": 624.0,
+          "y": 477.0
+        },
+        "text": "Day"
+      },
+      {
+        "confidence": 99.98456573486328,
+        "rect": {
+          "h": 33.0,
+          "w": 42.0,
+          "x": 827.0,
+          "y": 477.0
+        },
+        "text": "Day"
+      },
+      {
+        "confidence": 99.96971130371094,
+        "rect": {
+          "h": 35.0,
+          "w": 47.0,
+          "x": 1026.0,
+          "y": 476.0
+        },
+        "text": "Day"
+      },
+      {
+        "confidence": 99.98123168945312,
+        "rect": {
+          "h": 33.0,
+          "w": 46.0,
+          "x": 1227.0,
+          "y": 477.0
+        },
+        "text": "Day"
+      },
+      {
+        "confidence": 99.97398376464844,
+        "rect": {
+          "h": 38.0,
+          "w": 48.0,
+          "x": 1426.0,
+          "y": 474.0
+        },
+        "text": "Day"
+      },
+      {
+        "confidence": 99.96524810791016,
+        "rect": {
+          "h": 35.0,
+          "w": 47.0,
+          "x": 1629.0,
+          "y": 476.0
+        },
+        "text": "Day"
+      },
+      {
+        "confidence": 90.03668975830078,
+        "rect": {
+          "h": 38.0,
+          "w": 117.0,
+          "x": 452.0,
+          "y": 520.0
+        },
+        "text": "Claimablen"
+      },
+      {
+        "confidence": 99.9528579711914,
+        "rect": {
+          "h": 29.0,
+          "w": 110.0,
+          "x": 653.0,
+          "y": 522.0
+        },
+        "text": "Claimable"
+      },
+      {
+        "confidence": 96.47610473632812,
+        "rect": {
+          "h": 29.0,
+          "w": 111.0,
+          "x": 853.0,
+          "y": 522.0
+        },
+        "text": "Claimable"
+      },
+      {
+        "confidence": 99.9439926147461,
+        "rect": {
+          "h": 29.0,
+          "w": 110.0,
+          "x": 1055.0,
+          "y": 522.0
+        },
+        "text": "Claimable"
+      },
+      {
+        "confidence": 99.94682312011719,
+        "rect": {
+          "h": 29.0,
+          "w": 112.0,
+          "x": 1255.0,
+          "y": 522.0
+        },
+        "text": "Claimable"
+      },
+      {
+        "confidence": 99.91963195800781,
+        "rect": {
+          "h": 29.0,
+          "w": 109.0,
+          "x": 1457.0,
+          "y": 522.0
+        },
+        "text": "Claimable"
+      },
+      {
+        "confidence": 99.93704223632812,
+        "rect": {
+          "h": 29.0,
+          "w": 108.0,
+          "x": 1658.0,
+          "y": 522.0
+        },
+        "text": "Claimable"
+      },
+      {
+        "confidence": 76.49329376220703,
+        "rect": {
+          "h": 9.0,
+          "w": 99.0,
+          "x": 627.0,
+          "y": 581.0
+        },
+        "text": "SUPELISLATEMOIY"
+      },
+      {
+        "confidence": 89.49247741699219,
+        "rect": {
+          "h": 9.0,
+          "w": 95.0,
+          "x": 828.0,
+          "y": 581.0
+        },
+        "text": "SUPFLIESLATEGOR"
+      },
+      {
+        "confidence": 86.24405670166016,
+        "rect": {
+          "h": 12.0,
+          "w": 100.0,
+          "x": 1027.0,
+          "y": 579.0
+        },
+        "text": "SSUPPLES CATEGORY"
+      },
+      {
+        "confidence": 91.35875701904297,
+        "rect": {
+          "h": 12.0,
+          "w": 99.0,
+          "x": 1229.0,
+          "y": 579.0
+        },
+        "text": "SUPPLIES CATECORY"
+      },
+      {
+        "confidence": 84.17660522460938,
+        "rect": {
+          "h": 17.0,
+          "w": 97.0,
+          "x": 1428.0,
+          "y": 577.0
+        },
+        "text": "SUPELIES LATEGOR"
+      },
+      {
+        "confidence": 99.76226806640625,
+        "rect": {
+          "h": 40.0,
+          "w": 125.0,
+          "x": 444.0,
+          "y": 583.0
+        },
+        "text": "Checked in"
+      },
+      {
+        "confidence": 99.99059295654297,
+        "rect": {
+          "h": 24.0,
+          "w": 105.0,
+          "x": 651.0,
+          "y": 593.0
+        },
+        "text": "Headhunting"
+      },
+      {
+        "confidence": 99.89918518066406,
+        "rect": {
+          "h": 34.0,
+          "w": 154.0,
+          "x": 1029.0,
+          "y": 600.0
+        },
+        "text": "Furniture Part"
+      },
+      {
+        "confidence": 99.98870849609375,
+        "rect": {
+          "h": 26.0,
+          "w": 107.0,
+          "x": 1253.0,
+          "y": 592.0
+        },
+        "text": "Headhunting"
+      },
+      {
+        "confidence": 99.65707397460938,
+        "rect": {
+          "h": 32.0,
+          "w": 154.0,
+          "x": 828.0,
+          "y": 603.0
+        },
+        "text": "Originite Prime"
+      },
+      {
+        "confidence": 99.97774505615234,
+        "rect": {
+          "h": 30.0,
+          "w": 152.0,
+          "x": 1434.0,
+          "y": 603.0
+        },
+        "text": "Expedited Plan"
+      },
+      {
+        "confidence": 99.96376037597656,
+        "rect": {
+          "h": 37.0,
+          "w": 122.0,
+          "x": 1648.0,
+          "y": 601.0
+        },
+        "text": "Contract"
+      },
+      {
+        "confidence": 30.2938232421875,
+        "rect": {
+          "h": 17.0,
+          "w": 61.0,
+          "x": 500.0,
+          "y": 617.0
+        },
+        "text": "AOHL"
+      },
+      {
+        "confidence": 99.9894790649414,
+        "rect": {
+          "h": 24.0,
+          "w": 58.0,
+          "x": 675.0,
+          "y": 619.0
+        },
+        "text": "Permit"
+      },
+      {
+        "confidence": 99.99060821533203,
+        "rect": {
+          "h": 24.0,
+          "w": 57.0,
+          "x": 1278.0,
+          "y": 619.0
+        },
+        "text": "Permit"
+      },
+      {
+        "confidence": 88.7578125,
+        "rect": {
+          "h": 12.0,
+          "w": 38.0,
+          "x": 448.0,
+          "y": 629.0
+        },
+        "text": "ATTE"
+      },
+      {
+        "confidence": 75.3801498413086,
+        "rect": {
+          "h": 24.0,
+          "w": 149.0,
+          "x": 432.0,
+          "y": 680.0
+        },
+        "text": "cUT ALONG THE DOTTED UNE"
+      },
+      {
+        "confidence": 81.1034164428711,
+        "rect": {
+          "h": 27.0,
+          "w": 153.0,
+          "x": 1434.0,
+          "y": 678.0
+        },
+        "text": "CT ALONG THE DOTTED LINE"
+      },
+      {
+        "confidence": 34.11273193359375,
+        "rect": {
+          "h": 23.0,
+          "w": 27.0,
+          "x": 1637.0,
+          "y": 679.0
+        },
+        "text": "R"
+      },
+      {
+        "confidence": 42.06561279296875,
+        "rect": {
+          "h": 13.0,
+          "w": 22.0,
+          "x": 832.0,
+          "y": 708.0
+        },
+        "text": "0"
+      },
+      {
+        "confidence": 21.185211181640625,
+        "rect": {
+          "h": 14.0,
+          "w": 17.0,
+          "x": 854.0,
+          "y": 706.0
+        },
+        "text": "6"
+      },
+      {
+        "confidence": 47.88252639770508,
+        "rect": {
+          "h": 17.0,
+          "w": 42.0,
+          "x": 946.0,
+          "y": 705.0
+        },
+        "text": ".o"
+      },
+      {
+        "confidence": 38.4578857421875,
+        "rect": {
+          "h": 15.0,
+          "w": 19.0,
+          "x": 1032.0,
+          "y": 706.0
+        },
+        "text": "."
+      },
+      {
+        "confidence": 60.75752258300781,
+        "rect": {
+          "h": 21.0,
+          "w": 149.0,
+          "x": 1048.0,
+          "y": 704.0
+        },
+        "text": "000000"
+      },
+      {
+        "confidence": 39.532386779785156,
+        "rect": {
+          "h": 17.0,
+          "w": 85.0,
+          "x": 1195.0,
+          "y": 705.0
+        },
+        "text": "O0"
+      },
+      {
+        "confidence": 30.829105377197266,
+        "rect": {
+          "h": 15.0,
+          "w": 24.0,
+          "x": 1301.0,
+          "y": 706.0
+        },
+        "text": "0"
+      },
+      {
+        "confidence": 39.572845458984375,
+        "rect": {
+          "h": 24.0,
+          "w": 142.0,
+          "x": 1339.0,
+          "y": 703.0
+        },
+        "text": "o.s.."
+      },
+      {
+        "confidence": 10.430235862731934,
+        "rect": {
+          "h": 8.0,
+          "w": 18.0,
+          "x": 1481.0,
+          "y": 710.0
+        },
+        "text": "H"
+      },
+      {
+        "confidence": 32.387020111083984,
+        "rect": {
+          "h": 8.0,
+          "w": 14.0,
+          "x": 1505.0,
+          "y": 710.0
+        },
+        "text": "121"
+      },
+      {
+        "confidence": 44.93854522705078,
+        "rect": {
+          "h": 21.0,
+          "w": 184.0,
+          "x": 1520.0,
+          "y": 704.0
+        },
+        "text": "c.eabooo"
+      },
+      {
+        "confidence": 72.24496459960938,
+        "rect": {
+          "h": 31.0,
+          "w": 25.0,
+          "x": 239.0,
+          "y": 780.0
+        },
+        "text": "ED R"
+      },
+      {
+        "confidence": 99.76530456542969,
+        "rect": {
+          "h": 29.0,
+          "w": 31.0,
+          "x": 625.0,
+          "y": 804.0
+        },
+        "text": "A"
+      },
+      {
+        "confidence": 99.87507629394531,
+        "rect": {
+          "h": 59.0,
+          "w": 109.0,
+          "x": 656.0,
+          "y": 809.0
+        },
+        "text": "HUNTIN"
+      },
+      {
+        "confidence": 99.91925048828125,
+        "rect": {
+          "h": 22.0,
+          "w": 23.0,
+          "x": 1229.0,
+          "y": 806.0
+        },
+        "text": "A"
+      },
+      {
+        "confidence": 99.83014678955078,
+        "rect": {
+          "h": 63.0,
+          "w": 108.0,
+          "x": 1258.0,
+          "y": 807.0
+        },
+        "text": "HUNTIN"
+      },
+      {
+        "confidence": 99.7131118774414,
+        "rect": {
+          "h": 55.0,
+          "w": 117.0,
+          "x": 1415.0,
+          "y": 838.0
+        },
+        "text": "XPEDITED"
+      },
+      {
+        "confidence": 98.48445129394531,
+        "rect": {
+          "h": 25.0,
+          "w": 20.0,
+          "x": 281.0,
+          "y": 848.0
+        },
+        "text": "AND"
+      },
+      {
+        "confidence": 99.75482177734375,
+        "rect": {
+          "h": 33.0,
+          "w": 42.0,
+          "x": 1422.0,
+          "y": 863.0
+        },
+        "text": "AN"
+      },
+      {
+        "confidence": 99.94413757324219,
+        "rect": {
+          "h": 63.0,
+          "w": 154.0,
+          "x": 434.0,
+          "y": 872.0
+        },
+        "text": "x600"
+      },
+      {
+        "confidence": 99.92597198486328,
+        "rect": {
+          "h": 59.0,
+          "w": 156.0,
+          "x": 1037.0,
+          "y": 874.0
+        },
+        "text": "x500"
+      },
+      {
+        "confidence": 99.71467590332031,
+        "rect": {
+          "h": 42.0,
+          "w": 62.0,
+          "x": 1326.0,
+          "y": 885.0
+        },
+        "text": "x2"
+      },
+      {
+        "confidence": 81.94538116455078,
+        "rect": {
+          "h": 52.0,
+          "w": 50.0,
+          "x": 1542.0,
+          "y": 877.0
+        },
+        "text": "O"
+      },
+      {
+        "confidence": 97.76496887207031,
+        "rect": {
+          "h": 70.0,
+          "w": 82.0,
+          "x": 912.0,
+          "y": 871.0
+        },
+        "text": "x5"
+      },
+      {
+        "confidence": 82.09191131591797,
+        "rect": {
+          "h": 33.0,
+          "w": 34.0,
+          "x": 1484.0,
+          "y": 894.0
+        },
+        "text": "X"
+      },
+      {
+        "confidence": 94.3501205444336,
+        "rect": {
+          "h": 36.0,
+          "w": 229.0,
+          "x": 58.0,
+          "y": 919.0
+        },
+        "text": "DES ISLAND"
+      },
+      {
+        "confidence": 80.5218505859375,
+        "rect": {
+          "h": 43.0,
+          "w": 80.0,
+          "x": 1832.0,
+          "y": 1024.0
+        },
+        "text": "PLAUGAOUND"
+      }
+    ],
+    "text": "X\n7-day Sign-in Event\nConsecutive Sign-in\nV\nSign in for 7 days consecutively\nto get the 5-star Operator\n\"Cliffheart\".\nA\nCliffheart\nRookie Mission\nYour progress will be reset if you miss a\nsign-in day. Previous rewards cannot be claimed again.\n1\n2\n3\n4\n5\n6\n7\nV\n!\nCumulative Sign-in\nDay\nDay\nDay\nDay\nDay\nDay\nDay\nClaimablen\nClaimable\nClaimable\nClaimable\nClaimable\nClaimable\nClaimable\nSUPELISLATEMOIY\nSUPFLIESLATEGOR\nSSUPPLES CATEGORY\nSUPPLIES CATECORY\nSUPELIES LATEGOR\nChecked in\nHeadhunting\nFurniture Part\nHeadhunting\nOriginite Prime\nExpedited Plan\nContract\nAOHL\nPermit\nPermit\nATTE\ncUT ALONG THE DOTTED UNE\nCT ALONG THE DOTTED LINE\nR\n0\n6\n.o\n.\n000000\nO0\n0\no.s..\nH\n121\nc.eabooo\nED R\nA\nHUNTIN\nA\nHUNTIN\nXPEDITED\nAND\nAN\nx600\nx500\nx2\nO\nx5\nX\nDES ISLAND\nPLAUGAOUND"
+  },
+  "ocr_history": [],
+  "ocr_scans": 1,
+  "peak_memory": "VmHWM:\t  421768 kB",
+  "placed": [
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#393939",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 6,
+      "block_type": "unknown",
+      "box": [
+        0.05135416587193807,
+        0.374629635281033,
+        0.12177082697550455,
+        0.07111109980830439
+      ],
+      "font_family": "Roboto Condensed",
+      "font_px": 19.0,
+      "font_selection": {
+        "category": "condensed",
+        "confidence": 0.8408333659172058,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        14.400001525878906,
+        14.399993896484375,
+        14.399993896484375,
+        14.399993896484375
+      ],
+      "italic": false,
+      "key": "test:6",
+      "letter_spacing": -0.7954341769218445,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 6",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "text_color": "#d9d9d9",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 762.759001,
+  "repeat_frame_ms": 358.981501,
+  "size": [
+    1920,
+    1080
+  ],
+  "timings_ms": [
+    [
+      124.058664,
+      623.760021,
+      0.674239
+    ],
+    [
+      122.763788,
+      643.901595,
+      0.6261180000000001
+    ],
+    [
+      120.775916,
+      623.462756,
+      0.650193
+    ],
+    [
+      142.481598,
+      628.0882730000001,
+      0.715878
+    ],
+    [
+      131.338987,
+      681.243834,
+      0.819595
+    ]
+  ],
+  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
+  "render_ms": 304.36438499964424,
+  "update_ms": 3.3239770000363933,
+  "layout_diagnostics": [
+    {
+      "width": 204.99999237060547,
+      "height": 48,
+      "contentWidth": 176.84375,
+      "contentHeight": 44.29999887943268,
+      "lines": 2,
+      "truncated": false
+    }
+  ],
+  "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-7.jpg",
+  "approved_reference": false,
+  "translation_service": "none: predefined deterministic test input"
+}

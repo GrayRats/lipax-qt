@@ -3,6 +3,8 @@ import QtQuick
 // Shared by the game surface and settings preview; Rust supplies the resolved entry.
 Item {
     id: content
+    // All decoration shares the same field boundary, including offset outlines and shadows.
+    clip: true
     property var entry: null
     readonly property var bg: entry ? entry.background : ({ mode: "transparent", color: "#000000", image: "" })
 
@@ -35,14 +37,19 @@ Item {
     }
 
     Text {
-        anchors.fill: textItem
-        anchors.leftMargin: 2
-        anchors.topMargin: 2
+        x: textItem.x + 2
+        y: textItem.y + 2
+        width: textItem.width
+        height: textItem.height
         visible: !!(content.entry && content.entry.shadow)
-        text: textItem.text
+        text: visible ? textItem.text : ""
+        textFormat: textItem.textFormat
         font: textItem.font
+        lineHeightMode: textItem.lineHeightMode
         lineHeight: textItem.lineHeight
         wrapMode: textItem.wrapMode
+        elide: textItem.elide
+        maximumLineCount: textItem.maximumLineCount
         horizontalAlignment: textItem.horizontalAlignment
         verticalAlignment: textItem.verticalAlignment
         color: content.entry ? content.entry.outline_color : "#000000"
@@ -51,7 +58,8 @@ Item {
     }
 
     Repeater {
-        model: 8
+        objectName: "inplaceOutlineLayers"
+        model: content.entry && content.entry.outline && content.entry.outline_width > 1 ? 8 : 0
         delegate: Text {
             readonly property real distance: Math.max(1, Math.min(8, content.entry ? content.entry.outline_width || 1 : 1))
             readonly property var dx: [-1, 0, 1, -1, 1, -1, 0, 1]
@@ -62,9 +70,13 @@ Item {
             height: textItem.height
             visible: !!(content.entry && content.entry.outline && content.entry.outline_width > 1)
             text: textItem.text
+            textFormat: textItem.textFormat
             font: textItem.font
+            lineHeightMode: textItem.lineHeightMode
             lineHeight: textItem.lineHeight
             wrapMode: textItem.wrapMode
+            elide: textItem.elide
+            maximumLineCount: textItem.maximumLineCount
             horizontalAlignment: textItem.horizontalAlignment
             verticalAlignment: textItem.verticalAlignment
             color: content.entry ? content.entry.outline_color : "#000000"
@@ -89,6 +101,8 @@ Item {
         font.pixelSize: content.entry ? content.entry.font_px : 16
         font.weight: content.entry ? content.entry.font_weight : Font.Normal
         font.italic: !!(content.entry && content.entry.italic)
+        font.contextFontMerging: true
+        font.kerning: true
         font.letterSpacing: content.entry ? content.entry.letter_spacing : 0
         lineHeightMode: Text.ProportionalHeight
         lineHeight: content.entry ? content.entry.line_height : 1.0

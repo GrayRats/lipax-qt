@@ -65,7 +65,8 @@ fn main() {
     .qt_module("Quick")
     .files(["src/bridge.rs", "src/icon.rs", "src/logging.rs", "src/model_worker.rs"])
     .include_dir("src")
-    .qrc("assets.qrc");
+    .qrc("assets.qrc")
+    .qrc("inplace_helpers.qrc");
     // KWindowEffects: compositor blur behind the translation overlay.
     // SAFETY: only adds an include path; does not change flags cxx-qt relies on.
     let builder = unsafe { builder.cc_builder(|cc| {
@@ -73,6 +74,7 @@ fn main() {
         cc.file("src/logging.cpp");
         cc.file("src/model_worker.cpp");
     }) };
+    println!("cargo:rerun-if-changed=src/text_measure.h");
     println!("cargo:rerun-if-changed=src/logging.cpp");
     println!("cargo:rerun-if-changed=src/model_worker.cpp");
     builder.build();

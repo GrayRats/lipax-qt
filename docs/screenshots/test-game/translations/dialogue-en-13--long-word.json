@@ -1,0 +1,943 @@
+{
+  "block_ocr": [],
+  "blocks": [
+    {
+      "cap_height": 93.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 93.0,
+        "w": 209.0,
+        "x": 940.0,
+        "y": 353.0
+      }
+    },
+    {
+      "cap_height": 104.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 104.0,
+        "w": 440.0,
+        "x": 81.0,
+        "y": 421.0
+      }
+    },
+    {
+      "cap_height": 29.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 29.0,
+        "w": 136.0,
+        "x": 89.0,
+        "y": 789.0
+      }
+    },
+    {
+      "cap_height": 61.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 61.0,
+        "w": 331.0,
+        "x": 1465.0,
+        "y": 813.0
+      }
+    },
+    {
+      "cap_height": 36.0,
+      "category": "Monospace",
+      "confidence": 0.6887361407279968,
+      "font": "Source Code Pro",
+      "rect": {
+        "h": 149.0,
+        "w": 254.0,
+        "x": 58.0,
+        "y": 816.0
+      }
+    },
+    {
+      "cap_height": 35.0,
+      "category": "SansSerif",
+      "confidence": 0.5680833458900452,
+      "font": "Inter",
+      "rect": {
+        "h": 141.0,
+        "w": 951.0,
+        "x": 375.0,
+        "y": 837.0
+      }
+    },
+    {
+      "cap_height": 32.0,
+      "category": "Unknown",
+      "confidence": 0.06548397988080978,
+      "font": "Roboto Slab",
+      "rect": {
+        "h": 32.0,
+        "w": 139.0,
+        "x": 116.0,
+        "y": 874.0
+      }
+    },
+    {
+      "cap_height": 105.0,
+      "category": "Unknown",
+      "confidence": 0.059166669845581055,
+      "font": "Noto Sans CJK SC",
+      "rect": {
+        "h": 105.0,
+        "w": 331.0,
+        "x": 1465.0,
+        "y": 893.0
+      }
+    },
+    {
+      "cap_height": 34.0,
+      "category": "SansSerif",
+      "confidence": 0.3408500552177429,
+      "font": "Inter",
+      "rect": {
+        "h": 73.0,
+        "w": 224.0,
+        "x": 143.0,
+        "y": 959.0
+      }
+    },
+    {
+      "cap_height": 17.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 17.0,
+        "w": 37.0,
+        "x": 142.0,
+        "y": 1015.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 15.0,
+        "w": 32.0,
+        "x": 202.0,
+        "y": 1017.0
+      }
+    },
+    {
+      "cap_height": 11.0,
+      "category": "Unknown",
+      "confidence": 0.06100000813603401,
+      "font": "Inter",
+      "rect": {
+        "h": 11.0,
+        "w": 25.0,
+        "x": 263.0,
+        "y": 1021.0
+      }
+    }
+  ],
+  "cached_placement_ms": 17.661559,
+  "dropped": 6,
+  "dropped_details": [
+    {
+      "block_id": 5,
+      "original": "fixture 5",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious"
+    },
+    {
+      "block_id": 7,
+      "original": "fixture 7",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious"
+    },
+    {
+      "block_id": 9,
+      "original": "fixture 9",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious"
+    },
+    {
+      "block_id": 10,
+      "original": "fixture 10",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious"
+    },
+    {
+      "block_id": 11,
+      "original": "fixture 11",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious"
+    },
+    {
+      "block_id": 12,
+      "original": "fixture 12",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious"
+    }
+  ],
+  "finish_ms": [
+    0.08099400000000001
+  ],
+  "first_frame_ms": 556.903552,
+  "fits": 12,
+  "frame_blocks": [
+    {
+      "id": 1,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 93.0,
+        "w": 209.0,
+        "x": 940.0,
+        "y": 353.0
+      }
+    },
+    {
+      "id": 2,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 104.0,
+        "w": 440.0,
+        "x": 81.0,
+        "y": 421.0
+      }
+    },
+    {
+      "id": 3,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 29.0,
+        "w": 136.0,
+        "x": 89.0,
+        "y": 789.0
+      }
+    },
+    {
+      "id": 4,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 61.0,
+        "w": 331.0,
+        "x": 1465.0,
+        "y": 813.0
+      }
+    },
+    {
+      "id": 5,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 149.0,
+        "w": 254.0,
+        "x": 58.0,
+        "y": 816.0
+      }
+    },
+    {
+      "id": 6,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 141.0,
+        "w": 951.0,
+        "x": 375.0,
+        "y": 837.0
+      }
+    },
+    {
+      "id": 7,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 32.0,
+        "w": 139.0,
+        "x": 116.0,
+        "y": 874.0
+      }
+    },
+    {
+      "id": 8,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 105.0,
+        "w": 331.0,
+        "x": 1465.0,
+        "y": 893.0
+      }
+    },
+    {
+      "id": 9,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 73.0,
+        "w": 224.0,
+        "x": 143.0,
+        "y": 959.0
+      }
+    },
+    {
+      "id": 10,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 17.0,
+        "w": 37.0,
+        "x": 142.0,
+        "y": 1015.0
+      }
+    },
+    {
+      "id": 11,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 15.0,
+        "w": 32.0,
+        "x": 202.0,
+        "y": 1017.0
+      }
+    },
+    {
+      "id": 12,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 11.0,
+        "w": 25.0,
+        "x": 263.0,
+        "y": 1021.0
+      }
+    }
+  ],
+  "hits": 12,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-13/long-word/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 30,
+  "ocr": {
+    "engine": "rapidocr",
+    "language": "eng",
+    "latency_ms": 2750.105536,
+    "lines": [
+      {
+        "confidence": 37.27354431152344,
+        "rect": {
+          "h": 40.0,
+          "w": 26.0,
+          "x": 1115.0,
+          "y": 599.0
+        },
+        "text": "X"
+      },
+      {
+        "confidence": 97.45745086669922,
+        "rect": {
+          "h": 47.0,
+          "w": 948.0,
+          "x": 369.0,
+          "y": 829.0
+        },
+        "text": "But my sisters were always with me. I felt bad for"
+      },
+      {
+        "confidence": 98.76641845703125,
+        "rect": {
+          "h": 31.0,
+          "w": 31.0,
+          "x": 1623.0,
+          "y": 829.0
+        },
+        "text": ")"
+      },
+      {
+        "confidence": 99.99616241455078,
+        "rect": {
+          "h": 41.0,
+          "w": 184.0,
+          "x": 372.0,
+          "y": 876.0
+        },
+        "text": "bothering"
+      },
+      {
+        "confidence": 99.61311340332031,
+        "rect": {
+          "h": 48.0,
+          "w": 674.0,
+          "x": 553.0,
+          "y": 873.0
+        },
+        "text": "them and for all the worry I caused"
+      },
+      {
+        "confidence": 87.61348724365234,
+        "rect": {
+          "h": 42.0,
+          "w": 104.0,
+          "x": 1225.0,
+          "y": 877.0
+        },
+        "text": "them,"
+      },
+      {
+        "confidence": 99.91012573242188,
+        "rect": {
+          "h": 39.0,
+          "w": 69.0,
+          "x": 372.0,
+          "y": 920.0
+        },
+        "text": "but"
+      },
+      {
+        "confidence": 98.67920684814453,
+        "rect": {
+          "h": 37.0,
+          "w": 204.0,
+          "x": 478.0,
+          "y": 922.0
+        },
+        "text": "was really"
+      },
+      {
+        "confidence": 99.9779052734375,
+        "rect": {
+          "h": 38.0,
+          "w": 111.0,
+          "x": 685.0,
+          "y": 923.0
+        },
+        "text": "happy"
+      },
+      {
+        "confidence": 94.95391845703125,
+        "rect": {
+          "h": 41.0,
+          "w": 149.0,
+          "x": 795.0,
+          "y": 921.0
+        },
+        "text": "that I"
+      },
+      {
+        "confidence": 99.91667175292969,
+        "rect": {
+          "h": 43.0,
+          "w": 230.0,
+          "x": 923.0,
+          "y": 919.0
+        },
+        "text": "wasn't left"
+      },
+      {
+        "confidence": 94.7574462890625,
+        "rect": {
+          "h": 24.0,
+          "w": 23.0,
+          "x": 451.0,
+          "y": 929.0
+        },
+        "text": "I"
+      },
+      {
+        "confidence": 55.948001861572266,
+        "rect": {
+          "h": 26.0,
+          "w": 29.0,
+          "x": 782.0,
+          "y": 929.0
+        },
+        "text": "2"
+      },
+      {
+        "confidence": 99.81114959716797,
+        "rect": {
+          "h": 41.0,
+          "w": 138.0,
+          "x": 1131.0,
+          "y": 919.0
+        },
+        "text": "t alone."
+      },
+      {
+        "confidence": 99.75181579589844,
+        "rect": {
+          "h": 51.0,
+          "w": 119.0,
+          "x": 1482.0,
+          "y": 953.0
+        },
+        "text": "SAVE"
+      },
+      {
+        "confidence": 99.8670425415039,
+        "rect": {
+          "h": 53.0,
+          "w": 126.0,
+          "x": 1657.0,
+          "y": 951.0
+        },
+        "text": "LOAD"
+      }
+    ],
+    "text": "X\nBut my sisters were always with me. I felt bad for\n)\nbothering\nthem and for all the worry I caused\nthem,\nbut\nwas really\nhappy\nthat I\nwasn't left\nI\n2\nt alone.\nSAVE\nLOAD"
+  },
+  "ocr_history": [],
+  "ocr_scans": 1,
+  "peak_memory": "VmHWM:\t  415508 kB",
+  "placed": [
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#54a5f2",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 1,
+      "block_type": "unknown",
+      "box": [
+        0.5074135090609555,
+        0.32655038759689925,
+        0.13234486545853927,
+        0.12112403100775193
+      ],
+      "font_family": "Roboto Condensed",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "cjk_sans",
+        "confidence": 0.059166669845581055,
+        "generic": false
+      },
+      "font_weight": 900,
+      "inner": [
+        16.0,
+        16.0,
+        16.0,
+        16.0
+      ],
+      "italic": false,
+      "key": "test:1",
+      "letter_spacing": -0.34380918741226196,
+      "line_height": 0.8999999761581421,
+      "max_lines": 10,
+      "original": "fixture 1",
+      "outline": false,
+      "outline_color": "#b4ffff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        910.5,
+        516.0
+      ],
+      "shadow": false,
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#3d97ef",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 2,
+      "block_type": "unknown",
+      "box": [
+        0.0356946732564525,
+        0.39244186046511625,
+        0.2591982427237781,
+        0.13178294573643412
+      ],
+      "font_family": "Noto Sans CJK SC",
+      "font_px": 9.0,
+      "font_selection": {
+        "category": "cjk_sans",
+        "confidence": 0.059166669845581055,
+        "generic": false
+      },
+      "font_weight": 900,
+      "inner": [
+        16.0,
+        16.0,
+        16.0,
+        16.0
+      ],
+      "italic": false,
+      "key": "test:2",
+      "letter_spacing": -0.38910049200057983,
+      "line_height": 0.8999999761581421,
+      "max_lines": 8,
+      "original": "fixture 2",
+      "outline": false,
+      "outline_color": "#9df7ff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        910.5,
+        516.0
+      ],
+      "shadow": false,
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#09b7ee",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 3,
+      "block_type": "unknown",
+      "box": [
+        0.04887424492037342,
+        0.6956879963246427,
+        0.15925315760571115,
+        0.061821693597837936
+      ],
+      "degraded": "beside-original",
+      "font_family": "Noto Sans CJK SC",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "cjk_sans",
+        "confidence": 0.059166669845581055,
+        "generic": false
+      },
+      "font_weight": 900,
+      "inner": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "italic": false,
+      "key": "test:3",
+      "letter_spacing": -1.1869536638259888,
+      "line_height": 0.8999999761581421,
+      "max_lines": 4,
+      "original": "fixture 3",
+      "outline": false,
+      "outline_color": "#69ffff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        910.5,
+        516.0
+      ],
+      "shadow": false,
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "elide"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#16b7ee",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 4,
+      "block_type": "unknown",
+      "box": [
+        0.7957166392092258,
+        0.7722868217054264,
+        0.19934102141680396,
+        0.08381782945736434
+      ],
+      "font_family": "Roboto Condensed",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "cjk_sans",
+        "confidence": 0.059166669845581055,
+        "generic": false
+      },
+      "font_weight": 200,
+      "inner": [
+        16.0,
+        16.0,
+        16.0,
+        9.5
+      ],
+      "italic": false,
+      "key": "test:4",
+      "letter_spacing": -0.3588450849056244,
+      "line_height": 0.8999999761581421,
+      "max_lines": 6,
+      "original": "fixture 4",
+      "outline": false,
+      "outline_color": "#76ffff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        910.5,
+        516.0
+      ],
+      "shadow": false,
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#00a7e9",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 6,
+      "block_type": "dialogue",
+      "box": [
+        0.20373421197144426,
+        0.7999999763429627,
+        0.5306974324075028,
+        0.15872097754663275
+      ],
+      "font_family": "Inter",
+      "font_px": 14.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.5680833458900452,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        4.0,
+        11.4000244140625,
+        11.4000244140625,
+        11.4000244140625
+      ],
+      "italic": false,
+      "key": "test:6",
+      "letter_spacing": 5.306701183319092,
+      "line_height": 0.8500000238418579,
+      "max_lines": 9,
+      "original": "fixture 6",
+      "outline": false,
+      "outline_color": "#60ffff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        910.5,
+        516.0
+      ],
+      "shadow": false,
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#0ab1ee",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 8,
+      "block_type": "unknown",
+      "box": [
+        0.7957166392092258,
+        0.8561046511627907,
+        0.19934102141680396,
+        0.12645348837209303
+      ],
+      "font_family": "Noto Sans CJK SC",
+      "font_px": 9.0,
+      "font_selection": {
+        "category": "cjk_sans",
+        "confidence": 0.059166669845581055,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        16.0,
+        9.5,
+        16.0,
+        16.0
+      ],
+      "italic": false,
+      "key": "test:8",
+      "letter_spacing": -0.38910049200057983,
+      "line_height": 0.8999999761581421,
+      "max_lines": 8,
+      "original": "fixture 8",
+      "outline": false,
+      "outline_color": "#6affff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        910.5,
+        516.0
+      ],
+      "shadow": false,
+      "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious",
+      "text_color": "#000000",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 1039.2781,
+  "repeat_frame_ms": 145.803399,
+  "size": [
+    1821,
+    1032
+  ],
+  "timings_ms": [
+    [
+      83.579634,
+      180.538021,
+      0.5917020000000001
+    ],
+    [
+      81.514726,
+      185.903491,
+      0.720026
+    ],
+    [
+      90.50878,
+      183.86777800000002,
+      1.2509839999999999
+    ],
+    [
+      91.25069900000001,
+      176.154274,
+      0.856965
+    ],
+    [
+      84.36239900000001,
+      190.680133,
+      0.805218
+    ]
+  ],
+  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
+  "render_ms": 278.83796300011454,
+  "update_ms": 1.4139220002107322,
+  "layout_diagnostics": [
+    {
+      "width": 209,
+      "height": 93,
+      "contentWidth": 208.703125,
+      "contentHeight": 81.99999785423279,
+      "lines": 9,
+      "truncated": false
+    },
+    {
+      "width": 439.99999999999994,
+      "height": 104,
+      "contentWidth": 439.53125,
+      "contentHeight": 89.19999766349792,
+      "lines": 7,
+      "truncated": false
+    },
+    {
+      "width": 282,
+      "height": 55.79998779296875,
+      "contentWidth": 279.984375,
+      "contentHeight": 44.19999885559082,
+      "lines": 4,
+      "truncated": true
+    },
+    {
+      "width": 331,
+      "height": 61,
+      "contentWidth": 330.890625,
+      "contentHeight": 54.999998569488525,
+      "lines": 6,
+      "truncated": false
+    },
+    {
+      "width": 951.0000000000001,
+      "height": 141,
+      "contentWidth": 950.484375,
+      "contentHeight": 132.05000364780426,
+      "lines": 9,
+      "truncated": false
+    },
+    {
+      "width": 331,
+      "height": 105,
+      "contentWidth": 331.671875,
+      "contentHeight": 101.79999732971191,
+      "lines": 8,
+      "truncated": false
+    }
+  ],
+  "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-13.png",
+  "approved_reference": false,
+  "translation_service": "none: predefined deterministic test input"
+}

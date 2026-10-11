@@ -4,7 +4,7 @@
 //!
 //! ```text
 //! BlockDetector → TextBlockTracker (стабильный id) → OCR → FontClassifier + FontMatcher
-//! (один раз, шрифт блокируется за полем) → перевод → TypographyEstimator →
+//! (с подтверждением изменений оформления) → перевод → TypographyEstimator →
 //! BackgroundAnalyzer/BackgroundInpainter → fit (метрики Qt в приложении) → QML
 //! ```
 //!
@@ -15,6 +15,7 @@ pub mod background;
 pub mod collision;
 pub mod block_detector;
 pub mod engine;
+pub mod ocr_geometry;
 pub mod fit;
 pub mod font_classifier;
 pub mod font_database;

@@ -136,7 +136,7 @@ impl<S: Space> Rect<S> {
     }
     /// The part of the rectangle inside `bounds`; empty (zero size, at the nearest edge) if they do not meet.
     pub fn clipped_to(&self, bounds: &Self) -> Self {
-        let (x0, y0) = (self.x.max(bounds.x), self.y.max(bounds.y));
+        let (x0, y0) = (self.x.max(bounds.x).min(bounds.right()), self.y.max(bounds.y).min(bounds.bottom()));
         Self::in_space(x0, y0, (self.right().min(bounds.right()) - x0).max(0.0), (self.bottom().min(bounds.bottom()) - y0).max(0.0))
     }
     /// Whether `inner` lies inside, within half a pixel (sums of fractions are not exact).
@@ -151,6 +151,7 @@ impl<S: Space> Rect<S> {
     }
     /// Целочисленный прямоугольник внутри `w`×`h`: x, y, ширина, высота (не меньше 1).
     pub fn pixels(&self, w: u32, h: u32) -> (u32, u32, u32, u32) {
+        if w == 0 || h == 0 { return (0, 0, 0, 0); }
         let x0 = (self.x.floor().max(0.0) as u32).min(w.saturating_sub(1));
         let y0 = (self.y.floor().max(0.0) as u32).min(h.saturating_sub(1));
         let x1 = (self.right().ceil().max(0.0) as u32).clamp(x0 + 1, w);
@@ -237,6 +238,7 @@ mod tests {
     fn window() -> WindowGeometry {
         WindowGeometry { x: 100.0, y: 50.0, w: 1000.0, h: 500.0 }
     }
+
 
     #[test]
     fn a_crop_moves_into_the_frame_by_its_origin() {

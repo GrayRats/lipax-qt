@@ -1,4 +1,5 @@
 import QtQuick
+import "InplaceGeometry.js" as Geometry
 import org.kde.layershell 1.0 as LayerShell
 
 // One tracked text field drawn over the original. Everything is decided in Rust (font chosen once
@@ -19,15 +20,14 @@ Window {
     // Desktop rectangle: game window → region → field box (box is relative to the region frame).
     readonly property var desktopRect: {
         try {
-            const g = JSON.parse(gameGeometry), r = entry && entry.rect, b = entry && entry.box
-            if (!g || !r || !b || g[2] <= 0) return null
-            const rx = g[0] + r.x * g[2], ry = g[1] + r.y * g[3], rw = r.w * g[2], rh = r.h * g[3]
-            return [rx + b[0] * rw, ry + b[1] * rh, b[2] * rw, b[3] * rh]
+            return Geometry.desktopRect(JSON.parse(gameGeometry), entry)
         } catch (e) { return null }
     }
+    // The screen Rust kept the field to (it sends a point inside it), not the one under the middle of the plate.
     readonly property var targetScreen: {
         if (!desktopRect) return null
-        const cx = desktopRect[0] + desktopRect[2] / 2, cy = desktopRect[1] + desktopRect[3] / 2
+        const p = entry && entry.screen_point
+        const cx = p ? p[0] : desktopRect[0] + desktopRect[2] / 2, cy = p ? p[1] : desktopRect[1] + desktopRect[3] / 2
         for (const s of Qt.application.screens)
             if (cx >= s.virtualX && cx < s.virtualX + s.width && cy >= s.virtualY && cy < s.virtualY + s.height) return s
         return Qt.application.screens.length ? Qt.application.screens[0] : null
@@ -58,7 +58,7 @@ Window {
     LayerShell.Window.exclusionZone: -1
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityNone
 
-    InplaceTranslationContent { anchors.fill: parent; entry: win.entry }
+    InplaceTranslationContent { anchors.fill: parent; entry: win.entry; visible: win.desktopRect !== null }
 
     MouseArea {
         objectName: "inplaceMouse"

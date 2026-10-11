@@ -110,10 +110,10 @@ If no translation appears, open "OCR view" and check whether the original is rea
 
 ### Arch Linux package
 
-If you have a package file, for example `lipax-1.3.5-1-x86_64.pkg.tar.zst`, install it with:
+If you have a package file, for example `lipax-1.3.9-1-x86_64.pkg.tar.zst`, install it with:
 
 ```bash
-sudo pacman -U ./lipax-1.3.5-1-x86_64.pkg.tar.zst
+sudo pacman -U ./lipax-1.3.9-1-x86_64.pkg.tar.zst
 ```
 
 The package installs the `lipax` command, the application launcher, the bundled fonts and the Bergamot engine. Translation and OCR models are downloaded separately, from the settings. After an update, quit LipaX from the tray menu and start it again.
@@ -135,7 +135,7 @@ To build the current project files, including local changes, use the script:
 
 ```bash
 ./packaging/build-local.sh -s
-sudo pacman -U dist/lipax-1.3.5-1-x86_64.pkg.tar.zst
+sudo pacman -U dist/lipax-1.3.9-1-x86_64.pkg.tar.zst
 ```
 
 Additional components are installed as needed:
