@@ -84,6 +84,15 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "reportFloatingGeometry"]
         fn report_floating_geometry(self: Pin<&mut Controller>, json: &QString, reason: &QString);
+        /// The desktop asks for reduced motion (KDE "Animation speed" set to instant, or `LIPAX_REDUCE_MOTION=1`):
+        /// the status light then does not pulse. Qt itself has no such query.
+        #[qinvokable]
+        #[cxx_name = "reducedMotion"]
+        fn reduced_motion(self: &Controller) -> bool;
+        /// Geometry of the main window from QML (JSON `WindowRecord`); stored only while "remember window geometry" is on.
+        #[qinvokable]
+        #[cxx_name = "reportMainWindowGeometry"]
+        fn report_main_window_geometry(self: Pin<&mut Controller>, json: &QString);
         /// Desktop geometry of the monitor explicitly selected for fullscreen portal capture.
         #[qinvokable]
         #[cxx_name = "reportPortalMonitorGeometry"]
@@ -209,9 +218,6 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "qtVersion"]
         fn qt_version(self: &Controller) -> QString;
-        #[qinvokable]
-        #[cxx_name = "appearancePreview"]
-        fn appearance_preview(self: &Controller, settings: &QString, width: f64, height: f64) -> QString;
         /// Проверить окружение PaddleOCR (пакеты, версии, способ установки, язык, модели); результат — в `paddleJson`.
         /// Ничего не устанавливает: инструкции показывает интерфейс.
         #[qinvokable]
@@ -858,6 +864,10 @@ impl cxx_qt::Initialize for qobject::Controller {
 }
 
 impl qobject::Controller {
+    fn reduced_motion(&self) -> bool {
+        let kdeglobals = dirs::config_dir().and_then(|d| std::fs::read_to_string(d.join("kdeglobals")).ok()).unwrap_or_default();
+        reduced_motion_from(std::env::var("LIPAX_REDUCE_MOTION").ok().as_deref(), &kdeglobals)
+    }
     fn arm_floating_focus_restore(&self) {
         lipa_core::capture::arm_floating_focus_restore();
         tracing::debug!(target: "translation_window.focus", "armed one-time focus restoration for automatic floating show");
@@ -903,6 +913,18 @@ impl qobject::Controller {
                 self.as_mut().publish_settings();
             }
             _ => tracing::warn!(target: "translation_window.geometry", json = %json, "invalid floating geometry from QML"),
+        }
+    }
+    fn report_main_window_geometry(mut self: Pin<&mut Self>, json: &QString) {
+        if !self.rust().shared.settings.borrow().general.remember_window_geometry { return; }
+        match serde_json::from_str::<lipa_core::settings::WindowRecord>(&json.to_string()) {
+            Ok(g) if g.is_valid() => {
+                if self.rust().shared.settings.borrow().general.main_window.as_ref() == Some(&g) { return; }
+                tracing::debug!(target: "main_window.geometry", x = g.x, y = g.y, width = g.w, height = g.h, screen = %g.screen, "main window geometry");
+                self.rust().shared.update(|s| s.general.main_window = Some(g));
+                self.as_mut().publish_settings();
+            }
+            _ => tracing::warn!(target: "main_window.geometry", json = %json, "invalid main window geometry from QML"),
         }
     }
     fn report_portal_monitor_geometry(mut self: Pin<&mut Self>, json: &QString) {
@@ -1500,13 +1522,14 @@ fn publish_preview(shared: &Shared, region_id: String, region_name: String, prev
 /// Положение свободного окна сохраняется после перемещения — не во время него.
 fn store_floating_geometry(shared: &Shared, g: lipa_core::settings::FloatingGeometry, reason: &str) {
     tracing::debug!(target: "translation_window.geometry", reason, x = g.x, y = g.y, width = g.w, height = g.h, screen = %g.output, "floating geometry");
-    shared.update(|s| s.translation_window.floating_geometry = Some(g));
+    // With "remember window geometry" off the saved geometry is left untouched.
+    shared.update(|s| if s.general.remember_window_geometry { s.translation_window.floating_geometry = Some(g) });
 }
 
 /// JSON для скрипта KWin: где поставить свободное окно при появлении. Сначала — где его
 /// оставили, иначе — там, где стоит закреплённое; `null` — пусть место выберет KWin.
 fn floating_placement(s: &Settings) -> String {
-    match &s.translation_window.floating_geometry {
+    match s.translation_window.floating_geometry.as_ref().filter(|_| s.general.remember_window_geometry) {
         Some(g) => {
             let (rx, ry) = g.relative();
             serde_json::json!({ "x": g.x, "y": g.y, "output": g.output, "rx": rx, "ry": ry }).to_string()
@@ -1578,11 +1601,6 @@ impl qobject::Controller {
     }
     fn qt_version(&self) -> QString {
         QString::from(format!("Qt {} (сборка {}), стиль {}", crate::icon::qt_version(), env!("LIPAX_BUILD_QT_VERSION"), crate::icon::quick_style()).as_str())
-    }
-    fn appearance_preview(&self, settings: &QString, width: f64, height: f64) -> QString {
-        let entry = serde_json::from_str::<lipa_core::settings::InplaceSettings>(&settings.to_string())
-            .ok().map(|s| lipa_core::layout::place::preview(&s, width as f32, height as f32, &crate::icon::QtMeasure));
-        QString::from(serde_json::to_string(&entry).unwrap_or_default().as_str())
     }
     fn app_version(&self) -> QString { QString::from(env!("CARGO_PKG_VERSION")) }
 
@@ -1750,9 +1768,33 @@ fn show_frame(shared: Arc<Shared>, qt: cxx_qt::CxxQtThread<qobject::Controller>)
     });
 }
 
+/// `LIPAX_REDUCE_MOTION` (anything but empty/`0`) or `AnimationDurationFactor=0` in the `[KDE]` group of kdeglobals.
+fn reduced_motion_from(env: Option<&str>, kdeglobals: &str) -> bool {
+    if env.is_some_and(|v| !v.is_empty() && v != "0") { return true; }
+    let mut in_kde = false;
+    for line in kdeglobals.lines().map(str::trim) {
+        if line.starts_with('[') { in_kde = line == "[KDE]"; continue; }
+        if let (true, Some(v)) = (in_kde, line.strip_prefix("AnimationDurationFactor=")) {
+            return v.trim().parse::<f64>().is_ok_and(|f| f <= 0.0);
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod display_tests {
     use super::*;
+
+    #[test]
+    fn reduced_motion_follows_the_environment_and_the_kde_animation_factor() {
+        assert!(!reduced_motion_from(None, ""));
+        assert!(reduced_motion_from(Some("1"), ""));
+        assert!(!reduced_motion_from(Some("0"), "") && !reduced_motion_from(Some(""), ""));
+        assert!(reduced_motion_from(None, "[KDE]\nAnimationDurationFactor=0\n"));
+        assert!(!reduced_motion_from(None, "[KDE]\nAnimationDurationFactor=0.35\n"));
+        assert!(!reduced_motion_from(None, "[General]\nAnimationDurationFactor=0\n"), "only the [KDE] group counts");
+    }
+
     use lipa_core::settings::{FloatingGeometry, TranslationDisplayMode, WindowKey};
 
     #[test]

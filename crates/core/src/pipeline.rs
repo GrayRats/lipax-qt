@@ -229,9 +229,9 @@ const MAX_TUNE_FIELDS: usize = 4;
 fn field_crops(frame: &image::DynamicImage, s: &Settings) -> Vec<image::DynamicImage> {
     use crate::layout::block_detector::BlockDetector;
     let image = frame.to_rgba8();
-    let mask = BlockDetector::ink_mask(&image);
-    let detector = BlockDetector { line_gap_factor: s.appearance.inplace.line_gap_factor, ..BlockDetector::default() };
-    let mut blocks = detector.detect_text_blocks(&image, &mask);
+    let mut mask = BlockDetector::ink_mask(&image);
+    let detector = BlockDetector { line_gap_factor: s.appearance.inplace.line_gap_factor, max_blocks: s.appearance.inplace.max_blocks, ..BlockDetector::default() };
+    let mut blocks = detector.detect_with_local(&image, &mut mask).0;
     blocks.sort_by(|a, b| (b.rect.w * b.rect.h).total_cmp(&(a.rect.w * a.rect.h)));
     let (fw, fh) = (image.width() as f32, image.height() as f32);
     let crops: Vec<_> = blocks.iter().take(MAX_TUNE_FIELDS).map(|b| {
@@ -316,7 +316,7 @@ fn describe(block: &crate::layout::engine::InplaceBlock) -> Vec<String> {
     lines.push(if font.generic {
         format!("шрифт: подходящего нет, общий «{}» — поле не рисуется", font.family)
     } else {
-        format!("шрифт: {} ({:?}), уверенность {:.2}", font.family, font.category, font.confidence)
+        format!("шрифт: ближайший доступный — {} (оценка категории {:?}), уверенность подбора {:.2}; точный шрифт оригинала не определяется", font.family, font.category, font.confidence)
     });
     if let Some(narrow) = &font.condensed_family { lines.push(format!("узкий вариант для длинного перевода: {narrow}")); }
     lines.push(format!("высота прописных оригинала: {:.0} px кадра", block.style.cap_height_px));

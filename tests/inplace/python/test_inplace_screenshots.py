@@ -212,7 +212,12 @@ def run_screenshot_pipeline(source, qt, translation=None, case=None, ocr_blocks=
         for entry, layout in zip(entries, diagnostics):
             if entry["wrap"] != "elide":
                 assert not layout["truncated"], (entry["key"], layout)
-                assert layout["contentWidth"] <= layout["width"] + 1, (entry["key"], layout)
+                # Qt 6.12 reports a right/centre-aligned line two pixels wider than the same left-aligned line when
+                # the font is italic with positive letter spacing (measured: 48.05 left, 50.05 right, in
+                # InplaceTranslationContent). The glyphs are not clipped (inspected); the allowance is that
+                # accounting artefact only, not a general widening of the tolerance.
+                accounting = 2 if entry["alignment"] != "left" and entry["letter_spacing"] > 0 else 0
+                assert layout["contentWidth"] <= layout["width"] + 1 + accounting, (entry["key"], layout)
                 assert layout["contentHeight"] <= layout["height"] + 1, (entry["key"], layout)
     # Pixels outside all overlay rectangles must be unchanged. This checks
     # outlines/shadows as well as text, using the actual QML renderer.
@@ -291,14 +296,17 @@ def test_recorded_game_capture_pipeline(process, qt):
     assert all(entry["original"] in translations and entry["text"] == translations[entry["original"]]
                for entry in result["placed"]), "fixture reading changed or a partial crop was translated"
     if process == "engine.exe":
-        # This recorded frame was visually inspected. Verify its two real dialogue readings,
-        # not just the existence of some HUD translation elsewhere in the frame.
+        # This recorded frame was visually inspected. Its dialogue is one three-line paragraph; the detector used to
+        # cut the last line off as a second field and now keeps the paragraph together. Verify the whole paragraph
+        # is read, rendered over its source and not given a beside-original label.
         dialogue = [entry for entry in result["overlay_quality"]["source_coverage"]
-                    if "Considering the amount" in entry["original"] or "king-sized bed" in entry["original"]]
-        assert len(dialogue) == 2, "recorded engine.exe fixture dialogue changed"
+                    if "Considering the amount" in entry["original"] and "king-sized bed" in entry["original"]]
+        assert len(dialogue) == 1, "recorded engine.exe dialogue is one complete reading"
         assert all(entry["rendered"] and entry["plate_coverage"] >= 0.9 for entry in dialogue)
         ids = {entry["id"] for entry in dialogue}
         assert all(entry.get("degraded") != "beside-original" for entry in result["placed"] if entry["block_id"] in ids)
+        assert all(entry["original"] != "0" for entry in result["ocr_history"] if entry["accepted"]), \
+            "the halftone dot field must no longer be read as a text block"
     else:
         required = [entry for entry in result["overlay_quality"]["source_coverage"]
                     if entry["original"] == "Mika" or (entry["original"].startswith("Morning, Ella.")
@@ -314,6 +322,9 @@ def test_recorded_game_capture_pipeline(process, qt):
         ids = {entry["id"] for entry in required}
         assert all(entry.get("degraded") != "beside-original" for entry in result["placed"] if entry["block_id"] in ids)
         assert not result["overlay_quality"]["uncovered_text_blocks"]
+        # The low-contrast HUD readout the global threshold used to miss is now a block, read and drawn over.
+        readout = [entry for entry in result["overlay_quality"]["source_coverage"] if entry["original"] == "rSpeed: 5 ms Temp: 20 C"]
+        assert len(readout) == 1 and readout[0]["rendered"] and readout[0]["plate_coverage"] >= 0.9
 
 
 def test_visual_comparison_rejects_a_real_regression():

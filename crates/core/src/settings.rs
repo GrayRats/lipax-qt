@@ -124,6 +124,9 @@ pub struct InplaceSettings {
     /// Блок делится там, где шаг между строками (центр–центр) больше `k` средних высот строки; см. `layout::split`.
     /// Меньше — дробнее (склеенные имя и реплика разделяются раньше), больше — крупнее блоки.
     pub line_gap_factor: f32,
+    /// Resource bound on text blocks found in one frame (each costs an OCR job and a font probe). Blocks
+    /// beyond it, the smallest first, are not read; they are counted in the inplace diagnostics.
+    pub max_blocks: usize,
     /// The overlay is shown only while the game window is the active one (not minimised, not behind another window).
     pub only_when_active: bool,
 }
@@ -158,6 +161,7 @@ impl Default for InplaceSettings {
             font_overrides: BTreeMap::new(),
             preferred_fonts: Vec::new(),
             line_gap_factor: crate::layout::split::DEFAULT_LINE_GAP_FACTOR,
+            max_blocks: crate::layout::block_detector::DEFAULT_MAX_BLOCKS,
             only_when_active: false,
         }
     }
@@ -168,6 +172,7 @@ impl InplaceSettings {
         let finite = |v: f32, d: f32| if v.is_finite() { v } else { d };
         // Below 1.3 ordinary line spacing (1.2–1.5 heights) would be cut; above 4 nothing would ever be.
         self.line_gap_factor = finite(self.line_gap_factor, crate::layout::split::DEFAULT_LINE_GAP_FACTOR).clamp(1.3, 4.0);
+        self.max_blocks = self.max_blocks.clamp(4, 256);
         self.minimum_font_size = finite(self.minimum_font_size, 8.0).clamp(4.0, 200.0);
         self.maximum_font_size = finite(self.maximum_font_size, 96.0).clamp(self.minimum_font_size, 400.0);
         if let PropertyMode::Manual(v) = &mut self.font_size { *v = finite(*v, 20.0).clamp(4.0, 400.0); }
@@ -481,7 +486,7 @@ pub enum Reaction {
 pub const REACTIONS: &[(&str, Reaction)] = &{
     use Reaction::*;
     [
-        ("schema_version", Managed), ("capture.portal_token", Managed), ("game_profiles", Managed), ("translation_window.floating_geometry", Managed),
+        ("schema_version", Managed), ("capture.portal_token", Managed), ("game_profiles", Managed), ("translation_window.floating_geometry", Managed), ("general.main_window", Managed),
         ("capture.window", Managed), ("capture.region", Managed),
         // Recognition and translation: the pipeline starts over.
         ("recognition.language", Pipeline), ("translation.target_language", Pipeline), ("translation.source_language", Pipeline), ("recognition.engine", Pipeline), ("recognition.paddle_python", Pipeline),
@@ -489,7 +494,7 @@ pub const REACTIONS: &[(&str, Reaction)] = &{
         ("recognition.minimum_confidence", Pipeline), ("recognition.binarize", Pipeline), ("recognition.auto_invert", Pipeline), ("recognition.contrast", Pipeline), ("recognition.sharpen", Pipeline), ("recognition.filter_noise", Pipeline), ("recognition.auto_filters", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
         ("translation.custom_url", Pipeline), ("capture.portal_fills_monitor", Pipeline), ("translation.custom_api_key", Pipeline), ("translation.deepl_api_key", Pipeline), ("translation.microsoft_api_key", Pipeline), ("translation.microsoft_region", Pipeline), ("translation.bergamot_binary", Pipeline), ("translation.bergamot_models_dir", Pipeline), ("translation.bergamot_model_paths", Pipeline), ("recognition.interval_ms", Pipeline), ("recognition.sensitivity", Pipeline),
         ("recognition.debounce_ms", Pipeline), ("display_mode", Pipeline), ("capture.regions", Pipeline),
-        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("general.theme", ApplicationStyle), ("general.ui_text_scale", Immediate), ("general.autostart", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
+        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.max_blocks", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("general.theme", ApplicationStyle), ("general.ui_text_scale", Immediate), ("general.autostart", Immediate), ("general.remember_window_geometry", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
         ("hotkeys.toggle", Hotkeys), ("hotkeys.select_region", Hotkeys), ("hotkeys.translate_once", Hotkeys), ("hotkeys.toggle_translation", Hotkeys), ("hotkeys.toggle_pin", Hotkeys),
         // The backend is chosen by the window key at selection time.
         ("capture.source", Reselect),
@@ -892,11 +897,42 @@ pub struct GeneralSettings {
     pub notify_retries: bool,
     /// `error`, `warn`, `info` or `debug`; applied at once. `RUST_LOG` wins at start.
     pub log_level: String,
+    /// Remember the position, size and screen of the main and the translation window. When off, nothing is
+    /// saved and the saved geometry is neither applied nor overwritten.
+    pub remember_window_geometry: bool,
+    /// Where the main window was left (set by the application, never by the settings form).
+    pub main_window: Option<WindowRecord>,
+}
+
+/// A top-level window as it was left: logical desktop pixels, the screen it was on and that screen's geometry
+/// at that time (to tell a moved or rescaled monitor from the same one). Position is advisory: Wayland
+/// compositors may refuse to place a window.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct WindowRecord {
+    pub x: f64,
+    pub y: f64,
+    pub w: f64,
+    pub h: f64,
+    pub screen: String,
+    pub screen_x: f64,
+    pub screen_y: f64,
+    pub screen_w: f64,
+    pub screen_h: f64,
+    pub scale: f64,
+}
+
+impl WindowRecord {
+    pub fn is_valid(&self) -> bool {
+        [self.x, self.y, self.w, self.h, self.screen_x, self.screen_y, self.screen_w, self.screen_h, self.scale].iter().all(|v| v.is_finite())
+            && self.w >= 1.0 && self.h >= 1.0 && self.w <= 65536.0 && self.h <= 65536.0
+    }
 }
 
 impl Default for GeneralSettings {
     fn default() -> Self {
-        Self { theme: "dark".into(), ui_text_scale: "normal".into(), autostart: false, notify_errors: false, notify_retries: false, log_level: "info".into() }
+        Self { theme: "dark".into(), ui_text_scale: "normal".into(), autostart: false, notify_errors: false, notify_retries: false, log_level: "info".into(),
+            remember_window_geometry: true, main_window: None }
     }
 }
 
@@ -905,6 +941,7 @@ impl GeneralSettings {
         if !["small", "normal", "large", "extra_large"].contains(&self.ui_text_scale.as_str()) { self.ui_text_scale = "normal".into(); }
         if !THEMES.contains(&self.theme.as_str()) { self.theme = "dark".into(); }
         if !LOG_LEVELS.contains(&self.log_level.as_str()) { self.log_level = "info".into(); }
+        if self.main_window.as_ref().is_some_and(|g| !g.is_valid()) { self.main_window = None; }
     }
 }
 
@@ -1301,6 +1338,20 @@ overlay_size = [800, 200]
             assert!(!saved.contains(old), "legacy name written: {old}");
         }
         assert_eq!(Settings::from_toml(&saved), s);
+    }
+
+    #[test]
+    fn window_geometry_memory_is_on_by_default_and_a_damaged_record_is_dropped() {
+        let s = Settings::default();
+        assert!(s.general.remember_window_geometry && s.general.main_window.is_none());
+        let mut s = Settings::from_toml("[general]\nremember_window_geometry = false\n[general.main_window]\nx = 10.0\ny = 20.0\nw = 640.0\nh = 480.0\nscreen = \"DP-1\"\nscale = 1.0\n");
+        assert!(!s.general.remember_window_geometry);
+        let g = s.general.main_window.clone().expect("record kept");
+        assert_eq!((g.x, g.y, g.w, g.h, g.screen.as_str()), (10.0, 20.0, 640.0, 480.0, "DP-1"));
+        s.general.main_window.as_mut().unwrap().w = 0.0;
+        s.sanitize();
+        assert!(s.general.main_window.is_none(), "a zero-sized window record is not kept");
+        assert!(!REACTIONS.iter().any(|(k, r)| *k == "general.main_window" && !matches!(r, Reaction::Managed)), "the form cannot patch the geometry record");
     }
 
     #[test]

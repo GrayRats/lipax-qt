@@ -126,9 +126,7 @@ inline void scheduleLipaTestSnapshot() {
         if (window->objectName() != "mainWindow") continue;
         QObject *controller = window->findChild<QObject *>("controller");
         QString result;
-        if (!controller || !QMetaObject::invokeMethod(controller, "appearancePreview", Q_RETURN_ARG(QString, result),
-            Q_ARG(QString, QStringLiteral("{}")), Q_ARG(double, 400.0), Q_ARG(double, 160.0)) || result == "null")
-            qFatal("Appearance preview bridge unavailable");
+        if (!controller) qFatal("Controller bridge unavailable");
         if (!QMetaObject::invokeMethod(controller, "themePolicy", Q_RETURN_ARG(QString, result), Q_ARG(QString, QStringLiteral("fusion"))))
             qFatal("Theme policy bridge unavailable");
         if (!QMetaObject::invokeMethod(controller, "qtVersion", Q_RETURN_ARG(QString, result)))

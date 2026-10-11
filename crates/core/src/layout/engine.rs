@@ -12,7 +12,7 @@
 //! - новое поле — всё; оформление повторно проверяется с гистерезисом каждые 500 мс.
 
 use super::background::{BackgroundAnalyzer, BackgroundInpainter};
-use super::block_detector::{BlockDetector, DetectedTextBlock};
+use super::block_detector::{BlockDetector, DetectedTextBlock, DetectionReport};
 use super::font_classifier::{FontAnalysis, FontClassifier};
 use super::font_database::InstalledFontDatabase;
 use super::font_matcher::{FontMatcher, FontPreferences, FontSelection};
@@ -162,6 +162,8 @@ pub struct InplaceEngine {
     cuts: Vec<CutMemory>,
     /// When the last `begin` ran: the age of `cuts`.
     last_scan: Option<Instant>,
+    /// What the detector found and left out in the latest frame.
+    detection: DetectionReport,
     ocr_dirty: bool,
     joins: Vec<JoinMemory>,
     pending_joins: HashSet<u64>,
@@ -262,7 +264,7 @@ impl InplaceEngine {
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
             applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new(),
-            cuts: Vec::new(), last_scan: None, ocr_dirty: false, joins: Vec::new(),
+            cuts: Vec::new(), last_scan: None, detection: DetectionReport::default(), ocr_dirty: false, joins: Vec::new(),
             pending_joins: HashSet::new(), joined_aliases: HashMap::new(), recognition_policy: None }
     }
 
@@ -292,6 +294,11 @@ impl InplaceEngine {
         self.missing_font_warned.clear();
     }
 
+    /// The detector's report for the latest frame: components, rejections, blocks dropped by the limit.
+    pub fn detection(&self) -> &DetectionReport {
+        &self.detection
+    }
+
     pub fn tracker(&self) -> &TextBlockTracker {
         &self.tracker
     }
@@ -305,9 +312,15 @@ impl InplaceEngine {
         let recognition_changed = self.recognition_policy.as_ref() != Some(&s.recognition);
         if recognition_changed { self.recognition_policy = Some(s.recognition.clone()); }
         self.pending_signatures.clear();
-        let mask = BlockDetector::ink_mask(&image);
+        let mut mask = BlockDetector::ink_mask(&image);
         self.detector.line_gap_factor = s.appearance.inplace.line_gap_factor;
-        let detected = self.detector.detect_text_blocks(&image, &mask);
+        self.detector.max_blocks = s.appearance.inplace.max_blocks;
+        let (detected, report) = self.detector.detect_with_local(&image, &mut mask);
+        if !report.dropped.is_empty() {
+            tracing::warn!(target: "inplace.detect", candidates = report.candidates, dropped = report.dropped.len(), limit = self.detector.max_blocks,
+                "more text blocks than appearance.inplace.max_blocks: the smallest are not read");
+        }
+        self.detection = report;
         self.last_scan = Some(now);
         if frame_changed { self.joins.clear(); }
         self.pending_joins.clear();

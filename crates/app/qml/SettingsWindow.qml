@@ -852,29 +852,11 @@ ApplicationWindow {
         }
         implicitHeight: settingsFooter.implicitHeight + 2 * ui.gap
     }
-    readonly property bool previewRelevant: tabs.currentIndex >= 3 && tabs.currentIndex <= 5
-    readonly property bool widePreview: width >= 1120 && ui.bodyPoints < 18
-    AppearancePreview {
-        id: appearancePreview
-        objectName: "appearancePreview"
-        visible: win.previewRelevant
-        settings: win.current
-        controller: win.controller
-        font: ui.body
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: ui.margin
-        width: win.widePreview ? Math.min(420, win.width * 0.36) : parent.width - 2 * ui.margin
-        height: win.widePreview ? Math.min(420, parent.height - 2 * ui.margin) : Math.min(245, parent.height * 0.42)
-        compact: !win.widePreview
-        surfaceColor: win.color
-        foregroundColor: win.palette.text
-    }
     StackLayout {
         anchors.fill: parent
         anchors.margins: ui.margin
-        anchors.rightMargin: win.previewRelevant && win.widePreview ? appearancePreview.width + 2 * ui.margin : ui.margin
-        anchors.topMargin: win.previewRelevant && !win.widePreview ? appearancePreview.height + 2 * ui.margin : ui.margin
+        anchors.rightMargin: ui.margin
+        anchors.topMargin: ui.margin
         currentIndex: tabs.currentIndex
         ScrollView {
             id: page0
@@ -4036,6 +4018,17 @@ ApplicationWindow {
                     objectName: "generalAutostart"
                     checked: !!win.general.autostart
                     onToggled: win.set("general.autostart", checked)
+                }
+                FieldLabel {
+                    helpText: "Сохраняет положение, размер и монитор главного окна и окна перевода и восстанавливает их при следующем открытии. Если выключить, сохранённые значения не применяются и не перезаписываются. Под Wayland композитор может не разрешить точное положение: тогда восстанавливается размер."
+                    text: "Запоминать положение и размер окон"
+                    helpControl: generalRememberGeometry
+                }
+                Switch {
+                    id: generalRememberGeometry
+                    objectName: "generalRememberGeometry"
+                    checked: win.general.remember_window_geometry !== false
+                    onToggled: win.set("general.remember_window_geometry", checked)
                 }
                 SectionTitle {
                     text: "Уведомления рабочего стола"

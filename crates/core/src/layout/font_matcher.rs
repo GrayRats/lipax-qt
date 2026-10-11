@@ -25,7 +25,7 @@ pub const ROUNDED: &[&str] = &["Nunito", "Comfortaa", "Rubik", "Onest"];
 pub const DISPLAY: &[&str] = &["Russo One", "Tektur", "Unbounded", "Orbitron", "Michroma", "Exo 2"];
 /// CJK-шрифт один (Noto Sans CJK, все регионы); CJK-варианта с засечками в комплекте нет.
 pub const CJK_SANS: &[&str] = &["Noto Sans CJK SC"];
-pub const CJK_SERIF: &[&str] = &["Noto Sans CJK SC"];
+pub const CJK_SERIF: &[&str] = &["Noto Serif CJK SC", "Noto Sans CJK SC"];
 /// Общий список для категории `Unknown`, если тип блока тоже неизвестен.
 pub const GENERAL: &[&str] = &["PT Serif", "Roboto Slab", "Inter", "Noto Sans", "Noto Serif", "Roboto", "Open Sans",
     "Fira Sans", "Source Serif 4", "Montserrat", "Roboto Condensed", "JetBrains Mono", "Source Code Pro"];
@@ -75,7 +75,21 @@ pub struct FontSelection {
     pub confidence: f32,
 }
 
+/// What a [`FontSelection`] claims. There is deliberately no exact-identification variant: the pixels give
+/// measurable characteristics and an estimated category, from which the closest *available* font is chosen.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FontMatchKind {
+    /// The closest bundled/installed family to the measured characteristics (not the original font).
+    ClosestAvailable,
+    /// No family covered the text: a generic family of the estimated category is requested.
+    Generic,
+}
+
 impl FontSelection {
+    pub fn match_kind(&self) -> FontMatchKind {
+        if self.generic { FontMatchKind::Generic } else { FontMatchKind::ClosestAvailable }
+    }
+
     pub fn generic(category: FontCategory) -> Self {
         Self { family: category.generic_family().into(), category, italic_available: true,
             available_weights: super::FontWeight::ALL.to_vec(), generic: true, condensed_family: None, confidence: 0.1 }
@@ -179,7 +193,7 @@ impl FontMatcher {
             .map(|f| (Self::score(analysis, block_type, &list, f).total(), *f))
             .max_by(|a, b| a.0.total_cmp(&b.0));
         match best {
-            Some((score, f)) => pick(f, (score / 12.0).clamp(0.0, 1.0) * analysis.confidence.clamp(0.0, 1.0)),
+            Some((score, f)) => pick(f, (score / 12.0).clamp(0.0, 1.0) * analysis.category_confidence()),
             None => {
                 let category = if script.is_cjk() && !analysis.category.is_cjk() { FontCategory::CjkSans } else { analysis.category };
                 FontSelection::generic(category)
@@ -195,12 +209,13 @@ mod tests {
     use crate::layout::font_database::tests::SAMPLE;
 
     #[test]
-    fn every_cjk_script_uses_the_single_bundled_cjk_font() {
+    fn cjk_translations_use_the_bundled_cjk_sans_or_serif_by_the_category_of_the_original() {
         let db = InstalledFontDatabase::bundled();
         for script in [Script::Japanese, Script::Korean, Script::ChineseSimplified, Script::ChineseTraditional] {
-            for category in [FontCategory::CjkSans, FontCategory::Serif, FontCategory::Unknown] {
+            for (category, family) in [(FontCategory::CjkSans, "Noto Sans CJK SC"), (FontCategory::Unknown, "Noto Sans CJK SC"),
+                                       (FontCategory::Serif, "Noto Serif CJK SC"), (FontCategory::CjkSerif, "Noto Serif CJK SC")] {
                 let picked = FontMatcher.select_font(&analysis(category), script, TextBlockType::Subtitle, &db, &Default::default());
-                assert_eq!((picked.family.as_str(), picked.generic), ("Noto Sans CJK SC", false), "{script:?} {category:?}");
+                assert_eq!((picked.family.as_str(), picked.generic), (family, false), "{script:?} {category:?}");
             }
         }
     }
@@ -211,7 +226,7 @@ mod tests {
         for (category, expect_serif) in [(FontCategory::CjkSans, false), (FontCategory::CjkSerif, true)] {
             for script in [Script::Cyrillic, Script::Latin] {
                 let picked = FontMatcher.select_font(&analysis(category), script, TextBlockType::Dialogue, &db, &Default::default());
-                assert_ne!(picked.family, "Noto Sans CJK SC", "no CJK font for text without ideographs ({category:?}, {script:?})");
+                assert!(!picked.family.contains("CJK"), "no CJK font for text without ideographs ({category:?}, {script:?})");
                 assert_eq!(picked.category.is_serif(), expect_serif, "{category:?} → {}", picked.family);
             }
         }

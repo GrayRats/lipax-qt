@@ -17,6 +17,7 @@ pub mod block_detector;
 pub mod engine;
 pub mod ocr_geometry;
 pub mod fit;
+mod local_ink;
 pub mod font_classifier;
 pub mod font_database;
 pub mod font_matcher;

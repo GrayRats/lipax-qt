@@ -92,40 +92,6 @@ TestCase {
             + "pt, interface=" + settings.font.pointSize + "pt")
     }
 
-    function test_previewPersistsAcrossScrollResizeAndAppearanceEdits() {
-        settings.reload()
-        settings.show()
-        const tabs = findChild(settings, "settingsTabs")
-        settings.set("display_mode", "window")
-        for (const width of [600, 880, 1240]) {
-            settings.width = width
-            settings.height = 740
-            tabs.currentIndex = 5
-            wait(100)
-            const preview = findChild(settings, "appearancePreview")
-            const content = findChild(preview, "windowAppearancePreview")
-            verify(preview.visible && preview.width > 100 && preview.height > 60)
-            if (settings.widePreview) {
-                verify(preview.width <= 420, "Wide preview must leave room for the form")
-                verify(findChild(settings, "settingsPage5").width >= 300, "Form remains visible beside the preview")
-            }
-            verify(content.translation.length > 0, "Sample does not require OCR")
-            settings.set("appearance.window.font_size", 29)
-            settings.set("appearance.window.text_color", "#12abef")
-            compare(content.requestedFontSize, 29)
-            compare(content.textColor, "#12abef")
-            const page = findChild(settings, "settingsPage5")
-            const y = preview.y
-            page.contentItem.contentY = 500
-            wait(80)
-            compare(preview.y, y)
-            verify(preview.visible)
-            page.contentItem.contentY = 0
-        }
-        settings.resetKeys(["appearance.window"])
-        settings.apply()
-    }
-
     function test_uiTypographyIsIndependentAndRestartCanBeCancelled() {
         settings.reload()
         settings.show()
@@ -1144,6 +1110,21 @@ TestCase {
         settings.resetKeys(["general"])
         compare(settings.current.general.log_level, "info")
         compare(settings.current.general.autostart, false)
+        settings.apply()
+    }
+
+    function test_rememberWindowGeometryIsOnByDefaultAndSavedAsAGeneralSetting() {
+        settings.show()
+        settings.reload()
+        findChild(settings, "settingsTabs").currentIndex = 0
+        const toggle = findChild(settings, "generalRememberGeometry")
+        verify(toggle !== null, "the switch exists")
+        compare(toggle.checked, true, "on by default (an absent value counts as on)")
+        toggle.checked = false
+        toggle.toggled()
+        compare(settings.current.general.remember_window_geometry, false)
+        verify(settings.pendingPatch()["general.remember_window_geometry"] === false)
+        settings.set("general.remember_window_geometry", true)
         settings.apply()
     }
 

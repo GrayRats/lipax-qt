@@ -1,594 +1,510 @@
 {
-  "provenance": "Observed native RapidOCR cropped readings on the recorded game frame; replay input, NOT manually annotated ground truth. CPU two threads, no GPU.",
-  "settings": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "minimum_confidence": 50
-  },
-  "ocr_history": [
+ "ocr_history": [
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 99.99590301513672,
+   "crop_origin": [
+    4,
+    4
+   ],
+   "detector_rect": {
+    "h": 8.0,
+    "w": 109.0,
+    "x": 7.0,
+    "y": 7.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 1,
+   "lines": [
     {
-      "accepted": false,
-      "automatic_filters": false,
-      "confidence": null,
-      "crop_origin": [
-        868,
-        328
-      ],
-      "detector_rect": {
-        "h": 87.0,
-        "w": 195.0,
-        "x": 890.0,
-        "y": 350.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 1,
-      "lines": [],
-      "observation_ms": 0.00014000000000000001,
-      "ocr_ms": 455.569162,
-      "original": "",
-      "raw_original": "",
-      "scan": 0,
-      "spans": [],
-      "split": false
+     "h": 11.0,
+     "w": 21.0,
+     "x": 5.0,
+     "y": 5.0
     },
     {
-      "accepted": false,
-      "automatic_filters": false,
-      "confidence": null,
-      "crop_origin": [
-        62,
-        390
-      ],
-      "detector_rect": {
-        "h": 96.0,
-        "w": 412.0,
-        "x": 86.0,
-        "y": 414.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 2,
-      "lines": [],
-      "observation_ms": 0.00014000000000000001,
-      "ocr_ms": 57.714736,
-      "original": "",
-      "raw_original": "",
-      "scan": 0,
-      "spans": [],
-      "split": false
+     "h": 11.0,
+     "w": 35.0,
+     "x": 35.0,
+     "y": 6.0
     },
     {
-      "accepted": false,
-      "automatic_filters": false,
-      "confidence": null,
-      "crop_origin": [
-        87,
-        751
-      ],
-      "detector_rect": {
-        "h": 27.0,
-        "w": 77.0,
-        "x": 94.0,
-        "y": 758.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 3,
-      "lines": [],
-      "observation_ms": 0.00013,
-      "ocr_ms": 7.1084570000000005,
-      "original": "",
-      "raw_original": "",
-      "scan": 0,
-      "spans": [],
-      "split": false
-    },
-    {
-      "accepted": true,
-      "automatic_filters": false,
-      "confidence": 51.506935119628906,
-      "crop_origin": [
-        0,
-        752
-      ],
-      "detector_rect": {
-        "h": 71.0,
-        "w": 265.0,
-        "x": 8.0,
-        "y": 770.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 4,
-      "lines": [
-        {
-          "h": 9.0,
-          "w": 9.0,
-          "x": 264.0,
-          "y": 820.0
-        }
-      ],
-      "observation_ms": 0.09736500000000001,
-      "ocr_ms": 44.831282,
-      "original": "0",
-      "raw_original": "0",
-      "scan": 0,
-      "spans": [
-        {
-          "confidence": 51.506935119628906,
-          "rect": {
-            "h": 9.0,
-            "w": 9.0,
-            "x": 264.0,
-            "y": 820.0
-          },
-          "text": "0"
-        }
-      ],
-      "split": false
-    },
-    {
-      "accepted": false,
-      "automatic_filters": false,
-      "confidence": null,
-      "crop_origin": [
-        1366,
-        765
-      ],
-      "detector_rect": {
-        "h": 57.0,
-        "w": 310.0,
-        "x": 1381.0,
-        "y": 780.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 5,
-      "lines": [],
-      "observation_ms": 0.00011999999999999999,
-      "ocr_ms": 27.253019,
-      "original": "",
-      "raw_original": "",
-      "scan": 0,
-      "spans": [],
-      "split": false
-    },
-    {
-      "accepted": true,
-      "automatic_filters": false,
-      "confidence": 99.059814453125,
-      "crop_origin": [
-        352,
-        793
-      ],
-      "detector_rect": {
-        "h": 76.0,
-        "w": 895.0,
-        "x": 361.0,
-        "y": 802.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 6,
-      "lines": [
-        {
-          "h": 44.0,
-          "w": 882.0,
-          "x": 359.0,
-          "y": 796.0
-        },
-        {
-          "h": 45.0,
-          "w": 857.0,
-          "x": 356.0,
-          "y": 836.0
-        },
-        {
-          "h": 34.0,
-          "w": 46.0,
-          "x": 1210.0,
-          "y": 845.0
-        }
-      ],
-      "observation_ms": 42.180572,
-      "ocr_ms": 413.151901,
-      "original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my",
-      "raw_original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my",
-      "scan": 0,
-      "spans": [
-        {
-          "confidence": 99.62433624267578,
-          "rect": {
-            "h": 44.0,
-            "w": 882.0,
-            "x": 359.0,
-            "y": 796.0
-          },
-          "text": "Considering the amount of time I spent lying prone"
-        },
-        {
-          "confidence": 98.43497467041016,
-          "rect": {
-            "h": 45.0,
-            "w": 857.0,
-            "x": 356.0,
-            "y": 836.0
-          },
-          "text": "due to illness, it's no exaggeration to say that"
-        },
-        {
-          "confidence": 99.94290161132812,
-          "rect": {
-            "h": 34.0,
-            "w": 46.0,
-            "x": 1210.0,
-            "y": 845.0
-          },
-          "text": "my"
-        }
-      ],
-      "split": false
-    },
-    {
-      "accepted": false,
-      "automatic_filters": false,
-      "confidence": null,
-      "crop_origin": [
-        1530,
-        815
-      ],
-      "detector_rect": {
-        "h": 17.0,
-        "w": 41.0,
-        "x": 1535.0,
-        "y": 820.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 7,
-      "lines": [],
-      "observation_ms": 0.00019999999999999998,
-      "ocr_ms": 9.609162,
-      "original": "",
-      "raw_original": "",
-      "scan": 0,
-      "spans": [],
-      "split": false
-    },
-    {
-      "accepted": false,
-      "automatic_filters": false,
-      "confidence": null,
-      "crop_origin": [
-        81,
-        828
-      ],
-      "detector_rect": {
-        "h": 148.0,
-        "w": 264.0,
-        "x": 90.0,
-        "y": 837.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 8,
-      "lines": [],
-      "observation_ms": 0.000171,
-      "ocr_ms": 37.153725,
-      "original": "",
-      "raw_original": "",
-      "scan": 0,
-      "spans": [],
-      "split": false
-    },
-    {
-      "accepted": true,
-      "automatic_filters": false,
-      "confidence": 99.73701477050781,
-      "crop_origin": [
-        1356,
-        830
-      ],
-      "detector_rect": {
-        "h": 98.0,
-        "w": 310.0,
-        "x": 1381.0,
-        "y": 855.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 9,
-      "lines": [
-        {
-          "h": 69.0,
-          "w": 82.0,
-          "x": 1406.0,
-          "y": 856.0
-        },
-        {
-          "h": 56.0,
-          "w": 60.0,
-          "x": 1587.0,
-          "y": 861.0
-        },
-        {
-          "h": 49.0,
-          "w": 116.0,
-          "x": 1394.0,
-          "y": 911.0
-        },
-        {
-          "h": 50.0,
-          "w": 118.0,
-          "x": 1561.0,
-          "y": 910.0
-        }
-      ],
-      "observation_ms": 16.704465000000003,
-      "ocr_ms": 143.28950300000002,
-      "original": "Q Q SAVE LOAD",
-      "raw_original": "Q Q SAVE LOAD",
-      "scan": 0,
-      "spans": [
-        {
-          "confidence": 99.32015228271484,
-          "rect": {
-            "h": 69.0,
-            "w": 82.0,
-            "x": 1406.0,
-            "y": 856.0
-          },
-          "text": "Q"
-        },
-        {
-          "confidence": 99.28829956054688,
-          "rect": {
-            "h": 56.0,
-            "w": 60.0,
-            "x": 1587.0,
-            "y": 861.0
-          },
-          "text": "Q"
-        },
-        {
-          "confidence": 99.83531951904297,
-          "rect": {
-            "h": 49.0,
-            "w": 116.0,
-            "x": 1394.0,
-            "y": 911.0
-          },
-          "text": "SAVE"
-        },
-        {
-          "confidence": 99.85511779785156,
-          "rect": {
-            "h": 50.0,
-            "w": 118.0,
-            "x": 1561.0,
-            "y": 910.0
-          },
-          "text": "LOAD"
-        }
-      ],
-      "split": false
-    },
-    {
-      "accepted": true,
-      "automatic_filters": false,
-      "confidence": 99.90531158447266,
-      "crop_origin": [
-        349,
-        870
-      ],
-      "detector_rect": {
-        "h": 52.0,
-        "w": 766.0,
-        "x": 362.0,
-        "y": 883.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 10,
-      "lines": [
-        {
-          "h": 33.0,
-          "w": 183.0,
-          "x": 362.0,
-          "y": 881.0
-        },
-        {
-          "h": 31.0,
-          "w": 63.0,
-          "x": 549.0,
-          "y": 882.0
-        },
-        {
-          "h": 23.0,
-          "w": 60.0,
-          "x": 620.0,
-          "y": 888.0
-        },
-        {
-          "h": 23.0,
-          "w": 46.0,
-          "x": 690.0,
-          "y": 888.0
-        },
-        {
-          "h": 35.0,
-          "w": 383.0,
-          "x": 739.0,
-          "y": 880.0
-        }
-      ],
-      "observation_ms": 19.027482,
-      "ocr_ms": 239.826589,
-      "original": "king-sized bed was my whole world back then.",
-      "raw_original": "king-sized bed was my whole world back then.",
-      "scan": 0,
-      "spans": [
-        {
-          "confidence": 99.97721862792969,
-          "rect": {
-            "h": 33.0,
-            "w": 183.0,
-            "x": 362.0,
-            "y": 881.0
-          },
-          "text": "king-sized"
-        },
-        {
-          "confidence": 99.97064971923828,
-          "rect": {
-            "h": 31.0,
-            "w": 63.0,
-            "x": 549.0,
-            "y": 882.0
-          },
-          "text": "bed"
-        },
-        {
-          "confidence": 99.98175811767578,
-          "rect": {
-            "h": 23.0,
-            "w": 60.0,
-            "x": 620.0,
-            "y": 888.0
-          },
-          "text": "was"
-        },
-        {
-          "confidence": 99.95748901367188,
-          "rect": {
-            "h": 23.0,
-            "w": 46.0,
-            "x": 690.0,
-            "y": 888.0
-          },
-          "text": "my"
-        },
-        {
-          "confidence": 99.63943481445312,
-          "rect": {
-            "h": 35.0,
-            "w": 383.0,
-            "x": 739.0,
-            "y": 880.0
-          },
-          "text": "whole world back then."
-        }
-      ],
-      "split": false
-    },
-    {
-      "accepted": true,
-      "automatic_filters": false,
-      "confidence": 99.63591766357422,
-      "crop_origin": [
-        1593,
-        921
-      ],
-      "detector_rect": {
-        "h": 18.0,
-        "w": 67.0,
-        "x": 1598.0,
-        "y": 926.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 11,
-      "lines": [
-        {
-          "h": 27.0,
-          "w": 76.0,
-          "x": 1593.0,
-          "y": 921.0
-        }
-      ],
-      "observation_ms": 1.3756899999999999,
-      "ocr_ms": 39.256805,
-      "original": "OAD",
-      "raw_original": "OAD",
-      "scan": 0,
-      "spans": [
-        {
-          "confidence": 99.63591766357422,
-          "rect": {
-            "h": 27.0,
-            "w": 76.0,
-            "x": 1593.0,
-            "y": 921.0
-          },
-          "text": "OAD"
-        }
-      ],
-      "split": false
-    },
-    {
-      "accepted": false,
-      "automatic_filters": false,
-      "confidence": null,
-      "crop_origin": [
-        140,
-        965
-      ],
-      "detector_rect": {
-        "h": 16.0,
-        "w": 34.0,
-        "x": 144.0,
-        "y": 969.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 12,
-      "lines": [],
-      "observation_ms": 0.00013,
-      "ocr_ms": 7.0283560000000005,
-      "original": "",
-      "raw_original": "",
-      "scan": 0,
-      "spans": [],
-      "split": false
-    },
-    {
-      "accepted": false,
-      "automatic_filters": false,
-      "confidence": null,
-      "crop_origin": [
-        196,
-        967
-      ],
-      "detector_rect": {
-        "h": 14.0,
-        "w": 29.0,
-        "x": 200.0,
-        "y": 971.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 13,
-      "lines": [],
-      "observation_ms": 0.00013,
-      "ocr_ms": 7.725198,
-      "original": "",
-      "raw_original": "",
-      "scan": 0,
-      "spans": [],
-      "split": false
-    },
-    {
-      "accepted": false,
-      "automatic_filters": false,
-      "confidence": null,
-      "crop_origin": [
-        254,
-        971
-      ],
-      "detector_rect": {
-        "h": 11.0,
-        "w": 23.0,
-        "x": 257.0,
-        "y": 974.0
-      },
-      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-      "id": 14,
-      "lines": [],
-      "observation_ms": 5.9999999999999995e-05,
-      "ocr_ms": 5.572092,
-      "original": "",
-      "raw_original": "",
-      "scan": 0,
-      "spans": [],
-      "split": false
+     "h": 11.0,
+     "w": 37.0,
+     "x": 80.0,
+     "y": 5.0
     }
-  ]
+   ],
+   "observation_ms": 0.29093199999999997,
+   "ocr_ms": 610.425899,
+   "original": "File Screen Control",
+   "raw_original": "File Screen Control",
+   "scan": 0,
+   "spans": [
+    {
+     "confidence": 99.99793243408203,
+     "rect": {
+      "h": 11.0,
+      "w": 21.0,
+      "x": 5.0,
+      "y": 5.0
+     },
+     "text": "File"
+    },
+    {
+     "confidence": 99.99584197998047,
+     "rect": {
+      "h": 11.0,
+      "w": 35.0,
+      "x": 35.0,
+      "y": 6.0
+     },
+     "text": "Screen"
+    },
+    {
+     "confidence": 99.99480438232422,
+     "rect": {
+      "h": 11.0,
+      "w": 37.0,
+      "x": 80.0,
+      "y": 5.0
+     },
+     "text": "Control"
+    }
+   ],
+   "split": false
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    868,
+    328
+   ],
+   "detector_rect": {
+    "h": 87.0,
+    "w": 195.0,
+    "x": 890.0,
+    "y": 350.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 2,
+   "lines": [],
+   "observation_ms": 2e-05,
+   "ocr_ms": 32.442816,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    62,
+    390
+   ],
+   "detector_rect": {
+    "h": 96.0,
+    "w": 412.0,
+    "x": 86.0,
+    "y": 414.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 3,
+   "lines": [],
+   "observation_ms": 7.000000000000001e-05,
+   "ocr_ms": 61.894216,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    87,
+    751
+   ],
+   "detector_rect": {
+    "h": 27.0,
+    "w": 77.0,
+    "x": 94.0,
+    "y": 758.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 4,
+   "lines": [],
+   "observation_ms": 2e-05,
+   "ocr_ms": 7.639613,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    1366,
+    765
+   ],
+   "detector_rect": {
+    "h": 57.0,
+    "w": 310.0,
+    "x": 1381.0,
+    "y": 780.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 5,
+   "lines": [],
+   "observation_ms": 7.000000000000001e-05,
+   "ocr_ms": 31.65997,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 98.55589294433594,
+   "crop_origin": [
+    352,
+    793
+   ],
+   "detector_rect": {
+    "h": 116.0,
+    "w": 895.0,
+    "x": 361.0,
+    "y": 802.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 6,
+   "lines": [
+    {
+     "h": 46.0,
+     "w": 882.0,
+     "x": 360.0,
+     "y": 796.0
+    },
+    {
+     "h": 44.0,
+     "w": 853.0,
+     "x": 358.0,
+     "y": 837.0
+    },
+    {
+     "h": 29.0,
+     "w": 42.0,
+     "x": 1213.0,
+     "y": 848.0
+    },
+    {
+     "h": 42.0,
+     "w": 772.0,
+     "x": 359.0,
+     "y": 878.0
+    }
+   ],
+   "observation_ms": 62.550542,
+   "ocr_ms": 720.252045,
+   "original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my king-sized bed was my whole world back then.",
+   "raw_original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my king-sized bed was my whole world back then.",
+   "scan": 0,
+   "spans": [
+    {
+     "confidence": 97.10809326171875,
+     "rect": {
+      "h": 46.0,
+      "w": 882.0,
+      "x": 360.0,
+      "y": 796.0
+     },
+     "text": "Considering the amount of time I spent lying prone"
+    },
+    {
+     "confidence": 99.02794647216797,
+     "rect": {
+      "h": 44.0,
+      "w": 853.0,
+      "x": 358.0,
+      "y": 837.0
+     },
+     "text": "due to illness, it's no exaggeration to say that"
+    },
+    {
+     "confidence": 99.99159240722656,
+     "rect": {
+      "h": 29.0,
+      "w": 42.0,
+      "x": 1213.0,
+      "y": 848.0
+     },
+     "text": "my"
+    },
+    {
+     "confidence": 99.62089538574219,
+     "rect": {
+      "h": 42.0,
+      "w": 772.0,
+      "x": 359.0,
+      "y": 878.0
+     },
+     "text": "king-sized bed was my whole world back then."
+    }
+   ],
+   "split": false
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    1530,
+    815
+   ],
+   "detector_rect": {
+    "h": 17.0,
+    "w": 41.0,
+    "x": 1535.0,
+    "y": 820.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 7,
+   "lines": [],
+   "observation_ms": 8.999999999999999e-05,
+   "ocr_ms": 7.064762,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 99.73701477050781,
+   "crop_origin": [
+    1356,
+    830
+   ],
+   "detector_rect": {
+    "h": 98.0,
+    "w": 310.0,
+    "x": 1381.0,
+    "y": 855.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 8,
+   "lines": [
+    {
+     "h": 69.0,
+     "w": 82.0,
+     "x": 1406.0,
+     "y": 856.0
+    },
+    {
+     "h": 56.0,
+     "w": 60.0,
+     "x": 1587.0,
+     "y": 861.0
+    },
+    {
+     "h": 49.0,
+     "w": 116.0,
+     "x": 1394.0,
+     "y": 911.0
+    },
+    {
+     "h": 50.0,
+     "w": 118.0,
+     "x": 1561.0,
+     "y": 910.0
+    }
+   ],
+   "observation_ms": 19.471798,
+   "ocr_ms": 154.124011,
+   "original": "Q Q SAVE LOAD",
+   "raw_original": "Q Q SAVE LOAD",
+   "scan": 0,
+   "spans": [
+    {
+     "confidence": 99.32015228271484,
+     "rect": {
+      "h": 69.0,
+      "w": 82.0,
+      "x": 1406.0,
+      "y": 856.0
+     },
+     "text": "Q"
+    },
+    {
+     "confidence": 99.28829956054688,
+     "rect": {
+      "h": 56.0,
+      "w": 60.0,
+      "x": 1587.0,
+      "y": 861.0
+     },
+     "text": "Q"
+    },
+    {
+     "confidence": 99.83531951904297,
+     "rect": {
+      "h": 49.0,
+      "w": 116.0,
+      "x": 1394.0,
+      "y": 911.0
+     },
+     "text": "SAVE"
+    },
+    {
+     "confidence": 99.85511779785156,
+     "rect": {
+      "h": 50.0,
+      "w": 118.0,
+      "x": 1561.0,
+      "y": 910.0
+     },
+     "text": "LOAD"
+    }
+   ],
+   "split": false
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 99.63591766357422,
+   "crop_origin": [
+    1593,
+    921
+   ],
+   "detector_rect": {
+    "h": 18.0,
+    "w": 67.0,
+    "x": 1598.0,
+    "y": 926.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 9,
+   "lines": [
+    {
+     "h": 27.0,
+     "w": 76.0,
+     "x": 1593.0,
+     "y": 921.0
+    }
+   ],
+   "observation_ms": 1.332628,
+   "ocr_ms": 40.950446,
+   "original": "OAD",
+   "raw_original": "OAD",
+   "scan": 0,
+   "spans": [
+    {
+     "confidence": 99.63591766357422,
+     "rect": {
+      "h": 27.0,
+      "w": 76.0,
+      "x": 1593.0,
+      "y": 921.0
+     },
+     "text": "OAD"
+    }
+   ],
+   "split": false
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    140,
+    965
+   ],
+   "detector_rect": {
+    "h": 16.0,
+    "w": 34.0,
+    "x": 144.0,
+    "y": 969.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 10,
+   "lines": [],
+   "observation_ms": 2e-05,
+   "ocr_ms": 7.662125,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    196,
+    967
+   ],
+   "detector_rect": {
+    "h": 14.0,
+    "w": 29.0,
+    "x": 200.0,
+    "y": 971.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 11,
+   "lines": [],
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 6.025981,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    254,
+    971
+   ],
+   "detector_rect": {
+    "h": 11.0,
+    "w": 23.0,
+    "x": 257.0,
+    "y": 974.0
+   },
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 12,
+   "lines": [],
+   "observation_ms": 4.9999999999999996e-05,
+   "ocr_ms": 7.373317,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false
+  }
+ ],
+ "provenance": "Observed native RapidOCR cropped readings on the recorded game frame, re-recorded after the local-contrast/context detector changes of 2026-10-11 (keyed by detector_rect, so a detector geometry change needs a new recording); replay input, NOT manually annotated ground truth. CPU two threads, no GPU.",
+ "settings": {
+  "engine": "rapidocr",
+  "language": "eng",
+  "minimum_confidence": 50
+ }
 }

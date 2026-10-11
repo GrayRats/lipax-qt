@@ -90,6 +90,41 @@ pub struct Placed {
     /// space is large enough: the translation is cut with an ellipsis in the largest box there is).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub degraded: Option<&'static str>,
+    /// How well the field replaces the source text: see [`Outcome`]. Visible translated text is not the same
+    /// thing as covered source text, so this is reported separately from `degraded`.
+    pub outcome: Outcome,
+    /// Share (0..=1) of the source text's box lying under the field's plate: what is actually covered.
+    pub source_coverage: f32,
+}
+
+/// What became of one translated field, in order of decreasing quality.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Outcome {
+    /// The translation is drawn whole over the source text, which is covered.
+    Replaced,
+    /// The source is covered but the translation is cut (`inside-original`, `elided`), or the plate covers
+    /// less than [`REPLACED_COVERAGE`] of the source.
+    Partial,
+    /// A readable label next to the original (`beside-original`): the source text stays visible. This is a
+    /// fallback, not a replacement.
+    DegradedFallback,
+    /// Nothing could be drawn (see `PlacementOutcome::dropped`).
+    Unrenderable,
+}
+
+/// A field replaces its source only if its plate covers at least this share of the source box.
+pub const REPLACED_COVERAGE: f32 = 0.9;
+
+impl Outcome {
+    pub fn classify(degraded: Option<&str>, source_coverage: f32) -> Self {
+        match degraded {
+            Some("beside-original") => Self::DegradedFallback,
+            Some("inside-original") | Some("elided") => Self::Partial,
+            _ if source_coverage < REPLACED_COVERAGE => Self::Partial,
+            _ => Self::Replaced,
+        }
+    }
 }
 
 /// A translation that could not be drawn over the game at all. It is not sent anywhere else: the in-place mode never
@@ -101,6 +136,11 @@ pub struct DroppedText {
     pub text: String,
     pub original: String,
     pub reason: &'static str,
+}
+
+impl DroppedText {
+    /// A dropped field is by definition not rendered at all.
+    pub const OUTCOME: Outcome = Outcome::Unrenderable;
 }
 
 /// Everything `place_regions` decided.
@@ -439,6 +479,8 @@ fn placed_entry(region: &RegionInput, b: &InplaceBlock, fit: &FitResult, box_rec
         screen_point: [0.0, 0.0],
         expanded: false,
         degraded: None,
+        outcome: Outcome::Replaced,
+        source_coverage: 1.0,
     }
 }
 
@@ -699,6 +741,9 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
             tracing::info!(target: "inplace.fallback", block = %candidates[i].id, "no free space is large enough: the translation is cut with an ellipsis");
             entry.degraded = Some("elided");
         }
+        let source = candidates[i].source_rect;
+        entry.source_coverage = if source.area() > 0.0 { (plate.intersection(&source) / source.area()).clamp(0.0, 1.0) } else { 0.0 };
+        entry.outcome = Outcome::classify(entry.degraded, entry.source_coverage);
         placed.push(entry);
     }
     PlacementOutcome { placed, dropped }
@@ -825,6 +870,23 @@ mod tests {
         assert!(px + pw <= 420.0 + 0.5, "the label stays left of the neighbour's text: x {px} w {pw}");
         assert!(label.font_px >= 1.0 && !label.text.is_empty());
         assert_eq!(out.placed[1].degraded, None);
+        // Visible translated text is not source replacement: the label sits below the original, covering none of it.
+        assert_eq!(label.outcome, Outcome::DegradedFallback);
+        assert!(label.source_coverage < 0.1, "coverage {}", label.source_coverage);
+        assert_eq!(out.placed[1].outcome, Outcome::Replaced);
+        assert!(out.placed[1].source_coverage >= REPLACED_COVERAGE);
+        assert_eq!(serde_json::to_value(label).unwrap()["outcome"], "degraded-fallback");
+    }
+
+    #[test]
+    fn outcome_classification_separates_replacement_truncation_fallback_and_nothing() {
+        assert_eq!(Outcome::classify(None, 1.0), Outcome::Replaced);
+        assert_eq!(Outcome::classify(Some("plain-plate"), 0.95), Outcome::Replaced);
+        assert_eq!(Outcome::classify(None, 0.5), Outcome::Partial, "a plate that misses half the source");
+        assert_eq!(Outcome::classify(Some("elided"), 1.0), Outcome::Partial);
+        assert_eq!(Outcome::classify(Some("inside-original"), 1.0), Outcome::Partial);
+        assert_eq!(Outcome::classify(Some("beside-original"), 1.0), Outcome::DegradedFallback);
+        assert_eq!(DroppedText::OUTCOME, Outcome::Unrenderable);
     }
 
     #[test]
@@ -1162,6 +1224,9 @@ mod tests {
         let p = &out.placed[0];
         assert_eq!((p.degraded, p.wrap), (Some("elided"), "elide"));
         assert!(p.max_lines >= 1 && p.font_px >= 14.0);
+        // A cut translation is reported as such, never as a clean replacement.
+        assert_eq!(p.outcome, Outcome::Partial);
+        assert!(p.source_coverage >= REPLACED_COVERAGE, "the source itself is covered: {}", p.source_coverage);
         assert_inside(p, window, DesktopRect::of_window(&WindowGeometry::from(window)));
     }
 
@@ -1172,64 +1237,5 @@ mod tests {
         assert!(!p.expanded && p.degraded.is_none());
         let json = serde_json::to_value(p).unwrap();
         assert!(json.get("expanded").is_none() && json.get("degraded").is_none(), "absent unless set");
-    }
-}
-
-
-/// Preview-only sample: the same typography resolver, background renderer, fitting and DTO as
-/// real fields. Coordinates describe the sample canvas, never a captured game or its geometry.
-pub fn preview(settings: &InplaceSettings, width: f32, height: f32, measure: &dyn TextMeasure) -> Placed {
-    use super::background::{BackgroundAnalysis, BackgroundInpainter};
-    use super::font_matcher::FontSelection;
-    use super::typography::{LineHeightEstimate, TypographyEstimate, TypographyEstimator};
-    use super::{FontWeight, InkMask, Padding, Rect, Script};
-    let (w, h) = (width.clamp(80.0, 1600.0) as u32, height.clamp(60.0, 900.0) as u32);
-    let font = FontSelection { family: "Inter".into(), category: FontCategory::SansSerif,
-        italic_available: true, available_weights: FontWeight::ALL.to_vec(), generic: false,
-        condensed_family: None, confidence: 1.0 };
-    let estimate = TypographyEstimate { cap_height_px: 16.0, lines: 2,
-        line_height: LineHeightEstimate { absolute_px: 28.0, proportional: 1.2, confidence: 1.0 },
-        weight: FontWeight::Normal, italic: false, alignment: TextAlignment::Center,
-        letter_spacing_px: 0.0, text_color: [245; 3], text_color_reliable: true, padding: Padding::uniform(8.0) };
-    let rect = Rect::new(20.0, 20.0, w as f32 - 40.0, h as f32 - 40.0);
-    let canvas = image::RgbaImage::from_pixel(w, h, image::Rgba([38, 49, 61, 255]));
-    let mask = InkMask { w: w as usize, h: h as usize, ink: vec![false; (w * h) as usize], ink_is_dark: false };
-    let analysis = BackgroundAnalysis { median: [38, 49, 61], mean: [38, 49, 61], luminance: 49.0,
-        texture: 0.0, edge_density: 0.0, gradient: 0.0, reliable: true };
-    let background = BackgroundInpainter.render(&canvas, &mask, &rect, 24.0, analysis, settings, TextBlockType::Dialogue);
-    let block = InplaceBlock { id: 0, block_type: TextBlockType::Dialogue, text_rect: rect,
-        original: "The path is clear. Let’s continue our journey.".into(),
-        translation: "Путь свободен. Продолжим наше путешествие.".into(), script: Script::Cyrillic,
-        style: TypographyEstimator.resolve(&estimate, &font, settings), font, background,
-        lines_note: "Демонстрационный пример, не OCR".into(), revision: 0 };
-    let full = NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 };
-    let map = FrameToDesktop::new(&WindowGeometry::from([0.0, 0.0, w as f64, h as f64]), full, (w, h));
-    let boxes = base_boxes(&block, &map, &DesktopRect::in_space(0.0, 0.0, w as f32, h as f32), (w, h), settings);
-    let fit = fit_text(&block, &boxes.text, &map, measure);
-    let frame = InplaceFrame { frame: (w, h), blocks: vec![], undrawable: vec![], new_translations: vec![] };
-    let region = RegionInput { id: "preview", rect: full, frame: &frame };
-    placed_entry(&region, &block, &fit, map.fraction(&boxes.plate), inner_of(&boxes.plate, &boxes.text), settings, None)
-}
-
-#[cfg(test)]
-mod preview_tests {
-    use super::*;
-    use crate::settings::PropertyMode;
-    #[test]
-    fn sample_uses_production_typography_and_preserves_configuration() {
-        let mut s = InplaceSettings::default();
-        s.font_size = PropertyMode::Manual(28.0);
-        s.text_color = PropertyMode::Manual("#12abef".into());
-        s.italic = PropertyMode::Manual(true);
-        s.shadow = true;
-        s.fill_opacity = 0.25;
-        let before = s.clone();
-        let p = preview(&s, 420.0, 200.0, &super::super::fit::ApproxMeasure);
-        assert!(!p.text.is_empty());
-        assert_eq!(p.text_color, "#12abef");
-        assert!(p.italic && p.shadow);
-        assert_eq!(p.background.opacity, 0.25);
-        assert_eq!(s, before);
-        assert_eq!(p.region_id, "preview");
     }
 }

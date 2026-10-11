@@ -100,3 +100,20 @@ New Rust cases cover word-fragment reconstruction, prevention of neighbouring
 OCR-padding overlap and exact cached geometry across an identical next frame.
 CrossxMars.exe still fails the placement quality diagnostic; passing its
 structural renderer checks does not close that known defect.
+
+New files added in the 2026-10-11 session (Stage 3–5):
+
+- `rust/detection.rs` (`inplace_detection`): block detector tests, `DetectionReport`
+  with listed dropped blocks, the local contrast pass and the noise filters.
+- `rust/typography.rs` (`inplace_typography`): typography measurement against ab_glyph
+  outlines, `category_confidence` calibration over the fixtures and sequence tests
+  (weight change, style change, block return).
+- `rust/stress.rs` (`inplace_stress`): 200 frames × 12 blocks; checks tracked ≤ 12 and
+  that RSS does not grow. Debug timings are not a benchmark.
+- `rust/detect_dump.rs` (example `inplace_detect_dump`): diagnostic printer of the
+  detector's blocks and report for a PNG/JPEG. It runs no OCR and makes no accuracy claim.
+- `qt/typography_probe.cpp`: Qt probe used by the typography test; it runs in an
+  environment without system fonts, so only the bundled fonts are available.
+- `python/test_typography_qt.py`: 11 Qt tests. Without system fonts, Latin, Cyrillic, Greek
+  and CJK come only from the bundled set and Thai gives `.notdef`. With system fonts, Thai
+  and Arabic come from the OS.

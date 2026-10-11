@@ -378,8 +378,6 @@ QML-тесты и создаёт `dist/lipax-1.0.8-1-x86_64.pkg.tar.zst`. Пак
 
 `UiTheme.qml` задаёт системное семейство, минимальный читаемый размер и роли текста.
 `general.ui_text_scale` относится только к интерфейсу и не входит в ключ обработки.
-`AppearancePreview.qml` закреплён рядом с формой или над ней. Окно перевода использует
-`TranslationWindowContent`, наложение — общий `InplaceTranslationContent`; демонстрационный
-DTO рассчитывает `layout::place::preview` через существующие типографику и подгонку.
-Пример не является кадром игры и не поступает в pipeline. `ui_settings.rs` хранит
+Предпросмотр оформления в настройках удалён. Окно перевода и наложение используют
+`TranslationWindowContent` и `InplaceTranslationContent` как прежде, без демонстрационного примера. `ui_settings.rs` хранит
 политику смены стиля относительно запуска; `general.theme` имеет реакцию `ApplicationStyle`.

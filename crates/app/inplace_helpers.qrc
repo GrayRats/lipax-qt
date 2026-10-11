@@ -1,1 +1,1 @@
-<RCC><qresource prefix="/qt/qml/io/lipa/qml"><file alias="InplaceGeometry.js">qml/InplaceGeometry.js</file></qresource></RCC>
+<RCC><qresource prefix="/qt/qml/io/lipa/qml"><file alias="InplaceGeometry.js">qml/InplaceGeometry.js</file><file alias="StatusText.js">qml/StatusText.js</file><file alias="WindowGeometry.js">qml/WindowGeometry.js</file></qresource></RCC>

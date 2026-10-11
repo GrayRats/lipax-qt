@@ -5,6 +5,101 @@
 локальные изменения сохранены вместе с текущими. Следующие задачи:
 [INPLACE_REMAINING_TASKS.md](INPLACE_REMAINING_TASKS.md).
 
+## Сессия 2026-10-11 (Stage 3–5)
+
+Изменения находятся в рабочем дереве; коммит не создавался. Этот раздел новее
+исторических разделов ниже: при расхождении чисел действует он. Числа из более
+ранних точек не суммируются с новыми.
+
+### Детектор
+
+- `crates/core/src/layout/block_detector.rs`: `DetectionReport`. Лимит блоков
+  16 → 64 (`appearance.inplace.max_blocks`, диапазон 4–256). Отброшенные блоки
+  перечисляются в отчёте. На Cross x Mars старый лимит 16 отбрасывал 5 шумовых
+  блоков из 21.
+- `crates/core/src/layout/local_ink.rs`: локальный проход по контрасту нашёл
+  «rSpeed: 5 ms Temp: 20 C» (RapidOCR 96,6%).
+- Ложный «0» engine.exe: полутоновые точки, прочитанные как цифра. Теперь такие
+  узоры отсекаются правилом «сплошные диски без счётчиков».
+- Контекстный фильтр крупных глифов; вторая ступень для мелких подписей рядом с заголовком.
+- `TextLine::baseline()` и `TextLine::words()`.
+- Диалог engine.exe теперь один 3-строчный блок (раньше было 2).
+
+### Размещение (`crates/core/src/layout/place.rs`)
+
+- `Outcome`: `replaced`, `partial`, `degraded-fallback`; добавлено `source_coverage`.
+- `beside-original` считается деградацией, а не заменой исходного текста.
+
+### Типографика
+
+- Высота и толщина штриха сверены с контурами ab_glyph: средняя ошибка высоты 1,8%.
+- `category_confidence` откалиброван по 193 фикстурам: Brier 0,118 → 0,086.
+  Фикстуры не являются независимой ground-truth разметкой.
+- Точный шрифт не заявляется: результат подбора описывается через `FontMatchKind`.
+- Тесты последовательностей: смена веса, смена стиля, возврат блока.
+
+### Bundled CJK serif
+
+- Добавлен Noto Serif CJK SC (variable, OFL): `crates/app/assets/fonts/NotoSerifCJK-VF.otf.xz`
+  и `NotoSerifCJK-LICENSE.txt`; +17,7 МиБ (xz); SHA256 в `packaging/fonts.sources`.
+- Матчер выбирает его для serif-оригиналов при переводе на CJK.
+- Это решение пользователя. Оценка Stage 4 предлагала не добавлять шрифт; эта оценка снята.
+
+### Qt и bundled-шрифты
+
+- `tests/inplace/qt/typography_probe.cpp` и `tests/inplace/python/test_typography_qt.py` (11 тестов).
+- Без системных шрифтов Latin, Cyrillic, Greek и CJK берутся только из bundled-набора;
+  тайский даёт `.notdef`.
+- С системными шрифтами тайский и арабский берутся из ОС.
+- Qt сам выбирает fallback для иероглифов между двумя bundled CJK-семействами.
+
+### Тесты
+
+| Проверка | Результат |
+|---|---|
+| Rust workspace | **454 passed, 0 failed, 15 ignored** (до правок было 424 / 0 / 15) |
+| QML/JavaScript | 13 новых + 106 существующих passed. Прогон 106 существующих был выполнен до добавления CJK serif |
+| Новые Rust-наборы | `inplace_detection`, `inplace_typography`, `inplace_stress`; `ocr_ownership` — 23 теста |
+| `inplace_stress` | 200 кадров × 12 блоков: tracked ≤ 12, RSS не растёт; debug 66,8 мс/кадр. Это не бенчмарк |
+| Python/RapidOCR (полный, LIPAX_TEST_OCR=1, 16 скриншотов + 2 записанных кадра + Qt typography) | **37 passed, 0 failed**, 295,47 s; `tmp/s5/python-full-2.log` (до исправлений было 33 passed, 3 failed) |
+
+Opt-in тесты (ignored):
+
+| Тест | Результат |
+|---|---|
+| `font_report`, `font_csv` | выполнены |
+| `rapid_native` reads_english_russian_and_japanese | ok |
+| `meiki_native` (×4) | ok |
+| `bergamot_native` | ok; бинарник `/usr/lib/lipax/bergamot`, модель en-ru |
+| rapid `benchmark_frames_against_tesseract_and_paddle` | NOT RUN: нет paddle |
+| `scenes::scene_report` | NOT RUN |
+| `detect::speed` | NOT RUN |
+| `engine::stages`, `engine::speed` | NOT RUN |
+| tesseract real download | NOT RUN: сеть |
+| kwin DBus | NOT RUN |
+
+Итого: 8 выполнено, 7 NOT RUN из 15 ignored.
+
+NOT RUN целиком:
+- сборка release и paired benchmark с baseline `tmp/rapid-live/ownership-baseline/inplace_bench`;
+- Stage 1: живой overlay KWin/XWayland, мультимонитор, in-process CXX-Qt мост, E2E с Google и реальным переводчиком;
+- Stage 2: независимая разметка и утверждение визуальных эталонов.
+
+### Известные дефекты
+
+- Меню окна engine.exe читается частично.
+- Одиночный глиф отсекается правилом «один крошечный глиф — шум».
+- Глобальный Otsu сдвигает границы блока на несколько px.
+- Узкая плашка с длинным переводом даёт нечитаемую вертикальную полосу (8 px).
+- Qt 6.12 даёт +2 px contentWidth для right-aligned italic с letter spacing; допуск задокументирован в тесте.
+
+### С чего продолжить (актуально на 2026-10-11)
+
+1. Собрать приложение и release; сравнить с baseline `tmp/rapid-live/ownership-baseline/inplace_bench` (NOT RUN).
+2. (выполнено) Python/RapidOCR: 37 passed.
+3. Live overlay и E2E (Stage 1), затем независимая разметка и утверждение эталонов (Stage 2).
+4. Проверить engine.exe на новых кадрах и разобрать известные дефекты выше.
+
 ## Практические примеры и изменения
 
 - **engine.exe, исходный PID 100656:** соседние части диалога не блокируют

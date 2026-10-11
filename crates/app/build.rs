@@ -44,7 +44,6 @@ fn main() {
         "qml/HoverHint.qml",
         "qml/UiTheme.qml",
         "qml/ActionButton.qml",
-        "qml/AppearancePreview.qml",
         "qml/InplaceTranslationContent.qml",
         "qml/RegionSelector.qml",
         "qml/TranslationWindow.qml",
@@ -58,6 +57,9 @@ fn main() {
         "qml/InplaceTranslation.qml",
         "qml/HistoryWindow.qml",
         "qml/OcrPreviewWindow.qml",
+        "qml/StatusIndicator.qml",
+        "qml/TranslationPanels.qml",
+        "qml/ProcessTitle.qml",
     ]))
     // Widgets: the KDE platform theme builds the tray icon from QWidgets, so the app is a QApplication.
     .qt_module("Widgets")

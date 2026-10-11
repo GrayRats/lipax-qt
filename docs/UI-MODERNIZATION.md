@@ -8,7 +8,7 @@
 - Шесть SVG из `crates/app/assets/icons.md` встроены в ресурсы. Кнопки имеют доступные имена, клавиатурное управление и подсказки. `start-translation.svg`: при остановке жёлтый, при работе плавно мигает зелёным; нажатие при работе останавливает перевод. Ненужные бесконечные анимации страницы «О программе» удалены.
 - Сохранены категории и горизонтальная прокрутка вкладок. Выбранная вкладка явно выделена; шрифт, подписи, интервалы и контраст статусов унифицированы. Цветовые образцы доступны с клавиатуры. Подсказки открываются через 400 мс, переносят текст, скрываются при перемещении/прокрутке и смене страницы. Область подсказки для отключённых контролов остаётся внешней и не перехватывает щелчки.
 - Описания Google, Yandex Cloud, LibreTranslate-совместимого API, DeepL, Microsoft и Bergamot соответствуют существующим реализациям. Указаны ключи, переменные окружения, локальные модели и ограничения. Для DeepL/Microsoft объяснён резерв Google; для Bergamot прямо указано отсутствие сетевого fallback. Переключение провайдера сохраняет остальные ключи. Строка состояния описывает настроенный резерв, но не выдаёт его за подтверждённый источник конкретного результата.
-- `AppearancePreview.qml` всегда содержит демонстрационный перевод на вкладках отображения, окна и оформления. В широком окне пример закреплён справа; в узком — сверху, вне прокручиваемой формы. Отдельное окно использует `TranslationWindowContent`; наложение использует выделенный из производственного окна `InplaceTranslationContent`. Параметры наложения рассчитывает Rust через существующие разрешение типографики, рендеринг подложки и подгонку текста. Пример не запускает захват, OCR или сетевой перевод и не подменяет геометрию игры.
+- Предпросмотр оформления в настройках удалён: он показывал условный пример, а не результат OCR.
 
 ## Применение настроек
 
@@ -25,7 +25,7 @@
 
 ## Изменённые файлы этой задачи
 
-QML: `main.qml`, `SettingsWindow.qml`, `HistoryWindow.qml`, `OcrPreviewWindow.qml`, `HotkeyButton.qml`, `HoverHint.qml`, `TranslationWindowContent.qml`, `InplaceTranslation.qml`; новые `UiTheme.qml`, `ActionButton.qml`, `AppearancePreview.qml`, `InplaceTranslationContent.qml`.
+QML: `main.qml`, `SettingsWindow.qml`, `HistoryWindow.qml`, `OcrPreviewWindow.qml`, `HotkeyButton.qml`, `HoverHint.qml`, `TranslationWindowContent.qml`, `InplaceTranslation.qml`; новые `UiTheme.qml`, `ActionButton.qml`, `InplaceTranslationContent.qml`, `StatusIndicator.qml`, `ProcessTitle.qml`, `TranslationPanels.qml`.
 
 Rust: `crates/app/build.rs`, `crates/app/src/main.rs`, `bridge.rs`, `icon.rs`, новый `ui_settings.rs`; `crates/core/src/settings.rs`, `layout/place.rs`.
 

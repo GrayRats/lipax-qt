@@ -71,6 +71,33 @@ pub struct FontAnalysis {
     pub features: FontFeatures,
 }
 
+impl FontAnalysis {
+    /// Estimated probability that `category` is the right kind of face. `confidence` only says how much
+    /// evidence there was (glyph count); this multiplies it by how often the category was right when it was
+    /// predicted on the labelled rendered fixtures (`category_precision`). It is an estimate for rendered text
+    /// of known fonts, not a measured error rate on game art, and never a font identification.
+    pub fn category_confidence(&self) -> f32 {
+        self.confidence.clamp(0.0, 1.0) * category_precision(self.category)
+    }
+}
+
+/// Precision of the category decision per predicted category on the 193 committed font fixtures
+/// (`crates/core/tests/fixtures/fonts`), Laplace-smoothed as (right + 1) / (predicted + 2):
+/// sans 76/89, slab 8/18, serif 42/42, monospace 35/35, condensed 9/9. The thresholds were fitted on the same
+/// fixtures, so the real figure on unseen fonts is lower; the table is checked by `inplace_typography`.
+/// Slab is the weakest: serif and sans faces with strong feet are often called slab.
+pub fn category_precision(c: FontCategory) -> f32 {
+    match c {
+        FontCategory::SansSerif => 0.85,
+        FontCategory::SlabSerif => 0.45,
+        FontCategory::Serif => 0.98,
+        FontCategory::Monospace => 0.97,
+        FontCategory::Condensed => 0.91,
+        // CJK kinds come from the language of the original, not from pixels; anything else is a guess.
+        _ => 0.5,
+    }
+}
+
 #[derive(Default)]
 pub struct FontClassifier;
 

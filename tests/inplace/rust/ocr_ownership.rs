@@ -73,6 +73,26 @@ fn independent_text_and_repeated_text_at_another_position_are_not_suppressed() {
     assert!(!other_position.duplicate_of(&owner));
 }
 #[test]
+fn partially_overlapping_independent_labels_and_repeated_words_stay_separate() {
+    // Neighbouring HUD labels whose OCR boxes overlap by a third: different words, neither owns the other.
+    let sound = field(1, &[(20., 40., 120., 22., "Sound")], 20.);
+    let volume = field(2, &[(100., 41., 130., 22., "Volume 80")], 20.);
+    assert!(!sound.duplicate_of(&volume) && !volume.duplicate_of(&sound));
+    // The same word twice in one row (two buttons): independent, however alike.
+    let yes_a = field(3, &[(20., 40., 70., 22., "Yes")], 20.);
+    let yes_b = field(4, &[(120., 40., 70., 22., "Yes")], 20.);
+    assert!(!yes_a.duplicate_of(&yes_b) && !yes_b.duplicate_of(&yes_a));
+    // A field whose text is a different word set inside the same rows is not a duplicate even when the
+    // rectangles coincide: only text *and* geometry together prove a repeated reading.
+    let long = field(5, &[(20., 40., 300., 22., "Fuel heating status: nominal")], 20.);
+    let other = field(6, &[(25., 41., 100., 22., "Engine status")], 20.);
+    assert!(!other.duplicate_of(&long));
+    // Deterministic: asking again, in either order, gives the same answers.
+    for _ in 0..3 {
+        assert!(!sound.duplicate_of(&volume) && !yes_a.duplicate_of(&yes_b));
+    }
+}
+#[test]
 fn duplicate_parent_spans_cannot_fake_complete_coverage() {
     let owner = field(
         1,
@@ -537,19 +557,19 @@ fn crossxmars_replay_reads_union_pixels_again_before_replacing_name_hud_and_dial
 }
 
 #[test]
-fn engine_exe_replay_keeps_both_neighbouring_dialogue_fields_and_suppresses_load_fragment() {
+fn engine_exe_replay_reads_the_three_line_dialogue_as_one_field_and_suppresses_load_fragment() {
+    // Re-recorded after the detector stopped cutting the third line off the paragraph: the three lines
+    // have one pitch, one colour and one alignment, so one field (one translation unit) is correct.
     let output = replay_game("engine.exe-100656");
-    let first = output
+    let dialogue = output
         .blocks
         .iter()
         .find(|b| b.original.starts_with("Considering the amount"))
         .unwrap();
-    let second = output
-        .blocks
-        .iter()
-        .find(|b| b.original.starts_with("king-sized bed"))
-        .unwrap();
-    assert!(first.text_rect.bottom() <= second.text_rect.y);
+    assert!(dialogue.original.contains("king-sized bed"));
+    assert_eq!(dialogue.style.source_lines, 3);
+    // No other drawn field overlaps the dialogue's source pixels.
+    assert!(!output.blocks.iter().any(|b| !std::ptr::eq(b, dialogue) && b.text_rect.intersection(&dialogue.text_rect) > 0.0));
     assert!(!output.blocks.iter().any(|b| b.original == "OAD"));
     assert!(
         output
@@ -687,4 +707,48 @@ fn changed_source_pixels_invalidate_negative_ocr_cache_immediately() {
         .len(),
         1
     );
+}
+
+#[test]
+fn a_late_result_for_an_older_frame_does_not_mark_the_newer_pixels_as_read() {
+    use lipa_core::{layout::engine::InplaceEngine, settings::Settings};
+    let s = Settings::default();
+    let mut e = InplaceEngine::new();
+    let t = std::time::Instant::now();
+    let ms = std::time::Duration::from_millis;
+    let old = e.begin(frame(400), &s, t, false);
+    let id = old[0].id;
+    // A newer, different frame arrives while the first reading is still running.
+    let mut newer = frame(400).into_rgba8();
+    for p in newer.pixels_mut() { if p.0[0] > 0 { *p = image::Rgba([180, 180, 180, 255]); } }
+    let newer = image::DynamicImage::ImageRgba8(newer);
+    let fresh = e.begin(newer.clone(), &s, t + ms(100), false);
+    assert_eq!(fresh.len(), 1, "the changed pixels are due for reading");
+    // The old reading completes late. It must not remember the newer picture as handled.
+    e.complete(id, None, &s);
+    assert_eq!(
+        e.begin(newer.clone(), &s, t + ms(200), false).len(),
+        1,
+        "the newer frame was never read: it is still due"
+    );
+    // Once the newer frame itself is handled, an identical frame needs no reading.
+    e.reject_ocr(id, &s);
+    assert!(e.begin(newer, &s, t + ms(300), false).is_empty());
+}
+
+#[test]
+fn a_negative_cache_entry_lives_until_its_deadline_and_a_frame_without_text_costs_nothing() {
+    use lipa_core::{layout::engine::InplaceEngine, settings::Settings};
+    let s = Settings::default();
+    let mut e = InplaceEngine::new();
+    let t = std::time::Instant::now();
+    let ms = std::time::Duration::from_millis;
+    let id = e.begin(frame(400), &s, t, false)[0].id;
+    e.reject_ocr(id, &s);
+    assert!(e.begin(frame(400), &s, t + ms(4_900), false).is_empty(), "inside the 5 s lifetime: no reading");
+    assert_eq!(e.begin(frame(400), &s, t + ms(5_000), false).len(), 1, "at the deadline it is read again");
+    // A frame with nothing to read: no candidate, no job, however often it repeats.
+    let blank = image::DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(400, 180, image::Rgba([10, 10, 10, 255])));
+    let mut fresh = InplaceEngine::new();
+    for i in 0..5 { assert!(fresh.begin(blank.clone(), &s, t + ms(100 * i), false).is_empty()); }
 }

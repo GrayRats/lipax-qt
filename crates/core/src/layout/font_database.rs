@@ -180,6 +180,9 @@ pub const BUNDLED: &[BundledFont] = &[
         langs: &["en", "ru", "uk"], weights: &[ExtraLight, Light, Normal, Medium, DemiBold, Bold, ExtraBold, Black], monospace: false, condensed: false, glyph_width: 0.90 },
     BundledFont { family: "Noto Sans CJK SC", files: &["NotoSansCJK-VF.otf"], category: CjkSans, langs: CJK, weights: W_ALL,
         monospace: false, condensed: false, glyph_width: 1.0 },
+    // Serif counterpart for Japanese/Chinese/Korean translations of serif (Mincho/Song) originals.
+    BundledFont { family: "Noto Serif CJK SC", files: &["NotoSerifCJK-VF.otf"], category: FontCategory::CjkSerif, langs: CJK, weights: W_200_900,
+        monospace: false, condensed: false, glyph_width: 1.0 },
 ];
 
 fn bundled_info(f: &BundledFont) -> FontInfo {

@@ -34,7 +34,7 @@ TestCase {
             button.iconFile = file
             compare(button.display, AbstractButton.IconOnly)
             verify(button.icon.source.toString().endsWith(file))
-            verify(button.width >= 38 && button.height >= 38)
+            verify(button.width >= 34 && button.height >= 34 && button.width <= 38)
         }
         compare(button.Accessible.name, button.text)
         clickSpy.clear()

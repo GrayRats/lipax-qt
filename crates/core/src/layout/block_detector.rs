@@ -16,6 +16,48 @@ pub struct TextLine {
     pub ink_color: [u8; 3],
 }
 
+impl TextLine {
+    /// Median glyph height of the line.
+    fn glyph_height(&self) -> f32 {
+        median(self.glyphs.iter().map(|g| g.h).filter(|h| *h > 0.0).collect())
+    }
+
+    /// The baseline (y of the bottom edge most letters share). Descenders (`g`, `p`, `,`) end below it and
+    /// are outvoted: the answer is the largest group of bottoms within a tenth of a glyph height, the upper
+    /// one when two groups are equally large. `None` for a line without glyphs.
+    pub fn baseline(&self) -> Option<f32> {
+        if self.glyphs.is_empty() { return None; }
+        let tol = (0.1 * self.glyph_height()).max(1.0);
+        let bottoms: Vec<f32> = self.glyphs.iter().map(|g| g.bottom()).collect();
+        let (mut best, mut best_n) = (bottoms[0], 0usize);
+        for &b in &bottoms {
+            let n = bottoms.iter().filter(|&&o| (o - b).abs() <= tol).count();
+            if n > best_n || (n == best_n && b < best) { best = b; best_n = n; }
+        }
+        let group: Vec<f32> = bottoms.into_iter().filter(|o| (o - best).abs() <= tol).collect();
+        Some(group.iter().sum::<f32>() / group.len() as f32)
+    }
+
+    /// Word boxes: neighbouring glyphs are one word until the gap between them exceeds a quarter of the
+    /// typical glyph height (letter gaps are about a tenth, word spaces more than a third). Derived from the
+    /// detected components only, so a letter split in pieces by the mask stays in one word.
+    pub fn words(&self) -> Vec<Rect> {
+        let mut glyphs = self.glyphs.clone();
+        glyphs.sort_by(|a, b| a.x.total_cmp(&b.x));
+        let gap = 0.25 * self.glyph_height();
+        let mut words: Vec<Rect> = Vec::new();
+        let mut right = f32::MIN;
+        for g in glyphs {
+            match words.last_mut() {
+                Some(w) if g.x - right <= gap => *w = w.union(&g),
+                _ => words.push(g),
+            }
+            right = right.max(g.right());
+        }
+        words
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct DetectedTextBlock {
     /// Граница глифов блока, без полей.
@@ -33,19 +75,47 @@ impl DetectedTextBlock {
     }
 }
 
+/// Accents and dots join a line when they lie within this fraction of its tallest glyph from it.
+const ACCENT_REACH: f32 = 0.35;
+
+/// What the detector saw and what it left out: nothing is dropped without being counted here.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct DetectionReport {
+    /// Connected components that passed the noise / scenery filters.
+    pub components: usize,
+    /// Blocks rejected as repeated filled shapes (halftone dots, studs) rather than letters.
+    pub rejected_pattern: usize,
+    /// Large components rejected as scenery (not text-like in their context).
+    pub rejected_scenery: usize,
+    /// Blocks found before the `max_blocks` limit was applied.
+    pub candidates: usize,
+    /// Blocks found only by the local-contrast pass (text the global threshold missed).
+    pub local_blocks: usize,
+    /// Blocks removed by the limit (smallest first), in reading order.
+    pub dropped: Vec<Rect>,
+}
+
 pub struct BlockDetector {
-    /// Больше блоков в одной области не бывает: лишние (самые мелкие) отбрасываются.
+    /// Resource bound, not a quality filter: blocks beyond it (the smallest) are removed and
+    /// listed in `DetectionReport::dropped`.
     pub max_blocks: usize,
     /// `k` правила разделения по шагу строк (`layout::split`): склеенные поля, строки которых
     /// стоят реже, чем в абзаце, становятся отдельными блоками.
     pub line_gap_factor: f32,
 }
 
+/// Default bound on blocks per frame: every block costs one OCR job and a font probe.
+pub const DEFAULT_MAX_BLOCKS: usize = 64;
+
 impl Default for BlockDetector {
     fn default() -> Self {
-        Self { max_blocks: 16, line_gap_factor: super::split::DEFAULT_LINE_GAP_FACTOR }
+        Self { max_blocks: DEFAULT_MAX_BLOCKS, line_gap_factor: super::split::DEFAULT_LINE_GAP_FACTOR }
     }
 }
+
+/// A local-contrast line is accepted only with at least this many glyph-like components.
+const LOCAL_MIN_GLYPHS: usize = 5;
+const LOCAL_MIN_LINE_HEIGHT: f32 = 6.0;
 
 #[derive(Clone, Copy)]
 struct Component {
@@ -134,6 +204,88 @@ fn components(mask: &InkMask) -> Vec<Component> {
     components
 }
 
+/// Solid discs in a row (a halftone, a stud pattern) are not letters. A disc is round, fills about 0.785
+/// of its bounding box and, unlike `o`, `a`, `e` or `0` of any weight, has no counter (enclosed background).
+/// A pattern needs several of them: a lone bullet or a ring `0` is not affected.
+fn is_blob_pattern(b: &DetectedTextBlock, mask: &InkMask) -> bool {
+    let (mut total, mut blobs) = (0usize, 0usize);
+    for g in b.lines.iter().flat_map(|l| &l.glyphs) {
+        if g.w.min(g.h) < 4.0 { continue; }
+        total += 1;
+        if g.w.max(g.h) > 1.35 * g.w.min(g.h) { continue; }
+        let (x0, y0, w, h) = g.pixels(mask.w as u32, mask.h as u32);
+        let (x0, y0, w, h) = (x0 as usize, y0 as usize, w as usize, h as usize);
+        if w == 0 || h == 0 { continue; }
+        let ink = |x: usize, y: usize| mask.ink[(y0 + y) * mask.w + x0 + x];
+        let filled = (0..h).map(|y| (0..w).filter(|&x| ink(x, y)).count()).sum::<usize>() as f32 / (w * h) as f32;
+        if !(0.68..=0.88).contains(&filled) { continue; }
+        // Background reachable from the box border; whatever background is left is a counter.
+        let mut seen = vec![false; w * h];
+        let mut stack: Vec<(usize, usize)> = Vec::new();
+        for x in 0..w { stack.push((x, 0)); stack.push((x, h - 1)); }
+        for y in 0..h { stack.push((0, y)); stack.push((w - 1, y)); }
+        while let Some((x, y)) = stack.pop() {
+            if seen[y * w + x] || ink(x, y) { continue; }
+            seen[y * w + x] = true;
+            if x > 0 { stack.push((x - 1, y)); }
+            if y > 0 { stack.push((x, y - 1)); }
+            if x + 1 < w { stack.push((x + 1, y)); }
+            if y + 1 < h { stack.push((x, y + 1)); }
+        }
+        let enclosed = (0..w * h).filter(|&i| !seen[i] && !ink(i % w, i / w)).count();
+        if (enclosed as f32) < 0.01 * (w * h) as f32 { blobs += 1; }
+    }
+    total >= 4 && blobs as f32 >= 0.5 * total as f32
+}
+
+/// A component that can be a glyph of the local-contrast pass: text-sized, compact, neither a hairline nor a blob.
+fn local_glyph_like(c: &Component, frame_h: f32) -> bool {
+    let (w, h) = (c.rect.w, c.rect.h);
+    let fill = c.pixels as f32 / c.rect.area().max(1.0);
+    (5.0..=(0.12 * frame_h).clamp(24.0, 64.0)).contains(&h) && w <= 4.0 * h + 10.0 && (0.12..=0.9).contains(&fill)
+}
+
+/// A line of glyphs in the local-contrast pass: enough glyphs, similar heights, a common baseline.
+/// Scenery edges rarely satisfy all three.
+fn text_like_line(l: &TextLine) -> bool {
+    let n = l.glyphs.len();
+    // Below 6 px a line is a fragment (half a word cut by the mask), not something worth reading or translating.
+    if n < LOCAL_MIN_GLYPHS || l.rect.w < 2.0 * l.rect.h || l.rect.h < LOCAL_MIN_LINE_HEIGHT { return false; }
+    let h = median(l.glyphs.iter().map(|g| g.h).collect());
+    if h <= 0.0 { return false; }
+    let base = median(l.glyphs.iter().map(|g| g.bottom()).collect());
+    let similar = l.glyphs.iter().filter(|g| g.h >= 0.5 * h && g.h <= 2.0 * h).count();
+    let on_base = l.glyphs.iter().filter(|g| (g.bottom() - base).abs() <= 0.3 * h).count();
+    // Cells of a mesh or rivets: identical in width and height, unlike letters.
+    let cv = |v: Vec<f32>| { let m = v.iter().sum::<f32>() / v.len() as f32; (v.iter().map(|x| (x - m).powi(2)).sum::<f32>() / v.len() as f32).sqrt() / m.max(1e-3) };
+    let uniform = n >= 6 && cv(l.glyphs.iter().map(|g| g.w).collect()) < 0.15 && cv(l.glyphs.iter().map(|g| g.h).collect()) < 0.15;
+    similar as f32 >= 0.7 * n as f32 && on_base as f32 >= 0.5 * n as f32 && !uniform
+}
+
+/// Large connected components are scenery unless they look like oversized type: several of them side by
+/// side, similar in height, strokes rather than filled shapes. Judged in context, not by one absolute height.
+fn filter_scenery(comps: Vec<Component>, fw: f32, fh: f32, report: &mut DetectionReport) -> Vec<Component> {
+    let ordinary = (0.15 * fh).max(64.0);
+    let (mut out, mut big) = (Vec::with_capacity(comps.len()), Vec::new());
+    for c in comps {
+        if c.rect.w > 0.6 * fw && c.rect.h > 0.4 * fh { report.rejected_scenery += 1; }
+        else if c.rect.h <= ordinary { out.push(c); }
+        else { big.push(c); }
+    }
+    for (i, c) in big.iter().enumerate() {
+        let fill = c.pixels as f32 / c.rect.area().max(1.0);
+        let shaped = c.rect.h <= 0.6 * fh && fill <= 0.7 && c.rect.w >= 0.1 * c.rect.h && c.rect.w <= 3.0 * c.rect.h;
+        let peers = big.iter().enumerate().filter(|(j, o)| {
+            let (a, b) = (c.rect, o.rect);
+            *j != i && a.h.max(b.h) <= 2.0 * a.h.min(b.h)
+                && a.bottom().min(b.bottom()) - a.y.max(b.y) >= 0.5 * a.h.min(b.h)
+                && (a.x.max(b.x) - a.right().min(b.right())) <= 1.5 * a.h.max(b.h)
+        }).count();
+        if shaped && peers >= 2 { out.push(*c); } else { report.rejected_scenery += 1; }
+    }
+    out
+}
+
 fn median(mut v: Vec<f32>) -> f32 {
     if v.is_empty() { return 0.0; }
     v.sort_by(|a, b| a.total_cmp(b));
@@ -169,16 +321,83 @@ impl BlockDetector {
     }
 
     pub fn detect_text_blocks(&self, img: &RgbaImage, mask: &InkMask) -> Vec<DetectedTextBlock> {
+        self.detect(img, mask).0
+    }
+
+    /// Blocks of the global (Otsu) mask only, with a report of what the limit removed.
+    pub fn detect(&self, img: &RgbaImage, mask: &InkMask) -> (Vec<DetectedTextBlock>, DetectionReport) {
+        let mut report = DetectionReport::default();
+        let blocks = self.collect(img, mask, &mut report);
+        let blocks = self.finish(blocks, mask.w as f32, mask.h as f32, &mut report);
+        (blocks, report)
+    }
+
+    /// The global pass plus a local-contrast pass for text the global threshold cannot see. Ink of the
+    /// blocks found by the second pass is added to `mask`, so that later stages (font analysis, background)
+    /// see those glyphs as ink too.
+    pub fn detect_with_local(&self, img: &RgbaImage, mask: &mut InkMask) -> (Vec<DetectedTextBlock>, DetectionReport) {
+        let mut report = DetectionReport::default();
+        let mut blocks = self.collect(img, mask, &mut report);
+        let extra = self.local_blocks(img, mask, &blocks);
+        report.local_blocks = extra.len();
+        blocks.extend(extra);
+        let blocks = self.finish(blocks, mask.w as f32, mask.h as f32, &mut report);
+        (blocks, report)
+    }
+
+    fn local_blocks(&self, img: &RgbaImage, mask: &mut InkMask, existing: &[DetectedTextBlock]) -> Vec<DetectedTextBlock> {
+        let (w, h) = (mask.w, mask.h);
+        let (fw, fh) = (w as f32, h as f32);
+        if w < 32 || h < 32 { return Vec::new(); }
+        let luma_plane: Vec<u8> = img.as_raw().as_chunks::<4>().0.iter().map(|p| luma(p)).collect();
+        let mut accepted: Vec<DetectedTextBlock> = Vec::new();
+        for local in super::local_ink::contrast_masks(&luma_plane, w, h) {
+            let covered = |r: &Rect, blocks: &[DetectedTextBlock]| {
+                let (cx, cy) = r.center();
+                blocks.iter().any(|b| {
+                    let m = 0.5 * b.line_height().max(4.0);
+                    cx >= b.rect.x - m && cx <= b.rect.right() + m && cy >= b.rect.y - m && cy <= b.rect.bottom() + m
+                })
+            };
+            let comps: Vec<Component> = components(&local).into_iter()
+                .filter(|c| c.pixels >= 6 && local_glyph_like(c, fh))
+                .filter(|c| !covered(&c.rect, existing) && !covered(&c.rect, &accepted))
+                .collect();
+            if comps.len() < LOCAL_MIN_GLYPHS { continue; }
+            let lines: Vec<TextLine> = self.lines_from(img, &local, comps, fw, 0).into_iter().filter(text_like_line).collect();
+            for block in self.blocks_from_lines(lines) {
+                if is_blob_pattern(&block, mask) { continue; }
+                let (x0, y0, bw, bh) = block.rect.pixels(w as u32, h as u32);
+                for y in y0 as usize..(y0 + bh) as usize {
+                    for x in x0 as usize..(x0 + bw) as usize {
+                        if local.at(x, y) { mask.ink[y * w + x] = true; }
+                    }
+                }
+                accepted.push(block);
+            }
+        }
+        accepted
+    }
+
+    fn collect(&self, img: &RgbaImage, mask: &InkMask, report: &mut DetectionReport) -> Vec<DetectedTextBlock> {
         let (fw, fh) = (mask.w as f32, mask.h as f32);
         if mask.w < 8 || mask.h < 8 { return Vec::new(); }
-        // Шум и фоновые элементы (рамки панелей, крупные фигуры) — не текст.
-        // Large connected scenery must not compete as a glyph. Keep a 64 px floor
-        // so ordinary type in a short OCR crop is not rejected by a frame-relative limit.
-        let comps: Vec<Component> = components(mask).into_iter()
-            .filter(|c| c.pixels >= 3)
-            .filter(|c| !(c.rect.w > 0.6 * fw && c.rect.h > 0.4 * fh) && c.rect.h <= (0.15 * fh).max(64.0))
-            .collect();
+        let comps: Vec<Component> = components(mask).into_iter().filter(|c| c.pixels >= 3).collect();
+        let comps = filter_scenery(comps, fw, fh, report);
+        report.components += comps.len();
         if comps.is_empty() { return Vec::new(); }
+        let lines = self.lines_from(img, mask, comps, fw, 0);
+        let blocks = self.blocks_from_lines(lines);
+        let before = blocks.len();
+        let blocks: Vec<_> = blocks.into_iter().filter(|b| !is_blob_pattern(b, mask)).collect();
+        report.rejected_pattern += before - blocks.len();
+        blocks
+    }
+
+    /// Glyph components → text lines. Components much smaller than the typical glyph are accents and
+    /// dots and join the line they touch; those that touch none (a small label under a large title)
+    /// are grouped again on their own scale, one level deep.
+    fn lines_from(&self, img: &RgbaImage, mask: &InkMask, comps: Vec<Component>, fw: f32, depth: u8) -> Vec<TextLine> {
         let typical = median(comps.iter().filter(|c| c.rect.h >= 4.0).map(|c| c.rect.h).collect());
         let main_min = (typical * 0.4).max(4.0);
         let (mut main, small): (Vec<_>, Vec<_>) = comps.into_iter().partition(|c| c.rect.h >= main_min);
@@ -222,6 +441,7 @@ impl BlockDetector {
             }
         }
         // Точки, акценты, запятые — к ближайшей строке, которая их накрывает по горизонтали.
+        let mut orphans: Vec<Component> = Vec::new();
         for c in small {
             let r = c.rect;
             let (cx, cy) = r.center();
@@ -229,9 +449,12 @@ impl BlockDetector {
                 .map(|l| { let lr = l.glyphs.iter().fold(l.glyphs[0], |a, g| a.union(g)); (l, lr) })
                 .filter(|(_, lr)| cx >= lr.x - 2.0 && cx <= lr.right() + 2.0)
                 .map(|(l, lr)| (l, (cy - lr.center().1).abs() - lr.h / 2.0))
-                .filter(|(l, d)| *d <= 0.6 * l.glyphs.iter().map(|g| g.h).fold(0.0, f32::max))
+                .filter(|(l, d)| *d <= ACCENT_REACH * l.glyphs.iter().map(|g| g.h).fold(0.0, f32::max))
                 .min_by(|a, b| a.1.total_cmp(&b.1));
-            if let Some((l, _)) = host { l.glyphs.push(r); }
+            match host {
+                Some((l, _)) => l.glyphs.push(r),
+                None => orphans.push(c),
+            }
         }
         for l in &mut lines {
             l.rect = l.glyphs.iter().fold(l.glyphs[0], |a, g| a.union(g));
@@ -239,7 +462,15 @@ impl BlockDetector {
         }
         // Одиночная крошечная «строка» — шум.
         lines.retain(|l| l.glyphs.len() >= 2 || l.rect.w >= 2.0 * l.rect.h);
+        // A line under 5 px high with only a few components is a speck of scenery or half a glyph row.
+        lines.retain(|l| l.rect.h >= 5.0 || l.glyphs.len() >= 5);
+        if depth == 0 && orphans.len() >= 3 {
+            lines.extend(self.lines_from(img, mask, orphans, fw, depth + 1));
+        }
+        lines
+    }
 
+    fn blocks_from_lines(&self, mut lines: Vec<TextLine>) -> Vec<DetectedTextBlock> {
         // Блоки: строка присоединяется к блоку, если она прямо под его последней строкой,
         // той же высоты, того же цвета и выровнена с ним.
         lines.sort_by(|a, b| a.rect.y.total_cmp(&b.rect.y));
@@ -266,14 +497,24 @@ impl BlockDetector {
         // above it, menu entries in one style) are told apart by the pitch of their lines. Each part is a
         // block of its own and is classified on its own below.
         let blocks = blocks.into_iter().flat_map(|lines| super::split::split_by_line_gaps(lines, self.line_gap_factor));
-        let mut out: Vec<DetectedTextBlock> = blocks.map(|lines| {
+        blocks.map(|lines| {
             let rect = lines.iter().skip(1).fold(lines[0].rect, |a, l| a.union(&l.rect));
             let ink_color = lines[0].ink_color;
             DetectedTextBlock { rect, lines, block_type: TextBlockType::Unknown, ink_color }
-        }).collect();
-        out.sort_by(|a, b| b.rect.area().total_cmp(&a.rect.area()));
-        out.truncate(self.max_blocks);
-        out.sort_by(|a, b| (a.rect.y, a.rect.x).partial_cmp(&(b.rect.y, b.rect.x)).unwrap());
+        }).collect()
+    }
+
+    /// Applies the resource bound deterministically, orders the rest by position and types them.
+    fn finish(&self, mut out: Vec<DetectedTextBlock>, fw: f32, fh: f32, report: &mut DetectionReport) -> Vec<DetectedTextBlock> {
+        report.candidates = out.len();
+        // Area, then position, decide who stays: the same frame always gives the same set.
+        out.sort_by(|a, b| b.rect.area().total_cmp(&a.rect.area())
+            .then_with(|| a.rect.y.total_cmp(&b.rect.y)).then_with(|| a.rect.x.total_cmp(&b.rect.x)));
+        if out.len() > self.max_blocks {
+            report.dropped = out.split_off(self.max_blocks).into_iter().map(|b| b.rect).collect();
+            report.dropped.sort_by(|a, b| a.y.total_cmp(&b.y).then_with(|| a.x.total_cmp(&b.x)));
+        }
+        out.sort_by(|a, b| a.rect.y.total_cmp(&b.rect.y).then_with(|| a.rect.x.total_cmp(&b.rect.x)));
         classify(&mut out, fw, fh);
         out
     }

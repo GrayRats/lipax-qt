@@ -40,3 +40,19 @@ path = "../../tests/inplace/rust/bench.rs"
 [[test]]
 name = "inplace_ocr_ownership"
 path = "../../tests/inplace/rust/ocr_ownership.rs"
+
+[[example]]
+name = "inplace_detect_dump"
+path = "../../tests/inplace/rust/detect_dump.rs"
+
+[[test]]
+name = "inplace_detection"
+path = "../../tests/inplace/rust/detection.rs"
+
+[[test]]
+name = "inplace_typography"
+path = "../../tests/inplace/rust/typography.rs"
+
+[[test]]
+name = "inplace_stress"
+path = "../../tests/inplace/rust/stress.rs"

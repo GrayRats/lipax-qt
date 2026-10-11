@@ -28,12 +28,31 @@ Button {
         : activity === "stopped" ? stoppedColor : highlighted ? palette.highlightedText : palette.buttonText
     implicitHeight: Math.max(metrics.iconButtonSize, implicitContentHeight + topPadding + bottomPadding)
     implicitWidth: iconFile.length ? implicitHeight : implicitContentWidth + leftPadding + rightPadding
+    // Icon buttons share one look: transparent until hovered, a soft fill when pressed or checked, a ring for
+    // keyboard focus and for the checked state. Text buttons get a plain framed background of the same family.
+    readonly property bool iconOnly: iconFile.length > 0
+    opacity: enabled || !iconOnly ? 1 : 0.45
+    background: Rectangle {
+        radius: metrics.radius
+        color: button.down ? Qt.alpha(button.palette.buttonText, 0.2)
+            : button.checked ? Qt.alpha(button.palette.highlight, 0.28)
+            : button.hovered ? Qt.alpha(button.palette.buttonText, button.iconOnly ? 0.1 : 0.06)
+            : button.iconOnly ? "transparent" : button.palette.button
+        border.width: button.visualFocus ? 2 : button.checked || !button.iconOnly ? 1 : 0
+        border.color: button.visualFocus ? button.palette.highlight
+            : button.checked ? Qt.alpha(button.palette.highlight, 0.7) : Qt.alpha(button.palette.buttonText, 0.3)
+    }
+    Accessible.role: Accessible.Button
     Accessible.name: text
     Accessible.description: helpText
+    Accessible.checkable: checkable
+    Accessible.checked: checked
+    Accessible.focusable: true
     HoverHint {
         control: button
         feature: button.text
-        explanation: button.text + "\n\n" + button.helpText
-        active: button.helpText.length > 0 && button.enabled
+        explanation: button.text + (button.checkable ? (button.checked ? " — включено" : " — выключено") : "")
+            + (button.helpText.length > 0 ? "\n\n" + button.helpText : "")
+        active: (button.helpText.length > 0 || button.iconOnly) && (button.enabled || button.iconOnly)
     }
 }

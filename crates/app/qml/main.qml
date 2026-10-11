@@ -4,15 +4,20 @@ import QtQuick.Layouts
 import QtQuick.Controls.Universal
 import Qt.labs.platform as Platform
 import io.lipa
+import "StatusText.js" as StatusText
+import "WindowGeometry.js" as WindowGeometry
 
 ApplicationWindow {
     id: root
     objectName: "mainWindow"
-    visible: true
+    // Shown from `Component.onCompleted`, after the remembered size has been applied (no visible jump).
+    visible: false
     width: 680
     height: 500
     minimumWidth: 480
-    minimumHeight: Math.max(400, mainLayout.implicitHeight + 2 * ui.margin)
+    // The two text areas have a fixed preferred height of 0, so a long text cannot raise this: only the controls do.
+    // Never set from the text, and the window is never resized by the program after the user's own sizing.
+    minimumHeight: Math.max(400, mainLayout.implicitHeight + 2 * ui.margin + (textColumns === 2 ? 80 : 160))
     UiTheme { id: ui; textScale: settingsWin.general.ui_text_scale || "normal" }
     font: ui.body
     Universal.theme: settingsWin.universalTheme
@@ -124,6 +129,55 @@ ApplicationWindow {
         }
     }
 
+    // ── Remembering the window ──
+    // Needs the "remember window geometry" setting (default on). The record is written only once the window has
+    // settled and only while it is an ordinary window (not minimised, maximised or full screen); with the setting
+    // off nothing is read, applied or overwritten. Wayland compositors place windows themselves: there only the
+    // size is restored, the position is still recorded for X11/XWayland sessions.
+    readonly property bool rememberGeometry: settingsWin.general.remember_window_geometry !== false
+    readonly property bool canPositionWindows: Qt.platform.pluginName !== "wayland"
+    property bool geometryReady: false
+    function screenList() {
+        return Qt.application.screens.map(s => ({ name: s.name, x: s.virtualX, y: s.virtualY, width: s.width, height: s.height,
+            availableWidth: s.desktopAvailableWidth, availableHeight: s.desktopAvailableHeight, scale: s.devicePixelRatio }))
+    }
+    function restoreGeometry() {
+        if (!rememberGeometry) return
+        const placed = WindowGeometry.restore(settingsWin.general.main_window, screenList(), minimumWidth, minimumHeight, canPositionWindows)
+        if (!placed) return
+        width = placed.w
+        height = placed.h
+        if (placed.position) { x = placed.x; y = placed.y }
+        const screen = Qt.application.screens.find(s => s.name === placed.screen)
+        if (screen) root.screen = screen
+        console.debug("main_window.geometry restored", JSON.stringify(placed))
+    }
+    function saveGeometry() {
+        if (!rememberGeometry || !geometryReady || !visible || visibility !== Window.Windowed) return
+        const s = root.screen
+        ctl.reportMainWindowGeometry(JSON.stringify({ x: x, y: y, w: width, h: height, screen: s ? s.name : "",
+            screen_x: s ? s.virtualX : 0, screen_y: s ? s.virtualY : 0, screen_w: s ? s.width : 0, screen_h: s ? s.height : 0,
+            scale: s ? s.devicePixelRatio : 1 }))
+    }
+    Timer { id: geometrySaver; interval: 600; onTriggered: root.saveGeometry() }
+    // The compositor and the platform plugin settle the geometry shortly after the first show: not recorded before.
+    Timer { id: geometrySettle; interval: 1200; onTriggered: { root.geometryReady = true; root.saveGeometry() } }
+    onXChanged: if (geometryReady) geometrySaver.restart()
+    onYChanged: if (geometryReady) geometrySaver.restart()
+    onWidthChanged: if (geometryReady) geometrySaver.restart()
+    onHeightChanged: if (geometryReady) geometrySaver.restart()
+    onScreenChanged: if (geometryReady) geometrySaver.restart()
+    onVisibilityChanged: if (geometryReady) geometrySaver.restart()
+    onRememberGeometryChanged: if (rememberGeometry && geometryReady) geometrySaver.restart()
+
+    // ── Status light: motion is off for reduced-motion desktops (re-read while the window is visible) ──
+    property bool reducedMotion: false
+    Timer { interval: 5000; repeat: true; running: root.visible; onTriggered: root.reducedMotion = ctl.reducedMotion() }
+    readonly property string indicatorState: ctl.statusKind === "error" ? "error"
+        : (ctl.modelBusy || ctl.diagnosticsBusy || ctl.rapidBusy || ctl.tesseractBusy || ctl.paddleBusy) ? "processing"
+        : ctl.running ? "running" : "stopped"
+    readonly property int textColumns: root.width >= 640 && ui.bodyPoints < 18 ? 2 : 1
+
     // ── «Original» and «Translation» areas of this window: their own font and background (the «General» tab) ──
     readonly property var mainSettings: (settingsWin.current.appearance && settingsWin.current.appearance.main_window) || ({})
     readonly property string mainFamily: mainSettings.font_family || "Inter"
@@ -164,6 +218,10 @@ ApplicationWindow {
     Component.onCompleted: {
         ctl.reportPortalMonitorGeometry(portalMonitorGeometry)
         ctl.reportScreens(screensGeometry)
+        reducedMotion = ctl.reducedMotion()
+        // After every component (the settings window loads the saved settings in its own completion handler)
+        // and before the first frame: the window is shown once, already at its remembered size.
+        Qt.callLater(() => { restoreGeometry(); visible = true; geometrySettle.start() })
     }
     readonly property var inplaceEntries: { try { return JSON.parse(ctl.inplaceJson || "[]") } catch (e) { return [] } }
     // Keyed by "region:field": a stable field keeps its window; only its properties update.
@@ -221,52 +279,68 @@ ApplicationWindow {
         onAreasKeyChanged: flashFrame()
     }
 
+
     ColumnLayout {
         id: mainLayout
         anchors.fill: parent
         anchors.margins: ui.margin
         spacing: ui.gap
+        // ── Top bar: title, the selected process (takes the free width, never pushes the buttons), then the
+        // preview / history / settings group with Settings in the corner.
         RowLayout {
+            id: topBar
             Layout.fillWidth: true
-            Label { text: "LipaX"; font: ui.heading }
-            Label {
+            spacing: ui.gap
+            Label { text: "LipaX"; font: ui.heading; Layout.alignment: Qt.AlignVCenter }
+            ProcessTitle {
                 id: gameTitle
+                objectName: "processTitle"
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                Layout.preferredWidth: 0
+                Layout.alignment: Qt.AlignVCenter
                 text: ctl.windowTitle.length ? ctl.windowTitle : "Выберите окно игры"
-                elide: Text.ElideRight
-                HoverHint { control: gameTitle; feature: "Игра"; explanation: ctl.windowTitle.length ? ctl.windowTitle + "\nПри выборе знакомой игры восстанавливаются её области и профиль." : "Выберите окно игры, затем выделите область с текстом." }
+                underline: ctl.windowTitle.length > 0
+                alwaysHint: true
+                baseFont: ui.body
+                basePixelSize: Math.round(ui.bodyPoints * 96 / 72)
+                tooltip: ctl.windowTitle.length ? ctl.windowTitle + "\nПри выборе знакомой игры восстанавливаются её области и профиль." : "Выберите окно игры, затем выделите область с текстом."
             }
-            Label { text: ctl.running ? "● Работает" : "○ Остановлено"; font: ui.description }
+            RowLayout {
+                id: topButtons
+                spacing: 2
+                Layout.alignment: Qt.AlignVCenter
+                ActionButton { objectName: "ocrPreviewButton"; iconFile: "ocr-preview.svg"; text: "Предпросмотр распознавания"; helpText: "Открывает последний кадр распознавания, найденные блоки и фильтры. Для появления кадра запустите распознавание."; onClicked: ocrWin.openWindow() }
+                ActionButton { objectName: "historyButton"; iconFile: "translation-history.svg"; text: "История переводов"; helpText: "Открывает историю распознанного текста и переводов с поиском и копированием."; onClicked: historyWin.openWindow() }
+                ActionButton { objectName: "settingsButton"; iconFile: "settings.svg"; text: "Настройки"; helpText: "Открывает настройки захвата, OCR, сервисов, оформления и сочетаний клавиш. Изменения сохраняются автоматически."; onClicked: settingsWin.openWindow() }
+            }
         }
         Flow {
+            id: actionFlow
             Layout.fillWidth: true
             spacing: ui.gap
             ActionButton { objectName: "selectWindowButton"; iconFile: "select-window.svg"; text: "Выбрать окно"; helpText: "Выберите окно игры щелчком. Для знакомой игры восстановится сохранённый профиль; Esc отменяет выбор."; onClicked: ctl.pickWindow() }
             ActionButton {
                 id: startTranslation
                 objectName: "startTranslationButton"
-                iconFile: "start-translation.svg"
+                iconFile: ctl.running ? "stop-translation.svg" : "start-translation.svg"
                 activity: ctl.running ? "running" : "stopped"
                 text: ctl.running ? "Остановить перевод" : "Запуск перевода"
-                highlighted: false
+                // The one action that starts work stands out while it can be pressed.
+                highlighted: !ctl.running && ctl.hasRegion
                 enabled: ctl.running || ctl.hasRegion
                 helpText: ctl.running ? "Останавливает автоматическое распознавание и перевод. Области и профиль сохраняются." : "Запускает автоматическое распознавание текста в активных областях и отправляет его выбранному переводчику."
                 UnavailableHint { control: startTranslation; feature: "Начать перевод"; reason: "Нет выделенной области захвата."; remedy: "Выберите окно игры и область с текстом." }
                 onClicked: ctl.running ? ctl.stop() : ctl.start()
             }
         }
-        RowLayout {
+        // ── Capture area controls and the two display switches in one adaptive row (a Flow wraps when narrow;
+        // nothing is placed by absolute coordinates).
+        Flow {
+            id: areaFlow
+            objectName: "areaControls"
             Layout.fillWidth: true
-            ComboBox {
-                id: regionBox
-                Layout.fillWidth: true
-                Layout.minimumWidth: 80
-                readonly property var regions: settingsWin.current.capture.regions || []
-                model: regions.map(r => (r.rect ? "" : "○ ") + r.name + (r.enabled ? "" : " (выкл.)"))
-                currentIndex: Math.max(0, regions.findIndex(r => r.id === settingsWin.current.capture.active_region))
-                onActivated: { settingsWin.activateRegion(currentIndex, true); settingsWin.apply() }
-                HoverHint { control: regionBox; feature: "Активная область"; explanation: "Выбирает и включает область для перевода. Кружок означает, что её границы ещё не выделены. Несколько областей можно включить в настройках захвата." }
-            }
+            spacing: ui.gap
             ActionButton {
                 id: selectCaptureRegion
                 objectName: "selectCaptureRegionButton"
@@ -279,33 +353,81 @@ ApplicationWindow {
             }
             ActionButton {
                 id: resetCaptureRegion
-                text: "Сбросить"
+                objectName: "resetCaptureRegionButton"
+                iconFile: "reset-capture-area.svg"
+                text: "Сбросить область"
                 enabled: ctl.hasRegion
-                helpText: "Сбрасывает границы активной области. Остальные области и настройки игры сохраняются."
+                helpText: "Сбрасывает только границы активной области. Остальные области и настройки игры сохраняются."
                 onClicked: ctl.resetRegion()
-                UnavailableHint { control: resetCaptureRegion; feature: "Сбросить область"; reason: "Область ещё не выделена."; remedy: "Нажмите «Выделить»." }
+                UnavailableHint { control: resetCaptureRegion; feature: "Сбросить область"; reason: "Область ещё не выделена."; remedy: "Нажмите «Выбрать область захвата»." }
             }
-        }
-        CheckBox {
-            id: displayToggle
-            Layout.fillWidth: true
-            contentItem: Text {
-                text: displayToggle.text
-                font: displayToggle.font
-                color: displayToggle.palette.windowText
-                leftPadding: displayToggle.indicator.width + displayToggle.spacing
-                wrapMode: Text.Wrap
-                verticalAlignment: Text.AlignVCenter
+            ComboBox {
+                id: regionBox
+                objectName: "regionBox"
+                // Compact: as wide as its content within 150–260 px and never wider than the row.
+                width: Math.min(areaFlow.width, Math.max(150, Math.min(260, implicitContentWidth + 48)))
+                implicitHeight: ui.iconButtonSize
+                readonly property var regions: settingsWin.current.capture.regions || []
+                readonly property var labels: regions.map(r => (r.rect ? "" : "○ ") + r.name + (r.enabled ? "" : " (выкл.)"))
+                model: labels
+                currentIndex: Math.max(0, regions.findIndex(r => r.id === settingsWin.current.capture.active_region))
+                onActivated: { settingsWin.activateRegion(currentIndex, true); settingsWin.apply() }
+                // The stored value is untouched: only the picture of it is cut, the tooltip has all of it.
+                contentItem: Text {
+                    leftPadding: 8
+                    rightPadding: regionBox.indicator.width + 8
+                    text: regionBox.displayText
+                    font: regionBox.font
+                    color: regionBox.palette.buttonText
+                    elide: Text.ElideRight
+                    verticalAlignment: Text.AlignVCenter
+                }
+                delegate: ItemDelegate {
+                    required property int index
+                    required property string modelData
+                    width: ListView.view ? ListView.view.width : implicitWidth
+                    text: modelData
+                    font: regionBox.font
+                    highlighted: regionBox.highlightedIndex === index
+                    contentItem: Text { text: parent.text; font: parent.font; color: parent.palette.text; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter }
+                    ToolTip.visible: hovered && contentItem.truncated
+                    ToolTip.text: modelData
+                    ToolTip.delay: 400
+                }
+                popup.width: Math.max(width, Math.min(areaFlow.width, 360))
+                Accessible.name: "Название области окна"
+                Accessible.description: displayText
+                HoverHint { control: regionBox; feature: "Активная область"; explanation: regionBox.displayText + "\n\nВыбирает и включает область для перевода. Кружок означает, что её границы ещё не выделены. Несколько областей можно включить в настройках захвата." }
             }
-            objectName: root.windowActive ? "translationWindowToggle" : "inplaceToggle"
-            text: root.windowActive ? "Показывать окно перевода" : "Показывать поверх исходного текста"
-            checked: root.windowActive ? ctl.translationWindowVisible : ctl.inplaceVisible
-            onToggled: root.windowActive ? ctl.setTranslationWindowVisibility(checked, "checkbox") : ctl.setInplaceVisibility(checked, "checkbox")
-            HoverHint { control: displayToggle; feature: "Видимость перевода"; explanation: "Показывает или скрывает текущий способ отображения. Распознавание и перевод продолжают работать в фоне." }
+            // Two independent switches, one per way of showing a translation. Each owns its own visibility
+            // (Controller.inplaceVisible / translationWindowVisible); the state is the `checked` look of the button.
+            ActionButton {
+                id: inplaceToggle
+                objectName: "inplaceToggle"
+                iconFile: "show-inplace-overlay.svg"
+                checkable: true
+                checked: ctl.inplaceVisible
+                text: "Показывать поверх исходного текста"
+                helpText: "Показывает или скрывает перевод поверх исходного текста. Распознавание и перевод продолжают работать в фоне."
+                    + (root.inplaceActive ? "" : "\nСейчас выбран другой способ отображения: этот переключатель сработает, когда режим «Поверх исходного текста» будет включён в настройках.")
+                onToggled: ctl.setInplaceVisibility(checked, "checkbox")
+            }
+            ActionButton {
+                id: windowToggle
+                objectName: "translationWindowToggle"
+                iconFile: "show-translation-window.svg"
+                checkable: true
+                checked: ctl.translationWindowVisible
+                text: "Показывать окно перевода"
+                helpText: "Показывает или скрывает отдельное окно перевода. Распознавание и перевод продолжают работать в фоне."
+                    + (root.windowActive ? "" : "\nСейчас выбран другой способ отображения: этот переключатель сработает, когда режим «Отдельное окно перевода» будет включён в настройках.")
+                onToggled: ctl.setTranslationWindowVisibility(checked, "checkbox")
+            }
         }
         Label {
             objectName: "displayNote"
             Layout.fillWidth: true
+            Layout.minimumWidth: 0
             visible: ctl.displayNote.length > 0
             text: "⚠ Поверх исходного текста недоступен: " + ctl.displayNote
             wrapMode: Text.Wrap
@@ -313,79 +435,60 @@ ApplicationWindow {
         Label {
             objectName: "fallbackNote"
             Layout.fillWidth: true
+            Layout.minimumWidth: 0
             visible: root.inplaceActive && (root.degradedFields > 0 || root.droppedFields > 0)
             wrapMode: Text.Wrap
             text: "⚠ Упрощено полей: " + root.degradedFields + "; не показано: " + root.droppedFields + ". Недостаточно места в видимой части окна игры без перекрытия текста."
         }
-        GridLayout {
+        // ── Original / translation (see TranslationPanels: the text never decides the size of the window) ──
+        TranslationPanels {
+            id: textGrid
+            objectName: "textPanels"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            columns: root.width >= 640 && ui.bodyPoints < 18 ? 2 : 1
-            columnSpacing: ui.gap
-            rowSpacing: ui.gap
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.preferredWidth: 1
-                Label { text: "Оригинал"; font: ui.description }
-                ScrollView {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.minimumHeight: 40
-                    TextArea {
-                        objectName: "mainOriginalText"
-                        text: root.markup(ctl.original)
-                        textFormat: root.format(ctl.original)
-                        placeholderText: "Текст появится после распознавания"
-                        readOnly: true
-                        wrapMode: Text.Wrap
-                        color: root.mainTextColor
-                        font.family: root.mainFamily
-                        font.pixelSize: root.mainFontSize
-                        background: Rectangle { color: root.mainBackground; radius: ui.radius }
-                    }
-                }
-            }
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.preferredWidth: 1
-                Label { text: "Перевод"; font.bold: true }
-                ScrollView {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.minimumHeight: 50
-                    TextArea {
-                        objectName: "mainTranslationText"
-                        text: root.markup(ctl.translation)
-                        textFormat: root.format(ctl.translation)
-                        placeholderText: "Здесь будет перевод"
-                        readOnly: true
-                        wrapMode: Text.Wrap
-                        color: root.mainTextColor
-                        font.family: root.mainFamily
-                        font.pixelSize: root.mainFontSize
-                        background: Rectangle { color: root.mainBackground; radius: ui.radius }
-                    }
-                }
-            }
+            Layout.minimumWidth: 0
+            Layout.preferredHeight: 0
+            columns: root.textColumns
+            gap: ui.gap
+            radius: ui.radius
+            descriptionFont: ui.description
+            originalText: root.markup(ctl.original)
+            originalFormat: root.format(ctl.original)
+            translationText: root.markup(ctl.translation)
+            translationFormat: root.format(ctl.translation)
+            textColor: root.mainTextColor
+            panelColor: root.mainBackground
+            fontFamily: root.mainFamily
+            fontSize: root.mainFontSize
         }
+        // ── Bottom line: a short English message about the current action or event; the state light sits at its
+        // right end. Nothing here can widen the window: the message is elided, its full text is in the tooltip.
         RowLayout {
+            id: footer
             Layout.fillWidth: true
+            spacing: ui.gap
             Label {
                 id: statusLabel
+                objectName: "statusMessage"
                 Layout.fillWidth: true
-                text: (ctl.statusKind === "error" ? "Ошибка: " : ctl.statusKind === "warning" ? "⚠ " : "") + ctl.status
+                Layout.minimumWidth: 0
+                Layout.preferredWidth: 0
+                readonly property string english: StatusText.english(ctl.status, ctl.statusKind)
+                text: english
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
+                maximumLineCount: 1
                 font.bold: ctl.statusKind === "error"
-                HoverHint { control: statusLabel; feature: "Состояние перевода"; explanation: statusLabel.text }
+                Accessible.name: english
+                HoverHint { control: statusLabel; feature: "Status"; explanation: statusLabel.english + (ctl.status !== statusLabel.english && ctl.status.length > 0 ? "\n\n" + ctl.status : "") }
             }
             Label {
                 id: providerFallbackStatus
                 visible: ["deepl", "microsoft"].includes(settingsWin.current.translation.service)
                 text: (settingsWin.current.translation.service === "deepl" ? "DeepL" : "Microsoft") + " · резерв: Google"
                 font: ui.description
+                elide: Text.ElideRight
+                Layout.maximumWidth: root.width / 3
                 HoverHint { control: providerFallbackStatus; feature: "Резервный сервис"; explanation: "При ошибке запроса выбранного сервиса текст отправляется Google Translate. При отсутствующем API-ключе резерв не используется. Это настроенный порядок обработки, а не подтверждение использования резерва для текущего текста." }
             }
             ActionButton {
@@ -394,13 +497,17 @@ ApplicationWindow {
                 helpText: "Повторяет неудавшееся распознавание и перевод; сбрасывает остановку автоматических повторов."
                 onClicked: ctl.translateOnce()
             }
-        }
-        Flow {
-            Layout.fillWidth: true
-            spacing: ui.gap
-            ActionButton { objectName: "ocrPreviewButton"; iconFile: "ocr-preview.svg"; text: "Предпросмотр распознавания"; helpText: "Открывает последний кадр распознавания, найденные блоки и фильтры. Для появления кадра запустите распознавание."; onClicked: ocrWin.openWindow() }
-            ActionButton { objectName: "historyButton"; iconFile: "translation-history.svg"; text: "История переводов"; helpText: "Открывает историю распознанного текста и переводов с поиском и копированием."; onClicked: historyWin.openWindow() }
-            ActionButton { objectName: "settingsButton"; iconFile: "settings.svg"; text: "Настройки"; helpText: "Открывает настройки захвата, OCR, сервисов, оформления и сочетаний клавиш. Изменения сохраняются автоматически."; onClicked: settingsWin.openWindow() }
+            StatusIndicator {
+                id: stateLight
+                objectName: "statusIndicator"
+                Layout.alignment: Qt.AlignVCenter
+                state: root.indicatorState
+                reducedMotion: root.reducedMotion
+                description: (root.indicatorState === "running" ? "Автоперевод работает"
+                    : root.indicatorState === "processing" ? "Выполняется обработка (загрузка модели или подбор)"
+                    : root.indicatorState === "error" ? "Ошибка: подробности в нижней строке и в журнале"
+                    : "Автоперевод остановлен")
+            }
         }
     }
 }

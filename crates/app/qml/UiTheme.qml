@@ -19,7 +19,7 @@ QtObject {
     readonly property int gap: 8
     readonly property int margin: 12
     readonly property int radius: 6
-    readonly property int iconButtonSize: 38
+    readonly property int iconButtonSize: 36
     readonly property int controlHeight: Math.ceil(bodyPoints * 1.34 + 16)
-    readonly property int iconSize: 24
+    readonly property int iconSize: 22
 }
