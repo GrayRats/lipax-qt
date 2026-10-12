@@ -1,0 +1,681 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling jobserver v0.1.35
+   Compiling thiserror v1.0.69
+   Compiling termcolor v1.4.1
+   Compiling unicode-width v0.2.2
+   Compiling anyhow v1.0.104
+   Compiling unicode-segmentation v1.13.3
+   Compiling indoc v2.0.7
+   Compiling which v8.0.6
+   Compiling semver v1.0.28
+   Compiling unicode-width v0.1.14
+   Compiling cxxbridge-flags v1.0.202
+   Compiling foldhash v0.2.0
+   Compiling cc v1.5.1
+   Compiling static_assertions v1.1.0
+   Compiling codespan-reporting v0.13.1
+   Compiling codespan-reporting v0.11.1
+   Compiling convert_case v0.6.0
+   Compiling quote v1.0.47
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling ring v0.17.14
+   Compiling link-cplusplus v1.0.12
+   Compiling cxx v1.0.202
+   Compiling rustls v0.23.45
+   Compiling enumflags2_derive v0.7.12
+   Compiling tracing-attributes v0.1.31
+   Compiling async-recursion v1.1.1
+   Compiling thiserror-impl v1.0.69
+   Compiling synstructure v0.14.0
+   Compiling cxx-gen v0.7.202
+   Compiling rustls-webpki v0.103.15
+   Compiling tracing v0.1.44
+   Compiling serde_derive v1.0.229
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.3
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling tokio-macros v2.7.2
+   Compiling async-trait v0.1.92
+   Compiling thiserror-impl v2.0.21
+   Compiling serde_repr v0.1.21
+   Compiling ort v2.0.0-rc.13
+   Compiling tokio v1.53.1
+   Compiling tracing-subscriber v0.3.23
+   Compiling clang-format v0.3.0
+   Compiling cxxbridge-macro v1.0.202
+   Compiling cxx-qt-gen v0.10.0
+   Compiling zerofrom v0.1.8
+   Compiling thiserror v2.0.21
+   Compiling yoke v0.8.3
+   Compiling zerovec v0.11.8
+   Compiling zerotrie v0.2.5
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling serde v1.0.229
+   Compiling icu_collections v2.3.0
+   Compiling icu_locale_core v2.3.0
+   Compiling zvariant_utils v4.2.0
+   Compiling enumflags2 v0.7.12
+   Compiling zcheapstr v1.1.0
+   Compiling serde_spanned v0.6.9
+   Compiling toml_datetime v0.6.11
+   Compiling serde_urlencoded v0.7.1
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling toml_edit v0.22.27
+   Compiling qt-build-utils v0.10.0
+   Compiling icu_provider v2.3.1
+   Compiling cxx-qt-build v0.10.0
+   Compiling icu_normalizer v2.3.0
+   Compiling zvariant_derive v5.15.0
+   Compiling icu_properties v2.3.0
+   Compiling zvariant v5.15.0
+   Compiling cxx-qt-macro v0.10.0
+   Compiling cxx-qt v0.10.0
+   Compiling cxx-qt-lib v0.10.0
+   Compiling lipa v1.3.9 (/home/art/DEV/LipaX-QT/crates/app)
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling toml v0.8.23
+   Compiling hyper v1.11.1
+   Compiling tower v0.5.3
+   Compiling tokio-rustls v0.26.5
+   Compiling url v2.5.8
+   Compiling hyper-util v0.1.21
+   Compiling zbus_names v4.3.4
+   Compiling tower-http v0.6.11
+   Compiling zbus_macros v5.19.0
+   Compiling hyper-rustls v0.27.10
+   Compiling reqwest v0.12.28
+   Compiling zbus v5.19.0
+   Compiling lipa-core v1.3.9 (/home/art/DEV/LipaX-QT/crates/core)
+warning: lipa@1.3.9: Building LipaX with system Qt 6.12.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 05s
+     Running unittests src/main.rs (target/debug/deps/lipax-461470a02297f70b)
+
+running 23 tests
+test bridge::display_tests::fields_left_out_are_reported_for_the_note_only ... ok
+test instance::tests::every_action_has_a_flag_and_round_trips ... ok
+test bridge::display_tests::floating_placement_restores_where_the_user_left_it ... ok
+test bridge::model_controller::tests::rapid_actions_accept_catalog_ids_only ... ok
+test bridge::display_tests::reduced_motion_follows_the_environment_and_the_kde_animation_factor ... ok
+test bridge::display_tests::inplace_does_not_depend_on_the_translation_window ... ok
+test logging::tests::subprocess_probe ... ok
+test bridge::model_controller::tests::old_download_cannot_report_errors_for_another_service_or_pair ... ok
+test bridge::display_tests::the_ui_gets_the_backend_capabilities_and_the_reasons ... ok
+test instance::tests::desktop_file_actions_match_the_cli ... ok
+test instance::tests::no_arguments_just_run ... ok
+test instance::tests::qt_options_pass_through_and_unknown_ones_fail ... ok
+test notify::tests::the_same_message_is_shown_once_a_minute ... ok
+test model_worker::tests::panic_completes_the_job_with_a_retryable_error ... ok
+test model_worker::tests::shutdown_before_start_does_not_touch_models ... ok
+test ui_settings::tests::only_style_transitions_wait_for_restart ... ok
+test bridge::display_tests::appearance_patch_preserves_live_capture_settings ... ok
+test logging::tests::levels_streams_and_qt_context ... ok
+test logging::tests::core_error_survives_closed_gui_channel ... ok
+test logging::tests::the_level_changes_while_the_program_runs ... ok
+test logging::tests::qml_console_and_binding_errors_reach_backend ... ok
+test logging::tests::env_filter_and_invalid_filter_fallback ... ok
+test logging::tests::fatal_and_panic_survive_filter_off ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running unittests src/lib.rs (target/debug/deps/lipa_core-77d6d390db13e35e)
+
+running 361 tests
+test autostart::tests::exec_paths_are_quoted_as_the_spec_asks ... ok
+test cache::tests::evicts_least_recently_used ... ok
+test cache::tests::hit_and_miss ... ok
+test capture::geometry::tests::kwin_script_loads_and_consumes_the_focus_guard_over_dbus ... ignored, requires an active KWin Wayland session
+test autostart::tests::the_entry_is_created_and_removed ... ok
+test capture::geometry::tests::client_geometry_excludes_titlebar_and_survives_move_and_close ... ok
+test capture::geometry::tests::floating_focus_guard_is_consumed_once_per_automatic_show ... ok
+test capture::geometry::tests::a_game_is_active_while_it_or_a_lipax_window_has_the_focus ... ok
+test capture::kwin::tests::client_crop_strips_decoration_and_shadow ... ok
+test capture::kwin::tests::bgra_with_stride_padding ... ok
+test capture::geometry::tests::script_failure_reports_the_reason_and_wakes_the_loader ... ok
+test capture::kwin::tests::only_invalid_windows_are_reported_as_gone ... ok
+test capture::kwin::tests::capture_permission_error_explains_executable_registration ... ok
+test capture::portal::tests::pipeline_description_passes_fd_and_node ... ok
+test capture::portal::tests::portal_key_is_recognised ... ok
+test capture::portal::tests::decoded_frame_is_valid ... ok
+test capture::tests::the_backend_decides_what_the_ui_offers ... ok
+test capture::portal::tests::resyncs_after_garbage ... ok
+test capture::portal::tests::closed_stream_invalidates_a_cached_frame_before_process_exit ... ok
+test capture::portal::tests::failed_process_is_reported_even_with_a_cached_frame ... ok
+test capture::kwin::tests::region_inside_window ... ok
+test capture::kwin::tests::rejects_short_data_and_unknown_format ... ok
+test capture::tests::rect_px_scales_and_clamps ... ok
+test capture::portal::tests::incomplete_png_is_held_back ... ok
+test capture::portal::tests::child_inherits_the_pipewire_fd ... ok
+test detect::tests::small_region_reacts_to_any_text_change ... ok
+test detect::tests::speed ... ignored
+test capture::portal::tests::splits_concatenated_pngs_fed_in_small_pieces ... ok
+test diagnostics::tests::a_quoted_path_with_spaces_and_a_symlink_are_understood ... ok
+test diagnostics::tests::exec_quoting_is_undone_on_both_levels ... ok
+test diagnostics::tests::kwin_permission_is_found_by_the_path_of_the_executable ... ok
+test diagnostics::tests::missing_directories_are_not_an_error ... ok
+test history::tests::limits_roundtrips_and_removes_saved_history ... ok
+test hotkeys::tests::parses_letters_and_modifiers ... ok
+test hotkeys::tests::rejects_garbage ... ok
+test layout::background::tests::automatic_strategy_depends_on_the_field_type ... ok
+test detect::tests::new_line_of_text_is_sharp_change ... ok
+test detect::tests::identical_frames_not_changed ... ok
+test layout::background::tests::explicit_modes_are_kept_and_padding_adapts ... ok
+test detect::tests::brightness_change_without_text_ignored ... ok
+test layout::background::tests::flat_panel_gets_a_solid_fill_of_its_colour ... ok
+test layout::block_detector::tests::centred_bottom_line_is_a_subtitle ... ok
+test layout::block_detector::tests::empty_and_tiny_frames ... ok
+test detect::tests::short_word_next_to_long_line_counts_after_hold ... ok
+test layout::collision::tests::each_field_keeps_to_its_own_bounds ... ok
+test layout::collision::tests::negative_monitor_coordinates_are_preserved ... ok
+test layout::collision::tests::overlapping_text_is_never_painted ... ok
+test layout::collision::tests::oversized_background_is_clipped_before_neighbor ... ok
+test layout::collision::tests::separate_name_and_dialogue_keep_separate_visuals ... ok
+test layout::collision::tests::small_text_shift_can_save_an_outline ... ok
+test layout::collision::tests::text_hanging_over_the_bounds_is_refused_not_cut ... ok
+test layout::collision::tests::the_room_is_split_halfway_between_neighbours ... ok
+test layout::dto::tests::serialises_the_way_qt_reads_it ... ok
+test layout::background::tests::textured_scene_is_inpainted_without_the_old_letters ... ok
+test layout::block_detector::tests::a_name_glued_to_its_dialogue_is_split_and_each_part_gets_its_own_type ... ok
+test layout::block_detector::tests::ordinary_paragraphs_and_menus_are_left_whole ... ok
+test detect::tests::moving_cursor_ignored_parked_cursor_counts_after_hold ... ok
+test capture::title_bar::tests::a_header_bar_drawn_by_the_application_is_found_with_its_height ... ok
+test detect::tests::odd_sizes_and_large_frames ... ok
+test layout::block_detector::tests::dialogue_scene_splits_into_name_dialogue_and_buttons ... ok
+test layout::engine::tests::a_boundary_that_cuts_off_lines_is_not_taken ... ok
+test capture::title_bar::tests::a_bar_of_the_same_colour_as_the_content_is_invisible_and_not_reported ... ok
+test capture::title_bar::tests::a_thin_border_is_not_a_title_bar ... ok
+test layout::engine::tests::a_split_is_planned_once_and_forgotten_with_the_scene ... ok
+test layout::engine::tests::background_mode_change_keeps_fonts_and_typography ... ok
+test layout::engine::tests::a_refined_boundary_is_stable_between_scans ... ok
+test layout::engine::tests::a_field_that_grows_in_place_gets_a_plate_of_its_new_size ... ok
+test layout::engine::tests::a_move_alone_changes_the_geometry_not_the_translations ... ok
+test layout::engine::tests::evenly_spaced_ocr_lines_never_plan_a_split ... ok
+test layout::engine::tests::changing_one_field_keeps_the_font_lock_of_its_neighbour ... ok
+test layout::engine::tests::a_split_gives_two_fields_with_their_own_plates_and_stable_ids ... ok
+test layout::engine::tests::speed ... ignored
+test layout::engine::tests::stages ... ignored
+test layout::engine::tests::failed_recognition_keeps_the_previous_state ... ok
+test layout::fit::tests::cjk_wraps_by_character_and_manual_values_are_kept ... ok
+test layout::fit::tests::condensed_family_is_tried_before_giving_up ... ok
+test layout::fit::tests::impossible_fit_elides_at_minimum_size ... ok
+test layout::fit::tests::long_translation_wraps_then_shrinks_but_stays_inside ... ok
+test layout::fit::tests::short_translation_keeps_original_size_on_one_line ... ok
+test layout::fit::tests::the_height_model_is_what_qml_text_draws ... ok
+test layout::font_classifier::tests::heavier_strokes_weigh_more ... ok
+test layout::engine::tests::a_field_that_blinks_out_keeps_its_id_through_the_grace_period ... ok
+test layout::font_classifier::tests::too_few_glyphs_is_unknown ... ok
+test layout::font_database::tests::bundled_registry_has_fixed_families_and_cjk_coverage ... ok
+test layout::engine::tests::ocr_lines_somewhere_else_do_not_override_the_detector ... ok
+test layout::font_database::tests::parses_fc_list_and_merges_styles ... ok
+test layout::font_matcher::tests::categories_map_to_matching_families ... ok
+test layout::font_matcher::tests::cjk_translations_use_the_bundled_cjk_sans_or_serif_by_the_category_of_the_original ... ok
+test layout::font_matcher::tests::cjk_originals_get_ordinary_fonts_for_latin_and_cyrillic_translations ... ok
+test layout::font_classifier::tests::slanted_glyphs_are_italic ... ok
+test layout::font_matcher::tests::every_category_resolves_to_a_bundled_font_for_latin_and_cyrillic ... ok
+test layout::font_matcher::tests::lists_only_name_bundled_families ... ok
+test layout::font_matcher::tests::latin_only_preferences_are_skipped_for_cyrillic ... ok
+test layout::font_matcher::tests::user_override_wins ... ok
+test layout::font_matcher::tests::unknown_dialogue_prefers_serif_and_ui_prefers_sans ... ok
+test layout::font_matcher::tests::wide_monospace_text_gets_the_pixel_face ... ok
+test layout::font_matcher::tests::translation_glyphs_are_always_covered ... ok
+test layout::engine::tests::explicit_reanalysis_selects_fonts_again ... ok
+test layout::engine::tests::a_gap_only_the_ocr_engine_saw_splits_the_field_on_the_next_scan ... ok
+test layout::engine::tests::a_changed_field_stays_due_until_it_is_completed ... ok
+test layout::place::tests::a_boxed_in_translation_grows_sideways ... ok
+test layout::engine::tests::font_is_selected_once_per_field_and_stays_locked ... ok
+test layout::place::tests::a_restored_background_that_cannot_be_clipped_becomes_a_plain_plate ... ok
+test layout::place::tests::a_field_across_two_monitors_is_drawn_on_one ... ok
+test layout::place::tests::a_field_whose_text_area_covers_a_neighbour_gets_a_label_beside_the_original ... ok
+test layout::engine::tests::ocr_lines_that_agree_with_the_detector_change_nothing_but_the_note ... ok
+test layout::place::tests::a_field_that_cannot_be_placed_anywhere_is_left_out_not_sent_to_a_window ... ok
+test layout::engine::tests::the_boundary_follows_the_ocr_lines_when_they_are_close_to_the_block ... ok
+test layout::place::tests::a_window_partly_off_the_screen_keeps_its_fields_on_the_screen ... ok
+test layout::place::tests::backdrop_url_and_manual_colours_reach_the_record ... ok
+test layout::engine::tests::ocr_lines_decide_the_line_structure_when_they_lie_on_the_block ... ok
+test layout::place::tests::a_short_translation_is_neither_grown_nor_cut ... ok
+test layout::place::tests::a_translation_with_no_room_for_a_label_is_cut_to_the_original_box ... ok
+test layout::place::tests::outcome_classification_separates_replacement_truncation_fallback_and_nothing ... ok
+test layout::place::tests::an_expanded_field_is_worked_out_once_and_follows_the_window_without_drift ... ok
+test layout::place::tests::the_viewport_is_the_window_on_the_screen_of_the_original ... ok
+test layout::place::tests::fields_that_fit_are_not_degraded ... ok
+test layout::place::tests::a_translation_too_long_for_its_box_grows_into_the_free_space_below ... ok
+test layout::place::tests::fields_at_all_four_edges_stay_inside_the_window ... ok
+test layout::split::tests::a_line_set_apart_is_cut_off ... ok
+test layout::split::tests::a_paragraph_in_capitals_is_not_cut_by_its_short_lines ... ok
+test layout::split::tests::a_single_line_and_a_broken_factor_come_back_whole ... ok
+test layout::split::tests::detector_lines_are_distributed_among_remembered_partitions ... ok
+test layout::split::tests::evenly_spaced_lines_are_one_field ... ok
+test layout::split::tests::every_gap_in_a_stack_is_found_and_each_part_is_judged_by_its_own_average ... ok
+test layout::split::tests::mixed_sizes_are_judged_by_the_average_height_of_the_candidate ... ok
+test layout::split::tests::slanted_text_is_measured_across_the_lines_not_down_the_page ... ok
+test layout::split::tests::steep_or_unreadable_direction_means_no_rotation ... ok
+test layout::split::tests::the_rule_works_on_the_boxes_an_ocr_engine_gives ... ok
+test layout::split::tests::the_threshold_decides_exactly ... ok
+test layout::tests::rect_geometry ... ok
+test layout::tests::weights_and_scripts ... ok
+test layout::tracker::tests::different_text_size_in_same_place_is_a_new_field ... ok
+test layout::tracker::tests::identity_survives_geometry_noise ... ok
+test layout::tracker::tests::missing_field_survives_ttl_then_new_identity ... ok
+test layout::tracker::tests::several_fields_keep_their_own_ids ... ok
+test layout::place::tests::growing_stops_short_of_a_neighbour_and_goes_the_other_way ... ok
+test layout::typography::tests::manual_values_replace_only_their_property ... ok
+test layout::place::tests::heights_reach_the_screen_through_the_vertical_scale ... ok
+test layout::units::tests::a_crop_moves_into_the_frame_by_its_origin ... ok
+test layout::units::tests::clipping_keeps_the_common_part_or_nothing ... ok
+test layout::units::tests::each_axis_has_its_own_scale ... ok
+test layout::units::tests::frame_pixels_become_desktop_pixels_and_fractions_through_one_mapping ... ok
+test layout::units::tests::lengths_cross_between_frame_and_screen_only_through_the_scale ... ok
+test layout::units::tests::rectangle_operations_stay_in_their_space ... ok
+test layout::units::tests::the_space_is_not_part_of_the_data ... ok
+test ocr::filter::tests::a_filter_must_clearly_beat_no_filter ... ok
+test layout::typography::tests::multiline_left_aligned_dialogue ... ok
+test layout::typography::tests::centred_lines_and_unreadable_colour ... ok
+test ocr::filter::tests::automatic_filters_apply_to_noise_only_and_keep_the_users_choice ... ok
+test ocr::filter::tests::bright_text_on_dark_is_inverted_and_binarized ... ok
+test ocr::filter::tests::cjk_languages_are_recognised_in_tesseract_and_paddle_codes ... ok
+test ocr::filter::tests::clean_text_in_a_tight_crop_and_a_smooth_gradient_are_not_noise ... ok
+test ocr::filter::tests::contrast_moves_values_away_from_the_middle ... ok
+test ocr::filter::tests::dark_text_on_bright_is_not_inverted ... ok
+test ocr::filter::tests::engines_without_geometry_are_cleaned_by_text ... ok
+test ocr::filter::tests::identity_filter_returns_the_frame_untouched ... ok
+test ocr::filter::tests::if_every_line_is_unsure_the_result_stays_for_the_pipeline_to_reject ... ok
+test ocr::filter::tests::low_confidence_lines_go_when_another_line_is_sure ... ok
+test ocr::filter::tests::noise_lines_are_removed_and_the_confidence_follows ... ok
+test ocr::filter::tests::otsu_separates_text_from_background ... ok
+test ocr::filter::tests::presets_start_with_no_filters_and_are_all_different ... ok
+test ocr::filter::tests::rapidocr_reads_noisy_frames_without_automatic_binarization ... ok
+test ocr::filter::tests::score_counts_valid_lines_and_ignores_noise ... ok
+test ocr::filter::tests::stray_marks_are_trimmed_and_marks_alone_vanish ... ok
+test ocr::filter::tests::the_better_reading_is_the_surer_one_not_the_one_with_more_junk_lines ... ok
+test ocr::filter::tests::the_threshold_is_raised_only_for_cjk_and_only_when_it_is_on ... ok
+test ocr::meiki::tests::a_missing_model_or_a_language_other_than_japanese_is_a_setup_error_with_the_action ... ok
+test ocr::meiki::tests::a_swapped_pair_is_put_back ... ok
+test ocr::meiki::tests::a_vertical_line_that_fits_is_one_segment_and_a_long_one_overlaps ... ok
+test ocr::meiki::tests::characters_are_mapped_into_the_frame_and_weak_or_off_the_line_ones_dropped ... ok
+test ocr::meiki::tests::detections_are_thresholded_clamped_dropped_when_empty_and_ordered_top_down ... ok
+test ocr::meiki::tests::horizontal_lines_are_scaled_to_height_32_and_squeezed_into_960 ... ok
+test ocr::meiki::tests::overlapping_candidates_keep_the_surest_and_the_rest_read_in_order ... ok
+test ocr::meiki::tests::pieces_carry_the_text_the_box_and_the_mean_confidence ... ok
+test layout::place::tests::undrawable_fields_are_counted_not_handed_to_a_window ... ok
+test ocr::meiki::tests::vertical_characters_are_mapped_along_the_line ... ok
+test ocr::paddle::tests::lines_and_scores_become_percent_and_rectangles ... ok
+test ocr::meiki::tests::the_frame_is_fitted_into_the_detector_without_distortion ... ok
+test ocr::paddle::tests::maps_primary_language_without_requiring_tesseract_data ... ok
+test ocr::paddle_env::tests::a_missing_or_broken_python_is_the_first_thing_said ... ok
+test ocr::paddle_env::tests::a_python_that_wheels_do_not_exist_for_gets_a_warning ... ok
+test layout::place::tests::vanished_fields_leave_the_cache ... ok
+test ocr::paddle_env::tests::an_old_version_is_upgraded_the_way_it_was_installed ... ok
+test ocr::paddle_env::tests::a_working_environment_has_nothing_to_complain_about ... ok
+test ocr::paddle_env::tests::missing_package_offers_the_ways_in_the_order_the_machine_suits ... ok
+test ocr::paddle_env::tests::missing_paddlepaddle_and_broken_imports_are_reported ... ok
+test ocr::paddle_env::tests::the_language_and_the_models_are_checked ... ok
+test layout::place::tests::fit_is_cached_by_revision_scale_and_settings ... ok
+test ocr::paddle::tests::worker_protocol_reuses_process_and_reports_failure ... ok
+test ocr::paddle_env::tests::the_way_of_installing_is_told_from_the_facts ... ok
+test ocr::rapid::tests::a_missing_model_is_a_setup_error_with_the_action ... ok
+test ocr::rapid::tests::crops_follow_the_box_and_tall_boxes_are_turned ... ok
+test ocr::rapid::tests::ctc_collapses_repeats_skips_blanks_and_averages_per_character ... ok
+test ocr::rapid::tests::ctc_reads_cyrillic_and_cjk_dictionaries ... ok
+test ocr::rapid::tests::db_boxes_are_found_grown_and_specks_dropped ... ok
+test ocr::rapid::tests::detector_input_is_bounded_and_aligned ... ok
+test ocr::rapid::tests::dictionary_keeps_indices_and_only_drops_the_final_newline ... ok
+test ocr::rapid::tests::frame_boxes_scale_clip_and_read_rows_left_to_right ... ok
+test ocr::rapid::tests::library_paths_are_absolute_and_missing_ones_explained ... ok
+test ocr::rapid::tests::pieces_become_lines_with_rectangles_and_per_character_confidence ... ok
+test ocr::rapid::tests::rectangles_are_found_minimal_and_ordered ... ok
+test layout::place::tests::places_every_field_with_a_typed_complete_record ... ok
+test ocr::rapid::tests::threads_leave_the_game_its_cores ... ok
+test ocr::rapid_models::tests::a_broken_catalog_is_refused ... ok
+test ocr::rapid_models::tests::a_catalog_mixing_up_the_roles_of_an_engine_is_refused ... ok
+test ocr::rapid_models::tests::auto_offers_meiki_for_japanese_only ... ok
+test ocr::rapid_models::tests::catalog_is_complete_pinned_and_safe ... ok
+test layout::place::tests::degrading_one_field_never_moves_the_ones_already_placed ... ok
+test ocr::rapid_models::tests::checksum_failure_cleans_staging_and_keeps_the_old_installation ... ok
+test ocr::rapid_models::tests::meiki_reads_japanese_only_and_has_its_own_set_of_files ... ok
+test ocr::rapid_models::tests::offline_error_is_actionable_and_leaves_nothing_behind ... ok
+test ocr::rapid_models::tests::status_names_the_missing_model_and_the_ignored_languages ... ok
+test ocr::rapid_models::tests::tesseract_codes_map_to_scripts_and_the_first_language_wins ... ok
+test ocr::rapid_models::tests::truncated_and_same_size_corrupt_files_are_rejected ... ok
+test ocr::rapid_models::tests::download_reports_progress_verifies_and_commits ... ok
+test ocr::paddle_env::tests::the_script_finds_a_complete_install_and_imports_it ... ok
+test ocr::tests::a_sure_automatic_reading_of_a_noisy_frame_is_not_checked_again ... ok
+test ocr::tests::an_explicit_meikiocr_without_its_model_says_what_to_do_and_reads_japanese_only ... ok
+test ocr::tests::a_noisy_frame_without_text_is_not_read_twice_at_every_cycle ... ok
+test ocr::tests::a_clean_frame_is_read_once_and_without_filters ... ok
+test ocr::tests::cjk_words_are_not_separated_by_spaces ... ok
+test ocr::tests::an_explicit_rapidocr_without_its_model_says_what_to_do_instead_of_reading_with_another_engine ... ok
+test ocr::tests::empty_or_garbage_tsv_means_no_text_and_no_confidence ... ok
+test ocr::tests::filters_chosen_by_hand_are_not_second_guessed ... ok
+test ocr::tests::preprocess_doubles_and_grays ... ok
+test ocr::tests::rejects_unknown_engine ... ok
+test ocr::tests::an_unsure_automatic_reading_gives_way_to_a_surer_raw_one_but_not_to_more_junk ... ok
+test ocr::tests::the_fast_png_is_a_valid_picture_in_both_kinds ... ok
+test ocr::tests::tsv_words_become_lines_with_geometry_and_confidence ... ok
+test ocr::paddle_env::tests::the_script_reports_a_wrong_version_and_a_missing_framework ... ok
+test pipeline::tests::a_backend_without_inplace_reads_the_region_as_a_whole ... ok
+test layout::place::tests::with_no_room_anywhere_the_translation_is_cut_inside_the_window ... ok
+test ocr::paddle_env::tests::the_script_sees_nothing_where_nothing_is_installed ... ok
+test ocr::filter::tests::a_texture_with_the_period_of_the_sampling_step_is_still_seen ... ok
+test pipeline::tests::a_sentence_split_by_a_gap_is_translated_whole ... ok
+test capture::title_bar::tests::a_scene_without_a_bar_is_left_alone ... ok
+test ocr::filter::tests::a_flat_frame_is_clean_and_a_textured_one_is_noisy ... ok
+test pipeline::tests::an_error_names_the_service_and_the_phrase_it_is_about ... ok
+test pipeline::tests::an_illegal_transition_is_counted_and_rejected ... ok
+test pipeline::tests::an_unsure_field_is_ignored_in_place_and_shown_in_the_inspector ... ok
+test pipeline::tests::a_shared_error_reaches_everyone_who_waited ... ok
+test pipeline::tests::auto_tune_keeps_a_manual_choice_unless_a_preset_is_clearly_better ... ok
+test pipeline::tests::auto_tune_reports_the_preset_that_reads_the_most ... ok
+test pipeline::tests::auto_pins_a_field_to_the_engine_that_was_needed ... ok
+test pipeline::tests::a_cancelled_tick_does_not_lose_its_translation_request ... ok
+test pipeline::tests::changed_text_uses_cache_on_return ... ok
+test pipeline::tests::changes_only_translates_the_new_paragraphs_and_reuses_the_rest ... ok
+test pipeline::tests::bounded_runs_everything_with_a_limit ... ok
+test pipeline::tests::debounce_then_translate_once ... ok
+test pipeline::tests::events_carry_the_generation_read_before_the_tick ... ok
+test pipeline::tests::a_cancelled_tick_keeps_the_engine_and_its_locked_fonts ... ok
+test pipeline::tests::fields_that_fail_differently_each_get_their_own_message ... ok
+test pipeline::tests::inplace_fields_are_translated_once_and_unchanged_fields_are_not_resent ... ok
+test pipeline::tests::missing_bergamot_engine_stops_retries_in_both_display_modes ... ok
+test pipeline::tests::no_window_reports_status ... ok
+test pipeline::tests::a_field_that_ocr_shows_to_be_two_is_read_again_as_two_without_a_new_picture ... ok
+test pipeline::tests::fields_of_one_scene_are_recognised_concurrently_but_bounded ... ok
+test pipeline::tests::ocr_preview_is_sent_only_while_enabled ... ok
+test pipeline::tests::ocr_preview_reports_an_empty_recognition ... ok
+test pipeline::tests::paragraphs_follow_the_gaps_between_lines ... ok
+test pipeline::tests::preview_carries_confidence_and_the_filtered_frame_only_when_a_filter_is_on ... ok
+test pipeline::tests::rate_limit_stops_automatic_retries_in_both_display_modes ... ok
+test layout::place::tests::fractional_scaling_and_wide_frames_keep_every_field_in_the_window ... ok
+test pipeline::tests::real_flows_never_leave_the_state_machine_whole_region ... ok
+test pipeline::tests::region_language_and_translation_override_use_distinct_cache_entries ... ok
+test pipeline::tests::region_phases_follow_the_cycle_and_failures_are_visible ... ok
+test pipeline::tests::same_text_after_visual_change_not_retranslated ... ok
+test pipeline::tests::several_errors_of_one_scene_are_all_reported_up_to_three ... ok
+test pipeline::tests::sure_text_is_translated_with_its_lines_in_the_inspector ... ok
+test pipeline::tests::the_confidence_check_can_be_turned_off ... ok
+test pipeline::tests::the_inspector_explains_what_the_layout_engine_decided ... ok
+test pipeline::tests::the_inspector_gets_stage_timings_and_the_region_phase ... ok
+test pipeline::tests::the_inspector_says_what_was_done_to_the_picture ... ok
+test pipeline::tests::the_lines_of_the_engine_reach_the_layout_of_the_field ... ok
+test pipeline::tests::a_field_whose_recognition_failed_is_recognised_again ... ok
+test pipeline::tests::identical_texts_in_one_scene_are_translated_once ... ok
+test pipeline::tests::the_state_machine_allows_exactly_the_documented_transitions ... ok
+test pipeline::tests::timings_keep_a_window_and_report_percentiles ... ok
+test pipeline::tests::unsure_compares_with_the_threshold_and_ignores_engines_without_confidence ... ok
+test pipeline::tests::unsure_text_is_ignored_and_explained ... ok
+test pipeline::tests::window_mode_sends_one_translation_per_region ... ok
+test settings::tests::a_broken_config_falls_back_to_defaults ... ok
+test settings::tests::a_config_from_a_newer_version_is_read_not_rejected ... ok
+test settings::tests::a_game_gets_back_its_areas_languages_and_window ... ok
+test settings::tests::an_old_config_is_lifted_step_by_step_and_stamped ... ok
+test settings::tests::changed_keys_and_pending_actions ... ok
+test settings::tests::every_setting_declares_what_it_needs ... ok
+test settings::tests::general_and_main_window_settings_are_checked_and_old_files_get_defaults ... ok
+test settings::tests::inplace_properties_are_independent_and_roundtrip ... ok
+test settings::tests::legacy_background_modes_migrate_to_four_public_choices ... ok
+test settings::tests::mixed_legacy_settings_and_profiles_keep_new_values_and_legacy_siblings ... ok
+test settings::tests::ocr_filters_belong_to_the_game ... ok
+test pipeline::tests::the_message_names_service_phrase_and_reason ... ok
+test settings::tests::old_system_font_falls_back_to_a_bundled_family ... ok
+test settings::tests::partial_config_uses_defaults ... ok
+test settings::tests::only_pipeline_settings_and_the_selection_reset_the_pipeline ... ok
+test settings::tests::profile_count_is_capped_and_existing_ones_still_update ... ok
+test settings::tests::profiles_ignore_portal_windows_and_can_be_turned_off ... ok
+test settings::tests::pinned_window_radius_is_saved_and_bounded ... ok
+test settings::tests::rapidocr_is_an_engine_with_its_own_settings ... ok
+test settings::tests::region_frame_defaults_and_migration ... ok
+test settings::tests::regions_are_limited_and_single_active_by_default ... ok
+test settings::tests::profiles_survive_the_config_file ... ok
+test settings::tests::several_active_regions_when_allowed ... ok
+test settings::tests::the_cjk_floor_follows_the_language_the_engine_reads ... ok
+test settings::tests::translation_display_reads_old_and_unknown_values ... ok
+test settings::tests::translation_language_inherits_recognition_or_remembers_an_explicit_override ... ok
+test settings::tests::window_geometry_memory_is_on_by_default_and_a_damaged_record_is_dropped ... ok
+test settings::tests::roundtrip ... ok
+test tesseract::tests::a_downloaded_model_sits_beside_links_to_the_system_ones ... ok
+test settings::ui_typography_tests::ui_scale_migrates_and_does_not_invalidate_recognition ... ok
+test tesseract::tests::a_manager_with_downloads_asks_tesseract_about_the_merged_directory ... ok
+test tesseract::tests::a_model_is_downloaded_into_the_users_directory ... ok
+test tesseract::tests::detects_on_arch ... ok
+test tesseract::tests::detects_on_ubuntu ... ok
+test tesseract::tests::install_only_tesseract_packages ... ok
+test tesseract::tests::missing_language_messages ... ok
+test tesseract::tests::bad_downloads_leave_nothing_behind ... ok
+test tesseract::tests::os_release_families ... ok
+test tesseract::tests::parses_tesseract_output ... ok
+test tesseract::tests::package_names_differ_by_distro ... ok
+test tesseract::tests::real_download_gives_a_language_tesseract_can_use ... ignored, needs network and Tesseract
+test tesseract::tests::primary_language ... ok
+test tesseract::tests::tesseract_not_installed ... ok
+test tesseract::tests::unknown_distro_has_no_install_command ... ok
+test tesseract::tests::with_nothing_downloaded_the_system_data_is_used_as_it_is ... ok
+test text::tests::meaningful ... ok
+test text::tests::normalize_collapses_whitespace ... ok
+test text::tests::similarity_basic ... ok
+test translate::bergamot::tests::bundled_engine_and_manual_override_are_resolved_to_absolute_paths ... ok
+test translate::bergamot::tests::child_receives_eof_before_we_wait_for_its_output ... ok
+test translate::models::tests::catalog_has_complete_safe_verified_entries ... ok
+test translate::models::tests::checksum_failure_cleans_staging_and_preserves_old_directory ... ok
+test translate::models::tests::download_reports_progress_and_commits_verified_config ... ok
+test translate::models::tests::explicit_path_wins_over_cache_and_firefox ... ok
+test translate::models::tests::firefox_import_is_copied_and_survives_profile_removal ... ok
+test translate::models::tests::generated_config_and_legacy_explicit_yaml_validate ... ok
+test pipeline::tests::ocr_of_a_frame_the_window_has_left_is_dropped ... ok
+test translate::models::tests::offline_error_is_actionable_and_partial_files_are_removed ... ok
+test translate::models::tests::requested_version_must_exist_in_the_catalog ... ok
+test translate::models::tests::truncated_and_same_size_corrupt_files_are_rejected ... ok
+test translate::models::tests::version_status_tells_the_installed_set_by_content_and_flags_an_update ... ok
+test pipeline::tests::ocr_of_a_still_picture_is_not_interrupted ... ok
+test translate::tests::google_joins_segments ... ok
+test translate::tests::lang_mapping ... ok
+test translate::models::tests::versions_are_listed_newest_first_and_compared_numerically ... ok
+test translate::tests::rate_limit_delay_and_safe_errors ... ok
+test translate::tests::unconfigured_services_fail_fast ... ok
+test translate::tests::yandex_and_custom ... ok
+test translate::tests::rate_limit_blocks_requests_across_texts_until_expiry ... ok
+test translate::models::tests::installed_older_set_is_kept_offline_and_replaced_only_on_request ... ok
+test pipeline::tests::the_same_phrase_asked_twice_at_once_is_one_request ... ok
+test pipeline::tests::a_setting_that_does_not_affect_recognition_does_not_interrupt_a_reading ... ok
+test tesseract::tests::tesseract_finds_its_configurations_in_the_merged_directory ... ok
+test pipeline::tests::a_paused_pipeline_does_not_read_the_window_until_it_is_resumed ... ok
+test pipeline::tests::real_flows_never_leave_the_state_machine_in_place ... ok
+test ocr::rapid::tests::the_pipeline_runs_through_onnx_runtime_with_stand_in_models ... ok
+test ocr::tests::real_tesseract_reports_lines_and_confidence ... ok
+test pipeline::tests::changed_settings_reach_the_next_frame_without_a_restart_and_drop_the_reading_in_progress ... ok
+test detect::tests::works_for_any_screen_format ... ok
+
+test result: ok. 356 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 6.80s
+
+     Running tests/bergamot_native.rs (target/debug/deps/bergamot_native-a73817be927b6003)
+
+running 1 test
+test translates_with_the_native_engine_and_verified_model ... ignored, requires the compiled native Bergamot engine and an installed en-ru model
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/bundled_fonts.rs (target/debug/deps/bundled_fonts-d9ec457df43b8223)
+
+running 2 tests
+test imported_pixel_narrow_and_italic_faces_are_recognized_from_pixels ... ok
+test imported_fonts_match_checksums_and_declared_glyph_coverage ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests/font_fixtures.rs (target/debug/deps/font_fixtures-796c665b895eb5bf)
+
+running 6 tests
+test font_csv ... ignored
+test font_report ... ignored
+test one_block_gets_one_answer_regardless_of_the_text ... ok
+test real_fonts_are_told_apart ... ok
+test weight_and_italic_are_read_from_real_glyphs ... ok
+test the_picked_bundled_font_is_of_a_suitable_kind ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 4.49s
+
+     Running ../../tests/inplace/rust/detection.rs (target/debug/deps/inplace_detection-5c94b2642b639310)
+
+running 12 tests
+test word_boxes_and_baseline_match_the_geometry_that_was_drawn ... ok
+test a_mesh_of_identical_cells_is_not_text ... ok
+test changed_dialogue_text_changes_the_block_not_the_detector_state ... ok
+test a_row_of_solid_discs_is_not_text_but_ring_and_heavy_letters_are ... ok
+test low_contrast_text_missed_by_the_global_threshold_is_found_by_the_local_pass ... ok
+test oversized_type_is_text_but_a_single_huge_shape_is_scenery ... ok
+test the_block_limit_is_explicit_deterministic_and_reported ... ok
+test more_than_sixteen_independent_labels_are_all_detected_in_a_stable_order ... ok
+test a_small_label_below_a_large_title_is_a_block_of_its_own ... ok
+test crossxmars_hud_readout_is_found_only_with_the_local_pass_and_the_dialogue_is_kept ... ok
+test engine_exe_halftone_is_not_a_text_block_and_the_dialogue_is_one_three_line_block ... ok
+test recorded_dialogue_survives_other_window_sizes_moves_and_clipping ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.61s
+
+     Running ../../tests/inplace/rust/ocr_ownership.rs (target/debug/deps/inplace_ocr_ownership-aadac382406d7532)
+
+running 23 tests
+test a_low_confidence_paragraph_cannot_own_a_reliable_reading ... ok
+test clipped_glyph_evidence_does_not_suppress_a_genuine_short_label ... ok
+test a_source_fields_label_and_value_columns_share_rows_without_a_false_line_pitch ... ok
+test duplicate_parent_spans_cannot_fake_complete_coverage ... ok
+test duplicate_ownership_is_invariant_under_coordinate_translation_and_uniform_scaling ... ok
+test independent_text_and_repeated_text_at_another_position_are_not_suppressed ... ok
+test geometry_and_confidence_are_validated_at_the_boundary ... ok
+test partial_word_crops_request_a_fresh_combined_reading_not_a_guessed_name ... ok
+test partially_overlapping_independent_labels_and_repeated_words_stay_separate ... ok
+test shared_hud_text_with_extra_source_pixels_needs_another_crop ... ok
+test overlapping_partial_ocr_readings_belong_to_the_complete_paragraph ... ok
+test crop_margins_and_weak_spans_do_not_pollute_the_source_translation ... ok
+test changed_source_pixels_invalidate_negative_ocr_cache_immediately ... ok
+test switching_to_text_only_ocr_restores_detector_geometry_and_background ... ok
+test validated_source_geometry_and_revision_stay_stable_on_the_next_frame ... ok
+test frame_resize_invalidates_crop_geometry_even_when_the_ink_is_unchanged ... ok
+test recognition_policy_and_frame_resize_invalidate_negative_ocr_cache ... ok
+test failed_or_cancelled_initial_ocr_does_not_create_a_negative_cache_entry ... ok
+test a_late_result_for_an_older_frame_does_not_mark_the_newer_pixels_as_read ... ok
+test confirmed_empty_ocr_is_cached_briefly_but_forced_scans_and_timeout_retry_it ... ok
+test a_negative_cache_entry_lives_until_its_deadline_and_a_frame_without_text_costs_nothing ... ok
+test engine_exe_replay_reads_the_three_line_dialogue_as_one_field_and_suppresses_load_fragment ... ok
+test crossxmars_replay_reads_union_pixels_again_before_replacing_name_hud_and_dialogue ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.03s
+
+     Running ../../tests/inplace/rust/placement_quality.rs (target/debug/deps/inplace_placement_quality-541e21472a742d53)
+
+running 8 tests
+test explicit_character_wrapping_keeps_its_semantics ... ignored, requires LIPAX_QT_MEASURE_SERVER
+test qt_character_columns_are_not_successful_word_wrapping ... ignored, requires LIPAX_QT_MEASURE_SERVER: verifies Qt's real word-boundary/anywhere fallback
+test italic_shop_word_stays_at_the_end_of_its_ocr_row ... ok
+test shorter_than_one_line_reports_zero_visible_lines ... ok
+test amiya_partial_crop_is_owned_by_the_complete_dialogue ... ok
+test a_viewport_shorter_than_a_glyph_does_not_publish_an_empty_replacement ... ok
+test local_contrast_reconstructs_the_complete_rhodes_dialogue ... ok
+test split_ocr_fields_are_scheduled_and_all_parts_are_read_again ... ok
+
+test result: ok. 6 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 4.49s
+
+     Running ../../tests/inplace/rust/regression.rs (target/debug/deps/inplace_regression-50b2ac1a62a6d031)
+
+running 16 tests
+test empty_block_has_no_glyph_evidence_or_line_height ... ok
+test disjoint_clip_stays_at_nearest_boundary ... ok
+test diagonal_contact_and_a_bridge_join_components_but_a_pixel_gap_does_not ... ok
+test matching_confidence_never_invents_evidence ... ok
+test zero_sized_image_has_no_pixel_crop ... ok
+test typography_change_requires_two_confident_observations ... ok
+test invalid_ocr_geometry_keeps_detector_typography ... ok
+test ocr_line_order_duplicates_and_invalid_boxes_do_not_change_typography ... ok
+test ocr_word_fragments_share_a_line_but_distant_labels_do_not ... ok
+test long_translation_stays_inside_custom_capture_on_negative_monitor ... ok
+test engine_normalizes_ocr_geometry_before_refining_a_block ... ok
+test nested_repeat_of_the_same_ocr_text_does_not_block_its_owner ... ok
+test background_panel_does_not_become_a_giant_glyph ... ok
+test ocr_refinement_does_not_turn_separated_rows_into_overlapping_sources ... ok
+test slant_measurement_separates_upright_from_italic_strokes_at_several_sizes ... ok
+test connected_component_order_is_repeatable ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running ../../tests/inplace/rust/stress.rs (target/debug/deps/inplace_stress-9aba29a64619f99e)
+
+running 4 tests
+test a_frame_beyond_the_block_limit_reports_the_blocks_it_did_not_read ... ok
+test partially_changed_frames_read_only_what_changed ... ok
+test many_blocks_are_all_tracked_and_each_costs_one_job_once ... ok
+test rapidly_changing_dialogue_and_resizing_keep_state_and_memory_bounded ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.49s
+
+     Running ../../tests/inplace/rust/typography.rs (target/debug/deps/inplace_typography-03f6a24376b0af2c)
+
+running 10 tests
+test a_selection_is_the_closest_available_font_never_an_exact_identification ... ok
+test sequence::a_rescaled_block_updates_its_size_but_not_its_family ... ok
+test sequence::a_block_that_returns_at_the_same_place_after_a_gap_is_measured_afresh ... ok
+test sequence::changed_dialogue_text_keeps_the_block_and_its_font ... ok
+test sequence::a_character_name_that_changes_style_is_updated_and_keeps_its_identity ... ok
+test sequence::a_weight_change_needs_two_agreeing_probes_then_invalidates_the_old_font ... ok
+test sequence::a_menu_item_that_only_dims_when_inactive_does_not_change_its_font ... ok
+test measured_height_and_stem_agree_with_font_outlines ... ok
+test measurement_report ... ok
+test category_confidence_is_calibrated_on_the_labelled_fixtures ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.26s
+
+     Running tests/meiki_native.rs (target/debug/deps/meiki_native-c53c7fb9187f314d)
+
+running 4 tests
+test benchmark_frames ... ignored, requires the MeikiOCR models (LIPAX_RAPID_TEST_MODELS) and ONNX Runtime; slow
+test reads_japanese_lines_in_strips_and_game_frames ... ignored, requires the MeikiOCR models (LIPAX_RAPID_TEST_MODELS) and ONNX Runtime
+test reads_several_lines_top_down_and_other_text_sizes ... ignored, requires the MeikiOCR models (LIPAX_RAPID_TEST_MODELS) and ONNX Runtime
+test reads_vertical_text_short_long_and_in_several_columns ... ignored, requires the MeikiOCR models (LIPAX_RAPID_TEST_MODELS) and ONNX Runtime
+
+test result: ok. 0 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/ocr_geometry.rs (target/debug/deps/ocr_geometry-4d35fae0602aed2f)
+
+running 1 test
+test real_ocr_lines_land_on_the_detected_block_in_frame_coordinates ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.36s
+
+     Running tests/ocr_languages.rs (target/debug/deps/ocr_languages-3d5f8e5e1d52d108)
+
+running 1 test
+test english_russian_and_japanese_are_read_and_auto_tune_finds_the_best_filters ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 20.05s
+
+     Running tests/rapid_native.rs (target/debug/deps/rapid_native-88da06c2a6d834e2)
+
+running 3 tests
+test benchmark_frames_against_tesseract_and_paddle ... ignored, requires the PP-OCRv5 models (LIPAX_RAPID_TEST_MODELS) and ONNX Runtime; slow
+test reads_english_russian_and_japanese ... ignored, requires the PP-OCRv5 models (LIPAX_RAPID_TEST_MODELS) and ONNX Runtime
+test error_rates_count_characters_and_words ... ok
+
+test result: ok. 1 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/scenes.rs (target/debug/deps/scenes-e258416cec6ed3a1)
+
+running 2 tests
+test scene_report ... ignored
+test scene_quality_thresholds ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.19s
+
+   Doc-tests lipa_core
+
+running 1 test
+test crates/core/src/layout/units.rs - layout::units::Rect (line 52) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test crates/core/src/layout/units.rs - layout::units::Rect (line 44) - compile fail ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+all doctests ran in 1.10s; merged doctests compilation took 0.93s

@@ -1,23 +1,798 @@
 {
-  "block_ocr": [],
+  "block_ocr": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.99008178710938,
+      "crop_origin": [
+        563,
+        5
+      ],
+      "detector_rect": {
+        "h": 139.0,
+        "w": 724.0,
+        "x": 598.0,
+        "y": 40.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 85.0,
+          "w": 179.0,
+          "x": 870.0,
+          "y": 54.0
+        }
+      ],
+      "observation_ms": 0.009137000000000001,
+      "ocr_ms": 168.636626,
+      "original": "Shop",
+      "raw_original": "Shop",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.99008178710938,
+          "rect": {
+            "h": 85.0,
+            "w": 179.0,
+            "x": 870.0,
+            "y": 54.0
+          },
+          "text": "Shop"
+        }
+      ],
+      "split": false,
+      "translation": "Магазин",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 98.34476470947266,
+      "crop_origin": [
+        262,
+        123
+      ],
+      "detector_rect": {
+        "h": 610.0,
+        "w": 719.0,
+        "x": 415.0,
+        "y": 276.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 59.0,
+          "w": 690.0,
+          "x": 596.0,
+          "y": 201.0
+        },
+        {
+          "h": 60.0,
+          "w": 455.0,
+          "x": 648.0,
+          "y": 250.0
+        },
+        {
+          "h": 66.0,
+          "w": 181.0,
+          "x": 1094.0,
+          "y": 244.0
+        },
+        {
+          "h": 183.0,
+          "w": 52.0,
+          "x": 436.0,
+          "y": 488.0
+        },
+        {
+          "h": 191.0,
+          "w": 56.0,
+          "x": 803.0,
+          "y": 484.0
+        },
+        {
+          "h": 48.0,
+          "w": 453.0,
+          "x": 500.0,
+          "y": 809.0
+        },
+        {
+          "h": 53.0,
+          "w": 627.0,
+          "x": 496.0,
+          "y": 855.0
+        }
+      ],
+      "observation_ms": 0.034135,
+      "ocr_ms": 347.167033,
+      "original": "Spend the coins you've collecte while playing in the Shop! Lantern Monster As your rank increases, the lineup gets better and better!",
+      "raw_original": "Spend the coins you've collecte while playing in the Shop! Lantern Monster As your rank increases, the lineup gets better and better!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.48937225341797,
+          "rect": {
+            "h": 59.0,
+            "w": 690.0,
+            "x": 596.0,
+            "y": 201.0
+          },
+          "text": "Spend the coins you've collecte"
+        },
+        {
+          "confidence": 99.63601684570312,
+          "rect": {
+            "h": 60.0,
+            "w": 455.0,
+            "x": 648.0,
+            "y": 250.0
+          },
+          "text": "while playing in the"
+        },
+        {
+          "confidence": 94.08466339111328,
+          "rect": {
+            "h": 66.0,
+            "w": 181.0,
+            "x": 1094.0,
+            "y": 244.0
+          },
+          "text": "Shop!"
+        },
+        {
+          "confidence": 99.99677276611328,
+          "rect": {
+            "h": 183.0,
+            "w": 52.0,
+            "x": 436.0,
+            "y": 488.0
+          },
+          "text": "Lantern"
+        },
+        {
+          "confidence": 99.99573516845703,
+          "rect": {
+            "h": 191.0,
+            "w": 56.0,
+            "x": 803.0,
+            "y": 484.0
+          },
+          "text": "Monster"
+        },
+        {
+          "confidence": 98.8682632446289,
+          "rect": {
+            "h": 48.0,
+            "w": 453.0,
+            "x": 500.0,
+            "y": 809.0
+          },
+          "text": "As your rank increases,"
+        },
+        {
+          "confidence": 98.34255981445312,
+          "rect": {
+            "h": 53.0,
+            "w": 627.0,
+            "x": 496.0,
+            "y": 855.0
+          },
+          "text": "the lineup gets better and better!"
+        }
+      ],
+      "split": true,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1162,
+        367
+      ],
+      "detector_rect": {
+        "h": 223.0,
+        "w": 262.0,
+        "x": 1218.0,
+        "y": 423.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 17.161298,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1548,
+        479
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 16.0,
+        "x": 1551.0,
+        "y": 482.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 3.312836,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1323,
+        557
+      ],
+      "detector_rect": {
+        "h": 23.0,
+        "w": 41.0,
+        "x": 1329.0,
+        "y": 563.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.035266,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1293,
+        599
+      ],
+      "detector_rect": {
+        "h": 79.0,
+        "w": 240.0,
+        "x": 1313.0,
+        "y": 619.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 6.164928,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        806,
+        614
+      ],
+      "detector_rect": {
+        "h": 44.0,
+        "w": 23.0,
+        "x": 817.0,
+        "y": 625.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.932014,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1239,
+        636
+      ],
+      "detector_rect": {
+        "h": 108.0,
+        "w": 99.0,
+        "x": 1266.0,
+        "y": 663.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.461461,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        640,
+        680
+      ],
+      "detector_rect": {
+        "h": 31.0,
+        "w": 13.0,
+        "x": 648.0,
+        "y": 688.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.479292,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1281,
+        772
+      ],
+      "detector_rect": {
+        "h": 35.0,
+        "w": 90.0,
+        "x": 1290.0,
+        "y": 781.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.743072,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1415,
+        802
+      ],
+      "detector_rect": {
+        "h": 37.0,
+        "w": 53.0,
+        "x": 1425.0,
+        "y": 812.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.641549,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        700,
+        893
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 12.0,
+        "x": 703.0,
+        "y": 896.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.71914,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.84873962402344,
+      "crop_origin": [
+        579,
+        184
+      ],
+      "detector_rect": {
+        "h": 109.0,
+        "w": 690.0,
+        "x": 596.0,
+        "y": 201.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [
+        {
+          "h": 53.0,
+          "w": 345.0,
+          "x": 599.0,
+          "y": 204.0
+        },
+        {
+          "h": 51.0,
+          "w": 155.0,
+          "x": 949.0,
+          "y": 205.0
+        },
+        {
+          "h": 47.0,
+          "w": 198.0,
+          "x": 1103.0,
+          "y": 206.0
+        },
+        {
+          "h": 44.0,
+          "w": 201.0,
+          "x": 766.0,
+          "y": 259.0
+        },
+        {
+          "h": 38.0,
+          "w": 49.0,
+          "x": 963.0,
+          "y": 260.0
+        },
+        {
+          "h": 43.0,
+          "w": 79.0,
+          "x": 1014.0,
+          "y": 257.0
+        },
+        {
+          "h": 62.0,
+          "w": 168.0,
+          "x": 1102.0,
+          "y": 246.0
+        },
+        {
+          "h": 46.0,
+          "w": 133.0,
+          "x": 654.0,
+          "y": 255.0
+        }
+      ],
+      "observation_ms": 10.047853,
+      "ocr_ms": 125.36053799999999,
+      "original": "Spend the coins you've collected while playing in the Shop!",
+      "raw_original": "Spend the coins you've collected playing in the Shop! while",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.99058532714844,
+          "rect": {
+            "h": 53.0,
+            "w": 345.0,
+            "x": 599.0,
+            "y": 204.0
+          },
+          "text": "Spend the coins"
+        },
+        {
+          "confidence": 99.99087524414062,
+          "rect": {
+            "h": 51.0,
+            "w": 155.0,
+            "x": 949.0,
+            "y": 205.0
+          },
+          "text": "you've"
+        },
+        {
+          "confidence": 99.31543731689453,
+          "rect": {
+            "h": 47.0,
+            "w": 198.0,
+            "x": 1103.0,
+            "y": 206.0
+          },
+          "text": "collected"
+        },
+        {
+          "confidence": 99.96260070800781,
+          "rect": {
+            "h": 44.0,
+            "w": 201.0,
+            "x": 766.0,
+            "y": 259.0
+          },
+          "text": "playing"
+        },
+        {
+          "confidence": 99.98655700683594,
+          "rect": {
+            "h": 38.0,
+            "w": 49.0,
+            "x": 963.0,
+            "y": 260.0
+          },
+          "text": "in"
+        },
+        {
+          "confidence": 99.99185180664062,
+          "rect": {
+            "h": 43.0,
+            "w": 79.0,
+            "x": 1014.0,
+            "y": 257.0
+          },
+          "text": "the"
+        },
+        {
+          "confidence": 99.77205657958984,
+          "rect": {
+            "h": 62.0,
+            "w": 168.0,
+            "x": 1102.0,
+            "y": 246.0
+          },
+          "text": "Shop!"
+        },
+        {
+          "confidence": 99.98881530761719,
+          "rect": {
+            "h": 46.0,
+            "w": 133.0,
+            "x": 654.0,
+            "y": 255.0
+          },
+          "text": "while"
+        }
+      ],
+      "split": false,
+      "translation": "Проведите монеты, которые вы собрали во время игры в магазине!",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.99581909179688,
+      "crop_origin": [
+        388,
+        436
+      ],
+      "detector_rect": {
+        "h": 191.0,
+        "w": 423.0,
+        "x": 436.0,
+        "y": 484.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [
+        {
+          "h": 182.0,
+          "w": 53.0,
+          "x": 435.0,
+          "y": 489.0
+        },
+        {
+          "h": 189.0,
+          "w": 53.0,
+          "x": 804.0,
+          "y": 485.0
+        }
+      ],
+      "observation_ms": 1.988066,
+      "ocr_ms": 48.253685999999995,
+      "original": "Lantern Monster",
+      "raw_original": "Lantern Monster",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.99667358398438,
+          "rect": {
+            "h": 182.0,
+            "w": 53.0,
+            "x": 435.0,
+            "y": 489.0
+          },
+          "text": "Lantern"
+        },
+        {
+          "confidence": 99.99494934082031,
+          "rect": {
+            "h": 189.0,
+            "w": 53.0,
+            "x": 804.0,
+            "y": 485.0
+          },
+          "text": "Monster"
+        }
+      ],
+      "split": false,
+      "translation": "Фонарь Монстр",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.89067077636719,
+      "crop_origin": [
+        482,
+        795
+      ],
+      "detector_rect": {
+        "h": 99.0,
+        "w": 627.0,
+        "x": 496.0,
+        "y": 809.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [
+        {
+          "h": 48.0,
+          "w": 454.0,
+          "x": 498.0,
+          "y": 809.0
+        },
+        {
+          "h": 48.0,
+          "w": 624.0,
+          "x": 498.0,
+          "y": 858.0
+        }
+      ],
+      "observation_ms": 1.218158,
+      "ocr_ms": 58.025878000000006,
+      "original": "As your rank increases, the lineup gets better and better!",
+      "raw_original": "As your rank increases, the lineup gets better and better!",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.96875762939453,
+          "rect": {
+            "h": 48.0,
+            "w": 454.0,
+            "x": 498.0,
+            "y": 809.0
+          },
+          "text": "As your rank increases,"
+        },
+        {
+          "confidence": 99.83785247802734,
+          "rect": {
+            "h": 48.0,
+            "w": 624.0,
+            "x": 498.0,
+            "y": 858.0
+          },
+          "text": "the lineup gets better and better!"
+        }
+      ],
+      "split": false,
+      "translation": "По мере того, как ваш рейтинг увеличивается, состав становится все лучше и лучше!",
+      "translation_source": "cached translation-engine response"
+    }
+  ],
   "blocks": [
     {
-      "cap_height": 250.0,
+      "cap_height": 139.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
-        "h": 250.0,
+        "h": 139.0,
         "w": 724.0,
         "x": 598.0,
         "y": 40.0
       }
     },
     {
+      "cap_height": 610.0,
+      "category": "Unknown",
+      "confidence": 0.03154529258608818,
+      "font": "Noto Sans",
+      "rect": {
+        "h": 610.0,
+        "w": 719.0,
+        "x": 415.0,
+        "y": 276.0
+      }
+    },
+    {
+      "cap_height": 223.0,
+      "category": "Unknown",
+      "confidence": 0.031396862119436264,
+      "font": "Inter",
+      "rect": {
+        "h": 223.0,
+        "w": 262.0,
+        "x": 1218.0,
+        "y": 423.0
+      }
+    },
+    {
       "cap_height": 6.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
       "rect": {
         "h": 6.0,
         "w": 16.0,
@@ -26,34 +801,10 @@
       }
     },
     {
-      "cap_height": 61.0,
-      "category": "Unknown",
-      "confidence": 0.0675792396068573,
-      "font": "Inter",
-      "rect": {
-        "h": 61.0,
-        "w": 34.0,
-        "x": 817.0,
-        "y": 492.0
-      }
-    },
-    {
-      "cap_height": 49.0,
-      "category": "Unknown",
-      "confidence": 0.07120408862829208,
-      "font": "Inter",
-      "rect": {
-        "h": 49.0,
-        "w": 34.0,
-        "x": 448.0,
-        "y": 496.0
-      }
-    },
-    {
       "cap_height": 23.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
       "rect": {
         "h": 23.0,
         "w": 41.0,
@@ -62,45 +813,21 @@
       }
     },
     {
-      "cap_height": 45.0,
-      "category": "Unknown",
-      "confidence": 0.06603704392910004,
-      "font": "Inter",
+      "cap_height": 65.0,
+      "category": "Condensed",
+      "confidence": 0.4472300708293915,
+      "font": "Roboto Condensed",
       "rect": {
-        "h": 45.0,
-        "w": 23.0,
-        "x": 448.0,
-        "y": 595.0
-      }
-    },
-    {
-      "cap_height": 43.0,
-      "category": "Unknown",
-      "confidence": 0.06527907401323318,
-      "font": "Inter",
-      "rect": {
-        "h": 43.0,
-        "w": 30.0,
-        "x": 1269.0,
-        "y": 603.0
-      }
-    },
-    {
-      "cap_height": 39.0,
-      "category": "Unknown",
-      "confidence": 0.05900000408291817,
-      "font": "Inter",
-      "rect": {
-        "h": 39.0,
-        "w": 43.0,
+        "h": 79.0,
+        "w": 240.0,
         "x": 1313.0,
-        "y": 623.0
+        "y": 619.0
       }
     },
     {
       "cap_height": 44.0,
       "category": "Unknown",
-      "confidence": 0.06642424315214157,
+      "confidence": 0.033212121576070786,
       "font": "Inter",
       "rect": {
         "h": 44.0,
@@ -110,33 +837,21 @@
       }
     },
     {
-      "cap_height": 65.0,
-      "category": "Unknown",
-      "confidence": 0.05900000408291817,
-      "font": "Inter",
-      "rect": {
-        "h": 65.0,
-        "w": 78.0,
-        "x": 1407.0,
-        "y": 626.0
-      }
-    },
-    {
       "cap_height": 108.0,
       "category": "Unknown",
-      "confidence": 0.0712222307920456,
+      "confidence": 0.0356111153960228,
       "font": "Inter",
       "rect": {
         "h": 108.0,
-        "w": 72.0,
-        "x": 1293.0,
+        "w": 99.0,
+        "x": 1266.0,
         "y": 663.0
       }
     },
     {
       "cap_height": 31.0,
       "category": "Unknown",
-      "confidence": 0.06297849863767624,
+      "confidence": 0.03148924931883812,
       "font": "Inter",
       "rect": {
         "h": 31.0,
@@ -148,8 +863,8 @@
     {
       "cap_height": 31.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 35.0,
         "w": 90.0,
@@ -160,7 +875,7 @@
     {
       "cap_height": 22.0,
       "category": "Serif",
-      "confidence": 0.2654781937599182,
+      "confidence": 0.2601686418056488,
       "font": "Literata",
       "rect": {
         "h": 37.0,
@@ -172,8 +887,8 @@
     {
       "cap_height": 6.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 6.0,
         "w": 12.0,
@@ -182,292 +897,850 @@
       }
     }
   ],
-  "cached_placement_ms": 0.213275,
+  "cached_placement_ms": 0.015449000000000001,
   "dropped": 0,
   "dropped_details": [],
   "finish_ms": [
-    0.19729400000000002
+    0.568557,
+    0.016532
   ],
-  "first_frame_ms": 829.27083,
-  "fits": 15,
+  "first_frame_ms": 179.885724,
+  "fits": 4,
   "frame_blocks": [
     {
+      "cap_height_px": 139.0,
       "id": 1,
-      "lines_note": "",
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
       "source_lines": 1,
       "text_rect": {
-        "h": 250.0,
-        "w": 724.0,
-        "x": 598.0,
-        "y": 40.0
+        "h": 87.0,
+        "w": 181.0,
+        "x": 869.0,
+        "y": 53.0
       }
     },
     {
-      "id": 2,
-      "lines_note": "",
+      "cap_height_px": 51.0,
+      "id": 13,
+      "lines_note": "строк: 2 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 106.0,
+        "w": 704.0,
+        "x": 598.0,
+        "y": 203.0
+      }
+    },
+    {
+      "cap_height_px": 191.0,
+      "id": 14,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
       "source_lines": 1,
       "text_rect": {
+        "h": 191.0,
+        "w": 424.0,
+        "x": 434.0,
+        "y": 484.0
+      }
+    },
+    {
+      "cap_height_px": 30.0,
+      "id": 15,
+      "lines_note": "строк: 2 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 99.0,
+        "w": 626.0,
+        "x": 497.0,
+        "y": 808.0
+      }
+    }
+  ],
+  "hits": 4,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-2/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.99008178710938,
+      "crop_origin": [
+        563,
+        5
+      ],
+      "detector_rect": {
+        "h": 139.0,
+        "w": 724.0,
+        "x": 598.0,
+        "y": 40.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 85.0,
+          "w": 179.0,
+          "x": 870.0,
+          "y": 54.0
+        }
+      ],
+      "observation_ms": 0.009137000000000001,
+      "ocr_ms": 168.636626,
+      "original": "Shop",
+      "raw_original": "Shop",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.99008178710938,
+          "rect": {
+            "h": 85.0,
+            "w": 179.0,
+            "x": 870.0,
+            "y": 54.0
+          },
+          "text": "Shop"
+        }
+      ],
+      "split": false,
+      "translation": "Магазин",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 98.34476470947266,
+      "crop_origin": [
+        262,
+        123
+      ],
+      "detector_rect": {
+        "h": 610.0,
+        "w": 719.0,
+        "x": 415.0,
+        "y": 276.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 59.0,
+          "w": 690.0,
+          "x": 596.0,
+          "y": 201.0
+        },
+        {
+          "h": 60.0,
+          "w": 455.0,
+          "x": 648.0,
+          "y": 250.0
+        },
+        {
+          "h": 66.0,
+          "w": 181.0,
+          "x": 1094.0,
+          "y": 244.0
+        },
+        {
+          "h": 183.0,
+          "w": 52.0,
+          "x": 436.0,
+          "y": 488.0
+        },
+        {
+          "h": 191.0,
+          "w": 56.0,
+          "x": 803.0,
+          "y": 484.0
+        },
+        {
+          "h": 48.0,
+          "w": 453.0,
+          "x": 500.0,
+          "y": 809.0
+        },
+        {
+          "h": 53.0,
+          "w": 627.0,
+          "x": 496.0,
+          "y": 855.0
+        }
+      ],
+      "observation_ms": 0.034135,
+      "ocr_ms": 347.167033,
+      "original": "Spend the coins you've collecte while playing in the Shop! Lantern Monster As your rank increases, the lineup gets better and better!",
+      "raw_original": "Spend the coins you've collecte while playing in the Shop! Lantern Monster As your rank increases, the lineup gets better and better!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.48937225341797,
+          "rect": {
+            "h": 59.0,
+            "w": 690.0,
+            "x": 596.0,
+            "y": 201.0
+          },
+          "text": "Spend the coins you've collecte"
+        },
+        {
+          "confidence": 99.63601684570312,
+          "rect": {
+            "h": 60.0,
+            "w": 455.0,
+            "x": 648.0,
+            "y": 250.0
+          },
+          "text": "while playing in the"
+        },
+        {
+          "confidence": 94.08466339111328,
+          "rect": {
+            "h": 66.0,
+            "w": 181.0,
+            "x": 1094.0,
+            "y": 244.0
+          },
+          "text": "Shop!"
+        },
+        {
+          "confidence": 99.99677276611328,
+          "rect": {
+            "h": 183.0,
+            "w": 52.0,
+            "x": 436.0,
+            "y": 488.0
+          },
+          "text": "Lantern"
+        },
+        {
+          "confidence": 99.99573516845703,
+          "rect": {
+            "h": 191.0,
+            "w": 56.0,
+            "x": 803.0,
+            "y": 484.0
+          },
+          "text": "Monster"
+        },
+        {
+          "confidence": 98.8682632446289,
+          "rect": {
+            "h": 48.0,
+            "w": 453.0,
+            "x": 500.0,
+            "y": 809.0
+          },
+          "text": "As your rank increases,"
+        },
+        {
+          "confidence": 98.34255981445312,
+          "rect": {
+            "h": 53.0,
+            "w": 627.0,
+            "x": 496.0,
+            "y": 855.0
+          },
+          "text": "the lineup gets better and better!"
+        }
+      ],
+      "split": true,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1162,
+        367
+      ],
+      "detector_rect": {
+        "h": 223.0,
+        "w": 262.0,
+        "x": 1218.0,
+        "y": 423.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 17.161298,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1548,
+        479
+      ],
+      "detector_rect": {
         "h": 6.0,
         "w": 16.0,
         "x": 1551.0,
         "y": 482.0
-      }
-    },
-    {
-      "id": 3,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 61.0,
-        "w": 34.0,
-        "x": 817.0,
-        "y": 492.0
-      }
-    },
-    {
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
       "id": 4,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 49.0,
-        "w": 34.0,
-        "x": 448.0,
-        "y": 496.0
-      }
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 3.312836,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 5,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1323,
+        557
+      ],
+      "detector_rect": {
         "h": 23.0,
         "w": 41.0,
         "x": 1329.0,
         "y": 563.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.035266,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 6,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 45.0,
-        "w": 23.0,
-        "x": 448.0,
-        "y": 595.0
-      }
-    },
-    {
-      "id": 7,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 43.0,
-        "w": 30.0,
-        "x": 1269.0,
-        "y": 603.0
-      }
-    },
-    {
-      "id": 8,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 39.0,
-        "w": 43.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1293,
+        599
+      ],
+      "detector_rect": {
+        "h": 79.0,
+        "w": 240.0,
         "x": 1313.0,
-        "y": 623.0
-      }
+        "y": 619.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 6.164928,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 9,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        806,
+        614
+      ],
+      "detector_rect": {
         "h": 44.0,
         "w": 23.0,
         "x": 817.0,
         "y": 625.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.932014,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 10,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 65.0,
-        "w": 78.0,
-        "x": 1407.0,
-        "y": 626.0
-      }
-    },
-    {
-      "id": 11,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1239,
+        636
+      ],
+      "detector_rect": {
         "h": 108.0,
-        "w": 72.0,
-        "x": 1293.0,
+        "w": 99.0,
+        "x": 1266.0,
         "y": 663.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.461461,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 12,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        640,
+        680
+      ],
+      "detector_rect": {
         "h": 31.0,
         "w": 13.0,
         "x": 648.0,
         "y": 688.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.479292,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 13,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1281,
+        772
+      ],
+      "detector_rect": {
         "h": 35.0,
         "w": 90.0,
         "x": 1290.0,
         "y": 781.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.743072,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 14,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1415,
+        802
+      ],
+      "detector_rect": {
         "h": 37.0,
         "w": 53.0,
         "x": 1425.0,
         "y": 812.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.641549,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 15,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        700,
+        893
+      ],
+      "detector_rect": {
         "h": 6.0,
         "w": 12.0,
         "x": 703.0,
         "y": 896.0
-      }
-    }
-  ],
-  "hits": 15,
-  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-2/original.png",
-  "measurement": "Qt: shared production helper, test IPC adapter",
-  "minimum_confidence": 30,
-  "ocr": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "latency_ms": 2547.5629299999996,
-    "lines": [
-      {
-        "confidence": 89.73081970214844,
-        "rect": {
-          "h": 94.0,
-          "w": 180.0,
-          "x": 870.0,
-          "y": 48.0
-        },
-        "text": "Shop"
       },
-      {
-        "confidence": 99.40070343017578,
-        "rect": {
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.71914,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.84873962402344,
+      "crop_origin": [
+        579,
+        184
+      ],
+      "detector_rect": {
+        "h": 109.0,
+        "w": 690.0,
+        "x": 596.0,
+        "y": 201.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [
+        {
+          "h": 53.0,
+          "w": 345.0,
+          "x": 599.0,
+          "y": 204.0
+        },
+        {
+          "h": 51.0,
+          "w": 155.0,
+          "x": 949.0,
+          "y": 205.0
+        },
+        {
+          "h": 47.0,
+          "w": 198.0,
+          "x": 1103.0,
+          "y": 206.0
+        },
+        {
+          "h": 44.0,
+          "w": 201.0,
+          "x": 766.0,
+          "y": 259.0
+        },
+        {
+          "h": 38.0,
+          "w": 49.0,
+          "x": 963.0,
+          "y": 260.0
+        },
+        {
+          "h": 43.0,
+          "w": 79.0,
+          "x": 1014.0,
+          "y": 257.0
+        },
+        {
           "h": 62.0,
-          "w": 726.0,
-          "x": 597.0,
-          "y": 199.0
-        },
-        "text": "Spend the coins you've collected"
-      },
-      {
-        "confidence": 97.9481430053711,
-        "rect": {
-          "h": 64.0,
-          "w": 627.0,
-          "x": 647.0,
+          "w": 168.0,
+          "x": 1102.0,
           "y": 246.0
         },
-        "text": "while playing in the Shop!"
-      },
-      {
-        "confidence": 99.9981918334961,
-        "rect": {
-          "h": 180.0,
-          "w": 51.0,
-          "x": 437.0,
-          "y": 491.0
+        {
+          "h": 46.0,
+          "w": 133.0,
+          "x": 654.0,
+          "y": 255.0
+        }
+      ],
+      "observation_ms": 10.047853,
+      "ocr_ms": 125.36053799999999,
+      "original": "Spend the coins you've collected while playing in the Shop!",
+      "raw_original": "Spend the coins you've collected playing in the Shop! while",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.99058532714844,
+          "rect": {
+            "h": 53.0,
+            "w": 345.0,
+            "x": 599.0,
+            "y": 204.0
+          },
+          "text": "Spend the coins"
         },
-        "text": "Lantern"
-      },
-      {
-        "confidence": 99.9965591430664,
-        "rect": {
-          "h": 193.0,
-          "w": 59.0,
-          "x": 801.0,
-          "y": 482.0
+        {
+          "confidence": 99.99087524414062,
+          "rect": {
+            "h": 51.0,
+            "w": 155.0,
+            "x": 949.0,
+            "y": 205.0
+          },
+          "text": "you've"
         },
-        "text": "Monster"
-      },
-      {
-        "confidence": 99.5570297241211,
-        "rect": {
-          "h": 45.0,
-          "w": 452.0,
-          "x": 500.0,
-          "y": 811.0
+        {
+          "confidence": 99.31543731689453,
+          "rect": {
+            "h": 47.0,
+            "w": 198.0,
+            "x": 1103.0,
+            "y": 206.0
+          },
+          "text": "collected"
         },
-        "text": "As your rank increases,"
-      },
-      {
-        "confidence": 97.75760650634766,
-        "rect": {
-          "h": 49.0,
-          "w": 623.0,
-          "x": 499.0,
-          "y": 857.0
+        {
+          "confidence": 99.96260070800781,
+          "rect": {
+            "h": 44.0,
+            "w": 201.0,
+            "x": 766.0,
+            "y": 259.0
+          },
+          "text": "playing"
         },
-        "text": "the lineup gets better and better!"
-      }
-    ],
-    "text": "Shop\nSpend the coins you've collected\nwhile playing in the Shop!\nLantern\nMonster\nAs your rank increases,\nthe lineup gets better and better!"
-  },
-  "ocr_history": [],
-  "ocr_scans": 1,
-  "peak_memory": "VmHWM:\t  413144 kB",
+        {
+          "confidence": 99.98655700683594,
+          "rect": {
+            "h": 38.0,
+            "w": 49.0,
+            "x": 963.0,
+            "y": 260.0
+          },
+          "text": "in"
+        },
+        {
+          "confidence": 99.99185180664062,
+          "rect": {
+            "h": 43.0,
+            "w": 79.0,
+            "x": 1014.0,
+            "y": 257.0
+          },
+          "text": "the"
+        },
+        {
+          "confidence": 99.77205657958984,
+          "rect": {
+            "h": 62.0,
+            "w": 168.0,
+            "x": 1102.0,
+            "y": 246.0
+          },
+          "text": "Shop!"
+        },
+        {
+          "confidence": 99.98881530761719,
+          "rect": {
+            "h": 46.0,
+            "w": 133.0,
+            "x": 654.0,
+            "y": 255.0
+          },
+          "text": "while"
+        }
+      ],
+      "split": false,
+      "translation": "Проведите монеты, которые вы собрали во время игры в магазине!",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.99581909179688,
+      "crop_origin": [
+        388,
+        436
+      ],
+      "detector_rect": {
+        "h": 191.0,
+        "w": 423.0,
+        "x": 436.0,
+        "y": 484.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [
+        {
+          "h": 182.0,
+          "w": 53.0,
+          "x": 435.0,
+          "y": 489.0
+        },
+        {
+          "h": 189.0,
+          "w": 53.0,
+          "x": 804.0,
+          "y": 485.0
+        }
+      ],
+      "observation_ms": 1.988066,
+      "ocr_ms": 48.253685999999995,
+      "original": "Lantern Monster",
+      "raw_original": "Lantern Monster",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.99667358398438,
+          "rect": {
+            "h": 182.0,
+            "w": 53.0,
+            "x": 435.0,
+            "y": 489.0
+          },
+          "text": "Lantern"
+        },
+        {
+          "confidence": 99.99494934082031,
+          "rect": {
+            "h": 189.0,
+            "w": 53.0,
+            "x": 804.0,
+            "y": 485.0
+          },
+          "text": "Monster"
+        }
+      ],
+      "split": false,
+      "translation": "Фонарь Монстр",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.89067077636719,
+      "crop_origin": [
+        482,
+        795
+      ],
+      "detector_rect": {
+        "h": 99.0,
+        "w": 627.0,
+        "x": 496.0,
+        "y": 809.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [
+        {
+          "h": 48.0,
+          "w": 454.0,
+          "x": 498.0,
+          "y": 809.0
+        },
+        {
+          "h": 48.0,
+          "w": 624.0,
+          "x": 498.0,
+          "y": 858.0
+        }
+      ],
+      "observation_ms": 1.218158,
+      "ocr_ms": 58.025878000000006,
+      "original": "As your rank increases, the lineup gets better and better!",
+      "raw_original": "As your rank increases, the lineup gets better and better!",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.96875762939453,
+          "rect": {
+            "h": 48.0,
+            "w": 454.0,
+            "x": 498.0,
+            "y": 809.0
+          },
+          "text": "As your rank increases,"
+        },
+        {
+          "confidence": 99.83785247802734,
+          "rect": {
+            "h": 48.0,
+            "w": 624.0,
+            "x": 498.0,
+            "y": 858.0
+          },
+          "text": "the lineup gets better and better!"
+        }
+      ],
+      "split": false,
+      "translation": "По мере того, как ваш рейтинг увеличивается, состав становится все лучше и лучше!",
+      "translation_source": "cached translation-engine response"
+    }
+  ],
+  "ocr_scans": 2,
+  "peak_memory": "VmHWM:\t  351804 kB",
   "placed": [
     {
       "alignment": "center",
       "background": {
         "color": "#4d3f3e",
-        "image": "file:///home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-2/background-1.png",
-        "mode": "inpaint_blur",
+        "image": "",
+        "mode": "solid_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
       "block_id": 1,
       "block_type": "unknown",
       "box": [
-        0.303125,
-        0.022222222222222223,
-        0.39375,
-        0.2611111111111111
+        0.44427083333333334,
+        0.03425925925925926,
+        0.1109375,
+        0.11018518518518519
       ],
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 70.0,
+      "font_family": "Noto Serif CJK SC",
+      "font_px": 42.0,
       "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
+        "category": "cjk_serif",
+        "confidence": 0.029583334922790527,
         "generic": false
       },
-      "font_weight": 100,
+      "font_weight": 200,
       "inner": [
         16.0,
         16.0,
@@ -476,10 +1749,12 @@
       ],
       "italic": false,
       "key": "test:1",
-      "letter_spacing": -2.8181910514831543,
+      "layout_width": 179.0,
+      "letter_spacing": -1.717881679534912,
       "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 1",
+      "max_lines": 1,
+      "original": "Shop",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -495,688 +1770,53 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#f8ecdd",
+      "source_coverage": 1.0,
+      "text": "Магазин",
+      "text_color": "#f2e7d9",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
-      "alignment": "right",
+      "alignment": "center",
       "background": {
-        "color": "#623c42",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 2,
-      "block_type": "unknown",
-      "box": [
-        0.8067708333333333,
-        0.4444444444444444,
-        0.010416666666666666,
-        0.13148148148148148
-      ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
-        "generic": false
-      },
-      "font_weight": 900,
-      "inner": [
-        2.0,
-        2.0,
-        2.0,
-        2.0
-      ],
-      "italic": false,
-      "key": "test:2",
-      "letter_spacing": -0.2455766499042511,
-      "line_height": 0.8999999761581421,
-      "max_lines": 13,
-      "original": "fixture 2",
-      "outline": false,
-      "outline_color": "#020000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#d08fa2",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#682223",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 3,
-      "block_type": "button",
-      "box": [
-        0.4109375,
-        0.42962962962962964,
-        0.046875,
-        0.10833333333333334
-      ],
-      "font_family": "Roboto Condensed",
-      "font_px": 9.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.0675792396068573,
-        "generic": false
-      },
-      "font_weight": 800,
-      "inner": [
-        28.0,
-        28.0,
-        28.0,
-        28.0
-      ],
-      "italic": false,
-      "key": "test:3",
-      "letter_spacing": -0.3846198320388794,
-      "line_height": 0.8999999761581421,
-      "max_lines": 5,
-      "original": "fixture 3",
-      "outline": false,
-      "outline_color": "#080000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#f4ebeb",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#225166",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 4,
-      "block_type": "button",
-      "box": [
-        0.21875,
-        0.42407407407407405,
-        0.046875,
-        0.1037037037037037
-      ],
-      "expanded": true,
-      "font_family": "Inter",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.07120408862829208,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        28.0,
-        28.0,
-        28.0,
-        25.0
-      ],
-      "italic": false,
-      "key": "test:4",
-      "letter_spacing": -0.3496570587158203,
-      "line_height": 0.8999999761581421,
-      "max_lines": 5,
-      "original": "fixture 4",
-      "outline": false,
-      "outline_color": "#000006",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#e3ebf0",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#453738",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 5,
-      "block_type": "unknown",
-      "box": [
-        0.6885937372843425,
-        0.49231476960358794,
-        0.028541692097981772,
-        0.06740745261863426
-      ],
-      "expanded": true,
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
-        "generic": false
-      },
-      "font_weight": 600,
-      "inner": [
-        6.9000244140625,
-        6.9000244140625,
-        6.9000244140625,
-        6.9000244140625
-      ],
-      "italic": false,
-      "key": "test:5",
-      "letter_spacing": 0.6086229085922241,
-      "line_height": 0.8999999761581421,
-      "max_lines": 5,
-      "original": "fixture 5",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#e3dbdc",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#235267",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 6,
-      "block_type": "button",
-      "box": [
-        0.21927083333333333,
-        0.5277777777777778,
-        0.04010416666666667,
-        0.1361111111111111
-      ],
-      "expanded": true,
-      "font_family": "Inter",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.06603704392910004,
-        "generic": false
-      },
-      "font_weight": 300,
-      "inner": [
-        27.0,
-        25.0,
-        27.0,
-        27.0
-      ],
-      "italic": false,
-      "key": "test:6",
-      "letter_spacing": -0.3416101634502411,
-      "line_height": 0.8999999761581421,
-      "max_lines": 9,
-      "original": "fixture 6",
-      "outline": false,
-      "outline_color": "#000007",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#e4ecf0",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#654957",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 7,
-      "block_type": "button",
-      "box": [
-        0.6474999745686849,
-        0.4974074187102141,
-        0.032708358764648435,
-        0.1086110998083044
-      ],
-      "expanded": true,
-      "font_family": "Inter",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.06527907401323318,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        25.800048828125,
-        25.79998779296875,
-        7.0,
-        8.5
-      ],
-      "italic": true,
-      "key": "test:7",
-      "letter_spacing": -0.347263365983963,
-      "line_height": 0.8999999761581421,
-      "max_lines": 8,
-      "original": "fixture 7",
-      "outline": false,
-      "outline_color": "#050000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ccc2ac",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#814854",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 8,
-      "block_type": "button",
-      "box": [
-        0.6802083333333333,
-        0.5597222222222222,
-        0.039322916666666666,
-        0.053703703703703705
-      ],
-      "degraded": "elided",
-      "expanded": true,
-      "font_family": "Literata",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "serif",
-        "confidence": 0.1699209213256836,
-        "generic": false
-      },
-      "font_weight": 300,
-      "inner": [
-        7.0,
-        18.5,
-        23.4000244140625,
-        0.5
-      ],
-      "italic": true,
-      "key": "test:8",
-      "letter_spacing": 6.128571510314941,
-      "line_height": 0.8999999761581421,
-      "max_lines": 3,
-      "original": "fixture 8",
-      "outline": false,
-      "outline_color": "#210000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#d3b99d",
-      "text_opacity": 1.0,
-      "wrap": "elide"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#682223",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 9,
-      "block_type": "button",
-      "box": [
-        0.4117708206176758,
-        0.5542592366536458,
-        0.03947919209798177,
-        0.13592597113715277
-      ],
-      "expanded": true,
-      "font_family": "Inter",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.06642424315214157,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        26.4000244140625,
-        26.4000244140625,
-        26.4000244140625,
-        26.4000244140625
-      ],
-      "italic": false,
-      "key": "test:9",
-      "letter_spacing": -0.35533931851387024,
-      "line_height": 0.8999999761581421,
-      "max_lines": 9,
-      "original": "fixture 9",
-      "outline": false,
-      "outline_color": "#080000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#f3e8e7",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#8d4f5f",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 10,
-      "block_type": "button",
-      "box": [
-        0.721875,
-        0.5537037037037037,
-        0.06614583333333333,
-        0.13055555555555556
-      ],
-      "expanded": true,
-      "font_family": "Inter",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.05900000408291817,
-        "generic": false
-      },
-      "font_weight": 200,
-      "inner": [
-        21.0,
-        28.0,
-        28.0,
-        28.0
-      ],
-      "italic": false,
-      "key": "test:10",
-      "letter_spacing": 10.319587707519531,
-      "line_height": 0.8999999761581421,
-      "max_lines": 8,
-      "original": "fixture 10",
-      "outline": false,
-      "outline_color": "#2d0000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#d8c2b1",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#a36b6f",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 11,
-      "block_type": "button",
-      "box": [
-        0.6588541666666666,
-        0.6134259259259259,
-        0.06302083333333333,
-        0.1050925925925926
-      ],
-      "font_family": "Inter",
-      "font_px": 16.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.0712222307920456,
-        "generic": false
-      },
-      "font_weight": 800,
-      "inner": [
-        28.0,
-        0.5,
-        21.0,
-        5.0
-      ],
-      "italic": false,
-      "key": "test:11",
-      "letter_spacing": -0.6790646314620972,
-      "line_height": 0.8999999761581421,
-      "max_lines": 5,
-      "original": "fixture 11",
-      "outline": false,
-      "outline_color": "#ffcbcf",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#000000",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#100f0b",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 12,
-      "block_type": "button",
-      "box": [
-        0.32781251271565753,
-        0.6198148374204282,
-        0.026145807902018228,
-        0.1742592140480324
-      ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.06297849863767624,
-        "generic": false
-      },
-      "font_weight": 800,
-      "inner": [
-        18.5999755859375,
-        18.5999755859375,
-        18.5999755859375,
-        18.5999755859375
-      ],
-      "italic": false,
-      "key": "test:12",
-      "letter_spacing": -0.3411244750022888,
-      "line_height": 0.8999999761581421,
-      "max_lines": 15,
-      "original": "fixture 12",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#dad2c9",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#b66c98",
-        "image": "",
-        "mode": "solid_fill",
+        "color": "#fef2e3",
+        "image": "file:///home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-2/background-13.png",
+        "mode": "inpaint_blur",
         "opacity": 1.0,
         "radius": 4.0
       },
       "block_id": 13,
-      "block_type": "unknown",
+      "block_type": "dialogue",
       "box": [
-        0.669140625,
-        0.7185185185185186,
-        0.05234375,
-        0.04189814814814815
+        0.303125,
+        0.17314814814814813,
+        0.38333333333333336,
+        0.12777777777777777
       ],
-      "degraded": "plain-plate",
-      "font_family": "Literata",
-      "font_px": 8.0,
+      "font_family": "Source Serif 4",
+      "font_px": 40.0,
       "font_selection": {
         "category": "serif",
-        "confidence": 0.1699209213256836,
+        "confidence": 0.7465294599533081,
         "generic": false
       },
-      "font_weight": 900,
+      "font_weight": 500,
       "inner": [
-        5.25,
-        5.0,
-        5.25,
-        5.25
+        16.0,
+        16.0,
+        16.0,
+        16.0
       ],
       "italic": false,
       "key": "test:13",
-      "letter_spacing": -0.35452577471733093,
-      "line_height": 0.8999999761581421,
-      "max_lines": 3,
-      "original": "fixture 13",
+      "layout_width": 702.0,
+      "letter_spacing": -1.6399623155593872,
+      "line_height": 0.8500000238418579,
+      "max_lines": 2,
+      "original": "Spend the coins you've collected while playing in the Shop!",
+      "outcome": "replaced",
       "outline": false,
-      "outline_color": "#ffccf8",
+      "outline_color": "#ffffff",
       "outline_width": 1.0,
       "rect": {
         "h": 1.0,
@@ -1190,73 +1830,76 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#000000",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#7f484f",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 14,
-      "block_type": "unknown",
-      "box": [
-        0.7364062627156576,
-        0.7415740966796875,
-        0.03916664123535156,
-        0.06592588071469907
-      ],
-      "expanded": true,
-      "font_family": "Literata",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "serif",
-        "confidence": 0.2654781937599182,
-        "generic": false
-      },
-      "font_weight": 900,
-      "inner": [
-        11.0999755859375,
-        11.0999755859375,
-        11.0999755859375,
-        11.0999755859375
-      ],
-      "italic": false,
-      "key": "test:14",
-      "letter_spacing": -0.3428226709365845,
-      "line_height": 0.8999999761581421,
-      "max_lines": 4,
-      "original": "fixture 14",
-      "outline": false,
-      "outline_color": "#1f0000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#d0bb90",
+      "source_coverage": 1.0,
+      "text": "Проведите монеты, которые вы собрали во время игры в магазине!",
+      "text_color": "#1f1a16",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
       "alignment": "left",
       "background": {
-        "color": "#a44b1f",
+        "color": "#fef2e5",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 14,
+      "block_type": "button",
+      "box": [
+        0.21145833333333333,
+        0.4222222222222222,
+        0.25,
+        0.22870370370370371
+      ],
+      "font_family": "Inter",
+      "font_px": 79.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.029500002041459084,
+        "generic": false
+      },
+      "font_weight": 100,
+      "inner": [
+        28.0,
+        28.0,
+        28.0,
+        28.0
+      ],
+      "italic": false,
+      "key": "test:14",
+      "layout_width": 421.0,
+      "letter_spacing": -2.879999876022339,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "Lantern Monster",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#ffffff",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Фонарь Монстр",
+      "text_color": "#342c33",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#fff2e3",
         "image": "",
         "mode": "solid_fill",
         "opacity": 1.0,
@@ -1265,34 +1908,35 @@
       "block_id": 15,
       "block_type": "unknown",
       "box": [
-        0.3651041666666667,
-        0.8240740740740741,
-        0.008333333333333333,
-        0.17592592592592593
+        0.25057291984558105,
+        0.7334259033203125,
+        0.34260419209798176,
+        0.12111115632233796
       ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
+      "font_family": "Roboto Slab",
+      "font_px": 27.0,
       "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
+        "category": "slab_serif",
+        "confidence": 0.37275001406669617,
         "generic": false
       },
-      "font_weight": 900,
+      "font_weight": 500,
       "inner": [
-        2.0,
-        2.0,
-        2.0,
-        2.0
+        15.899993896484375,
+        15.9000244140625,
+        15.9000244140625,
+        15.9000244140625
       ],
       "italic": false,
       "key": "test:15",
-      "letter_spacing": -0.2455766499042511,
-      "line_height": 0.8999999761581421,
-      "max_lines": 18,
-      "original": "fixture 15",
+      "layout_width": 624.0,
+      "letter_spacing": -1.0945731401443481,
+      "line_height": 0.875,
+      "max_lines": 2,
+      "original": "As your rank increases, the lineup gets better and better!",
+      "outcome": "replaced",
       "outline": false,
-      "outline_color": "#440000",
+      "outline_color": "#ffffff",
       "outline_width": 1.0,
       "rect": {
         "h": 1.0,
@@ -1306,171 +1950,122 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#f1ceb2",
+      "source_coverage": 1.0,
+      "text": "По мере того, как ваш рейтинг увеличивается, состав становится все лучше и лучше!",
+      "text_color": "#ae6136",
       "text_opacity": 1.0,
       "wrap": "word"
     }
   ],
-  "placement_ms": 6227.491371,
-  "repeat_frame_ms": 136.380313,
+  "placement_ms": 66.00210700000001,
+  "repeat_frame_ms": 23.154260999999998,
+  "repeat_ocr_jobs": 0,
   "size": [
     1920,
     1080
   ],
   "timings_ms": [
     [
-      91.040851,
-      117.886304,
-      0.6111
+      7.962584,
+      47.784707000000004,
+      0.055986
     ],
     [
-      98.45111,
-      139.970394,
-      1.41787
+      4.105156,
+      46.190217,
+      0.055505
     ],
     [
-      100.388587,
-      137.699897,
-      0.624375
+      5.688656,
+      47.97059,
+      0.053612
     ],
     [
-      102.344869,
-      140.836087,
-      0.7113700000000001
+      4.451171,
+      48.379995,
+      0.053440999999999995
     ],
     [
-      98.561841,
-      138.411597,
-      0.6277210000000001
+      3.9576469999999997,
+      45.355715999999994,
+      0.053872
     ]
   ],
-  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
-  "render_ms": 288.77357700002904,
-  "update_ms": 2.7447280008345842,
+  "translation_cache_hits": 4,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 0,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 223.37329299989506,
+  "update_ms": 1.9615050000538758,
   "layout_diagnostics": [
     {
-      "width": 724,
-      "height": 250,
-      "contentWidth": 716.28125,
-      "contentHeight": 193.599995136261,
+      "width": 179,
+      "height": 87,
+      "contentWidth": 169.546875,
+      "contentHeight": 60.89999854564667,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 702,
+      "height": 106,
+      "contentWidth": 612.140625,
+      "contentHeight": 101.50000262260437,
       "lines": 2,
       "truncated": false
     },
     {
-      "width": 16,
-      "height": 138,
-      "contentWidth": 16.6875,
-      "contentHeight": 111.69999706745148,
-      "lines": 12,
-      "truncated": false
-    },
-    {
-      "width": 34,
-      "height": 61,
-      "contentWidth": 31.90625,
-      "contentHeight": 51.39999866485596,
-      "lines": 5,
-      "truncated": false
-    },
-    {
-      "width": 34,
-      "height": 59,
-      "contentWidth": 33.765625,
-      "contentHeight": 46.89999878406525,
-      "lines": 5,
-      "truncated": false
-    },
-    {
-      "width": 41,
-      "height": 59,
-      "contentWidth": 41.8125,
-      "contentHeight": 54.999998569488525,
-      "lines": 5,
-      "truncated": false
-    },
-    {
-      "width": 23,
-      "height": 95,
-      "contentWidth": 21.984375,
-      "contentHeight": 83.79999780654907,
-      "lines": 9,
-      "truncated": false
-    },
-    {
-      "width": 29.999999999999993,
-      "height": 83,
-      "contentWidth": 30.390625,
-      "contentHeight": 74.79999804496765,
-      "lines": 8,
-      "truncated": false
-    },
-    {
-      "width": 45.0999755859375,
-      "height": 39,
-      "contentWidth": 44.546875,
-      "contentHeight": 33.399999141693115,
-      "lines": 3,
-      "truncated": true
-    },
-    {
-      "width": 23,
-      "height": 94,
-      "contentWidth": 22.96875,
-      "contentHeight": 73.89999806880951,
-      "lines": 8,
-      "truncated": false
-    },
-    {
-      "width": 78,
-      "height": 85,
-      "contentWidth": 76.21875,
-      "contentHeight": 73.89999806880951,
-      "lines": 8,
-      "truncated": false
-    },
-    {
-      "width": 72,
-      "height": 108,
-      "contentWidth": 70.4375,
-      "contentHeight": 93.7999975681305,
-      "lines": 5,
-      "truncated": false
-    },
-    {
-      "width": 13,
-      "height": 151,
-      "contentWidth": 12.859375,
-      "contentHeight": 129.69999659061432,
-      "lines": 14,
-      "truncated": false
-    },
-    {
-      "width": 90,
-      "height": 35,
-      "contentWidth": 88.078125,
-      "contentHeight": 22.59999942779541,
+      "width": 421,
+      "height": 191,
+      "contentWidth": 279.453125,
+      "contentHeight": 181.79999542236328,
       "lines": 2,
       "truncated": false
     },
     {
-      "width": 53,
-      "height": 49,
-      "contentWidth": 44.234375,
-      "contentHeight": 44.19999885559082,
-      "lines": 4,
-      "truncated": false
-    },
-    {
-      "width": 12,
-      "height": 186,
-      "contentWidth": 12,
-      "contentHeight": 138.69999635219574,
-      "lines": 15,
+      "width": 624,
+      "height": 99,
+      "contentWidth": 595.171875,
+      "contentHeight": 67,
+      "lines": 2,
       "truncated": false
     }
   ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 4,
+    "rendered": 4,
+    "missing": [],
+    "source_coverage": [
+      {
+        "id": 1,
+        "original": "Shop",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 13,
+        "original": "Spend the coins you've collected while playing in the Shop!",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 14,
+        "original": "Lantern Monster",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 15,
+        "original": "As your rank increases, the lineup gets better and better!",
+        "rendered": true,
+        "plate_coverage": 1.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "no failure in this diagnostic",
+    "uncovered_text_blocks": []
+  },
   "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-2.jpg",
-  "approved_reference": false,
-  "translation_service": "none: predefined deterministic test input"
+  "approved_reference": false
 }

@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running ../../tests/inplace/rust/placement_quality.rs (tmp/cargo-target/debug/deps/inplace_placement_quality-30402f4f390d7938)
+
+running 2 tests
+test qt_character_columns_are_not_successful_word_wrapping ... ok
+test explicit_character_wrapping_keeps_its_semantics ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.17s
+

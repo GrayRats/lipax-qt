@@ -1,0 +1,69 @@
+name: Rust and Qt regression
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      model_tests:
+        description: Run full RapidOCR suite on a provisioned self-hosted Linux runner
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  structural:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container: archlinux:base-devel
+    steps:
+      - name: Install system dependencies
+        run: pacman -Syu --noconfirm git rust qt6-base qt6-declarative qt6-svg qt6-wayland python python-pytest python-pillow pyside6 pkgconf xz
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Check supported system Qt
+        run: bash packaging/check-qt.sh
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tmp/cargo-target
+          key: arch-qt-rust-${{ hashFiles('Cargo.lock', 'crates/app/build.rs') }}
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+      - name: Workspace, production Qt helper and QML checks
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/tmp/cargo-target
+          LIPAX_TEST_OCR: '0'
+        run: bash tests/inplace/run.sh
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: structural-logs
+          path: |
+            tmp/inplace-tests
+            tmp/visual
+  rapidocr:
+    if: github.event_name == 'workflow_dispatch' && inputs.model_tests
+    # Runner must provide Qt >=6.12, cached Rust dependencies and RapidOCR models.
+    # Do not run untrusted pull-request code on the provisioned host.
+    runs-on: [self-hosted, linux, lipax-rapidocr]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Check supported system Qt
+        run: bash packaging/check-qt.sh
+      - name: Full model-backed regression (RapidOCR only)
+        env:
+          LIPAX_TEST_OCR: '1'
+        run: bash tests/inplace/run.sh
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: rapidocr-logs
+          path: |
+            tmp/inplace-tests
+            tmp/visual

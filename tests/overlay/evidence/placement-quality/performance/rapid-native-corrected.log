@@ -1,0 +1,22 @@
+   Compiling lipa-core v1.3.9 (/home/art/DEV/LipaX-QT/crates/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.76s
+     Running tests/rapid_native.rs (target/debug/deps/rapid_native-ce2a9fe31feea42d)
+
+running 1 test
+English   line        CER 0.000 confidence Some(99.785774) lines 1  Hello, how are you today? Quick brown fox
+English   1280×200    CER 0.000 confidence Some(99.064186) lines 1  Hello, how are you today? Quick brown fox
+English   1920×1080   CER 0.000 confidence Some(98.75596) lines 1  Hello, how are you today? Quick brown fox
+English   upside down CER 0.000 confidence Some(98.56011) lines 1  Hello, how are you today? Quick brown fox
+Russian   line        CER 0.054 confidence Some(98.644104) lines 1  Привет, как твои дела сегодня? Быстрая ли
+Russian   1280×200    CER 0.054 confidence Some(98.07471) lines 1  Привет, как твои дела сегодня? Быстрая ли
+Russian   1920×1080   CER 0.054 confidence Some(97.33606) lines 1  Привет, как твои дела сегодня? Быстрая ли
+Russian   upside down CER 0.081 confidence Some(96.6993) lines 2  Привет, как твои дела / a сегодня? Быстрая ли
+Japanese  line        CER 0.048 confidence Some(99.19532) lines 1  こんにちは、旅人さん。どこへ行くのですか?
+Japanese  1280×200    CER 0.048 confidence Some(99.81339) lines 1  こんにちは、旅人さん。どこへ行くのですか?
+Japanese  1920×1080   CER 0.048 confidence Some(99.39934) lines 1  こんにちは、旅人さん。どこへ行くのですか?
+Japanese  upside down CER 0.048 confidence Some(99.321) lines 1  こんにちは、旅人さん。どこへ行くのですか?
+
+test reads_english_russian_and_japanese ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 8.46s
+

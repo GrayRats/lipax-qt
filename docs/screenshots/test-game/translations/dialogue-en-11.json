@@ -1,10 +1,2357 @@
 {
-  "block_ocr": [],
+  "block_ocr": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 94.12737274169922,
+      "crop_origin": [
+        1497,
+        0
+      ],
+      "detector_rect": {
+        "h": 143.0,
+        "w": 387.0,
+        "x": 1533.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 39.0,
+          "w": 376.0,
+          "x": 1543.0,
+          "y": 16.0
+        }
+      ],
+      "observation_ms": 0.022673000000000002,
+      "ocr_ms": 161.136971,
+      "original": "You Are the Magistrate",
+      "raw_original": "You Are the Magistrate",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 94.12737274169922,
+          "rect": {
+            "h": 39.0,
+            "w": 376.0,
+            "x": 1543.0,
+            "y": 16.0
+          },
+          "text": "You Are the Magistrate"
+        }
+      ],
+      "split": false,
+      "translation": "Вы являетесь магистратом",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 86.9993896484375,
+      "crop_origin": [
+        0,
+        6
+      ],
+      "detector_rect": {
+        "h": 45.0,
+        "w": 492.0,
+        "x": 11.0,
+        "y": 18.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 47.0,
+          "w": 468.0,
+          "x": 16.0,
+          "y": 13.0
+        }
+      ],
+      "observation_ms": 0.65947,
+      "ocr_ms": 27.594399,
+      "original": "Investigation Phase 0:25",
+      "raw_original": "Investigation Phase 0:25",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 86.9993896484375,
+          "rect": {
+            "h": 47.0,
+            "w": 468.0,
+            "x": 16.0,
+            "y": 13.0
+          },
+          "text": "Investigation Phase 0:25"
+        }
+      ],
+      "split": false,
+      "translation": "Фаза расследования 0:25",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.06007385253906,
+      "crop_origin": [
+        21,
+        76
+      ],
+      "detector_rect": {
+        "h": 62.0,
+        "w": 275.0,
+        "x": 26.0,
+        "y": 81.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 17.0,
+          "w": 78.0,
+          "x": 25.0,
+          "y": 79.0
+        },
+        {
+          "h": 26.0,
+          "w": 280.0,
+          "x": 22.0,
+          "y": 97.0
+        },
+        {
+          "h": 22.0,
+          "w": 179.0,
+          "x": 22.0,
+          "y": 120.0
+        }
+      ],
+      "observation_ms": 0.7992229999999999,
+      "ocr_ms": 63.75278900000001,
+      "original": "NIGHT: 1 Buy film from the requisitioner in the police station",
+      "raw_original": "NIGHT: 1 Buy film from the requisitioner in the police station",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 91.9423828125,
+          "rect": {
+            "h": 17.0,
+            "w": 78.0,
+            "x": 25.0,
+            "y": 79.0
+          },
+          "text": "NIGHT: 1"
+        },
+        {
+          "confidence": 98.36032104492188,
+          "rect": {
+            "h": 26.0,
+            "w": 280.0,
+            "x": 22.0,
+            "y": 97.0
+          },
+          "text": "Buy film from the requisitioner"
+        },
+        {
+          "confidence": 99.94739532470703,
+          "rect": {
+            "h": 22.0,
+            "w": 179.0,
+            "x": 22.0,
+            "y": 120.0
+          },
+          "text": "in the police station"
+        }
+      ],
+      "split": false,
+      "translation": "НОчь: 1 Купить фильм у реквизитера в полицейском участке",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1803,
+        97
+      ],
+      "detector_rect": {
+        "h": 57.0,
+        "w": 92.0,
+        "x": 1818.0,
+        "y": 112.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.293027,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        29,
+        151
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 285.0,
+        "x": 32.0,
+        "y": 154.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 11.420563,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.77853393554688,
+      "crop_origin": [
+        20,
+        170
+      ],
+      "detector_rect": {
+        "h": 78.0,
+        "w": 278.0,
+        "x": 25.0,
+        "y": 175.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [
+        {
+          "h": 23.0,
+          "w": 283.0,
+          "x": 23.0,
+          "y": 171.0
+        },
+        {
+          "h": 21.0,
+          "w": 271.0,
+          "x": 24.0,
+          "y": 193.0
+        },
+        {
+          "h": 25.0,
+          "w": 276.0,
+          "x": 22.0,
+          "y": 212.0
+        },
+        {
+          "h": 22.0,
+          "w": 102.0,
+          "x": 22.0,
+          "y": 233.0
+        }
+      ],
+      "observation_ms": 0.91367,
+      "ocr_ms": 100.965807,
+      "original": "If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis",
+      "raw_original": "If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.71910095214844,
+          "rect": {
+            "h": 23.0,
+            "w": 283.0,
+            "x": 23.0,
+            "y": 171.0
+          },
+          "text": "If you run out of things you can"
+        },
+        {
+          "confidence": 97.13766479492188,
+          "rect": {
+            "h": 21.0,
+            "w": 271.0,
+            "x": 24.0,
+            "y": 193.0
+          },
+          "text": "investigate, talk to suspects in"
+        },
+        {
+          "confidence": 99.95406341552734,
+          "rect": {
+            "h": 25.0,
+            "w": 276.0,
+            "x": 22.0,
+            "y": 212.0
+          },
+          "text": "the holding cells to investigate"
+        },
+        {
+          "confidence": 97.51126098632812,
+          "rect": {
+            "h": 22.0,
+            "w": 102.0,
+            "x": 22.0,
+            "y": 233.0
+          },
+          "text": "their alibis"
+        }
+      ],
+      "split": false,
+      "translation": "Если у вас закончились вещи, которые вы можете расследовать, поговорите с подозреваемыми в камерах, чтобы расследовать их алиби.",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1146,
+        214
+      ],
+      "detector_rect": {
+        "h": 125.0,
+        "w": 126.0,
+        "x": 1156.0,
+        "y": 224.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 4.672339999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1146,
+        265
+      ],
+      "detector_rect": {
+        "h": 29.0,
+        "w": 69.0,
+        "x": 1154.0,
+        "y": 273.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.2350339999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1628,
+        301
+      ],
+      "detector_rect": {
+        "h": 87.0,
+        "w": 94.0,
+        "x": 1643.0,
+        "y": 316.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.8441970000000003,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1626,
+        318
+      ],
+      "detector_rect": {
+        "h": 155.0,
+        "w": 99.0,
+        "x": 1644.0,
+        "y": 336.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.356612999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1645,
+        342
+      ],
+      "detector_rect": {
+        "h": 29.0,
+        "w": 52.0,
+        "x": 1653.0,
+        "y": 350.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 3.1913850000000004,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1594,
+        328
+      ],
+      "detector_rect": {
+        "h": 187.0,
+        "w": 74.0,
+        "x": 1641.0,
+        "y": 375.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 7.309495,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1673,
+        401
+      ],
+      "detector_rect": {
+        "h": 51.0,
+        "w": 70.0,
+        "x": 1676.0,
+        "y": 404.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.824025,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1613,
+        576
+      ],
+      "detector_rect": {
+        "h": 121.0,
+        "w": 39.0,
+        "x": 1619.0,
+        "y": 582.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.415319,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1180,
+        573
+      ],
+      "detector_rect": {
+        "h": 239.0,
+        "w": 184.0,
+        "x": 1193.0,
+        "y": 586.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 11.130183,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1615,
+        597
+      ],
+      "detector_rect": {
+        "h": 128.0,
+        "w": 67.0,
+        "x": 1620.0,
+        "y": 602.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.1485689999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        487,
+        597
+      ],
+      "detector_rect": {
+        "h": 106.0,
+        "w": 80.0,
+        "x": 496.0,
+        "y": 606.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.527578,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1377,
+        603
+      ],
+      "detector_rect": {
+        "h": 59.0,
+        "w": 133.0,
+        "x": 1381.0,
+        "y": 607.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.770213,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        978,
+        627
+      ],
+      "detector_rect": {
+        "h": 43.0,
+        "w": 195.0,
+        "x": 983.0,
+        "y": 632.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.031953,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        563,
+        642
+      ],
+      "detector_rect": {
+        "h": 211.0,
+        "w": 62.0,
+        "x": 573.0,
+        "y": 652.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2.1e-05,
+      "ocr_ms": 5.246377,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        552,
+        648
+      ],
+      "detector_rect": {
+        "h": 68.0,
+        "w": 61.0,
+        "x": 561.0,
+        "y": 657.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 2.667343,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        569,
+        652
+      ],
+      "detector_rect": {
+        "h": 41.0,
+        "w": 36.0,
+        "x": 580.0,
+        "y": 663.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.311555,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        963,
+        674
+      ],
+      "detector_rect": {
+        "h": 64.0,
+        "w": 38.0,
+        "x": 971.0,
+        "y": 682.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 1.5863450000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        147,
+        679
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 110.0,
+        "x": 154.0,
+        "y": 686.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [],
+      "observation_ms": 2.1e-05,
+      "ocr_ms": 3.59532,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.89163208007812,
+      "crop_origin": [
+        1603,
+        674
+      ],
+      "detector_rect": {
+        "h": 54.0,
+        "w": 298.0,
+        "x": 1617.0,
+        "y": 688.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [
+        {
+          "h": 22.0,
+          "w": 216.0,
+          "x": 1662.0,
+          "y": 711.0
+        }
+      ],
+      "observation_ms": 0.030808000000000002,
+      "ocr_ms": 25.755065000000002,
+      "original": "DUTFIELD'S YARD",
+      "raw_original": "DUTFIELD'S YARD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.89163208007812,
+          "rect": {
+            "h": 22.0,
+            "w": 216.0,
+            "x": 1662.0,
+            "y": 711.0
+          },
+          "text": "DUTFIELD'S YARD"
+        }
+      ],
+      "split": false,
+      "translation": "ДВОР ДАТФИЛДА",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        5,
+        688
+      ],
+      "detector_rect": {
+        "h": 28.0,
+        "w": 144.0,
+        "x": 12.0,
+        "y": 695.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 26,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 5.350845,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.9502182006836,
+      "crop_origin": [
+        1598,
+        736
+      ],
+      "detector_rect": {
+        "h": 30.0,
+        "w": 109.0,
+        "x": 1606.0,
+        "y": 744.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 27,
+      "lines": [
+        {
+          "h": 14.0,
+          "w": 57.0,
+          "x": 1634.0,
+          "y": 748.0
+        }
+      ],
+      "observation_ms": 0.011803000000000001,
+      "ocr_ms": 17.037712,
+      "original": "Industrial",
+      "raw_original": "Industrial",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9502182006836,
+          "rect": {
+            "h": 14.0,
+            "w": 57.0,
+            "x": 1634.0,
+            "y": 748.0
+          },
+          "text": "Industrial"
+        }
+      ],
+      "split": false,
+      "translation": "Промышленный",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 95.0728988647461,
+      "crop_origin": [
+        1819,
+        742
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 96.0,
+        "x": 1824.0,
+        "y": 747.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 28,
+      "lines": [
+        {
+          "h": 17.0,
+          "w": 69.0,
+          "x": 1841.0,
+          "y": 748.0
+        }
+      ],
+      "observation_ms": 0.009788,
+      "ocr_ms": 18.981894999999998,
+      "original": "Upper Class",
+      "raw_original": "Upper Class",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 95.0728988647461,
+          "rect": {
+            "h": 17.0,
+            "w": 69.0,
+            "x": 1841.0,
+            "y": 748.0
+          },
+          "text": "Upper Class"
+        }
+      ],
+      "split": false,
+      "translation": "Верхний класс",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1170,
+        739
+      ],
+      "detector_rect": {
+        "h": 43.0,
+        "w": 108.0,
+        "x": 1181.0,
+        "y": 750.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 29,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.243609,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1436,
+        768
+      ],
+      "detector_rect": {
+        "h": 82.0,
+        "w": 148.0,
+        "x": 1449.0,
+        "y": 781.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 30,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.055818,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.69517517089844,
+      "crop_origin": [
+        690,
+        754
+      ],
+      "detector_rect": {
+        "h": 291.0,
+        "w": 616.0,
+        "x": 725.0,
+        "y": 789.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 31,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 45.0,
+          "x": 731.0,
+          "y": 1050.0
+        },
+        {
+          "h": 26.0,
+          "w": 69.0,
+          "x": 766.0,
+          "y": 1051.0
+        }
+      ],
+      "observation_ms": 0.046848999999999995,
+      "ocr_ms": 59.636823,
+      "original": "Q DROP",
+      "raw_original": "Q DROP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.2874755859375,
+          "rect": {
+            "h": 27.0,
+            "w": 45.0,
+            "x": 731.0,
+            "y": 1050.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 99.7970962524414,
+          "rect": {
+            "h": 26.0,
+            "w": 69.0,
+            "x": 766.0,
+            "y": 1051.0
+          },
+          "text": "DROP"
+        }
+      ],
+      "split": false,
+      "translation": "Q ДРОП",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        148,
+        791
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 67.0,
+        "x": 153.0,
+        "y": 796.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 32,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.537006,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1377,
+        801
+      ],
+      "detector_rect": {
+        "h": 95.0,
+        "w": 185.0,
+        "x": 1390.0,
+        "y": 814.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 33,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 7.845810999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        735,
+        819
+      ],
+      "detector_rect": {
+        "h": 49.0,
+        "w": 118.0,
+        "x": 739.0,
+        "y": 823.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 34,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.117331,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        643,
+        814
+      ],
+      "detector_rect": {
+        "h": 55.0,
+        "w": 322.0,
+        "x": 653.0,
+        "y": 824.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 35,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.215375000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        707,
+        811
+      ],
+      "detector_rect": {
+        "h": 211.0,
+        "w": 160.0,
+        "x": 729.0,
+        "y": 833.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 36,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 9.076152,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        975,
+        835
+      ],
+      "detector_rect": {
+        "h": 149.0,
+        "w": 197.0,
+        "x": 1013.0,
+        "y": 873.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 37,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 10.651166,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1613,
+        871
+      ],
+      "detector_rect": {
+        "h": 39.0,
+        "w": 101.0,
+        "x": 1618.0,
+        "y": 876.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 38,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.5405919999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1336,
+        873
+      ],
+      "detector_rect": {
+        "h": 105.0,
+        "w": 205.0,
+        "x": 1344.0,
+        "y": 881.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 39,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.653224,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        578,
+        885
+      ],
+      "detector_rect": {
+        "h": 25.0,
+        "w": 72.0,
+        "x": 585.0,
+        "y": 892.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 40,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.379908,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        950,
+        869
+      ],
+      "detector_rect": {
+        "h": 105.0,
+        "w": 210.0,
+        "x": 977.0,
+        "y": 896.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 41,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 8.099542,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        850,
+        880
+      ],
+      "detector_rect": {
+        "h": 129.0,
+        "w": 218.0,
+        "x": 883.0,
+        "y": 913.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 42,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 7.856742,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        825,
+        909
+      ],
+      "detector_rect": {
+        "h": 102.0,
+        "w": 112.0,
+        "x": 851.0,
+        "y": 935.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 43,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 5.430236,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.95143127441406,
+      "crop_origin": [
+        4,
+        932
+      ],
+      "detector_rect": {
+        "h": 28.0,
+        "w": 79.0,
+        "x": 11.0,
+        "y": 939.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 44,
+      "lines": [
+        {
+          "h": 34.0,
+          "w": 87.0,
+          "x": 4.0,
+          "y": 933.0
+        }
+      ],
+      "observation_ms": 0.273808,
+      "ocr_ms": 15.359423000000001,
+      "original": "200",
+      "raw_original": "200",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.95143127441406,
+          "rect": {
+            "h": 34.0,
+            "w": 87.0,
+            "x": 4.0,
+            "y": 933.0
+          },
+          "text": "200"
+        }
+      ],
+      "split": false,
+      "translation": "200",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1073,
+        932
+      ],
+      "detector_rect": {
+        "h": 115.0,
+        "w": 131.0,
+        "x": 1085.0,
+        "y": 944.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 45,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.813583,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        962,
+        934
+      ],
+      "detector_rect": {
+        "h": 78.0,
+        "w": 141.0,
+        "x": 982.0,
+        "y": 954.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 46,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 5.505669,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        732,
+        967
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 68.0,
+        "x": 737.0,
+        "y": 972.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 47,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.9801900000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 64.52760314941406,
+      "crop_origin": [
+        0,
+        960
+      ],
+      "detector_rect": {
+        "h": 68.0,
+        "w": 525.0,
+        "x": 10.0,
+        "y": 977.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 48,
+      "lines": [
+        {
+          "h": 66.0,
+          "w": 180.0,
+          "x": 18.0,
+          "y": 977.0
+        }
+      ],
+      "observation_ms": 0.02665,
+      "ocr_ms": 32.746217,
+      "original": "POB",
+      "raw_original": "POB",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 64.52760314941406,
+          "rect": {
+            "h": 66.0,
+            "w": 180.0,
+            "x": 18.0,
+            "y": 977.0
+          },
+          "text": "POB"
+        }
+      ],
+      "split": false,
+      "translation": "POB",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1110,
+        976
+      ],
+      "detector_rect": {
+        "h": 25.0,
+        "w": 63.0,
+        "x": 1117.0,
+        "y": 983.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 49,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.6532560000000003,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.68310546875,
+      "crop_origin": [
+        798,
+        997
+      ],
+      "detector_rect": {
+        "h": 49.0,
+        "w": 167.0,
+        "x": 811.0,
+        "y": 1010.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 50,
+      "lines": [
+        {
+          "h": 18.0,
+          "w": 29.0,
+          "x": 806.0,
+          "y": 1053.0
+        }
+      ],
+      "observation_ms": 0.017493,
+      "ocr_ms": 18.393822,
+      "original": "OP",
+      "raw_original": "OP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.68310546875,
+          "rect": {
+            "h": 18.0,
+            "w": 29.0,
+            "x": 806.0,
+            "y": 1053.0
+          },
+          "text": "OP"
+        }
+      ],
+      "split": false,
+      "translation": "ОП",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1835,
+        1004
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 49.0,
+        "x": 1844.0,
+        "y": 1013.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 51,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.002764,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1192,
+        1001
+      ],
+      "detector_rect": {
+        "h": 49.0,
+        "w": 88.0,
+        "x": 1205.0,
+        "y": 1014.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 52,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.938502,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        719,
+        1024
+      ],
+      "detector_rect": {
+        "h": 41.0,
+        "w": 41.0,
+        "x": 730.0,
+        "y": 1035.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 53,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.35161,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        909,
+        1034
+      ],
+      "detector_rect": {
+        "h": 40.0,
+        "w": 98.0,
+        "x": 915.0,
+        "y": 1040.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 54,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.203955,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.6570053100586,
+      "crop_origin": [
+        589,
+        1038
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 112.0,
+        "x": 598.0,
+        "y": 1047.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 55,
+      "lines": [
+        {
+          "h": 24.0,
+          "w": 125.0,
+          "x": 589.0,
+          "y": 1051.0
+        }
+      ],
+      "observation_ms": 0.22197,
+      "ocr_ms": 17.052089,
+      "original": "BINSPECT",
+      "raw_original": "BINSPECT",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.6570053100586,
+          "rect": {
+            "h": 24.0,
+            "w": 125.0,
+            "x": 589.0,
+            "y": 1051.0
+          },
+          "text": "BINSPECT"
+        }
+      ],
+      "split": false,
+      "translation": "БИНСПЕКТ",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.21427154541016,
+      "crop_origin": [
+        4,
+        1045
+      ],
+      "detector_rect": {
+        "h": 24.0,
+        "w": 824.0,
+        "x": 10.0,
+        "y": 1051.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 56,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 221.0,
+          "x": 8.0,
+          "y": 1051.0
+        },
+        {
+          "h": 25.0,
+          "w": 279.0,
+          "x": 246.0,
+          "y": 1049.0
+        },
+        {
+          "h": 25.0,
+          "w": 171.0,
+          "x": 542.0,
+          "y": 1049.0
+        },
+        {
+          "h": 28.0,
+          "w": 109.0,
+          "x": 729.0,
+          "y": 1049.0
+        }
+      ],
+      "observation_ms": 1.18784,
+      "ocr_ms": 84.547108,
+      "original": "EQUIPPED: Truncheon LMB SHOW TRUNCHEON RMB INSPECT QDROP",
+      "raw_original": "EQUIPPED: Truncheon LMB SHOW TRUNCHEON RMB INSPECT QDROP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.75553894042969,
+          "rect": {
+            "h": 21.0,
+            "w": 221.0,
+            "x": 8.0,
+            "y": 1051.0
+          },
+          "text": "EQUIPPED: Truncheon"
+        },
+        {
+          "confidence": 99.14313507080078,
+          "rect": {
+            "h": 25.0,
+            "w": 279.0,
+            "x": 246.0,
+            "y": 1049.0
+          },
+          "text": "LMB SHOW TRUNCHEON"
+        },
+        {
+          "confidence": 93.72148895263672,
+          "rect": {
+            "h": 25.0,
+            "w": 171.0,
+            "x": 542.0,
+            "y": 1049.0
+          },
+          "text": "RMB INSPECT"
+        },
+        {
+          "confidence": 98.8977279663086,
+          "rect": {
+            "h": 28.0,
+            "w": 109.0,
+            "x": 729.0,
+            "y": 1049.0
+          },
+          "text": "QDROP"
+        }
+      ],
+      "split": false,
+      "translation": "ОСНАЩЕН: Дракхен LMB ПОКАЗЫВАЮТ ДУГОНОВЫЕ ЮАНИ ИНСПЕКТА ДРОП",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.67442321777344,
+      "crop_origin": [
+        242,
+        1045
+      ],
+      "detector_rect": {
+        "h": 24.0,
+        "w": 68.0,
+        "x": 248.0,
+        "y": 1051.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 57,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 72.0,
+          "x": 246.0,
+          "y": 1048.0
+        }
+      ],
+      "observation_ms": 0.107003,
+      "ocr_ms": 16.968661,
+      "original": "LMB",
+      "raw_original": "LMB",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.67442321777344,
+          "rect": {
+            "h": 27.0,
+            "w": 72.0,
+            "x": 246.0,
+            "y": 1048.0
+          },
+          "text": "LMB"
+        }
+      ],
+      "split": false,
+      "translation": "LMB",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.90502166748047,
+      "crop_origin": [
+        536,
+        1044
+      ],
+      "detector_rect": {
+        "h": 25.0,
+        "w": 71.0,
+        "x": 543.0,
+        "y": 1051.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 58,
+      "lines": [
+        {
+          "h": 25.0,
+          "w": 72.0,
+          "x": 543.0,
+          "y": 1049.0
+        }
+      ],
+      "observation_ms": 0.132591,
+      "ocr_ms": 17.639733,
+      "original": "RMB",
+      "raw_original": "RMB",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.90502166748047,
+          "rect": {
+            "h": 25.0,
+            "w": 72.0,
+            "x": 543.0,
+            "y": 1049.0
+          },
+          "text": "RMB"
+        }
+      ],
+      "split": false,
+      "translation": "юань",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.97738647460938,
+      "crop_origin": [
+        5,
+        1049
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 217.0,
+        "x": 10.0,
+        "y": 1054.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 59,
+      "lines": [
+        {
+          "h": 19.0,
+          "w": 120.0,
+          "x": 9.0,
+          "y": 1052.0
+        },
+        {
+          "h": 19.0,
+          "w": 101.0,
+          "x": 127.0,
+          "y": 1053.0
+        }
+      ],
+      "observation_ms": 0.217392,
+      "ocr_ms": 29.648029,
+      "original": "EQUIPPED: Truncheon",
+      "raw_original": "EQUIPPED: Truncheon",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.96134948730469,
+          "rect": {
+            "h": 19.0,
+            "w": 120.0,
+            "x": 9.0,
+            "y": 1052.0
+          },
+          "text": "EQUIPPED:"
+        },
+        {
+          "confidence": 99.993408203125,
+          "rect": {
+            "h": 19.0,
+            "w": 101.0,
+            "x": 127.0,
+            "y": 1053.0
+          },
+          "text": "Truncheon"
+        }
+      ],
+      "split": false,
+      "translation": "ОСТРОЕННЫЙ: Truncheon",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 95.4457778930664,
+      "crop_origin": [
+        296,
+        1049
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 222.0,
+        "x": 301.0,
+        "y": 1054.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 60,
+      "lines": [
+        {
+          "h": 19.0,
+          "w": 21.0,
+          "x": 297.0,
+          "y": 1052.0
+        },
+        {
+          "h": 21.0,
+          "w": 206.0,
+          "x": 318.0,
+          "y": 1052.0
+        }
+      ],
+      "observation_ms": 0.259501,
+      "ocr_ms": 42.360048,
+      "original": "B9 SHOW TRUNCHEON",
+      "raw_original": "B9 SHOW TRUNCHEON",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 84.86061096191406,
+          "rect": {
+            "h": 19.0,
+            "w": 21.0,
+            "x": 297.0,
+            "y": 1052.0
+          },
+          "text": "B9"
+        },
+        {
+          "confidence": 96.95793914794922,
+          "rect": {
+            "h": 21.0,
+            "w": 206.0,
+            "x": 318.0,
+            "y": 1052.0
+          },
+          "text": "SHOW TRUNCHEON"
+        }
+      ],
+      "split": false,
+      "translation": "B9 ШОУ ТРУНЧОН",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.93331146240234,
+      "crop_origin": [
+        772,
+        1050
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 82.0,
+        "x": 777.0,
+        "y": 1055.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 61,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 62.0,
+          "x": 774.0,
+          "y": 1053.0
+        }
+      ],
+      "observation_ms": 0.028895,
+      "ocr_ms": 17.882302,
+      "original": "DROP",
+      "raw_original": "DROP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.93331146240234,
+          "rect": {
+            "h": 21.0,
+            "w": 62.0,
+            "x": 774.0,
+            "y": 1053.0
+          },
+          "text": "DROP"
+        }
+      ],
+      "split": false,
+      "translation": "ДРОП",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.38127136230469,
+      "crop_origin": [
+        1494,
+        1053
+      ],
+      "detector_rect": {
+        "h": 21.0,
+        "w": 106.0,
+        "x": 1500.0,
+        "y": 1059.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 62,
+      "lines": [
+        {
+          "h": 22.0,
+          "w": 109.0,
+          "x": 1499.0,
+          "y": 1057.0
+        }
+      ],
+      "observation_ms": 0.117232,
+      "ocr_ms": 17.984256000000002,
+      "original": "TabiMAP",
+      "raw_original": "TabiMAP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 96.38127136230469,
+          "rect": {
+            "h": 22.0,
+            "w": 109.0,
+            "x": 1499.0,
+            "y": 1057.0
+          },
+          "text": "TabiMAP"
+        }
+      ],
+      "split": false,
+      "translation": "ТабиМАп",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.9649429321289,
+      "crop_origin": [
+        1608,
+        1055
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 100.0,
+        "x": 1613.0,
+        "y": 1060.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 63,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 67.0,
+          "x": 1630.0,
+          "y": 1068.0
+        }
+      ],
+      "observation_ms": 0.009928000000000001,
+      "ocr_ms": 17.348691,
+      "original": "Lower Class",
+      "raw_original": "Lower Class",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9649429321289,
+          "rect": {
+            "h": 11.0,
+            "w": 67.0,
+            "x": 1630.0,
+            "y": 1068.0
+          },
+          "text": "Lower Class"
+        }
+      ],
+      "split": false,
+      "translation": "Нижний класс",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.8438949584961,
+      "crop_origin": [
+        1820,
+        1061
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 96.0,
+        "x": 1824.0,
+        "y": 1065.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 64,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 35.0,
+          "x": 1858.0,
+          "y": 1068.0
+        }
+      ],
+      "observation_ms": 0.009318,
+      "ocr_ms": 19.289939,
+      "original": "Deeks",
+      "raw_original": "Deeks",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.8438949584961,
+          "rect": {
+            "h": 11.0,
+            "w": 35.0,
+            "x": 1858.0,
+            "y": 1068.0
+          },
+          "text": "Deeks"
+        }
+      ],
+      "split": false,
+      "translation": "Дикс",
+      "translation_source": "actual translation-engine response"
+    }
+  ],
   "blocks": [
     {
       "cap_height": 143.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 143.0,
@@ -16,7 +2363,7 @@
     {
       "cap_height": 45.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 45.0,
@@ -28,7 +2375,7 @@
     {
       "cap_height": 15.0,
       "category": "Serif",
-      "confidence": 0.8083333969116211,
+      "confidence": 0.7921667695045471,
       "font": "Source Serif 4",
       "rect": {
         "h": 62.0,
@@ -38,9 +2385,45 @@
       }
     },
     {
+      "cap_height": 53.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 57.0,
+        "w": 92.0,
+        "x": 1818.0,
+        "y": 112.0
+      }
+    },
+    {
+      "cap_height": 7.0,
+      "category": "SansSerif",
+      "confidence": 0.4016493260860443,
+      "font": "Inter",
+      "rect": {
+        "h": 29.0,
+        "w": 43.0,
+        "x": 1876.0,
+        "y": 130.0
+      }
+    },
+    {
+      "cap_height": 10.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 10.0,
+        "w": 285.0,
+        "x": 32.0,
+        "y": 154.0
+      }
+    },
+    {
       "cap_height": 15.0,
       "category": "Serif",
-      "confidence": 0.7972223162651062,
+      "confidence": 0.7812778949737549,
       "font": "Source Serif 4",
       "rect": {
         "h": 78.0,
@@ -50,309 +2433,299 @@
       }
     },
     {
-      "cap_height": 169.0,
-      "category": "SlabSerif",
-      "confidence": 0.6449999809265137,
+      "cap_height": 27.0,
+      "category": "Serif",
+      "confidence": 0.6133166551589966,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 125.0,
+        "w": 126.0,
+        "x": 1156.0,
+        "y": 224.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "Serif",
+      "confidence": 0.3513300120830536,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 29.0,
+        "w": 69.0,
+        "x": 1154.0,
+        "y": 273.0
+      }
+    },
+    {
+      "cap_height": 23.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 23.0,
+        "w": 51.0,
+        "x": 1231.0,
+        "y": 290.0
+      }
+    },
+    {
+      "cap_height": 24.0,
+      "category": "SansSerif",
+      "confidence": 0.482870876789093,
+      "font": "Inter",
+      "rect": {
+        "h": 87.0,
+        "w": 94.0,
+        "x": 1643.0,
+        "y": 316.0
+      }
+    },
+    {
+      "cap_height": 49.0,
+      "category": "Condensed",
+      "confidence": 0.4557083547115326,
+      "font": "Roboto Condensed",
+      "rect": {
+        "h": 155.0,
+        "w": 99.0,
+        "x": 1644.0,
+        "y": 336.0
+      }
+    },
+    {
+      "cap_height": 29.0,
+      "category": "Unknown",
+      "confidence": 0.03139501065015793,
       "font": "Roboto Slab",
       "rect": {
-        "h": 223.0,
+        "h": 29.0,
+        "w": 52.0,
+        "x": 1653.0,
+        "y": 350.0
+      }
+    },
+    {
+      "cap_height": 162.0,
+      "category": "SlabSerif",
+      "confidence": 0.2902499735355377,
+      "font": "Roboto Slab",
+      "rect": {
+        "h": 187.0,
         "w": 74.0,
         "x": 1641.0,
         "y": 375.0
       }
     },
     {
-      "cap_height": 53.0,
+      "cap_height": 10.0,
+      "category": "SansSerif",
+      "confidence": 0.45625874400138855,
+      "font": "Inter",
+      "rect": {
+        "h": 51.0,
+        "w": 70.0,
+        "x": 1676.0,
+        "y": 404.0
+      }
+    },
+    {
+      "cap_height": 23.0,
+      "category": "SansSerif",
+      "confidence": 0.3328695595264435,
+      "font": "Roboto",
+      "rect": {
+        "h": 121.0,
+        "w": 39.0,
+        "x": 1619.0,
+        "y": 582.0
+      }
+    },
+    {
+      "cap_height": 51.0,
       "category": "Serif",
-      "confidence": 0.47294002771377563,
+      "confidence": 0.46348121762275696,
       "font": "Literata",
       "rect": {
-        "h": 288.0,
-        "w": 346.0,
-        "x": 1229.0,
-        "y": 579.0
+        "h": 239.0,
+        "w": 184.0,
+        "x": 1193.0,
+        "y": 586.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "Serif",
+      "confidence": 0.32087165117263794,
+      "font": "Literata",
+      "rect": {
+        "h": 20.0,
+        "w": 52.0,
+        "x": 1382.0,
+        "y": 597.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "SansSerif",
+      "confidence": 0.4887712895870209,
+      "font": "Inter",
+      "rect": {
+        "h": 128.0,
+        "w": 67.0,
+        "x": 1620.0,
+        "y": 602.0
       }
     },
     {
       "cap_height": 36.0,
       "category": "Serif",
-      "confidence": 0.7208333611488342,
+      "confidence": 0.6122277975082397,
       "font": "Source Serif 4",
       "rect": {
-        "h": 257.0,
-        "w": 139.0,
+        "h": 106.0,
+        "w": 80.0,
         "x": 496.0,
         "y": 606.0
       }
     },
     {
-      "cap_height": 79.0,
-      "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "cap_height": 13.0,
+      "category": "Condensed",
+      "confidence": 0.3017205595970154,
+      "font": "Oswald",
       "rect": {
-        "h": 79.0,
-        "w": 298.0,
-        "x": 1617.0,
+        "h": 32.0,
+        "w": 37.0,
+        "x": 925.0,
+        "y": 629.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 43.0,
+        "w": 195.0,
+        "x": 983.0,
+        "y": 632.0
+      }
+    },
+    {
+      "cap_height": 33.0,
+      "category": "Serif",
+      "confidence": 0.5708499550819397,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 211.0,
+        "w": 62.0,
+        "x": 573.0,
+        "y": 652.0
+      }
+    },
+    {
+      "cap_height": 18.0,
+      "category": "Condensed",
+      "confidence": 0.390936017036438,
+      "font": "Oswald",
+      "rect": {
+        "h": 68.0,
+        "w": 61.0,
+        "x": 561.0,
+        "y": 657.0
+      }
+    },
+    {
+      "cap_height": 29.0,
+      "category": "Serif",
+      "confidence": 0.43258023262023926,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 41.0,
+        "w": 36.0,
+        "x": 580.0,
         "y": 663.0
       }
     },
     {
-      "cap_height": 128.0,
+      "cap_height": 22.0,
       "category": "Serif",
-      "confidence": 0.6793802380561829,
-      "font": "Literata",
+      "confidence": 0.37779000401496887,
+      "font": "Source Serif 4",
       "rect": {
-        "h": 291.0,
-        "w": 616.0,
-        "x": 725.0,
-        "y": 789.0
+        "h": 64.0,
+        "w": 38.0,
+        "x": 971.0,
+        "y": 682.0
+      }
+    },
+    {
+      "cap_height": 54.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 54.0,
+        "w": 298.0,
+        "x": 1617.0,
+        "y": 688.0
       }
     },
     {
       "cap_height": 49.0,
-      "category": "Serif",
-      "confidence": 0.32742002606391907,
-      "font": "Literata",
-      "rect": {
-        "h": 215.0,
-        "w": 160.0,
-        "x": 729.0,
-        "y": 829.0
-      }
-    },
-    {
-      "cap_height": 180.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.032663267105817795,
       "font": "Inter",
       "rect": {
-        "h": 180.0,
-        "w": 197.0,
-        "x": 1013.0,
-        "y": 842.0
+        "h": 49.0,
+        "w": 24.0,
+        "x": 1341.0,
+        "y": 723.0
       }
     },
     {
-      "cap_height": 56.0,
-      "category": "Serif",
-      "confidence": 0.2910400331020355,
-      "font": "Literata",
-      "rect": {
-        "h": 138.0,
-        "w": 185.0,
-        "x": 1344.0,
-        "y": 848.0
-      }
-    },
-    {
-      "cap_height": 113.0,
+      "cap_height": 30.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
-        "h": 113.0,
-        "w": 210.0,
-        "x": 977.0,
-        "y": 888.0
+        "h": 30.0,
+        "w": 109.0,
+        "x": 1606.0,
+        "y": 744.0
       }
     },
     {
-      "cap_height": 129.0,
+      "cap_height": 19.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
-        "h": 129.0,
-        "w": 213.0,
-        "x": 888.0,
-        "y": 913.0
+        "h": 19.0,
+        "w": 96.0,
+        "x": 1824.0,
+        "y": 747.0
       }
     },
     {
-      "cap_height": 56.0,
+      "cap_height": 43.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 43.0,
+        "w": 108.0,
+        "x": 1181.0,
+        "y": 750.0
+      }
+    },
+    {
+      "cap_height": 124.0,
       "category": "Serif",
-      "confidence": 0.254660040140152,
+      "confidence": 0.6591448783874512,
       "font": "Literata",
       "rect": {
-        "h": 134.0,
-        "w": 133.0,
-        "x": 1085.0,
-        "y": 925.0
-      }
-    },
-    {
-      "cap_height": 83.0,
-      "category": "Monospace",
-      "confidence": 0.6908770799636841,
-      "font": "Source Code Pro",
-      "rect": {
-        "h": 109.0,
-        "w": 525.0,
-        "x": 10.0,
-        "y": 936.0
-      }
-    }
-  ],
-  "cached_placement_ms": 0.881973,
-  "dropped": 8,
-  "dropped_details": [
-    {
-      "block_id": 6,
-      "original": "fixture 6",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 9,
-      "original": "fixture 9",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 10,
-      "original": "fixture 10",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 11,
-      "original": "fixture 11",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 12,
-      "original": "fixture 12",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 13,
-      "original": "fixture 13",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 14,
-      "original": "fixture 14",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 15,
-      "original": "fixture 15",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    }
-  ],
-  "finish_ms": [
-    0.10284499999999999
-  ],
-  "first_frame_ms": 1261.0489249999998,
-  "fits": 16,
-  "frame_blocks": [
-    {
-      "id": 1,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 143.0,
-        "w": 387.0,
-        "x": 1533.0,
-        "y": 0.0
-      }
-    },
-    {
-      "id": 2,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 45.0,
-        "w": 492.0,
-        "x": 11.0,
-        "y": 18.0
-      }
-    },
-    {
-      "id": 3,
-      "lines_note": "",
-      "source_lines": 3,
-      "text_rect": {
-        "h": 62.0,
-        "w": 275.0,
-        "x": 26.0,
-        "y": 81.0
-      }
-    },
-    {
-      "id": 4,
-      "lines_note": "",
-      "source_lines": 4,
-      "text_rect": {
-        "h": 78.0,
-        "w": 278.0,
-        "x": 25.0,
-        "y": 175.0
-      }
-    },
-    {
-      "id": 5,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 223.0,
-        "w": 74.0,
-        "x": 1641.0,
-        "y": 375.0
-      }
-    },
-    {
-      "id": 6,
-      "lines_note": "",
-      "source_lines": 4,
-      "text_rect": {
-        "h": 288.0,
-        "w": 346.0,
-        "x": 1229.0,
-        "y": 579.0
-      }
-    },
-    {
-      "id": 7,
-      "lines_note": "",
-      "source_lines": 5,
-      "text_rect": {
-        "h": 257.0,
-        "w": 139.0,
-        "x": 496.0,
-        "y": 606.0
-      }
-    },
-    {
-      "id": 8,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 79.0,
-        "w": 298.0,
-        "x": 1617.0,
-        "y": 663.0
-      }
-    },
-    {
-      "id": 9,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
         "h": 291.0,
         "w": 616.0,
         "x": 725.0,
@@ -360,333 +2733,2973 @@
       }
     },
     {
-      "id": 10,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
-        "h": 215.0,
+      "cap_height": 51.0,
+      "category": "Serif",
+      "confidence": 0.24956683814525604,
+      "font": "Literata",
+      "rect": {
+        "h": 95.0,
+        "w": 185.0,
+        "x": 1390.0,
+        "y": 814.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 49.0,
+        "w": 118.0,
+        "x": 739.0,
+        "y": 823.0
+      }
+    },
+    {
+      "cap_height": 48.0,
+      "category": "Serif",
+      "confidence": 0.32087165117263794,
+      "font": "Literata",
+      "rect": {
+        "h": 211.0,
         "w": 160.0,
         "x": 729.0,
-        "y": 829.0
+        "y": 833.0
       }
     },
     {
-      "id": 11,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 180.0,
+      "cap_height": 149.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 149.0,
         "w": 197.0,
         "x": 1013.0,
-        "y": 842.0
+        "y": 873.0
       }
     },
     {
-      "id": 12,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
-        "h": 138.0,
-        "w": 185.0,
+      "cap_height": 29.0,
+      "category": "Serif",
+      "confidence": 0.32087165117263794,
+      "font": "Literata",
+      "rect": {
+        "h": 105.0,
+        "w": 205.0,
         "x": 1344.0,
-        "y": 848.0
+        "y": 881.0
       }
     },
     {
-      "id": 13,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 113.0,
+      "cap_height": 25.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 25.0,
+        "w": 72.0,
+        "x": 585.0,
+        "y": 892.0
+      }
+    },
+    {
+      "cap_height": 95.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 105.0,
         "w": 210.0,
         "x": 977.0,
-        "y": 888.0
+        "y": 896.0
       }
     },
     {
-      "id": 14,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "cap_height": 23.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 23.0,
+        "w": 58.0,
+        "x": 498.0,
+        "y": 909.0
+      }
+    },
+    {
+      "cap_height": 65.0,
+      "category": "Serif",
+      "confidence": 0.32087165117263794,
+      "font": "Literata",
+      "rect": {
         "h": 129.0,
-        "w": 213.0,
-        "x": 888.0,
+        "w": 218.0,
+        "x": 883.0,
         "y": 913.0
       }
     },
     {
-      "id": 15,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
-        "h": 134.0,
-        "w": 133.0,
-        "x": 1085.0,
-        "y": 925.0
+      "cap_height": 102.0,
+      "category": "Serif",
+      "confidence": 0.2724335193634033,
+      "font": "Literata",
+      "rect": {
+        "h": 102.0,
+        "w": 112.0,
+        "x": 851.0,
+        "y": 935.0
       }
     },
     {
-      "id": 16,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 109.0,
+      "cap_height": 28.0,
+      "category": "Serif",
+      "confidence": 0.2497611939907074,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 28.0,
+        "w": 79.0,
+        "x": 11.0,
+        "y": 939.0
+      }
+    },
+    {
+      "cap_height": 47.0,
+      "category": "Serif",
+      "confidence": 0.24956683814525604,
+      "font": "Literata",
+      "rect": {
+        "h": 115.0,
+        "w": 131.0,
+        "x": 1085.0,
+        "y": 944.0
+      }
+    },
+    {
+      "cap_height": 76.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 78.0,
+        "w": 141.0,
+        "x": 982.0,
+        "y": 954.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "SansSerif",
+      "confidence": 0.23315078020095825,
+      "font": "Inter",
+      "rect": {
+        "h": 33.0,
+        "w": 68.0,
+        "x": 737.0,
+        "y": 972.0
+      }
+    },
+    {
+      "cap_height": 62.0,
+      "category": "Monospace",
+      "confidence": 0.7156270742416382,
+      "font": "Press Start 2P",
+      "rect": {
+        "h": 68.0,
         "w": 525.0,
         "x": 10.0,
-        "y": 936.0
+        "y": 977.0
+      }
+    },
+    {
+      "cap_height": 25.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 25.0,
+        "w": 63.0,
+        "x": 1117.0,
+        "y": 983.0
+      }
+    },
+    {
+      "cap_height": 38.0,
+      "category": "Serif",
+      "confidence": 0.4357515871524811,
+      "font": "Literata",
+      "rect": {
+        "h": 49.0,
+        "w": 167.0,
+        "x": 811.0,
+        "y": 1010.0
+      }
+    },
+    {
+      "cap_height": 6.0,
+      "category": "SansSerif",
+      "confidence": 0.265494704246521,
+      "font": "Inter",
+      "rect": {
+        "h": 33.0,
+        "w": 49.0,
+        "x": 1844.0,
+        "y": 1013.0
+      }
+    },
+    {
+      "cap_height": 42.0,
+      "category": "Serif",
+      "confidence": 0.679803729057312,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 49.0,
+        "w": 88.0,
+        "x": 1205.0,
+        "y": 1014.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 20.0,
+        "w": 63.0,
+        "x": 52.0,
+        "y": 1023.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 20.0,
+        "w": 64.0,
+        "x": 449.0,
+        "y": 1023.0
+      }
+    },
+    {
+      "cap_height": 41.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 41.0,
+        "w": 41.0,
+        "x": 730.0,
+        "y": 1035.0
+      }
+    },
+    {
+      "cap_height": 22.0,
+      "category": "Serif",
+      "confidence": 0.5545929670333862,
+      "font": "Literata",
+      "rect": {
+        "h": 40.0,
+        "w": 98.0,
+        "x": 915.0,
+        "y": 1040.0
+      }
+    },
+    {
+      "cap_height": 24.0,
+      "category": "Monospace",
+      "confidence": 0.5931730270385742,
+      "font": "JetBrains Mono",
+      "rect": {
+        "h": 33.0,
+        "w": 112.0,
+        "x": 598.0,
+        "y": 1047.0
+      }
+    },
+    {
+      "cap_height": 24.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 24.0,
+        "w": 68.0,
+        "x": 248.0,
+        "y": 1051.0
+      }
+    },
+    {
+      "cap_height": 25.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 25.0,
+        "w": 71.0,
+        "x": 543.0,
+        "y": 1051.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Serif",
+      "confidence": 0.6636233925819397,
+      "font": "Literata",
+      "rect": {
+        "h": 20.0,
+        "w": 217.0,
+        "x": 10.0,
+        "y": 1054.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Monospace",
+      "confidence": 0.6795254945755005,
+      "font": "Source Code Pro",
+      "rect": {
+        "h": 17.0,
+        "w": 222.0,
+        "x": 301.0,
+        "y": 1054.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Serif",
+      "confidence": 0.3489854037761688,
+      "font": "Literata",
+      "rect": {
+        "h": 19.0,
+        "w": 82.0,
+        "x": 777.0,
+        "y": 1055.0
+      }
+    },
+    {
+      "cap_height": 21.0,
+      "category": "SansSerif",
+      "confidence": 0.23953285813331604,
+      "font": "Inter",
+      "rect": {
+        "h": 21.0,
+        "w": 106.0,
+        "x": 1500.0,
+        "y": 1059.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 20.0,
+        "w": 100.0,
+        "x": 1613.0,
+        "y": 1060.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 15.0,
+        "w": 96.0,
+        "x": 1824.0,
+        "y": 1065.0
       }
     }
   ],
-  "hits": 16,
+  "cached_placement_ms": 0.031489,
+  "dropped": 8,
+  "dropped_details": [
+    {
+      "block_id": 31,
+      "original": "Q DROP",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "Q ДРОП"
+    },
+    {
+      "block_id": 50,
+      "original": "OP",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "ОП"
+    },
+    {
+      "block_id": 55,
+      "original": "BINSPECT",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "БИНСПЕКТ"
+    },
+    {
+      "block_id": 57,
+      "original": "LMB",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "LMB"
+    },
+    {
+      "block_id": 58,
+      "original": "RMB",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "юань"
+    },
+    {
+      "block_id": 59,
+      "original": "EQUIPPED: Truncheon",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "ОСТРОЕННЫЙ: Truncheon"
+    },
+    {
+      "block_id": 60,
+      "original": "B9 SHOW TRUNCHEON",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "B9 ШОУ ТРУНЧОН"
+    },
+    {
+      "block_id": 61,
+      "original": "DROP",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "ДРОП"
+    }
+  ],
+  "finish_ms": [
+    1.120031
+  ],
+  "first_frame_ms": 123.83937300000001,
+  "fits": 13,
+  "frame_blocks": [
+    {
+      "cap_height_px": 143.0,
+      "id": 1,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 41.0,
+        "w": 378.0,
+        "x": 1542.0,
+        "y": 15.0
+      }
+    },
+    {
+      "cap_height_px": 45.0,
+      "id": 2,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 49.0,
+        "w": 470.0,
+        "x": 15.0,
+        "y": 12.0
+      }
+    },
+    {
+      "cap_height_px": 15.0,
+      "id": 3,
+      "lines_note": "строк: 3 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 65.0,
+        "w": 282.0,
+        "x": 21.0,
+        "y": 78.0
+      }
+    },
+    {
+      "cap_height_px": 15.0,
+      "id": 6,
+      "lines_note": "строк: 4 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 4,
+      "text_rect": {
+        "h": 86.0,
+        "w": 286.0,
+        "x": 21.0,
+        "y": 170.0
+      }
+    },
+    {
+      "cap_height_px": 54.0,
+      "id": 25,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 24.0,
+        "w": 218.0,
+        "x": 1661.0,
+        "y": 710.0
+      }
+    },
+    {
+      "cap_height_px": 30.0,
+      "id": 27,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 16.0,
+        "w": 59.0,
+        "x": 1633.0,
+        "y": 747.0
+      }
+    },
+    {
+      "cap_height_px": 19.0,
+      "id": 28,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 19.0,
+        "w": 71.0,
+        "x": 1840.0,
+        "y": 747.0
+      }
+    },
+    {
+      "cap_height_px": 28.0,
+      "id": 44,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 36.0,
+        "w": 89.0,
+        "x": 3.0,
+        "y": 932.0
+      }
+    },
+    {
+      "cap_height_px": 62.0,
+      "id": 48,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 68.0,
+        "w": 182.0,
+        "x": 17.0,
+        "y": 976.0
+      }
+    },
+    {
+      "cap_height_px": 16.0,
+      "id": 56,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 30.0,
+        "w": 832.0,
+        "x": 7.0,
+        "y": 1048.0
+      }
+    },
+    {
+      "cap_height_px": 21.0,
+      "id": 62,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 24.0,
+        "w": 111.0,
+        "x": 1498.0,
+        "y": 1056.0
+      }
+    },
+    {
+      "cap_height_px": 20.0,
+      "id": 63,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 13.0,
+        "w": 69.0,
+        "x": 1629.0,
+        "y": 1067.0
+      }
+    },
+    {
+      "cap_height_px": 15.0,
+      "id": 64,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 13.0,
+        "w": 37.0,
+        "x": 1857.0,
+        "y": 1067.0
+      }
+    }
+  ],
+  "hits": 13,
   "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-11/original.png",
   "measurement": "Qt: shared production helper, test IPC adapter",
-  "minimum_confidence": 30,
-  "ocr": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "latency_ms": 2965.0960299999997,
-    "lines": [
-      {
-        "confidence": 76.25331115722656,
-        "rect": {
-          "h": 40.0,
-          "w": 469.0,
-          "x": 12.0,
-          "y": 18.0
-        },
-        "text": "InvestiGation PHase 0:25"
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 94.12737274169922,
+      "crop_origin": [
+        1497,
+        0
+      ],
+      "detector_rect": {
+        "h": 143.0,
+        "w": 387.0,
+        "x": 1533.0,
+        "y": 0.0
       },
-      {
-        "confidence": 95.96385955810547,
-        "rect": {
-          "h": 34.0,
-          "w": 378.0,
-          "x": 1541.0,
-          "y": 17.0
-        },
-        "text": "You Are the Magistrate"
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 39.0,
+          "w": 376.0,
+          "x": 1543.0,
+          "y": 16.0
+        }
+      ],
+      "observation_ms": 0.022673000000000002,
+      "ocr_ms": 161.136971,
+      "original": "You Are the Magistrate",
+      "raw_original": "You Are the Magistrate",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 94.12737274169922,
+          "rect": {
+            "h": 39.0,
+            "w": 376.0,
+            "x": 1543.0,
+            "y": 16.0
+          },
+          "text": "You Are the Magistrate"
+        }
+      ],
+      "split": false,
+      "translation": "Вы являетесь магистратом",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 86.9993896484375,
+      "crop_origin": [
+        0,
+        6
+      ],
+      "detector_rect": {
+        "h": 45.0,
+        "w": 492.0,
+        "x": 11.0,
+        "y": 18.0
       },
-      {
-        "confidence": 82.10538482666016,
-        "rect": {
-          "h": 21.0,
-          "w": 85.0,
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 47.0,
+          "w": 468.0,
+          "x": 16.0,
+          "y": 13.0
+        }
+      ],
+      "observation_ms": 0.65947,
+      "ocr_ms": 27.594399,
+      "original": "Investigation Phase 0:25",
+      "raw_original": "Investigation Phase 0:25",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 86.9993896484375,
+          "rect": {
+            "h": 47.0,
+            "w": 468.0,
+            "x": 16.0,
+            "y": 13.0
+          },
+          "text": "Investigation Phase 0:25"
+        }
+      ],
+      "split": false,
+      "translation": "Фаза расследования 0:25",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.06007385253906,
+      "crop_origin": [
+        21,
+        76
+      ],
+      "detector_rect": {
+        "h": 62.0,
+        "w": 275.0,
+        "x": 26.0,
+        "y": 81.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 17.0,
+          "w": 78.0,
+          "x": 25.0,
+          "y": 79.0
+        },
+        {
+          "h": 26.0,
+          "w": 280.0,
           "x": 22.0,
-          "y": 77.0
-        },
-        "text": "NIghT: 1"
-      },
-      {
-        "confidence": 98.38330841064453,
-        "rect": {
-          "h": 27.0,
-          "w": 283.0,
-          "x": 21.0,
           "y": 97.0
         },
-        "text": "Buy film from the requisitioner"
-      },
-      {
-        "confidence": 99.86809539794922,
-        "rect": {
+        {
           "h": 22.0,
-          "w": 182.0,
-          "x": 21.0,
-          "y": 121.0
+          "w": 179.0,
+          "x": 22.0,
+          "y": 120.0
+        }
+      ],
+      "observation_ms": 0.7992229999999999,
+      "ocr_ms": 63.75278900000001,
+      "original": "NIGHT: 1 Buy film from the requisitioner in the police station",
+      "raw_original": "NIGHT: 1 Buy film from the requisitioner in the police station",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 91.9423828125,
+          "rect": {
+            "h": 17.0,
+            "w": 78.0,
+            "x": 25.0,
+            "y": 79.0
+          },
+          "text": "NIGHT: 1"
         },
-        "text": "in the police station"
-      },
-      {
-        "confidence": 99.38025665283203,
-        "rect": {
-          "h": 26.0,
-          "w": 286.0,
-          "x": 21.0,
-          "y": 170.0
+        {
+          "confidence": 98.36032104492188,
+          "rect": {
+            "h": 26.0,
+            "w": 280.0,
+            "x": 22.0,
+            "y": 97.0
+          },
+          "text": "Buy film from the requisitioner"
         },
-        "text": "If you run out of things you can"
+        {
+          "confidence": 99.94739532470703,
+          "rect": {
+            "h": 22.0,
+            "w": 179.0,
+            "x": 22.0,
+            "y": 120.0
+          },
+          "text": "in the police station"
+        }
+      ],
+      "split": false,
+      "translation": "НОчь: 1 Купить фильм у реквизитера в полицейском участке",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1803,
+        97
+      ],
+      "detector_rect": {
+        "h": 57.0,
+        "w": 92.0,
+        "x": 1818.0,
+        "y": 112.0
       },
-      {
-        "confidence": 98.52308654785156,
-        "rect": {
-          "h": 21.0,
-          "w": 276.0,
-          "x": 21.0,
-          "y": 194.0
-        },
-        "text": "investigate, talk to suspects in"
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.293027,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        29,
+        151
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 285.0,
+        "x": 32.0,
+        "y": 154.0
       },
-      {
-        "confidence": 99.84907531738281,
-        "rect": {
-          "h": 27.0,
-          "w": 279.0,
-          "x": 20.0,
-          "y": 211.0
-        },
-        "text": "the holding cells to investigate"
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 11.420563,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.77853393554688,
+      "crop_origin": [
+        20,
+        170
+      ],
+      "detector_rect": {
+        "h": 78.0,
+        "w": 278.0,
+        "x": 25.0,
+        "y": 175.0
       },
-      {
-        "confidence": 99.9345474243164,
-        "rect": {
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [
+        {
           "h": 23.0,
-          "w": 104.0,
-          "x": 21.0,
-          "y": 233.0
+          "w": 283.0,
+          "x": 23.0,
+          "y": 171.0
         },
-        "text": "their alibis"
-      },
-      {
-        "confidence": 95.97317504882812,
-        "rect": {
-          "h": 66.0,
-          "w": 121.0,
-          "x": 1137.0,
+        {
+          "h": 21.0,
+          "w": 271.0,
+          "x": 24.0,
+          "y": 193.0
+        },
+        {
+          "h": 25.0,
+          "w": 276.0,
+          "x": 22.0,
           "y": 212.0
         },
-        "text": "WATTS"
-      },
-      {
-        "confidence": 99.8363265991211,
-        "rect": {
-          "h": 86.0,
-          "w": 191.0,
-          "x": 1097.0,
-          "y": 244.0
+        {
+          "h": 22.0,
+          "w": 102.0,
+          "x": 22.0,
+          "y": 233.0
+        }
+      ],
+      "observation_ms": 0.91367,
+      "ocr_ms": 100.965807,
+      "original": "If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis",
+      "raw_original": "If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.71910095214844,
+          "rect": {
+            "h": 23.0,
+            "w": 283.0,
+            "x": 23.0,
+            "y": 171.0
+          },
+          "text": "If you run out of things you can"
         },
-        "text": "STEELWORK"
-      },
-      {
-        "confidence": 94.41554260253906,
-        "rect": {
-          "h": 36.0,
-          "w": 79.0,
-          "x": 1156.0,
-          "y": 322.0
+        {
+          "confidence": 97.13766479492188,
+          "rect": {
+            "h": 21.0,
+            "w": 271.0,
+            "x": 24.0,
+            "y": 193.0
+          },
+          "text": "investigate, talk to suspects in"
         },
-        "text": "EST1786"
-      },
-      {
-        "confidence": 92.77887725830078,
-        "rect": {
-          "h": 18.0,
-          "w": 168.0,
-          "x": 1708.0,
-          "y": 713.0
+        {
+          "confidence": 99.95406341552734,
+          "rect": {
+            "h": 25.0,
+            "w": 276.0,
+            "x": 22.0,
+            "y": 212.0
+          },
+          "text": "the holding cells to investigate"
         },
-        "text": "TFIELD'S YARD"
+        {
+          "confidence": 97.51126098632812,
+          "rect": {
+            "h": 22.0,
+            "w": 102.0,
+            "x": 22.0,
+            "y": 233.0
+          },
+          "text": "their alibis"
+        }
+      ],
+      "split": false,
+      "translation": "Если у вас закончились вещи, которые вы можете расследовать, поговорите с подозреваемыми в камерах, чтобы расследовать их алиби.",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1146,
+        214
+      ],
+      "detector_rect": {
+        "h": 125.0,
+        "w": 126.0,
+        "x": 1156.0,
+        "y": 224.0
       },
-      {
-        "confidence": 99.80252075195312,
-        "rect": {
-          "h": 12.0,
-          "w": 50.0,
-          "x": 1638.0,
-          "y": 750.0
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 4.672339999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1146,
+        265
+      ],
+      "detector_rect": {
+        "h": 29.0,
+        "w": 69.0,
+        "x": 1154.0,
+        "y": 273.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.2350339999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1628,
+        301
+      ],
+      "detector_rect": {
+        "h": 87.0,
+        "w": 94.0,
+        "x": 1643.0,
+        "y": 316.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.8441970000000003,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1626,
+        318
+      ],
+      "detector_rect": {
+        "h": 155.0,
+        "w": 99.0,
+        "x": 1644.0,
+        "y": 336.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.356612999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1645,
+        342
+      ],
+      "detector_rect": {
+        "h": 29.0,
+        "w": 52.0,
+        "x": 1653.0,
+        "y": 350.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 3.1913850000000004,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1594,
+        328
+      ],
+      "detector_rect": {
+        "h": 187.0,
+        "w": 74.0,
+        "x": 1641.0,
+        "y": 375.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 7.309495,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1673,
+        401
+      ],
+      "detector_rect": {
+        "h": 51.0,
+        "w": 70.0,
+        "x": 1676.0,
+        "y": 404.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.824025,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1613,
+        576
+      ],
+      "detector_rect": {
+        "h": 121.0,
+        "w": 39.0,
+        "x": 1619.0,
+        "y": 582.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.415319,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1180,
+        573
+      ],
+      "detector_rect": {
+        "h": 239.0,
+        "w": 184.0,
+        "x": 1193.0,
+        "y": 586.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 11.130183,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1615,
+        597
+      ],
+      "detector_rect": {
+        "h": 128.0,
+        "w": 67.0,
+        "x": 1620.0,
+        "y": 602.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.1485689999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        487,
+        597
+      ],
+      "detector_rect": {
+        "h": 106.0,
+        "w": 80.0,
+        "x": 496.0,
+        "y": 606.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.527578,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1377,
+        603
+      ],
+      "detector_rect": {
+        "h": 59.0,
+        "w": 133.0,
+        "x": 1381.0,
+        "y": 607.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.770213,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        978,
+        627
+      ],
+      "detector_rect": {
+        "h": 43.0,
+        "w": 195.0,
+        "x": 983.0,
+        "y": 632.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.031953,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        563,
+        642
+      ],
+      "detector_rect": {
+        "h": 211.0,
+        "w": 62.0,
+        "x": 573.0,
+        "y": 652.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2.1e-05,
+      "ocr_ms": 5.246377,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        552,
+        648
+      ],
+      "detector_rect": {
+        "h": 68.0,
+        "w": 61.0,
+        "x": 561.0,
+        "y": 657.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 2.667343,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        569,
+        652
+      ],
+      "detector_rect": {
+        "h": 41.0,
+        "w": 36.0,
+        "x": 580.0,
+        "y": 663.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.311555,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        963,
+        674
+      ],
+      "detector_rect": {
+        "h": 64.0,
+        "w": 38.0,
+        "x": 971.0,
+        "y": 682.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 1.5863450000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        147,
+        679
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 110.0,
+        "x": 154.0,
+        "y": 686.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [],
+      "observation_ms": 2.1e-05,
+      "ocr_ms": 3.59532,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.89163208007812,
+      "crop_origin": [
+        1603,
+        674
+      ],
+      "detector_rect": {
+        "h": 54.0,
+        "w": 298.0,
+        "x": 1617.0,
+        "y": 688.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [
+        {
+          "h": 22.0,
+          "w": 216.0,
+          "x": 1662.0,
+          "y": 711.0
+        }
+      ],
+      "observation_ms": 0.030808000000000002,
+      "ocr_ms": 25.755065000000002,
+      "original": "DUTFIELD'S YARD",
+      "raw_original": "DUTFIELD'S YARD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.89163208007812,
+          "rect": {
+            "h": 22.0,
+            "w": 216.0,
+            "x": 1662.0,
+            "y": 711.0
+          },
+          "text": "DUTFIELD'S YARD"
+        }
+      ],
+      "split": false,
+      "translation": "ДВОР ДАТФИЛДА",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        5,
+        688
+      ],
+      "detector_rect": {
+        "h": 28.0,
+        "w": 144.0,
+        "x": 12.0,
+        "y": 695.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 26,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 5.350845,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.9502182006836,
+      "crop_origin": [
+        1598,
+        736
+      ],
+      "detector_rect": {
+        "h": 30.0,
+        "w": 109.0,
+        "x": 1606.0,
+        "y": 744.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 27,
+      "lines": [
+        {
+          "h": 14.0,
+          "w": 57.0,
+          "x": 1634.0,
+          "y": 748.0
+        }
+      ],
+      "observation_ms": 0.011803000000000001,
+      "ocr_ms": 17.037712,
+      "original": "Industrial",
+      "raw_original": "Industrial",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9502182006836,
+          "rect": {
+            "h": 14.0,
+            "w": 57.0,
+            "x": 1634.0,
+            "y": 748.0
+          },
+          "text": "Industrial"
+        }
+      ],
+      "split": false,
+      "translation": "Промышленный",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 95.0728988647461,
+      "crop_origin": [
+        1819,
+        742
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 96.0,
+        "x": 1824.0,
+        "y": 747.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 28,
+      "lines": [
+        {
+          "h": 17.0,
+          "w": 69.0,
+          "x": 1841.0,
+          "y": 748.0
+        }
+      ],
+      "observation_ms": 0.009788,
+      "ocr_ms": 18.981894999999998,
+      "original": "Upper Class",
+      "raw_original": "Upper Class",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 95.0728988647461,
+          "rect": {
+            "h": 17.0,
+            "w": 69.0,
+            "x": 1841.0,
+            "y": 748.0
+          },
+          "text": "Upper Class"
+        }
+      ],
+      "split": false,
+      "translation": "Верхний класс",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1170,
+        739
+      ],
+      "detector_rect": {
+        "h": 43.0,
+        "w": 108.0,
+        "x": 1181.0,
+        "y": 750.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 29,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.243609,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1436,
+        768
+      ],
+      "detector_rect": {
+        "h": 82.0,
+        "w": 148.0,
+        "x": 1449.0,
+        "y": 781.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 30,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.055818,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.69517517089844,
+      "crop_origin": [
+        690,
+        754
+      ],
+      "detector_rect": {
+        "h": 291.0,
+        "w": 616.0,
+        "x": 725.0,
+        "y": 789.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 31,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 45.0,
+          "x": 731.0,
+          "y": 1050.0
         },
-        "text": "Industrial"
-      },
-      {
-        "confidence": 95.9520492553711,
-        "rect": {
-          "h": 18.0,
-          "w": 71.0,
-          "x": 1839.0,
-          "y": 747.0
-        },
-        "text": "Upper Class"
-      },
-      {
-        "confidence": 99.95088958740234,
-        "rect": {
-          "h": 37.0,
-          "w": 89.0,
-          "x": 4.0,
-          "y": 932.0
-        },
-        "text": "200"
-      },
-      {
-        "confidence": 99.89579772949219,
-        "rect": {
+        {
           "h": 26.0,
-          "w": 227.0,
-          "x": 7.0,
+          "w": 69.0,
+          "x": 766.0,
+          "y": 1051.0
+        }
+      ],
+      "observation_ms": 0.046848999999999995,
+      "ocr_ms": 59.636823,
+      "original": "Q DROP",
+      "raw_original": "Q DROP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.2874755859375,
+          "rect": {
+            "h": 27.0,
+            "w": 45.0,
+            "x": 731.0,
+            "y": 1050.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 99.7970962524414,
+          "rect": {
+            "h": 26.0,
+            "w": 69.0,
+            "x": 766.0,
+            "y": 1051.0
+          },
+          "text": "DROP"
+        }
+      ],
+      "split": false,
+      "translation": "Q ДРОП",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        148,
+        791
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 67.0,
+        "x": 153.0,
+        "y": 796.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 32,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.537006,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1377,
+        801
+      ],
+      "detector_rect": {
+        "h": 95.0,
+        "w": 185.0,
+        "x": 1390.0,
+        "y": 814.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 33,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 7.845810999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        735,
+        819
+      ],
+      "detector_rect": {
+        "h": 49.0,
+        "w": 118.0,
+        "x": 739.0,
+        "y": 823.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 34,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.117331,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        643,
+        814
+      ],
+      "detector_rect": {
+        "h": 55.0,
+        "w": 322.0,
+        "x": 653.0,
+        "y": 824.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 35,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.215375000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        707,
+        811
+      ],
+      "detector_rect": {
+        "h": 211.0,
+        "w": 160.0,
+        "x": 729.0,
+        "y": 833.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 36,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 9.076152,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        975,
+        835
+      ],
+      "detector_rect": {
+        "h": 149.0,
+        "w": 197.0,
+        "x": 1013.0,
+        "y": 873.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 37,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 10.651166,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1613,
+        871
+      ],
+      "detector_rect": {
+        "h": 39.0,
+        "w": 101.0,
+        "x": 1618.0,
+        "y": 876.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 38,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.5405919999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1336,
+        873
+      ],
+      "detector_rect": {
+        "h": 105.0,
+        "w": 205.0,
+        "x": 1344.0,
+        "y": 881.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 39,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.653224,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        578,
+        885
+      ],
+      "detector_rect": {
+        "h": 25.0,
+        "w": 72.0,
+        "x": 585.0,
+        "y": 892.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 40,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.379908,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        950,
+        869
+      ],
+      "detector_rect": {
+        "h": 105.0,
+        "w": 210.0,
+        "x": 977.0,
+        "y": 896.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 41,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 8.099542,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        850,
+        880
+      ],
+      "detector_rect": {
+        "h": 129.0,
+        "w": 218.0,
+        "x": 883.0,
+        "y": 913.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 42,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 7.856742,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        825,
+        909
+      ],
+      "detector_rect": {
+        "h": 102.0,
+        "w": 112.0,
+        "x": 851.0,
+        "y": 935.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 43,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 5.430236,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.95143127441406,
+      "crop_origin": [
+        4,
+        932
+      ],
+      "detector_rect": {
+        "h": 28.0,
+        "w": 79.0,
+        "x": 11.0,
+        "y": 939.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 44,
+      "lines": [
+        {
+          "h": 34.0,
+          "w": 87.0,
+          "x": 4.0,
+          "y": 933.0
+        }
+      ],
+      "observation_ms": 0.273808,
+      "ocr_ms": 15.359423000000001,
+      "original": "200",
+      "raw_original": "200",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.95143127441406,
+          "rect": {
+            "h": 34.0,
+            "w": 87.0,
+            "x": 4.0,
+            "y": 933.0
+          },
+          "text": "200"
+        }
+      ],
+      "split": false,
+      "translation": "200",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1073,
+        932
+      ],
+      "detector_rect": {
+        "h": 115.0,
+        "w": 131.0,
+        "x": 1085.0,
+        "y": 944.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 45,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.813583,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        962,
+        934
+      ],
+      "detector_rect": {
+        "h": 78.0,
+        "w": 141.0,
+        "x": 982.0,
+        "y": 954.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 46,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 5.505669,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        732,
+        967
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 68.0,
+        "x": 737.0,
+        "y": 972.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 47,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.9801900000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 64.52760314941406,
+      "crop_origin": [
+        0,
+        960
+      ],
+      "detector_rect": {
+        "h": 68.0,
+        "w": 525.0,
+        "x": 10.0,
+        "y": 977.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 48,
+      "lines": [
+        {
+          "h": 66.0,
+          "w": 180.0,
+          "x": 18.0,
+          "y": 977.0
+        }
+      ],
+      "observation_ms": 0.02665,
+      "ocr_ms": 32.746217,
+      "original": "POB",
+      "raw_original": "POB",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 64.52760314941406,
+          "rect": {
+            "h": 66.0,
+            "w": 180.0,
+            "x": 18.0,
+            "y": 977.0
+          },
+          "text": "POB"
+        }
+      ],
+      "split": false,
+      "translation": "POB",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1110,
+        976
+      ],
+      "detector_rect": {
+        "h": 25.0,
+        "w": 63.0,
+        "x": 1117.0,
+        "y": 983.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 49,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.6532560000000003,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.68310546875,
+      "crop_origin": [
+        798,
+        997
+      ],
+      "detector_rect": {
+        "h": 49.0,
+        "w": 167.0,
+        "x": 811.0,
+        "y": 1010.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 50,
+      "lines": [
+        {
+          "h": 18.0,
+          "w": 29.0,
+          "x": 806.0,
+          "y": 1053.0
+        }
+      ],
+      "observation_ms": 0.017493,
+      "ocr_ms": 18.393822,
+      "original": "OP",
+      "raw_original": "OP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.68310546875,
+          "rect": {
+            "h": 18.0,
+            "w": 29.0,
+            "x": 806.0,
+            "y": 1053.0
+          },
+          "text": "OP"
+        }
+      ],
+      "split": false,
+      "translation": "ОП",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1835,
+        1004
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 49.0,
+        "x": 1844.0,
+        "y": 1013.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 51,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.002764,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1192,
+        1001
+      ],
+      "detector_rect": {
+        "h": 49.0,
+        "w": 88.0,
+        "x": 1205.0,
+        "y": 1014.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 52,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.938502,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        719,
+        1024
+      ],
+      "detector_rect": {
+        "h": 41.0,
+        "w": 41.0,
+        "x": 730.0,
+        "y": 1035.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 53,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.35161,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        909,
+        1034
+      ],
+      "detector_rect": {
+        "h": 40.0,
+        "w": 98.0,
+        "x": 915.0,
+        "y": 1040.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 54,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.203955,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.6570053100586,
+      "crop_origin": [
+        589,
+        1038
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 112.0,
+        "x": 598.0,
+        "y": 1047.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 55,
+      "lines": [
+        {
+          "h": 24.0,
+          "w": 125.0,
+          "x": 589.0,
+          "y": 1051.0
+        }
+      ],
+      "observation_ms": 0.22197,
+      "ocr_ms": 17.052089,
+      "original": "BINSPECT",
+      "raw_original": "BINSPECT",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.6570053100586,
+          "rect": {
+            "h": 24.0,
+            "w": 125.0,
+            "x": 589.0,
+            "y": 1051.0
+          },
+          "text": "BINSPECT"
+        }
+      ],
+      "split": false,
+      "translation": "БИНСПЕКТ",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.21427154541016,
+      "crop_origin": [
+        4,
+        1045
+      ],
+      "detector_rect": {
+        "h": 24.0,
+        "w": 824.0,
+        "x": 10.0,
+        "y": 1051.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 56,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 221.0,
+          "x": 8.0,
+          "y": 1051.0
+        },
+        {
+          "h": 25.0,
+          "w": 279.0,
+          "x": 246.0,
           "y": 1049.0
         },
-        "text": "EQUIPPED: Truncheon"
-      },
-      {
-        "confidence": 98.03730010986328,
-        "rect": {
-          "h": 24.0,
-          "w": 287.0,
-          "x": 246.0,
-          "y": 1050.0
-        },
-        "text": "LMB SHOW TRUNCHEON"
-      },
-      {
-        "confidence": 97.3099365234375,
-        "rect": {
-          "h": 28.0,
-          "w": 299.0,
-          "x": 539.0,
-          "y": 1050.0
-        },
-        "text": "RMB INSPECTQDROP"
-      },
-      {
-        "confidence": 88.873046875,
-        "rect": {
+        {
           "h": 25.0,
-          "w": 57.0,
-          "x": 1834.0,
-          "y": 1037.0
+          "w": 171.0,
+          "x": 542.0,
+          "y": 1049.0
         },
-        "text": "PLAUGHO"
+        {
+          "h": 28.0,
+          "w": 109.0,
+          "x": 729.0,
+          "y": 1049.0
+        }
+      ],
+      "observation_ms": 1.18784,
+      "ocr_ms": 84.547108,
+      "original": "EQUIPPED: Truncheon LMB SHOW TRUNCHEON RMB INSPECT QDROP",
+      "raw_original": "EQUIPPED: Truncheon LMB SHOW TRUNCHEON RMB INSPECT QDROP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.75553894042969,
+          "rect": {
+            "h": 21.0,
+            "w": 221.0,
+            "x": 8.0,
+            "y": 1051.0
+          },
+          "text": "EQUIPPED: Truncheon"
+        },
+        {
+          "confidence": 99.14313507080078,
+          "rect": {
+            "h": 25.0,
+            "w": 279.0,
+            "x": 246.0,
+            "y": 1049.0
+          },
+          "text": "LMB SHOW TRUNCHEON"
+        },
+        {
+          "confidence": 93.72148895263672,
+          "rect": {
+            "h": 25.0,
+            "w": 171.0,
+            "x": 542.0,
+            "y": 1049.0
+          },
+          "text": "RMB INSPECT"
+        },
+        {
+          "confidence": 98.8977279663086,
+          "rect": {
+            "h": 28.0,
+            "w": 109.0,
+            "x": 729.0,
+            "y": 1049.0
+          },
+          "text": "QDROP"
+        }
+      ],
+      "split": false,
+      "translation": "ОСНАЩЕН: Дракхен LMB ПОКАЗЫВАЮТ ДУГОНОВЫЕ ЮАНИ ИНСПЕКТА ДРОП",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.67442321777344,
+      "crop_origin": [
+        242,
+        1045
+      ],
+      "detector_rect": {
+        "h": 24.0,
+        "w": 68.0,
+        "x": 248.0,
+        "y": 1051.0
       },
-      {
-        "confidence": 91.71043395996094,
-        "rect": {
-          "h": 23.0,
-          "w": 114.0,
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 57,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 72.0,
+          "x": 246.0,
+          "y": 1048.0
+        }
+      ],
+      "observation_ms": 0.107003,
+      "ocr_ms": 16.968661,
+      "original": "LMB",
+      "raw_original": "LMB",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.67442321777344,
+          "rect": {
+            "h": 27.0,
+            "w": 72.0,
+            "x": 246.0,
+            "y": 1048.0
+          },
+          "text": "LMB"
+        }
+      ],
+      "split": false,
+      "translation": "LMB",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.90502166748047,
+      "crop_origin": [
+        536,
+        1044
+      ],
+      "detector_rect": {
+        "h": 25.0,
+        "w": 71.0,
+        "x": 543.0,
+        "y": 1051.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 58,
+      "lines": [
+        {
+          "h": 25.0,
+          "w": 72.0,
+          "x": 543.0,
+          "y": 1049.0
+        }
+      ],
+      "observation_ms": 0.132591,
+      "ocr_ms": 17.639733,
+      "original": "RMB",
+      "raw_original": "RMB",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.90502166748047,
+          "rect": {
+            "h": 25.0,
+            "w": 72.0,
+            "x": 543.0,
+            "y": 1049.0
+          },
+          "text": "RMB"
+        }
+      ],
+      "split": false,
+      "translation": "юань",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.97738647460938,
+      "crop_origin": [
+        5,
+        1049
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 217.0,
+        "x": 10.0,
+        "y": 1054.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 59,
+      "lines": [
+        {
+          "h": 19.0,
+          "w": 120.0,
+          "x": 9.0,
+          "y": 1052.0
+        },
+        {
+          "h": 19.0,
+          "w": 101.0,
+          "x": 127.0,
+          "y": 1053.0
+        }
+      ],
+      "observation_ms": 0.217392,
+      "ocr_ms": 29.648029,
+      "original": "EQUIPPED: Truncheon",
+      "raw_original": "EQUIPPED: Truncheon",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.96134948730469,
+          "rect": {
+            "h": 19.0,
+            "w": 120.0,
+            "x": 9.0,
+            "y": 1052.0
+          },
+          "text": "EQUIPPED:"
+        },
+        {
+          "confidence": 99.993408203125,
+          "rect": {
+            "h": 19.0,
+            "w": 101.0,
+            "x": 127.0,
+            "y": 1053.0
+          },
+          "text": "Truncheon"
+        }
+      ],
+      "split": false,
+      "translation": "ОСТРОЕННЫЙ: Truncheon",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 95.4457778930664,
+      "crop_origin": [
+        296,
+        1049
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 222.0,
+        "x": 301.0,
+        "y": 1054.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 60,
+      "lines": [
+        {
+          "h": 19.0,
+          "w": 21.0,
+          "x": 297.0,
+          "y": 1052.0
+        },
+        {
+          "h": 21.0,
+          "w": 206.0,
+          "x": 318.0,
+          "y": 1052.0
+        }
+      ],
+      "observation_ms": 0.259501,
+      "ocr_ms": 42.360048,
+      "original": "B9 SHOW TRUNCHEON",
+      "raw_original": "B9 SHOW TRUNCHEON",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 84.86061096191406,
+          "rect": {
+            "h": 19.0,
+            "w": 21.0,
+            "x": 297.0,
+            "y": 1052.0
+          },
+          "text": "B9"
+        },
+        {
+          "confidence": 96.95793914794922,
+          "rect": {
+            "h": 21.0,
+            "w": 206.0,
+            "x": 318.0,
+            "y": 1052.0
+          },
+          "text": "SHOW TRUNCHEON"
+        }
+      ],
+      "split": false,
+      "translation": "B9 ШОУ ТРУНЧОН",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.93331146240234,
+      "crop_origin": [
+        772,
+        1050
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 82.0,
+        "x": 777.0,
+        "y": 1055.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 61,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 62.0,
+          "x": 774.0,
+          "y": 1053.0
+        }
+      ],
+      "observation_ms": 0.028895,
+      "ocr_ms": 17.882302,
+      "original": "DROP",
+      "raw_original": "DROP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.93331146240234,
+          "rect": {
+            "h": 21.0,
+            "w": 62.0,
+            "x": 774.0,
+            "y": 1053.0
+          },
+          "text": "DROP"
+        }
+      ],
+      "split": false,
+      "translation": "ДРОП",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.38127136230469,
+      "crop_origin": [
+        1494,
+        1053
+      ],
+      "detector_rect": {
+        "h": 21.0,
+        "w": 106.0,
+        "x": 1500.0,
+        "y": 1059.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 62,
+      "lines": [
+        {
+          "h": 22.0,
+          "w": 109.0,
           "x": 1499.0,
-          "y": 1056.0
-        },
-        "text": "TabiMAP"
+          "y": 1057.0
+        }
+      ],
+      "observation_ms": 0.117232,
+      "ocr_ms": 17.984256000000002,
+      "original": "TabiMAP",
+      "raw_original": "TabiMAP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 96.38127136230469,
+          "rect": {
+            "h": 22.0,
+            "w": 109.0,
+            "x": 1499.0,
+            "y": 1057.0
+          },
+          "text": "TabiMAP"
+        }
+      ],
+      "split": false,
+      "translation": "ТабиМАп",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.9649429321289,
+      "crop_origin": [
+        1608,
+        1055
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 100.0,
+        "x": 1613.0,
+        "y": 1060.0
       },
-      {
-        "confidence": 99.68406677246094,
-        "rect": {
-          "h": 14.0,
-          "w": 73.0,
-          "x": 1622.0,
-          "y": 1065.0
-        },
-        "text": "Lower Class"
-      },
-      {
-        "confidence": 99.41545867919922,
-        "rect": {
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 63,
+      "lines": [
+        {
           "h": 11.0,
-          "w": 34.0,
+          "w": 67.0,
+          "x": 1630.0,
+          "y": 1068.0
+        }
+      ],
+      "observation_ms": 0.009928000000000001,
+      "ocr_ms": 17.348691,
+      "original": "Lower Class",
+      "raw_original": "Lower Class",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9649429321289,
+          "rect": {
+            "h": 11.0,
+            "w": 67.0,
+            "x": 1630.0,
+            "y": 1068.0
+          },
+          "text": "Lower Class"
+        }
+      ],
+      "split": false,
+      "translation": "Нижний класс",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.8438949584961,
+      "crop_origin": [
+        1820,
+        1061
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 96.0,
+        "x": 1824.0,
+        "y": 1065.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 64,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 35.0,
           "x": 1858.0,
-          "y": 1067.0
-        },
-        "text": "Deeks"
-      }
-    ],
-    "text": "InvestiGation PHase 0:25\nYou Are the Magistrate\nNIghT: 1\nBuy film from the requisitioner\nin the police station\nIf you run out of things you can\ninvestigate, talk to suspects in\nthe holding cells to investigate\ntheir alibis\nWATTS\nSTEELWORK\nEST1786\nTFIELD'S YARD\nIndustrial\nUpper Class\n200\nEQUIPPED: Truncheon\nLMB SHOW TRUNCHEON\nRMB INSPECTQDROP\nPLAUGHO\nTabiMAP\nLower Class\nDeeks"
-  },
-  "ocr_history": [],
+          "y": 1068.0
+        }
+      ],
+      "observation_ms": 0.009318,
+      "ocr_ms": 19.289939,
+      "original": "Deeks",
+      "raw_original": "Deeks",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.8438949584961,
+          "rect": {
+            "h": 11.0,
+            "w": 35.0,
+            "x": 1858.0,
+            "y": 1068.0
+          },
+          "text": "Deeks"
+        }
+      ],
+      "split": false,
+      "translation": "Дикс",
+      "translation_source": "actual translation-engine response"
+    }
+  ],
   "ocr_scans": 1,
-  "peak_memory": "VmHWM:\t  408992 kB",
+  "peak_memory": "VmHWM:\t  200780 kB",
   "placed": [
     {
       "alignment": "right",
       "background": {
-        "color": "#070809",
+        "color": "#070707",
         "image": "",
         "mode": "adaptive_padding_fill",
         "opacity": 1.0,
@@ -695,31 +5708,33 @@
       "block_id": 1,
       "block_type": "button",
       "box": [
-        0.7838541666666666,
+        0.7909374872843424,
         0.0,
-        0.21614583333333334,
-        0.15833333333333333
+        0.20906251271565754,
+        0.07351851993136936
       ],
-      "font_family": "Inter",
-      "font_px": 37.0,
+      "font_family": "Roboto Slab",
+      "font_px": 27.0,
       "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.06100000813603401,
+        "category": "slab_serif",
+        "confidence": 0.15963749587535858,
         "generic": false
       },
       "font_weight": 100,
       "inner": [
-        28.0,
+        23.4000244140625,
+        15.0,
         0.0,
-        0.0,
-        28.0
+        23.400001525878906
       ],
       "italic": false,
       "key": "test:1",
-      "letter_spacing": -1.5179201364517212,
+      "layout_width": 376.0,
+      "letter_spacing": -1.114007830619812,
       "line_height": 0.8999999761581421,
-      "max_lines": 3,
-      "original": "fixture 1",
+      "max_lines": 1,
+      "original": "You Are the Magistrate",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -735,7 +5750,8 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Вы являетесь магистратом",
       "text_color": "#cec3b0",
       "text_opacity": 1.0,
       "wrap": "word"
@@ -743,7 +5759,7 @@
     {
       "alignment": "left",
       "background": {
-        "color": "#090a09",
+        "color": "#070807",
         "image": "",
         "mode": "adaptive_padding_fill",
         "opacity": 1.0,
@@ -754,29 +5770,31 @@
       "box": [
         0.0,
         0.0,
-        0.2760416666666667,
-        0.06666666666666667
+        0.26666666666666666,
+        0.06435185185185185
       ],
       "font_family": "Inter",
-      "font_px": 24.0,
+      "font_px": 37.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.06100000813603401,
+        "confidence": 0.030500004068017006,
         "generic": false
       },
       "font_weight": 200,
       "inner": [
-        11.0,
-        18.0,
+        15.0,
+        12.0,
         27.0,
-        9.0
+        8.5
       ],
       "italic": false,
       "key": "test:2",
-      "letter_spacing": -0.9780415296554565,
+      "layout_width": 468.0,
+      "letter_spacing": -1.5082117319107056,
       "line_height": 0.8999999761581421,
       "max_lines": 1,
-      "original": "fixture 2",
+      "original": "Investigation Phase 0:25",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -792,7 +5810,8 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Фаза расследования 0:25",
       "text_color": "#d2c7b3",
       "text_opacity": 1.0,
       "wrap": "word"
@@ -809,16 +5828,16 @@
       "block_id": 3,
       "block_type": "unknown",
       "box": [
-        0.010572916269302369,
-        0.0697222250479239,
-        0.14916667938232422,
-        0.0679629573115596
+        0.0079687496026357,
+        0.06694444727014612,
+        0.15281251271565754,
+        0.07074073508933738
       ],
       "font_family": "Source Serif 4",
-      "font_px": 22.0,
+      "font_px": 17.0,
       "font_selection": {
         "category": "serif",
-        "confidence": 0.8083333969116211,
+        "confidence": 0.7921667695045471,
         "generic": false
       },
       "font_weight": 700,
@@ -830,10 +5849,12 @@
       ],
       "italic": false,
       "key": "test:3",
-      "letter_spacing": -0.75,
+      "layout_width": 280.0,
+      "letter_spacing": -0.6991782188415527,
       "line_height": 0.8500000238418579,
       "max_lines": 2,
-      "original": "fixture 3",
+      "original": "NIGHT: 1 Buy film from the requisitioner in the police station",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -849,7 +5870,8 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "НОчь: 1 Купить фильм у реквизитера в полицейском участке",
       "text_color": "#cfc8bc",
       "text_opacity": 1.0,
       "wrap": "word"
@@ -857,25 +5879,25 @@
     {
       "alignment": "left",
       "background": {
-        "color": "#0c0b0d",
+        "color": "#0b0b0c",
         "image": "",
         "mode": "solid_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 4,
+      "block_id": 6,
       "block_type": "unknown",
       "box": [
-        0.009895833333333333,
-        0.15648148148148147,
-        0.15104166666666666,
-        0.08333333333333333
+        0.0078125,
+        0.15185185185185185,
+        0.15520833333333334,
+        0.09074074074074075
       ],
       "font_family": "Source Serif 4",
-      "font_px": 22.0,
+      "font_px": 16.0,
       "font_selection": {
         "category": "serif",
-        "confidence": 0.7972223162651062,
+        "confidence": 0.7812778949737549,
         "generic": false
       },
       "font_weight": 700,
@@ -886,11 +5908,13 @@
         6.0
       ],
       "italic": false,
-      "key": "test:4",
-      "letter_spacing": -0.75,
+      "key": "test:6",
+      "layout_width": 284.0,
+      "letter_spacing": -0.6572275161743164,
       "line_height": 0.8500000238418579,
-      "max_lines": 2,
-      "original": "fixture 4",
+      "max_lines": 4,
+      "original": "If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -906,7 +5930,8 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Если у вас закончились вещи, которые вы можете расследовать, поговорите с подозреваемыми в камерах, чтобы расследовать их алиби.",
       "text_color": "#d1ccc0",
       "text_opacity": 1.0,
       "wrap": "word"
@@ -914,40 +5939,42 @@
     {
       "alignment": "right",
       "background": {
-        "color": "#242422",
+        "color": "#2b2720",
         "image": "",
         "mode": "adaptive_padding_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 5,
-      "block_type": "menu_item",
+      "block_id": 25,
+      "block_type": "button",
       "box": [
-        0.8401041666666667,
-        0.3212962962962963,
-        0.06770833333333333,
-        0.25833333333333336
+        0.8582291920979818,
+        0.6451851738823785,
+        0.12729161580403645,
+        0.040462974265769676
       ],
-      "font_family": "Roboto Slab",
-      "font_px": 21.0,
+      "font_family": "Inter",
+      "font_px": 19.0,
       "font_selection": {
-        "category": "slab_serif",
-        "confidence": 0.6449999809265137,
+        "category": "neo_grotesque_sans",
+        "confidence": 0.030500004068017006,
         "generic": false
       },
       "font_weight": 100,
       "inner": [
-        28.0,
-        28.0,
-        28.0,
-        28.0
+        13.199951171875,
+        13.20001220703125,
+        13.199951171875,
+        6.5
       ],
       "italic": false,
-      "key": "test:5",
-      "letter_spacing": -0.8697605133056641,
+      "key": "test:25",
+      "layout_width": 216.0,
+      "letter_spacing": -0.761085569858551,
       "line_height": 0.8999999761581421,
-      "max_lines": 8,
-      "original": "fixture 5",
+      "max_lines": 1,
+      "original": "DUTFIELD'S YARD",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -963,105 +5990,111 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#827b71",
+      "source_coverage": 1.0,
+      "text": "ДВОР ДАТФИЛДА",
+      "text_color": "#d5ccb9",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
       "alignment": "right",
       "background": {
-        "color": "#232628",
+        "color": "#2f2d25",
         "image": "",
-        "mode": "solid_fill",
+        "mode": "adaptive_padding_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 7,
-      "block_type": "unknown",
+      "block_id": 27,
+      "block_type": "button",
       "box": [
-        0.25270833969116213,
-        0.5511111224139178,
-        0.08364582061767578,
-        0.2579629403573495
+        0.8461458206176757,
+        0.6856481481481481,
+        0.03947919209798177,
+        0.028611133716724538
+      ],
+      "font_family": "JetBrains Mono",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "monospace",
+        "confidence": 0.3370301425457001,
+        "generic": false
+      },
+      "font_weight": 100,
+      "inner": [
+        8.4000244140625,
+        6.5,
+        8.4000244140625,
+        8.4000244140625
+      ],
+      "italic": false,
+      "key": "test:27",
+      "layout_width": 57.0,
+      "letter_spacing": -0.34998923540115356,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "Industrial",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Промышленный",
+      "text_color": "#d8cdb9",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#21201c",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 28,
+      "block_type": "button",
+      "box": [
+        0.9530208587646485,
+        0.6856481481481481,
+        0.04697914123535156,
+        0.03305556685836227
       ],
       "font_family": "Source Serif 4",
-      "font_px": 34.0,
+      "font_px": 10.0,
       "font_selection": {
         "category": "serif",
-        "confidence": 0.7208333611488342,
+        "confidence": 0.42970284819602966,
         "generic": false
       },
-      "font_weight": 200,
+      "font_weight": 700,
       "inner": [
-        10.79998779296875,
-        10.79998779296875,
-        10.79998779296875,
-        10.79998779296875
+        10.199951171875,
+        6.5,
+        9.0,
+        10.20001220703125
       ],
       "italic": false,
-      "key": "test:7",
-      "letter_spacing": -1.3937427997589111,
-      "line_height": 0.8500000238418579,
-      "max_lines": 6,
-      "original": "fixture 7",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#827d74",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#191919",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 8,
-      "block_type": "unknown",
-      "box": [
-        0.8338541666666667,
-        0.5990740740740741,
-        0.16614583333333333,
-        0.10277777777777777
-      ],
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 27.0,
-      "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
-        "generic": false
-      },
-      "font_weight": 100,
-      "inner": [
-        16.0,
-        16.0,
-        5.0,
-        16.0
-      ],
-      "italic": false,
-      "key": "test:8",
-      "letter_spacing": -1.114007830619812,
+      "key": "test:28",
+      "layout_width": 69.0,
+      "letter_spacing": -0.4214872121810913,
       "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 8",
+      "max_lines": 1,
+      "original": "Upper Class",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -1077,48 +6110,51 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#d3cab7",
+      "source_coverage": 1.0,
+      "text": "Верхний класс",
+      "text_color": "#ded4be",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
       "alignment": "left",
       "background": {
-        "color": "#090b0d",
+        "color": "#080807",
         "image": "",
         "mode": "adaptive_padding_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 16,
+      "block_id": 44,
       "block_type": "button",
       "box": [
         0.0,
-        0.8407407407407408,
-        0.29322916666666665,
-        0.1527777777777778
+        0.8474074187102141,
+        0.05666666825612386,
+        0.05259258128978588
       ],
-      "font_family": "Source Code Pro",
-      "font_px": 42.0,
+      "font_family": "Literata",
+      "font_px": 22.0,
       "font_selection": {
-        "category": "monospace",
-        "confidence": 0.6908770799636841,
+        "category": "serif",
+        "confidence": 0.5020221471786499,
         "generic": false
       },
-      "font_weight": 200,
+      "font_weight": 600,
       "inner": [
-        10.0,
-        28.0,
-        28.0,
-        28.0
+        3.0,
+        16.79998779296875,
+        16.800003051757812,
+        4.0
       ],
       "italic": false,
-      "key": "test:16",
-      "letter_spacing": -1.717881679534912,
+      "key": "test:44",
+      "layout_width": 87.0,
+      "letter_spacing": -0.9167916178703308,
       "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 16",
+      "max_lines": 1,
+      "original": "200",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -1134,115 +6170,646 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#b0aa9d",
+      "source_coverage": 1.0,
+      "text": "200",
+      "text_color": "#cec7b7",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#050405",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 48,
+      "block_type": "button",
+      "box": [
+        0.0,
+        0.9,
+        0.11822916666666666,
+        0.06851851851851852
+      ],
+      "font_family": "Press Start 2P",
+      "font_px": 62.0,
+      "font_selection": {
+        "category": "monospace",
+        "confidence": 0.7156270742416382,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        17.0,
+        4.0,
+        28.0,
+        2.0
+      ],
+      "italic": false,
+      "key": "test:48",
+      "layout_width": 179.0,
+      "letter_spacing": -3.1000001430511475,
+      "line_height": 1.0,
+      "max_lines": 1,
+      "original": "POB",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "POB",
+      "text_color": "#ada79b",
+      "text_opacity": 1.0,
+      "wrap": "none"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#070707",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 56,
+      "block_type": "unknown",
+      "box": [
+        0.0,
+        0.9685185185185186,
+        0.44072917302449544,
+        0.03148148148148148
+      ],
+      "font_family": "Literata",
+      "font_px": 18.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.7399000525474548,
+        "generic": false
+      },
+      "font_weight": 700,
+      "inner": [
+        7.0,
+        2.0,
+        7.20001220703125,
+        2.0
+      ],
+      "italic": false,
+      "key": "test:56",
+      "layout_width": 830.0,
+      "letter_spacing": -0.6857143044471741,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "EQUIPPED: Truncheon LMB SHOW TRUNCHEON RMB INSPECT QDROP",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "ОСНАЩЕН: Дракхен LMB ПОКАЗЫВАЮТ ДУГОНОВЫЕ ЮАНИ ИНСПЕКТА ДРОП",
+      "text_color": "#d4cdbe",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#060606",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 62,
+      "block_type": "button",
+      "box": [
+        0.7736458460489909,
+        0.9661111337167245,
+        0.06958332061767578,
+        0.03388886628327546
+      ],
+      "font_family": "Source Serif 4",
+      "font_px": 16.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.5300970077514648,
+        "generic": false
+      },
+      "font_weight": 700,
+      "inner": [
+        12.5999755859375,
+        12.5999755859375,
+        10.0,
+        0.0
+      ],
+      "italic": false,
+      "key": "test:62",
+      "layout_width": 109.0,
+      "letter_spacing": -0.6752786040306091,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "TabiMAP",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "ТабиМАп",
+      "text_color": "#e1d8c8",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#181616",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 63,
+      "block_type": "button",
+      "box": [
+        0.8450000127156575,
+        0.9716666892722801,
+        0.042812474568684894,
+        0.02833331072771991
+      ],
+      "expanded": true,
+      "font_family": "Source Serif 4",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.42970284819602966,
+        "generic": false
+      },
+      "font_weight": 300,
+      "inner": [
+        6.5999755859375,
+        6.5999755859375,
+        6.5999755859375,
+        0.0
+      ],
+      "italic": false,
+      "key": "test:63",
+      "layout_width": 67.0,
+      "letter_spacing": 2.104477643966675,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "Lower Class",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Нижний класс",
+      "text_color": "#e0d5bf",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#320b0f",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 64,
+      "block_type": "button",
+      "box": [
+        0.9637500127156575,
+        0.9818518744574652,
+        0.026145807902018228,
+        0.018148125542534723
+      ],
+      "font_family": "Inter",
+      "font_px": 9.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.030500004068017006,
+        "generic": false
+      },
+      "font_weight": 900,
+      "inner": [
+        6.5999755859375,
+        6.5999755859375,
+        6.5999755859375,
+        0.0
+      ],
+      "italic": false,
+      "key": "test:64",
+      "layout_width": 35.0,
+      "letter_spacing": -0.39251163601875305,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "Deeks",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Дикс",
+      "text_color": "#eadcc8",
       "text_opacity": 1.0,
       "wrap": "word"
     }
   ],
-  "placement_ms": 567.32778,
-  "repeat_frame_ms": 326.945092,
+  "placement_ms": 151.385954,
+  "repeat_frame_ms": 45.206059,
+  "repeat_ocr_jobs": 0,
   "size": [
     1920,
     1080
   ],
   "timings_ms": [
     [
-      193.01769199999998,
-      341.750102,
-      0.623093
+      16.774454000000002,
+      29.119387,
+      0.183016
     ],
     [
-      196.823893,
-      309.641462,
-      0.5843079999999999
+      14.171372999999999,
+      29.644441,
+      0.19237400000000002
     ],
     [
-      187.567281,
-      326.660122,
-      0.594247
+      15.197396,
+      29.417803,
+      0.186614
     ],
     [
-      197.52709800000002,
-      309.94095100000004,
-      0.687986
+      17.336267,
+      29.475612,
+      0.192525
     ],
     [
-      204.268849,
-      331.009805,
-      0.599748
+      16.299404,
+      29.337861,
+      0.18920800000000002
     ]
   ],
-  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
-  "render_ms": 334.0065800002776,
-  "update_ms": 2.068073999907938,
+  "translation_cache_hits": 2,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 19,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 321.98776800032647,
+  "update_ms": 2.3728249998384854,
   "layout_diagnostics": [
     {
-      "width": 387,
-      "height": 143,
-      "contentWidth": 355.640625,
-      "contentHeight": 129.09999668598175,
-      "lines": 3,
-      "truncated": false
-    },
-    {
-      "width": 492,
-      "height": 45,
-      "contentWidth": 454.015625,
-      "contentHeight": 30.899999260902405,
+      "width": 376,
+      "height": 41,
+      "contentWidth": 352.53125,
+      "contentHeight": 35.399999141693115,
       "lines": 1,
       "truncated": false
     },
     {
-      "width": 275.0000114440918,
-      "height": 62,
-      "contentWidth": 232.734375,
-      "contentHeight": 56.70000147819519,
+      "width": 468,
+      "height": 49,
+      "contentWidth": 434.21875,
+      "contentHeight": 44.499998927116394,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 280,
+      "height": 65,
+      "contentWidth": 275.765625,
+      "contentHeight": 43.80000114440918,
       "lines": 2,
       "truncated": false
     },
     {
-      "width": 278,
-      "height": 78,
-      "contentWidth": 232.734375,
-      "contentHeight": 56.70000147819519,
+      "width": 284,
+      "height": 86,
+      "contentWidth": 269.75,
+      "contentHeight": 77.8000020980835,
+      "lines": 4,
+      "truncated": false
+    },
+    {
+      "width": 216,
+      "height": 24,
+      "contentWidth": 161.859375,
+      "contentHeight": 22.699999451637268,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 57,
+      "height": 16,
+      "contentWidth": 53.4375,
+      "contentHeight": 10.899999737739563,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 69,
+      "height": 19,
+      "contentWidth": 65.515625,
+      "contentHeight": 13.59999966621399,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 87,
+      "height": 36,
+      "contentWidth": 33.828125,
+      "contentHeight": 32.69999921321869,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 179,
+      "height": 68,
+      "contentWidth": 176.71875,
+      "contentHeight": 62,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 830,
+      "height": 30,
+      "contentWidth": 692.640625,
+      "contentHeight": 26.299999356269836,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 109,
+      "height": 24,
+      "contentWidth": 66.484375,
+      "contentHeight": 21.799999475479126,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 67,
+      "height": 24.000000000000004,
+      "contentWidth": 45.453125,
+      "contentHeight": 20.799999475479126,
       "lines": 2,
       "truncated": false
     },
     {
-      "width": 74,
-      "height": 223,
-      "contentWidth": 73.265625,
-      "contentHeight": 205.3999946117401,
-      "lines": 8,
-      "truncated": false
-    },
-    {
-      "width": 139,
-      "height": 257,
-      "contentWidth": 129.0625,
-      "contentHeight": 206.7500056028366,
-      "lines": 5,
-      "truncated": false
-    },
-    {
-      "width": 298,
-      "height": 79,
-      "contentWidth": 275.703125,
-      "contentHeight": 75.99999809265137,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 525,
-      "height": 109,
-      "contentWidth": 520.125,
-      "contentHeight": 100.39999747276306,
-      "lines": 2,
+      "width": 35,
+      "height": 13,
+      "contentWidth": 21.921875,
+      "contentHeight": 10.899999737739563,
+      "lines": 1,
       "truncated": false
     }
   ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 21,
+    "rendered": 13,
+    "missing": [
+      {
+        "id": 31,
+        "original": "Q DROP",
+        "confidence": 99.69517517089844,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 50,
+        "original": "OP",
+        "confidence": 99.68310546875,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 55,
+        "original": "BINSPECT",
+        "confidence": 99.6570053100586,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 57,
+        "original": "LMB",
+        "confidence": 99.67442321777344,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 58,
+        "original": "RMB",
+        "confidence": 98.90502166748047,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 59,
+        "original": "EQUIPPED: Truncheon",
+        "confidence": 99.97738647460938,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 60,
+        "original": "B9 SHOW TRUNCHEON",
+        "confidence": 95.4457778930664,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 61,
+        "original": "DROP",
+        "confidence": 99.93331146240234,
+        "reason": "повторный OCR того же текста"
+      }
+    ],
+    "source_coverage": [
+      {
+        "id": 1,
+        "original": "You Are the Magistrate",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 2,
+        "original": "Investigation Phase 0:25",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 3,
+        "original": "NIGHT: 1 Buy film from the requisitioner in the police station",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 6,
+        "original": "If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 25,
+        "original": "DUTFIELD'S YARD",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 27,
+        "original": "Industrial",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 28,
+        "original": "Upper Class",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 31,
+        "original": "Q DROP",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 44,
+        "original": "200",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 48,
+        "original": "POB",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 50,
+        "original": "OP",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 55,
+        "original": "BINSPECT",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 56,
+        "original": "EQUIPPED: Truncheon LMB SHOW TRUNCHEON RMB INSPECT QDROP",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 57,
+        "original": "LMB",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 58,
+        "original": "RMB",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 59,
+        "original": "EQUIPPED: Truncheon",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 60,
+        "original": "B9 SHOW TRUNCHEON",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 61,
+        "original": "DROP",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 62,
+        "original": "TabiMAP",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 63,
+        "original": "Lower Class",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 64,
+        "original": "Deeks",
+        "rendered": true,
+        "plate_coverage": 1.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "no failure in this diagnostic",
+    "uncovered_text_blocks": []
+  },
   "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-11.jpg",
-  "approved_reference": false,
-  "translation_service": "none: predefined deterministic test input"
+  "approved_reference": false
 }

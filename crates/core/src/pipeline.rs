@@ -185,6 +185,34 @@ impl Timings {
 }
 
 /// `Some(confidence)` if the engine is less sure than the user allows: the text is not used.
+/// The lines of a reading cover most of the width of the crop it was made from.
+fn spans_the_crop(reading: &crate::ocr::OcrResult, width: u32) -> bool {
+    if reading.lines.is_empty() { return false; }
+    let left = reading.lines.iter().map(|l| l.rect.x).fold(f32::MAX, f32::min);
+    let right = reading.lines.iter().map(|l| l.rect.x + l.rect.w).fold(f32::MIN, f32::max);
+    (right - left) >= 0.55 * width as f32
+}
+
+/// One field of the in-place mode. A small crop that came back empty or unsure is read again in the variants of
+/// `filter::faint_variants`; the best reading wins, and one that is no better than the first is not used.
+pub async fn read_field<O: Ocr>(ocr: &O, image: &image::DynamicImage, settings: &Settings) -> Result<crate::ocr::OcrResult, crate::ocr::OcrError> {
+    use crate::ocr::filter;
+    let first = ocr.recognize_detailed(image, settings).await?;
+    let floor = settings.effective_minimum_confidence();
+    let weak = first.text.trim().is_empty() || unsure(first.confidence, floor).is_some();
+    // Only small crops: a large field that reads as nothing is scenery, not faint text.
+    if !weak || image.height() > 120 || image.width() > 900 { return Ok(first); }
+    let mut best = first;
+    for (variant, factor) in filter::faint_variants(image) {
+        let Ok(mut reading) = ocr.recognize_detailed(&variant, settings).await else { continue };
+        filter::rescale_lines(&mut reading, factor);
+        // A fragment (one word of a longer line, or a mesh read as letters) must not replace the field.
+        if !spans_the_crop(&reading, image.width()) || reading.confidence.is_some_and(|c| c < 80.0) { continue; }
+        if std::ptr::eq(filter::better_reading(&best, &reading, floor), &reading) { best = reading; }
+    }
+    Ok(best)
+}
+
 fn unsure(confidence: Option<f32>, min_confidence: u32) -> Option<f32> {
     confidence.filter(|c| min_confidence > 0 && *c < min_confidence as f32)
 }
@@ -773,6 +801,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         }
         let grabbed = Instant::now();
         let frame = stage!(self.capture.grab(s.capture.window.as_ref().unwrap(), region.rect.unwrap()), "Ошибка захвата");
+        tracing::debug!(target: "pipeline.capture", region = %region.id, width = frame.width(), height = frame.height(), inplace, "capture frame received");
         self.timings.record("capture", grabbed.elapsed());
         let mut detected = false;
         if !force && !retry && !rescan {
@@ -890,6 +919,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let engine = state.inplace.get_or_insert_with(Default::default);
         let laying_out = Instant::now();
         let jobs = engine.begin(frame, s, now, force);
+        tracing::debug!(target: "pipeline.inplace", region = %region.id, stage = "detection", ocr_jobs = jobs.len(), "inplace frame analyzed");
         self.timings.record("layout", laying_out.elapsed());
         let budget = state.first_error.map(|first| ERROR_BUDGET.saturating_sub(now.saturating_duration_since(first))).unwrap_or(ERROR_BUDGET);
         let deadline = tokio::time::Instant::now() + budget;
@@ -917,7 +947,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             let pinned = &pinned;
             let all = bounded(jobs, FIELD_CONCURRENCY, |job| {
                 let settings = pinned.get(&job.id).unwrap_or(s);
-                async move { (job.id, ocr.recognize_detailed(&job.image, settings).await) }
+                async move { (job.id, read_field(ocr, &job.image, settings).await) }
             });
             let probe = (state.stale < MAX_STALE).then(|| seeded.unwrap_or_else(|| state.detector.clone()));
             match tokio::time::timeout_at(deadline, self.unless_stale(s, region, probe, all)).await {
@@ -929,6 +959,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         }
         // 2. Cached translations are applied at once; the rest wait for the translator.
         let engine = state.inplace.get_or_insert_with(Default::default);
+        tracing::debug!(target: "pipeline.inplace", region = %region.id, stage = "ocr", results = recognized.len(), "OCR results received");
         let mut pending: Vec<(u64, String)> = Vec::new();
         for (id, result) in recognized {
             if s.recognition.engine == "auto" {
@@ -1043,6 +1074,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             out.send(Event::OcrPreview { region_id: region.id.clone(), region_name: region.name.clone(), preview: Box::new(preview) });
         }
         if let Some(frame) = result {
+            tracing::debug!(target: "pipeline.inplace", region = %region.id, stage = "event_emitted", blocks = frame.blocks.len(), undrawable = frame.undrawable.len(), new_translations = frame.new_translations.len(), "Event::Inplace emitted");
             self.last_status = "Перевод обновлён".into();
             out.send(Event::Inplace { region_id: region.id.clone(), region_name: region.name.clone(), frame: Box::new(frame) });
         }
@@ -2230,5 +2262,37 @@ mod tests {
         let (tx, mut rx) = mpsc::unbounded_channel();
         p.tick(&Settings::default(), false, Instant::now(), &tx).await;
         assert!(matches!(rx.try_recv(), Ok(Event::Status(_))));
+    }
+
+    /// Reads nothing from a crop as it is; enlarged ×3 it reads a full line, at the geometry of the enlarged crop.
+    struct FaintOcr;
+    impl Ocr for FaintOcr {
+        async fn recognize(&self, img: &image::DynamicImage, s: &Settings) -> Result<String, crate::ocr::OcrError> {
+            Ok(self.recognize_detailed(img, s).await?.text)
+        }
+        async fn recognize_detailed(&self, img: &image::DynamicImage, _: &Settings) -> Result<crate::ocr::OcrResult, crate::ocr::OcrError> {
+            use crate::{layout::CropRect, ocr::{OcrLine, OcrResult}};
+            if img.width() < 300 { return Ok(OcrResult::default()); }
+            let line = OcrLine { rect: CropRect::in_space(3.0, 3.0, img.width() as f32 - 6.0, 12.0), text: "Relative velocity calculator".into(), confidence: 95.0 };
+            Ok(OcrResult { text: line.text.clone(), lines: vec![line], confidence: Some(95.0), engine: "rapidocr", ..OcrResult::default() })
+        }
+    }
+
+    #[tokio::test]
+    async fn a_faint_crop_is_read_again_and_its_geometry_goes_back_to_the_crop() {
+        let crop = image::DynamicImage::new_rgb8(120, 16);
+        let reading = read_field(&FaintOcr, &crop, &Settings::default()).await.unwrap();
+        assert_eq!(reading.text, "Relative velocity calculator");
+        let line = &reading.lines[0];
+        assert!((line.rect.w - 118.0).abs() < 0.01 && (line.rect.h - 4.0).abs() < 0.01, "divided by the enlargement: {line:?}");
+    }
+
+    #[tokio::test]
+    async fn a_large_empty_crop_is_not_read_again() {
+        // Scenery that reads as nothing stays nothing: only small crops get the second chances.
+        let reading = read_field(&FaintOcr, &image::DynamicImage::new_rgb8(200, 400), &Settings::default()).await.unwrap();
+        assert!(reading.text.is_empty() || reading.lines.len() == 1);
+        let tall = image::DynamicImage::new_rgb8(100, 400);
+        assert!(read_field(&FaintOcr, &tall, &Settings::default()).await.unwrap().text.is_empty());
     }
 }

@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QQuickStyle>
 #include <QVersionNumber>
+#include <QSaveFile>
 static_assert(QT_VERSION >= QT_VERSION_CHECK(6, 12, 0), "LipaX requires Qt 6.12+");
 inline QString lipaRuntimeQtVersion() { return QString::fromLatin1(qVersion()); }
 inline QString lipaQuickStyle() { return QQuickStyle::name(); }
@@ -156,6 +157,37 @@ inline void scheduleLipaTestSnapshot() {
 
 // Debug-build lifecycle test: deliver the same QWindow::close() event as the title-bar button.
 inline void scheduleLipaTestClose(int delayMs) {
+    // Opt-in lifecycle test: inspect real QQuickWindow rendering after the production
+    // capture/OCR/translation/GUI path has created layer surfaces. No data is injected.
+    const QString inplaceDirectory = qEnvironmentVariable("LIPAX_TEST_INPLACE_SNAPSHOTS");
+    if (!inplaceDirectory.isEmpty()) {
+        auto timer = new QTimer(qApp);
+        timer->setInterval(500);
+        QObject::connect(timer, &QTimer::timeout, [inplaceDirectory, sample = 0, previewEnabled = false]() mutable {
+            for (QWindow *window : QGuiApplication::allWindows()) {
+                if (window->objectName() == QStringLiteral("mainWindow")) {
+                    if (QObject *controller = window->findChild<QObject *>(QStringLiteral("controller"))) {
+                        if (!previewEnabled) {
+                            previewEnabled = QMetaObject::invokeMethod(controller, "setOcrPreviewEnabled", Q_ARG(bool, true));
+                        }
+                        QSaveFile previewFile(inplaceDirectory + QStringLiteral("/preview.json"));
+                        if (previewFile.open(QIODevice::WriteOnly)) {
+                            previewFile.write(controller->property("ocrPreviewJson").toString().toUtf8());
+                            previewFile.commit();
+                        }
+                    }
+                }
+                auto quick = qobject_cast<QQuickWindow *>(window);
+                if (!quick || !quick->isVisible() || quick->objectName() != QStringLiteral("inplaceTranslation")) continue;
+                const QImage image = quick->grabWindow();
+                const QString path = inplaceDirectory + QStringLiteral("/field-%1.png").arg(sample++);
+                const bool saved = !image.isNull() && image.save(path);
+                qInfo().noquote() << "lipax.test: inplace surface snapshot saved=" << saved
+                                  << "geometry=" << quick->geometry() << "path=" << path;
+            }
+        });
+        timer->start();
+    }
     if (qEnvironmentVariableIsSet("LIPAX_TEST_WITH_OVERLAY")) {
         QTimer::singleShot(delayMs / 2, [] {
             for (QWindow *window : QGuiApplication::allWindows()) {

@@ -37,12 +37,29 @@ Window {
     color: "transparent"
     visible: false
     onClosing: closeRequested()
-    width: Math.min(settings.translation_window.size ? settings.translation_window.size[0] : 700,
-                    settings.translation_window.max_width_enabled !== false ? (settings.translation_window.maximum_width || 900) : 100000)
-    height: settings.translation_window.size ? settings.translation_window.size[1] : 120
+    // A native resize changes QWindow's size. Rebinding it to the whole settings object
+    // resets that size whenever a move is saved or a translation appearance is edited.
+    // Initialise once; only an explicit size/maximum-width edit changes it later.
+    width: 700
+    height: 120
+    property bool geometryReady: false
+    readonly property string requestedSize: JSON.stringify([
+        settings.translation_window.size || [700, 120],
+        settings.translation_window.max_width_enabled !== false,
+        settings.translation_window.maximum_width || 900])
+    function applySize(saved) {
+        const size = settings.translation_window.size || [700, 120]
+        width = Math.min(saved ? saved.w : size[0],
+                         settings.translation_window.max_width_enabled !== false ? (settings.translation_window.maximum_width || 900) : 100000)
+        height = saved ? saved.h : size[1]
+    }
+    onRequestedSizeChanged: if (geometryReady) applySize(null)
 
     Component.onCompleted: {
-        const g = settings.translation_window.floating_geometry
+        const g = settings.general && settings.general.remember_window_geometry === false
+            ? null : settings.translation_window.floating_geometry
+        applySize(g)
+        geometryReady = true
         if (x11 && g) {
             // X11: Qt may position top-level windows; restore once, before showing.
             x = Math.round(g.x); y = Math.round(g.y)
@@ -50,25 +67,24 @@ Window {
         }
         console.debug(logState, "pinned=false floating=true window_role=" + (x11 ? "x11_toplevel" : "xdg_toplevel") + " layershell=false")
     }
-    onVisibleChanged: if (visible) {
-        Qt.callLater(updateInput)
-        Qt.callLater(updateBlur)
+    onVisibleChanged: {
+        console.debug(logState, "visible=" + visible + " width=" + width + " height=" + height
+                      + " screen=" + (screen ? screen.name : "?"))
+        if (visible) {
+            Qt.callLater(updateInput)
+            Qt.callLater(updateBlur)
+        } else if (geometryReady && x11) reportGeometry("hidden")
     }
 
-    // X11 only: save where the window ended up, after it stops moving (not during the drag).
-    Timer {
-        id: saveTimer
-        interval: 400
-        onTriggered: {
-            const s = win.screen
-            const g = { x: win.x, y: win.y, w: win.width, h: win.height, output: s ? s.name : "",
-                        output_x: s ? s.virtualX : 0, output_y: s ? s.virtualY : 0 }
-            console.debug(logGeometry, "move_finished x=" + g.x + " y=" + g.y + " width=" + g.w + " height=" + g.h + " screen=" + g.output)
-            if (win.controller && win.controller.reportFloatingGeometry) win.controller.reportFloatingGeometry(JSON.stringify(g), "move_finished")
-        }
+    // KWin reports interactiveMoveResizeFinished on both Wayland and X11. Without
+    // that service, X11 can at least save the final geometry when the window is hidden.
+    function reportGeometry(reason) {
+        const s = screen
+        const g = { x: x, y: y, w: width, h: height, output: s ? s.name : "",
+                    output_x: s ? s.virtualX : 0, output_y: s ? s.virtualY : 0 }
+        if (controller && controller.reportFloatingGeometry)
+            controller.reportFloatingGeometry(JSON.stringify(g), reason)
     }
-    onXChanged: if (x11 && visible) saveTimer.restart()
-    onYChanged: if (x11 && visible) saveTimer.restart()
 
     // Floating windows capture input: no click-through mask.
     function updateInput() {
@@ -96,6 +112,26 @@ Window {
         onMoveRequested: {
             console.debug(logDrag, "system_move_started")
             if (!win.startSystemMove()) console.warn(logDrag, "startSystemMove is not supported by this platform")
+        }
+    }
+
+    // Frameless top-levels have no decoration resize grip. Hand the corner gesture
+    // to the compositor, just like movement; never change global coordinates here.
+    MouseArea {
+        objectName: "floatingResizeGrip"
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        width: 14
+        height: 14
+        cursorShape: Qt.SizeFDiagCursor
+        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+        onPressed: mouse => {
+            if (mouse.button === Qt.MiddleButton) win.pinToggleRequested()
+            else {
+                const accepted = win.startSystemResize(Qt.RightEdge | Qt.BottomEdge)
+                console.debug(logDrag, "system_resize_requested accepted=" + accepted)
+                if (!accepted) console.warn(logDrag, "startSystemResize is not supported by this platform")
+            }
         }
     }
 }

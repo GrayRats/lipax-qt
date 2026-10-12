@@ -1,11 +1,14 @@
-[1] fixture 1
-→ Перевод длиннее оригинала. Hello 日本語
+[4] At Rhodes Island, we actually will receive occasional requests from outside parties in addition to our routine internal and maintenance work.
+→ На острове Родос мы будем получать случайные запросы от внешних сторон в дополнение к нашим рутинным внутренним и техническим работам.
 
-[3] fixture 3
-→ Перевод длиннее оригинала. Hello 日本語
+[20] OPERATION 0-1
+→ ОПЕРация 0-1
 
-[6] fixture 6
-→ Перевод длиннее оригинала. Hello 日本語
+[43] TUTORIAL
+→ РЕПУТАТУРА
 
-[8] fixture 8
-→ Перевод длиннее оригинала. Hello 日本語
+[61] Progress EPISODE
+→ ЭПИЗОД Прогресса
+
+[62] ODE
+→ ОДА

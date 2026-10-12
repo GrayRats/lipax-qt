@@ -1,17 +1,20 @@
-[1] fixture 1
-→ Перевод длиннее оригинала. Hello 日本語
+[20] Flashpoints offer moments of emotional choice. How Aloy expresses her personality is up to you.
+→ Горячие точки предлагают моменты эмоционального выбора. Как Алой выражает свою индивидуальность, зависит от вас.
 
-[3] fixture 3
-→ Перевод длиннее оригинала. Hello 日本語
+[26] challenge
+→ вызов
 
-[9] fixture 9
-→ Перевод длиннее оригинала. Hello 日本語
+[27] nt the
+→ н
 
-[11] fixture 11
-→ Перевод длиннее оригинала. Hello 日本語
+[30] Choose and Aloy will use her Insight to find a clever, less obvious approach.
+→ Выберите, и Алой будет использовать ее Insight, чтобы найти умный, менее очевидный подход.
 
-[14] fixture 14
-→ Перевод длиннее оригинала. Hello 日本語
+[35] Choose and Aloy will express Compassion or give voice to her deepest convictions.
+→ Выбирайте, и Алой выразит сострадание или даст голос ее самым глубоким убеждениям.
 
-[16] fixture 16
-→ Перевод длиннее оригинала. Hello 日本語
+[59] Someone who had no other choice
+→ Человек, у которого не было другого выбора
+
+[63] Someone who had a good reason
+→ Кто-то, у кого была веская причина

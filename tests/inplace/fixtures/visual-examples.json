@@ -1,0 +1,30 @@
+{
+  "purpose": "Illustrative user examples, not pixel-approved goldens or complete OCR ground truth. Translations are deterministic reviewed test input. Focus regions are for visual inspection only.",
+  "source_directory": "docs/screenshots/test-game",
+  "reference_directory": "docs/screenshots/test-game/Эталоны",
+  "scenes": [
+    {"id": 0, "focus": [210, 930, 1380, 100], "needle": "Zombie Girl can enter", "translation": "Девочка-зомби может войти в режим умирания на 15 секунд, когда здоровье падает до минимума. Повторный вход невозможен, если после выхода не собрать красные сердца.", "review": "Bottom description; preserve the independent SELECT button."},
+    {"id": 1, "focus": [560, 935, 1080, 100], "needle": "most important person", "translation": "Но вы всегда будете для меня самым важным человеком, Доктор. Что бы ни случилось, это никогда не изменится.", "review": "Two-line dialogue, independent name and dark background."},
+    {"id": 2, "focus": [590, 195, 710, 120], "needle": "Spend the coins", "translation": "Трать собранные во время игры монеты на покупки в магазине!", "review": "Separate heading, instructions, vertical labels and footer. Reference keeps vertical English labels."},
+    {"id": 3, "focus": [475, 895, 1010, 95], "needle": "ghost who haunts", "translation": "Ханако-сан, призрак, обитающий в школьных туалетах, найдёт тебя!", "review": "Dialogue and name remain separate."},
+    {"id": 4, "focus": [665, 465, 520, 180], "needle": "A game", "translation": "Игра, невероятно популярная среди монстров. В последнее время в неё всё чаще играют и люди.", "review": "Reference has overlapping text plates; improve readability instead of copying overlap."},
+    {"id": 5, "focus": [670, 250, 580, 390], "needle": "Flashpoints", "translation": "В моменты выбора эмоции особенно сильны. Алой выражает свой характер, а вы выбираете её ответ.", "review": "Small tutorial text and independent dialogue choices; protect icons."},
+    {"id": 6, "focus": [50, 265, 610, 100], "needle": "Well-worn", "translation": "Потрёпанная броня из переработанного оборудования древних. Потеряв источник питания, она превратилась в обычную одежду.", "review": "Reference paragraph overlaps itself; keep description, title and upgrade labels independent."},
+    {"id": 7, "focus": [405, 265, 565, 110], "needle": "Sign in for", "translation": "Заходите в игру семь дней подряд, чтобы получить оператора Клиффхарт. Ваши предыдущие отметки сохранятся.", "review": "Small HUD labels and reward cards; do not cover neighbouring rewards."},
+    {"id": 8, "focus": [315, 105, 1100, 145], "needle": "outside parties", "translation": "На Родосе мы принимаем заявки от сторонних организаций — помимо повседневных внутренних дел и обслуживания.", "review": "Top dialogue panel; keep portrait and map labels clear."},
+    {"id": 9, "focus": [420, 955, 1090, 70], "needle": "herbalist", "translation": "Эм, я Мирра, травница. Доктор Кальцит дала мне это имя… Она сказала, что мирра символизирует…", "review": "Bottom dialogue and decorative name/logo need separate treatment."},
+    {"id": 10, "focus": [560, 845, 820, 65], "needle": "Hello Magistrate", "translation": "Здравствуйте, магистрат. Я главный констебль Уайтчепела и отвечаю за полицейские дела.", "review": "Serif dialogue, independent name and neighbouring map."},
+    {"id": 11, "focus": [15, 155, 315, 110], "needle": "investigate", "translation": "Если у вас закончится предмет для расследования, поговорите с подозреваемыми в здании суда, чтобы продолжить поиск.", "review": "Small HUD instructions and slanted scenery; reference is illustrative."},
+    {"id": 12, "focus": [460, 375, 475, 255], "needle": "equipment slots", "translation": "Это ячейки снаряжения. Нажмите на предмет, чтобы поместить его в свободную ячейку. Некоторые предметы, например шлемы, можно экипировать только один раз.", "review": "Pixel font tooltip; reference leaves source text visible and overlaps labels."}
+  ],
+  "additional_translations": [
+    ["Shop", "Магазин"],
+    ["As your rank increases", "С ростом вашего ранга ассортимент становится всё лучше!"],
+    ["Lantern", "Фонарь"],
+    ["Monster", "Монстр"],
+    ["TIPS", "ПОДСКАЗКИ"],
+    ["NORA ANOINTED", "ПОСВЯЩЁННАЯ НОРА"],
+    ["LEVEL 2 UPGRADE", "УЛУЧШЕНИЕ УРОВНЯ 2"],
+    ["Player Stats", "Характеристики игрока"]
+  ]
+}

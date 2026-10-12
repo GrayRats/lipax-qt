@@ -1,0 +1,4265 @@
+{
+  "block_ocr": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        0,
+        0
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 16.0,
+        "x": 2.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 136.455621,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.93334197998047,
+      "crop_origin": [
+        823,
+        0
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 77.0,
+        "x": 826.0,
+        "y": 1.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 12.0,
+          "w": 79.0,
+          "x": 825.0,
+          "y": 0.0
+        }
+      ],
+      "observation_ms": 0.049885,
+      "ocr_ms": 22.630548,
+      "original": "Cross x Mars",
+      "raw_original": "Cross x Mars",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.93334197998047,
+          "rect": {
+            "h": 12.0,
+            "w": 79.0,
+            "x": 825.0,
+            "y": 0.0
+          },
+          "text": "Cross x Mars"
+        }
+      ],
+      "split": false,
+      "translation": "Крест x Марс",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.03759765625,
+      "crop_origin": [
+        784,
+        427
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 147.0,
+        "x": 789.0,
+        "y": 432.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 77.0,
+          "x": 786.0,
+          "y": 428.0
+        },
+        {
+          "h": 26.0,
+          "w": 71.0,
+          "x": 869.0,
+          "y": 429.0
+        }
+      ],
+      "observation_ms": 0.24321,
+      "ocr_ms": 32.612505999999996,
+      "original": "60% Fuel",
+      "raw_original": "60% Fuel",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.84176635742188,
+          "rect": {
+            "h": 27.0,
+            "w": 77.0,
+            "x": 786.0,
+            "y": 428.0
+          },
+          "text": "60%"
+        },
+        {
+          "confidence": 99.9344711303711,
+          "rect": {
+            "h": 26.0,
+            "w": 71.0,
+            "x": 869.0,
+            "y": 429.0
+          },
+          "text": "Fuel"
+        }
+      ],
+      "split": false,
+      "translation": "60% Топлива",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.85236358642578,
+      "crop_origin": [
+        751,
+        460
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 34.0,
+        "x": 754.0,
+        "y": 463.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 10.0,
+          "w": 39.0,
+          "x": 751.0,
+          "y": 461.0
+        }
+      ],
+      "observation_ms": 0.070334,
+      "ocr_ms": 19.186204,
+      "original": "ominal",
+      "raw_original": "ominal",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.85236358642578,
+          "rect": {
+            "h": 10.0,
+            "w": 39.0,
+            "x": 751.0,
+            "y": 461.0
+          },
+          "text": "ominal"
+        }
+      ],
+      "split": false,
+      "translation": "оминальный",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 89.33844757080078,
+      "crop_origin": [
+        740,
+        461
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 9.0,
+        "x": 743.0,
+        "y": 464.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [
+        {
+          "h": 7.0,
+          "w": 12.0,
+          "x": 742.0,
+          "y": 463.0
+        }
+      ],
+      "observation_ms": 0.029215,
+      "ocr_ms": 16.011289,
+      "original": "nc",
+      "raw_original": "nc",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 89.33844757080078,
+          "rect": {
+            "h": 7.0,
+            "w": 12.0,
+            "x": 742.0,
+            "y": 463.0
+          },
+          "text": "nc"
+        }
+      ],
+      "split": false,
+      "translation": "nc",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 83.20309448242188,
+      "crop_origin": [
+        767,
+        475
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 33.0,
+        "x": 770.0,
+        "y": 478.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [
+        {
+          "h": 7.0,
+          "w": 20.0,
+          "x": 770.0,
+          "y": 478.0
+        }
+      ],
+      "observation_ms": 0.029586,
+      "ocr_ms": 29.47822,
+      "original": "act",
+      "raw_original": "act",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 83.20309448242188,
+          "rect": {
+            "h": 7.0,
+            "w": 20.0,
+            "x": 770.0,
+            "y": 478.0
+          },
+          "text": "act"
+        }
+      ],
+      "split": false,
+      "translation": "Акт",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 78.04035949707031,
+      "crop_origin": [
+        713,
+        480
+      ],
+      "detector_rect": {
+        "h": 29.0,
+        "w": 52.0,
+        "x": 721.0,
+        "y": 488.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [
+        {
+          "h": 8.0,
+          "w": 16.0,
+          "x": 720.0,
+          "y": 493.0
+        },
+        {
+          "h": 11.0,
+          "w": 18.0,
+          "x": 756.0,
+          "y": 492.0
+        },
+        {
+          "h": 8.0,
+          "w": 14.0,
+          "x": 716.0,
+          "y": 507.0
+        },
+        {
+          "h": 7.0,
+          "w": 13.0,
+          "x": 762.0,
+          "y": 508.0
+        }
+      ],
+      "observation_ms": 0.244343,
+      "ocr_ms": 47.711118,
+      "original": "en ied 2 7",
+      "raw_original": "en ied 2 7",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 76.42320251464844,
+          "rect": {
+            "h": 8.0,
+            "w": 16.0,
+            "x": 720.0,
+            "y": 493.0
+          },
+          "text": "en"
+        },
+        {
+          "confidence": 81.3284683227539,
+          "rect": {
+            "h": 11.0,
+            "w": 18.0,
+            "x": 756.0,
+            "y": 492.0
+          },
+          "text": "ied"
+        },
+        {
+          "confidence": 89.7830810546875,
+          "rect": {
+            "h": 8.0,
+            "w": 14.0,
+            "x": 716.0,
+            "y": 507.0
+          },
+          "text": "2"
+        },
+        {
+          "confidence": 59.66761779785156,
+          "rect": {
+            "h": 7.0,
+            "w": 13.0,
+            "x": 762.0,
+            "y": 508.0
+          },
+          "text": "7"
+        }
+      ],
+      "split": false,
+      "translation": "на идеа 2 7",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 99.9151840209961,
+      "crop_origin": [
+        752,
+        503
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 116.0,
+        "x": 755.0,
+        "y": 506.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 117.0,
+          "x": 753.0,
+          "y": 507.0
+        },
+        {
+          "h": 13.0,
+          "w": 52.0,
+          "x": 773.0,
+          "y": 522.0
+        }
+      ],
+      "observation_ms": 0.229936,
+      "ocr_ms": 40.604174,
+      "original": "122.33:E444:1123 S38123",
+      "raw_original": "122.33:E444:1123 S38123",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.94792175292969,
+          "rect": {
+            "h": 11.0,
+            "w": 117.0,
+            "x": 753.0,
+            "y": 507.0
+          },
+          "text": "122.33:E444:1123"
+        },
+        {
+          "confidence": 99.82788848876953,
+          "rect": {
+            "h": 13.0,
+            "w": 52.0,
+            "x": 773.0,
+            "y": 522.0
+          },
+          "text": "S38123"
+        }
+      ],
+      "split": true,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 87.45802307128906,
+      "crop_origin": [
+        696,
+        505
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 42.0,
+        "x": 699.0,
+        "y": 508.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [
+        {
+          "h": 13.0,
+          "w": 40.0,
+          "x": 697.0,
+          "y": 506.0
+        }
+      ],
+      "observation_ms": 0.07305900000000001,
+      "ocr_ms": 18.881777,
+      "original": "122:1",
+      "raw_original": "122:1",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 87.45802307128906,
+          "rect": {
+            "h": 13.0,
+            "w": 40.0,
+            "x": 697.0,
+            "y": 506.0
+          },
+          "text": "122:1"
+        }
+      ],
+      "split": false,
+      "translation": "122:1",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        157,
+        550
+      ],
+      "detector_rect": {
+        "h": 59.0,
+        "w": 131.0,
+        "x": 172.0,
+        "y": 565.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.567037,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1353,
+        582
+      ],
+      "detector_rect": {
+        "h": 34.0,
+        "w": 91.0,
+        "x": 1357.0,
+        "y": 586.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.4600999999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.65861511230469,
+      "crop_origin": [
+        930,
+        602
+      ],
+      "detector_rect": {
+        "h": 57.0,
+        "w": 161.0,
+        "x": 936.0,
+        "y": 608.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 166.0,
+          "x": 934.0,
+          "y": 604.0
+        },
+        {
+          "h": 30.0,
+          "w": 157.0,
+          "x": 940.0,
+          "y": 636.0
+        }
+      ],
+      "observation_ms": 0.048221,
+      "ocr_ms": 28.927505999999997,
+      "original": "rSpeed: 5 ms Temp: 20 C",
+      "raw_original": "rSpeed: 5 ms Temp: 20 C",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.89220428466797,
+          "rect": {
+            "h": 27.0,
+            "w": 166.0,
+            "x": 934.0,
+            "y": 604.0
+          },
+          "text": "rSpeed: 5 ms"
+        },
+        {
+          "confidence": 95.17831420898438,
+          "rect": {
+            "h": 30.0,
+            "w": 157.0,
+            "x": 940.0,
+            "y": 636.0
+          },
+          "text": "Temp: 20 C"
+        }
+      ],
+      "split": false,
+      "translation": "rСтупет: 5 мс Темп: 20 C",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        675,
+        723
+      ],
+      "detector_rect": {
+        "h": 16.0,
+        "w": 68.0,
+        "x": 679.0,
+        "y": 727.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.226326,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        950,
+        721
+      ],
+      "detector_rect": {
+        "h": 21.0,
+        "w": 52.0,
+        "x": 956.0,
+        "y": 727.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.118233,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 90.46713256835938,
+      "crop_origin": [
+        782,
+        732
+      ],
+      "detector_rect": {
+        "h": 24.0,
+        "w": 102.0,
+        "x": 785.0,
+        "y": 735.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [
+        {
+          "h": 26.0,
+          "w": 104.0,
+          "x": 783.0,
+          "y": 733.0
+        }
+      ],
+      "observation_ms": 0.145526,
+      "ocr_ms": 16.742324,
+      "original": "cking",
+      "raw_original": "cking",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 90.46713256835938,
+          "rect": {
+            "h": 26.0,
+            "w": 104.0,
+            "x": 783.0,
+            "y": 733.0
+          },
+          "text": "cking"
+        }
+      ],
+      "split": false,
+      "translation": "ккинг",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        953,
+        747
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 95.0,
+        "x": 956.0,
+        "y": 750.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 7.365101,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1520,
+        758
+      ],
+      "detector_rect": {
+        "h": 47.0,
+        "w": 159.0,
+        "x": 1532.0,
+        "y": 770.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.43357,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.64950561523438,
+      "crop_origin": [
+        43,
+        770
+      ],
+      "detector_rect": {
+        "h": 61.0,
+        "w": 993.0,
+        "x": 59.0,
+        "y": 786.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [
+        {
+          "h": 43.0,
+          "w": 174.0,
+          "x": 53.0,
+          "y": 778.0
+        },
+        {
+          "h": 50.0,
+          "w": 851.0,
+          "x": 210.0,
+          "y": 776.0
+        },
+        {
+          "h": 33.0,
+          "w": 1009.0,
+          "x": 51.0,
+          "y": 829.0
+        }
+      ],
+      "observation_ms": 13.962347999999999,
+      "ocr_ms": 220.277754,
+      "original": "Morning,t Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and. guite frankly. I'm upset at it n",
+      "raw_original": "Morning,t Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and. guite frankly. I'm upset at it n",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 93.4915542602539,
+          "rect": {
+            "h": 43.0,
+            "w": 174.0,
+            "x": 53.0,
+            "y": 778.0
+          },
+          "text": "Morning,t"
+        },
+        {
+          "confidence": 99.47502899169922,
+          "rect": {
+            "h": 50.0,
+            "w": 851.0,
+            "x": 210.0,
+            "y": 776.0
+          },
+          "text": "Ella. Sometimes I wonder if I'm in the right place"
+        },
+        {
+          "confidence": 96.76664733886719,
+          "rect": {
+            "h": 33.0,
+            "w": 1009.0,
+            "x": 51.0,
+            "y": 829.0
+          },
+          "text": "and-forth gets tiresome and. guite frankly. I'm upset at it n"
+        }
+      ],
+      "split": false,
+      "translation": "Утро, у Эллы. Иногда я задаюсь вопросом, нахожусь ли я в правильном месте и-вперед становится утомительным и. говоря, вино. Я расстроен этим n",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.92192077636719,
+      "crop_origin": [
+        1105,
+        777
+      ],
+      "detector_rect": {
+        "h": 34.0,
+        "w": 339.0,
+        "x": 1114.0,
+        "y": 786.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [
+        {
+          "h": 38.0,
+          "w": 350.0,
+          "x": 1109.0,
+          "y": 781.0
+        }
+      ],
+      "observation_ms": 0.49830399999999997,
+      "ocr_ms": 27.827492,
+      "original": "all this hauling back",
+      "raw_original": "all this hauling back",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.92192077636719,
+          "rect": {
+            "h": 38.0,
+            "w": 350.0,
+            "x": 1109.0,
+            "y": 781.0
+          },
+          "text": "all this hauling back"
+        }
+      ],
+      "split": false,
+      "translation": "все это отвоз в ответ",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.72095489501953,
+      "crop_origin": [
+        9,
+        752
+      ],
+      "detector_rect": {
+        "h": 195.0,
+        "w": 1389.0,
+        "x": 58.0,
+        "y": 801.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [
+        {
+          "h": 20.0,
+          "w": 162.0,
+          "x": 18.0,
+          "y": 752.0
+        },
+        {
+          "h": 45.0,
+          "w": 162.0,
+          "x": 50.0,
+          "y": 777.0
+        },
+        {
+          "h": 37.0,
+          "w": 279.0,
+          "x": 218.0,
+          "y": 780.0
+        },
+        {
+          "h": 48.0,
+          "w": 965.0,
+          "x": 499.0,
+          "y": 777.0
+        },
+        {
+          "h": 36.0,
+          "w": 498.0,
+          "x": 52.0,
+          "y": 836.0
+        },
+        {
+          "h": 47.0,
+          "w": 895.0,
+          "x": 553.0,
+          "y": 831.0
+        },
+        {
+          "h": 42.0,
+          "w": 555.0,
+          "x": 51.0,
+          "y": 886.0
+        }
+      ],
+      "observation_ms": 6.117438,
+      "ocr_ms": 457.637698,
+      "original": "Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be.. but I have the right to be angry!",
+      "raw_original": "MuKa Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be.. but I have the right to be angry!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 77.84558868408203,
+          "rect": {
+            "h": 20.0,
+            "w": 162.0,
+            "x": 18.0,
+            "y": 752.0
+          },
+          "text": "MuKa"
+        },
+        {
+          "confidence": 99.9671401977539,
+          "rect": {
+            "h": 45.0,
+            "w": 162.0,
+            "x": 50.0,
+            "y": 777.0
+          },
+          "text": "Morning,"
+        },
+        {
+          "confidence": 99.96475219726562,
+          "rect": {
+            "h": 37.0,
+            "w": 279.0,
+            "x": 218.0,
+            "y": 780.0
+          },
+          "text": "Ella. Sometimes"
+        },
+        {
+          "confidence": 99.22045135498047,
+          "rect": {
+            "h": 48.0,
+            "w": 965.0,
+            "x": 499.0,
+            "y": 777.0
+          },
+          "text": "I wonder if I'm in the right place — all this hauling back-"
+        },
+        {
+          "confidence": 98.1565933227539,
+          "rect": {
+            "h": 36.0,
+            "w": 498.0,
+            "x": 52.0,
+            "y": 836.0
+          },
+          "text": "and-forth gets tiresome and,"
+        },
+        {
+          "confidence": 97.7671127319336,
+          "rect": {
+            "h": 47.0,
+            "w": 895.0,
+            "x": 553.0,
+            "y": 831.0
+          },
+          "text": "quite frankly, I'm upset at it more than I should be.."
+        },
+        {
+          "confidence": 95.4395751953125,
+          "rect": {
+            "h": 42.0,
+            "w": 555.0,
+            "x": 51.0,
+            "y": 886.0
+          },
+          "text": "but I have the right to be angry!"
+        }
+      ],
+      "split": false,
+      "translation": "- Доброе утро, Элла. Иногда я задаюсь вопросом, нахожусь ли я в правильном месте - все это перетаскивание назад и назад становится утомительным, и, честно говоря, я расстроен этим больше, чем должен быть... но я имею право злиться!",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.6268310546875,
+      "crop_origin": [
+        0,
+        826
+      ],
+      "detector_rect": {
+        "h": 136.0,
+        "w": 246.0,
+        "x": 10.0,
+        "y": 860.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [
+        {
+          "h": 34.0,
+          "w": 188.0,
+          "x": 54.0,
+          "y": 837.0
+        },
+        {
+          "h": 38.0,
+          "w": 64.0,
+          "x": 225.0,
+          "y": 836.0
+        },
+        {
+          "h": 37.0,
+          "w": 236.0,
+          "x": 53.0,
+          "y": 887.0
+        }
+      ],
+      "observation_ms": 0.113665,
+      "ocr_ms": 49.228172,
+      "original": "and=forth get but I have the",
+      "raw_original": "and=forth get but I have the",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.6772232055664,
+          "rect": {
+            "h": 34.0,
+            "w": 188.0,
+            "x": 54.0,
+            "y": 837.0
+          },
+          "text": "and=forth"
+        },
+        {
+          "confidence": 99.9952163696289,
+          "rect": {
+            "h": 38.0,
+            "w": 64.0,
+            "x": 225.0,
+            "y": 836.0
+          },
+          "text": "get"
+        },
+        {
+          "confidence": 98.30120086669922,
+          "rect": {
+            "h": 37.0,
+            "w": 236.0,
+            "x": 53.0,
+            "y": 887.0
+          },
+          "text": "but I have the"
+        }
+      ],
+      "split": false,
+      "translation": "и=пот, но у меня есть",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.38154602050781,
+      "crop_origin": [
+        388,
+        836
+      ],
+      "detector_rect": {
+        "h": 98.0,
+        "w": 149.0,
+        "x": 413.0,
+        "y": 861.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [
+        {
+          "h": 30.0,
+          "w": 157.0,
+          "x": 388.0,
+          "y": 841.0
+        },
+        {
+          "h": 40.0,
+          "w": 198.0,
+          "x": 388.0,
+          "y": 890.0
+        }
+      ],
+      "observation_ms": 0.07664499999999999,
+      "ocr_ms": 32.406216,
+      "original": "some and to be angry",
+      "raw_original": "some and to be angry",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 93.81046295166016,
+          "rect": {
+            "h": 30.0,
+            "w": 157.0,
+            "x": 388.0,
+            "y": 841.0
+          },
+          "text": "some and"
+        },
+        {
+          "confidence": 99.97869110107422,
+          "rect": {
+            "h": 40.0,
+            "w": 198.0,
+            "x": 388.0,
+            "y": 890.0
+          },
+          "text": "to be angry"
+        }
+      ],
+      "split": false,
+      "translation": "некоторые и быть злым",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.6604995727539,
+      "crop_origin": [
+        29,
+        866
+      ],
+      "detector_rect": {
+        "h": 104.0,
+        "w": 605.0,
+        "x": 55.0,
+        "y": 892.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [
+        {
+          "h": 42.0,
+          "w": 551.0,
+          "x": 53.0,
+          "y": 886.0
+        }
+      ],
+      "observation_ms": 0.118835,
+      "ocr_ms": 41.103781,
+      "original": "but I have the right to be angry!",
+      "raw_original": "but I have the right to be angry!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.6604995727539,
+          "rect": {
+            "h": 42.0,
+            "w": 551.0,
+            "x": 53.0,
+            "y": 886.0
+          },
+          "text": "but I have the right to be angry!"
+        }
+      ],
+      "split": false,
+      "translation": "Но я имею право злиться!",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1382,
+        922
+      ],
+      "detector_rect": {
+        "h": 59.0,
+        "w": 167.0,
+        "x": 1397.0,
+        "y": 937.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.726295,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.75862121582031,
+      "crop_origin": [
+        550,
+        459
+      ],
+      "detector_rect": {
+        "h": 108.0,
+        "w": 318.0,
+        "x": 553.0,
+        "y": 462.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 50.0,
+          "x": 741.0,
+          "y": 460.0
+        },
+        {
+          "h": 11.0,
+          "w": 119.0,
+          "x": 573.0,
+          "y": 461.0
+        },
+        {
+          "h": 15.0,
+          "w": 41.0,
+          "x": 766.0,
+          "y": 473.0
+        },
+        {
+          "h": 14.0,
+          "w": 161.0,
+          "x": 569.0,
+          "y": 474.0
+        },
+        {
+          "h": 13.0,
+          "w": 70.0,
+          "x": 565.0,
+          "y": 490.0
+        },
+        {
+          "h": 9.0,
+          "w": 14.0,
+          "x": 720.0,
+          "y": 492.0
+        },
+        {
+          "h": 10.0,
+          "w": 21.0,
+          "x": 754.0,
+          "y": 492.0
+        },
+        {
+          "h": 14.0,
+          "w": 42.0,
+          "x": 695.0,
+          "y": 504.0
+        },
+        {
+          "h": 13.0,
+          "w": 117.0,
+          "x": 755.0,
+          "y": 505.0
+        },
+        {
+          "h": 14.0,
+          "w": 19.0,
+          "x": 561.0,
+          "y": 506.0
+        },
+        {
+          "h": 12.0,
+          "w": 198.0,
+          "x": 558.0,
+          "y": 523.0
+        },
+        {
+          "h": 13.0,
+          "w": 56.0,
+          "x": 770.0,
+          "y": 522.0
+        },
+        {
+          "h": 16.0,
+          "w": 277.0,
+          "x": 556.0,
+          "y": 538.0
+        },
+        {
+          "h": 14.0,
+          "w": 182.0,
+          "x": 551.0,
+          "y": 556.0
+        },
+        {
+          "h": 16.0,
+          "w": 42.0,
+          "x": 761.0,
+          "y": 555.0
+        }
+      ],
+      "observation_ms": 1.471227,
+      "ocr_ms": 318.760179,
+      "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: on aed ip: 122.1 122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "raw_original": "nominal Fuel heating status: active Exoskeleton management: Auto-pilot: on aed 122.1 122.33:E444:1123 ip: ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.92352294921875,
+          "rect": {
+            "h": 11.0,
+            "w": 50.0,
+            "x": 741.0,
+            "y": 460.0
+          },
+          "text": "nominal"
+        },
+        {
+          "confidence": 99.08992004394531,
+          "rect": {
+            "h": 11.0,
+            "w": 119.0,
+            "x": 573.0,
+            "y": 461.0
+          },
+          "text": "Fuel heating status:"
+        },
+        {
+          "confidence": 99.66336822509766,
+          "rect": {
+            "h": 15.0,
+            "w": 41.0,
+            "x": 766.0,
+            "y": 473.0
+          },
+          "text": "active"
+        },
+        {
+          "confidence": 99.73379516601562,
+          "rect": {
+            "h": 14.0,
+            "w": 161.0,
+            "x": 569.0,
+            "y": 474.0
+          },
+          "text": "Exoskeleton management:"
+        },
+        {
+          "confidence": 99.92961120605469,
+          "rect": {
+            "h": 13.0,
+            "w": 70.0,
+            "x": 565.0,
+            "y": 490.0
+          },
+          "text": "Auto-pilot:"
+        },
+        {
+          "confidence": 68.52862548828125,
+          "rect": {
+            "h": 9.0,
+            "w": 14.0,
+            "x": 720.0,
+            "y": 492.0
+          },
+          "text": "on"
+        },
+        {
+          "confidence": 98.93849182128906,
+          "rect": {
+            "h": 10.0,
+            "w": 21.0,
+            "x": 754.0,
+            "y": 492.0
+          },
+          "text": "aed"
+        },
+        {
+          "confidence": 81.112060546875,
+          "rect": {
+            "h": 14.0,
+            "w": 42.0,
+            "x": 695.0,
+            "y": 504.0
+          },
+          "text": "122.1"
+        },
+        {
+          "confidence": 99.91898345947266,
+          "rect": {
+            "h": 13.0,
+            "w": 117.0,
+            "x": 755.0,
+            "y": 505.0
+          },
+          "text": "122.33:E444:1123"
+        },
+        {
+          "confidence": 98.04800415039062,
+          "rect": {
+            "h": 14.0,
+            "w": 19.0,
+            "x": 561.0,
+            "y": 506.0
+          },
+          "text": "ip:"
+        },
+        {
+          "confidence": 99.28130340576172,
+          "rect": {
+            "h": 12.0,
+            "w": 198.0,
+            "x": 558.0,
+            "y": 523.0
+          },
+          "text": "ship name: Hevacel nikonomiko"
+        },
+        {
+          "confidence": 99.78223419189453,
+          "rect": {
+            "h": 13.0,
+            "w": 56.0,
+            "x": 770.0,
+            "y": 522.0
+          },
+          "text": "S38123"
+        },
+        {
+          "confidence": 99.40208435058594,
+          "rect": {
+            "h": 16.0,
+            "w": 277.0,
+            "x": 556.0,
+            "y": 538.0
+          },
+          "text": "Temporary shielding displacement: 333112"
+        },
+        {
+          "confidence": 99.59622955322266,
+          "rect": {
+            "h": 14.0,
+            "w": 182.0,
+            "x": 551.0,
+            "y": 556.0
+          },
+          "text": "Evasive action management:"
+        },
+        {
+          "confidence": 99.9892807006836,
+          "rect": {
+            "h": 16.0,
+            "w": 42.0,
+            "x": 761.0,
+            "y": 555.0
+          },
+          "text": "active"
+        }
+      ],
+      "split": false,
+      "translation": "Статус нагрева топлива: Номинальное управление экзоскелетом: активный Автопилот: на ed ip: 122.1 122.33:E444:1123 Название корабля: Hevacel nikonomiko S38123 Временное водозащитное смещение: 333112 Управление уклончивым действием: active",
+      "translation_source": "actual translation-engine response"
+    }
+  ],
+  "blocks": [
+    {
+      "cap_height": 15.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 15.0,
+        "w": 16.0,
+        "x": 2.0,
+        "y": 0.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "SansSerif",
+      "confidence": 0.3041725158691406,
+      "font": "Inter",
+      "rect": {
+        "h": 20.0,
+        "w": 147.0,
+        "x": 789.0,
+        "y": 432.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "SansSerif",
+      "confidence": 0.5680833458900452,
+      "font": "Inter",
+      "rect": {
+        "h": 108.0,
+        "w": 277.0,
+        "x": 553.0,
+        "y": 462.0
+      }
+    },
+    {
+      "cap_height": 6.0,
+      "category": "SansSerif",
+      "confidence": 0.3621000647544861,
+      "font": "Inter",
+      "rect": {
+        "h": 6.0,
+        "w": 34.0,
+        "x": 754.0,
+        "y": 463.0
+      }
+    },
+    {
+      "cap_height": 4.0,
+      "category": "Unknown",
+      "confidence": 0.03466666862368584,
+      "font": "Inter",
+      "rect": {
+        "h": 5.0,
+        "w": 9.0,
+        "x": 743.0,
+        "y": 464.0
+      }
+    },
+    {
+      "cap_height": 5.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 7.0,
+        "w": 33.0,
+        "x": 770.0,
+        "y": 478.0
+      }
+    },
+    {
+      "cap_height": 22.0,
+      "category": "Serif",
+      "confidence": 0.3640589416027069,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 29.0,
+        "w": 52.0,
+        "x": 721.0,
+        "y": 488.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "Serif",
+      "confidence": 0.6559104323387146,
+      "font": "Literata",
+      "rect": {
+        "h": 27.0,
+        "w": 116.0,
+        "x": 755.0,
+        "y": 506.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "SansSerif",
+      "confidence": 0.259072482585907,
+      "font": "Inter",
+      "rect": {
+        "h": 9.0,
+        "w": 42.0,
+        "x": 699.0,
+        "y": 508.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 16.0,
+        "w": 68.0,
+        "x": 679.0,
+        "y": 727.0
+      }
+    },
+    {
+      "cap_height": 21.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 21.0,
+        "w": 52.0,
+        "x": 956.0,
+        "y": 727.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "Serif",
+      "confidence": 0.41253867745399475,
+      "font": "Literata",
+      "rect": {
+        "h": 24.0,
+        "w": 102.0,
+        "x": 785.0,
+        "y": 735.0
+      }
+    },
+    {
+      "cap_height": 5.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 5.0,
+        "w": 95.0,
+        "x": 956.0,
+        "y": 750.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "SansSerif",
+      "confidence": 0.6520340442657471,
+      "font": "Inter",
+      "rect": {
+        "h": 61.0,
+        "w": 993.0,
+        "x": 59.0,
+        "y": 786.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "SansSerif",
+      "confidence": 0.65497225522995,
+      "font": "Inter",
+      "rect": {
+        "h": 34.0,
+        "w": 339.0,
+        "x": 1114.0,
+        "y": 786.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "SansSerif",
+      "confidence": 0.6903889179229736,
+      "font": "Inter",
+      "rect": {
+        "h": 195.0,
+        "w": 1389.0,
+        "x": 58.0,
+        "y": 801.0
+      }
+    },
+    {
+      "cap_height": 136.0,
+      "category": "Unknown",
+      "confidence": 0.03111274540424347,
+      "font": "Inter",
+      "rect": {
+        "h": 136.0,
+        "w": 246.0,
+        "x": 10.0,
+        "y": 860.0
+      }
+    },
+    {
+      "cap_height": 90.0,
+      "category": "Unknown",
+      "confidence": 0.03190740942955017,
+      "font": "Inter",
+      "rect": {
+        "h": 98.0,
+        "w": 149.0,
+        "x": 413.0,
+        "y": 861.0
+      }
+    },
+    {
+      "cap_height": 104.0,
+      "category": "Serif",
+      "confidence": 0.5942067503929138,
+      "font": "Literata",
+      "rect": {
+        "h": 104.0,
+        "w": 605.0,
+        "x": 55.0,
+        "y": 892.0
+      }
+    },
+    {
+      "cap_height": 59.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 59.0,
+        "w": 167.0,
+        "x": 1397.0,
+        "y": 937.0
+      }
+    }
+  ],
+  "cached_placement_ms": 5.445997,
+  "dropped": 11,
+  "dropped_details": [
+    {
+      "block_id": 5,
+      "original": "ominal",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "оминальный"
+    },
+    {
+      "block_id": 6,
+      "original": "nc",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "nc"
+    },
+    {
+      "block_id": 7,
+      "original": "act",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "Акт"
+    },
+    {
+      "block_id": 10,
+      "original": "122:1",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "122:1"
+    },
+    {
+      "block_id": 19,
+      "original": "Morning,t Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and. guite frankly. I'm upset at it n",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "Утро, у Эллы. Иногда я задаюсь вопросом, нахожусь ли я в правильном месте и-вперед становится утомительным и. говоря, вино. Я расстроен этим n"
+    },
+    {
+      "block_id": 20,
+      "original": "all this hauling back",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "все это отвоз в ответ"
+    },
+    {
+      "block_id": 22,
+      "original": "and=forth get but I have the",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "и=пот, но у меня есть"
+    },
+    {
+      "block_id": 23,
+      "original": "some and to be angry",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "некоторые и быть злым"
+    },
+    {
+      "block_id": 24,
+      "original": "but I have the right to be angry!",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "Но я имею право злиться!"
+    },
+    {
+      "block_id": 4,
+      "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: on aed ip: 122.1 122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Статус нагрева топлива: Номинальное управление экзоскелетом: активный Автопилот: на ed ip: 122.1 122.33:E444:1123 Название корабля: Hevacel nikonomiko S38123 Временное водозащитное смещение: 333112 Управление уклончивым действием: active"
+    },
+    {
+      "block_id": 8,
+      "original": "en ied 2 7",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "на идеа 2 7"
+    }
+  ],
+  "finish_ms": [
+    6.642030999999999,
+    0.553589
+  ],
+  "first_frame_ms": 87.92001300000001,
+  "fits": 7,
+  "frame_blocks": [
+    {
+      "cap_height_px": 9.0,
+      "id": 2,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 14.0,
+        "w": 81.0,
+        "x": 824.0,
+        "y": -1.0
+      }
+    },
+    {
+      "cap_height_px": 20.0,
+      "id": 3,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 29.0,
+        "w": 156.0,
+        "x": 785.0,
+        "y": 427.0
+      }
+    },
+    {
+      "cap_height_px": 9.0,
+      "id": 4,
+      "lines_note": "строк: 7 по OCR, детектор насчитал 9; граница блока по OCR",
+      "source_lines": 7,
+      "text_rect": {
+        "h": 113.0,
+        "w": 323.0,
+        "x": 550.0,
+        "y": 459.0
+      }
+    },
+    {
+      "cap_height_px": 22.0,
+      "id": 8,
+      "lines_note": "строк: 2 по OCR, детектор насчитал 1; граница блока по OCR",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 25.0,
+        "w": 61.0,
+        "x": 715.0,
+        "y": 491.0
+      }
+    },
+    {
+      "cap_height_px": 17.0,
+      "id": 13,
+      "lines_note": "строк: 2 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 64.0,
+        "w": 168.0,
+        "x": 933.0,
+        "y": 603.0
+      }
+    },
+    {
+      "cap_height_px": 9.0,
+      "id": 16,
+      "lines_note": "строк: 1 по OCR, детектор насчитал 2; граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 28.0,
+        "w": 106.0,
+        "x": 782.0,
+        "y": 732.0
+      }
+    },
+    {
+      "cap_height_px": 27.0,
+      "id": 21,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 153.0,
+        "w": 1416.0,
+        "x": 49.0,
+        "y": 776.0
+      }
+    }
+  ],
+  "hits": 7,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-15/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        0,
+        0
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 16.0,
+        "x": 2.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 136.455621,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.93334197998047,
+      "crop_origin": [
+        823,
+        0
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 77.0,
+        "x": 826.0,
+        "y": 1.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 12.0,
+          "w": 79.0,
+          "x": 825.0,
+          "y": 0.0
+        }
+      ],
+      "observation_ms": 0.049885,
+      "ocr_ms": 22.630548,
+      "original": "Cross x Mars",
+      "raw_original": "Cross x Mars",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.93334197998047,
+          "rect": {
+            "h": 12.0,
+            "w": 79.0,
+            "x": 825.0,
+            "y": 0.0
+          },
+          "text": "Cross x Mars"
+        }
+      ],
+      "split": false,
+      "translation": "Крест x Марс",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.03759765625,
+      "crop_origin": [
+        784,
+        427
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 147.0,
+        "x": 789.0,
+        "y": 432.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 77.0,
+          "x": 786.0,
+          "y": 428.0
+        },
+        {
+          "h": 26.0,
+          "w": 71.0,
+          "x": 869.0,
+          "y": 429.0
+        }
+      ],
+      "observation_ms": 0.24321,
+      "ocr_ms": 32.612505999999996,
+      "original": "60% Fuel",
+      "raw_original": "60% Fuel",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.84176635742188,
+          "rect": {
+            "h": 27.0,
+            "w": 77.0,
+            "x": 786.0,
+            "y": 428.0
+          },
+          "text": "60%"
+        },
+        {
+          "confidence": 99.9344711303711,
+          "rect": {
+            "h": 26.0,
+            "w": 71.0,
+            "x": 869.0,
+            "y": 429.0
+          },
+          "text": "Fuel"
+        }
+      ],
+      "split": false,
+      "translation": "60% Топлива",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.76177215576172,
+      "crop_origin": [
+        550,
+        459
+      ],
+      "detector_rect": {
+        "h": 108.0,
+        "w": 277.0,
+        "x": 553.0,
+        "y": 462.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 50.0,
+          "x": 740.0,
+          "y": 460.0
+        },
+        {
+          "h": 11.0,
+          "w": 117.0,
+          "x": 574.0,
+          "y": 461.0
+        },
+        {
+          "h": 15.0,
+          "w": 161.0,
+          "x": 569.0,
+          "y": 474.0
+        },
+        {
+          "h": 13.0,
+          "w": 39.0,
+          "x": 767.0,
+          "y": 475.0
+        },
+        {
+          "h": 13.0,
+          "w": 71.0,
+          "x": 565.0,
+          "y": 490.0
+        },
+        {
+          "h": 11.0,
+          "w": 15.0,
+          "x": 720.0,
+          "y": 492.0
+        },
+        {
+          "h": 11.0,
+          "w": 23.0,
+          "x": 753.0,
+          "y": 491.0
+        },
+        {
+          "h": 16.0,
+          "w": 40.0,
+          "x": 696.0,
+          "y": 503.0
+        },
+        {
+          "h": 13.0,
+          "w": 77.0,
+          "x": 754.0,
+          "y": 505.0
+        },
+        {
+          "h": 14.0,
+          "w": 19.0,
+          "x": 561.0,
+          "y": 506.0
+        },
+        {
+          "h": 13.0,
+          "w": 199.0,
+          "x": 557.0,
+          "y": 523.0
+        },
+        {
+          "h": 13.0,
+          "w": 54.0,
+          "x": 771.0,
+          "y": 522.0
+        },
+        {
+          "h": 18.0,
+          "w": 277.0,
+          "x": 555.0,
+          "y": 537.0
+        },
+        {
+          "h": 15.0,
+          "w": 182.0,
+          "x": 551.0,
+          "y": 556.0
+        },
+        {
+          "h": 12.0,
+          "w": 41.0,
+          "x": 762.0,
+          "y": 557.0
+        }
+      ],
+      "observation_ms": 1.1358519999999999,
+      "ocr_ms": 298.861029,
+      "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: en aed ip: 122.1 122.33:E444 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "raw_original": "nominal Fuel heating status: Exoskeleton management: active Auto-pilot: en aed 122.1 122.33:E444 ip: ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.93077087402344,
+          "rect": {
+            "h": 11.0,
+            "w": 50.0,
+            "x": 740.0,
+            "y": 460.0
+          },
+          "text": "nominal"
+        },
+        {
+          "confidence": 97.02178955078125,
+          "rect": {
+            "h": 11.0,
+            "w": 117.0,
+            "x": 574.0,
+            "y": 461.0
+          },
+          "text": "Fuel heating status:"
+        },
+        {
+          "confidence": 98.64010620117188,
+          "rect": {
+            "h": 15.0,
+            "w": 161.0,
+            "x": 569.0,
+            "y": 474.0
+          },
+          "text": "Exoskeleton management:"
+        },
+        {
+          "confidence": 99.95364379882812,
+          "rect": {
+            "h": 13.0,
+            "w": 39.0,
+            "x": 767.0,
+            "y": 475.0
+          },
+          "text": "active"
+        },
+        {
+          "confidence": 99.94054412841797,
+          "rect": {
+            "h": 13.0,
+            "w": 71.0,
+            "x": 565.0,
+            "y": 490.0
+          },
+          "text": "Auto-pilot:"
+        },
+        {
+          "confidence": 83.4160385131836,
+          "rect": {
+            "h": 11.0,
+            "w": 15.0,
+            "x": 720.0,
+            "y": 492.0
+          },
+          "text": "en"
+        },
+        {
+          "confidence": 96.26021575927734,
+          "rect": {
+            "h": 11.0,
+            "w": 23.0,
+            "x": 753.0,
+            "y": 491.0
+          },
+          "text": "aed"
+        },
+        {
+          "confidence": 96.47410583496094,
+          "rect": {
+            "h": 16.0,
+            "w": 40.0,
+            "x": 696.0,
+            "y": 503.0
+          },
+          "text": "122.1"
+        },
+        {
+          "confidence": 99.88109588623047,
+          "rect": {
+            "h": 13.0,
+            "w": 77.0,
+            "x": 754.0,
+            "y": 505.0
+          },
+          "text": "122.33:E444"
+        },
+        {
+          "confidence": 98.04800415039062,
+          "rect": {
+            "h": 14.0,
+            "w": 19.0,
+            "x": 561.0,
+            "y": 506.0
+          },
+          "text": "ip:"
+        },
+        {
+          "confidence": 99.01219177246094,
+          "rect": {
+            "h": 13.0,
+            "w": 199.0,
+            "x": 557.0,
+            "y": 523.0
+          },
+          "text": "ship name: Hevacel nikonomiko"
+        },
+        {
+          "confidence": 99.84979248046875,
+          "rect": {
+            "h": 13.0,
+            "w": 54.0,
+            "x": 771.0,
+            "y": 522.0
+          },
+          "text": "S38123"
+        },
+        {
+          "confidence": 98.87523651123047,
+          "rect": {
+            "h": 18.0,
+            "w": 277.0,
+            "x": 555.0,
+            "y": 537.0
+          },
+          "text": "Temporary shielding displacement: 333112"
+        },
+        {
+          "confidence": 99.65023040771484,
+          "rect": {
+            "h": 15.0,
+            "w": 182.0,
+            "x": 551.0,
+            "y": 556.0
+          },
+          "text": "Evasive action management:"
+        },
+        {
+          "confidence": 99.98377227783203,
+          "rect": {
+            "h": 12.0,
+            "w": 41.0,
+            "x": 762.0,
+            "y": 557.0
+          },
+          "text": "active"
+        }
+      ],
+      "split": false,
+      "translation": "Статус отопления топлива: номинальное управление экзоскелетом: активный Автопилот: en aed ip: 122.1 122.33:E444 Название корабля: Hevacel nikonomiko S38123 Временное смещение экранирования: 333112 Управление уклончивым действием: active",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.85236358642578,
+      "crop_origin": [
+        751,
+        460
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 34.0,
+        "x": 754.0,
+        "y": 463.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 10.0,
+          "w": 39.0,
+          "x": 751.0,
+          "y": 461.0
+        }
+      ],
+      "observation_ms": 0.070334,
+      "ocr_ms": 19.186204,
+      "original": "ominal",
+      "raw_original": "ominal",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.85236358642578,
+          "rect": {
+            "h": 10.0,
+            "w": 39.0,
+            "x": 751.0,
+            "y": 461.0
+          },
+          "text": "ominal"
+        }
+      ],
+      "split": false,
+      "translation": "оминальный",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 89.33844757080078,
+      "crop_origin": [
+        740,
+        461
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 9.0,
+        "x": 743.0,
+        "y": 464.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [
+        {
+          "h": 7.0,
+          "w": 12.0,
+          "x": 742.0,
+          "y": 463.0
+        }
+      ],
+      "observation_ms": 0.029215,
+      "ocr_ms": 16.011289,
+      "original": "nc",
+      "raw_original": "nc",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 89.33844757080078,
+          "rect": {
+            "h": 7.0,
+            "w": 12.0,
+            "x": 742.0,
+            "y": 463.0
+          },
+          "text": "nc"
+        }
+      ],
+      "split": false,
+      "translation": "nc",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 83.20309448242188,
+      "crop_origin": [
+        767,
+        475
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 33.0,
+        "x": 770.0,
+        "y": 478.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [
+        {
+          "h": 7.0,
+          "w": 20.0,
+          "x": 770.0,
+          "y": 478.0
+        }
+      ],
+      "observation_ms": 0.029586,
+      "ocr_ms": 29.47822,
+      "original": "act",
+      "raw_original": "act",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 83.20309448242188,
+          "rect": {
+            "h": 7.0,
+            "w": 20.0,
+            "x": 770.0,
+            "y": 478.0
+          },
+          "text": "act"
+        }
+      ],
+      "split": false,
+      "translation": "Акт",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 78.04035949707031,
+      "crop_origin": [
+        713,
+        480
+      ],
+      "detector_rect": {
+        "h": 29.0,
+        "w": 52.0,
+        "x": 721.0,
+        "y": 488.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [
+        {
+          "h": 8.0,
+          "w": 16.0,
+          "x": 720.0,
+          "y": 493.0
+        },
+        {
+          "h": 11.0,
+          "w": 18.0,
+          "x": 756.0,
+          "y": 492.0
+        },
+        {
+          "h": 8.0,
+          "w": 14.0,
+          "x": 716.0,
+          "y": 507.0
+        },
+        {
+          "h": 7.0,
+          "w": 13.0,
+          "x": 762.0,
+          "y": 508.0
+        }
+      ],
+      "observation_ms": 0.244343,
+      "ocr_ms": 47.711118,
+      "original": "en ied 2 7",
+      "raw_original": "en ied 2 7",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 76.42320251464844,
+          "rect": {
+            "h": 8.0,
+            "w": 16.0,
+            "x": 720.0,
+            "y": 493.0
+          },
+          "text": "en"
+        },
+        {
+          "confidence": 81.3284683227539,
+          "rect": {
+            "h": 11.0,
+            "w": 18.0,
+            "x": 756.0,
+            "y": 492.0
+          },
+          "text": "ied"
+        },
+        {
+          "confidence": 89.7830810546875,
+          "rect": {
+            "h": 8.0,
+            "w": 14.0,
+            "x": 716.0,
+            "y": 507.0
+          },
+          "text": "2"
+        },
+        {
+          "confidence": 59.66761779785156,
+          "rect": {
+            "h": 7.0,
+            "w": 13.0,
+            "x": 762.0,
+            "y": 508.0
+          },
+          "text": "7"
+        }
+      ],
+      "split": false,
+      "translation": "на идеа 2 7",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 99.9151840209961,
+      "crop_origin": [
+        752,
+        503
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 116.0,
+        "x": 755.0,
+        "y": 506.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 117.0,
+          "x": 753.0,
+          "y": 507.0
+        },
+        {
+          "h": 13.0,
+          "w": 52.0,
+          "x": 773.0,
+          "y": 522.0
+        }
+      ],
+      "observation_ms": 0.229936,
+      "ocr_ms": 40.604174,
+      "original": "122.33:E444:1123 S38123",
+      "raw_original": "122.33:E444:1123 S38123",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.94792175292969,
+          "rect": {
+            "h": 11.0,
+            "w": 117.0,
+            "x": 753.0,
+            "y": 507.0
+          },
+          "text": "122.33:E444:1123"
+        },
+        {
+          "confidence": 99.82788848876953,
+          "rect": {
+            "h": 13.0,
+            "w": 52.0,
+            "x": 773.0,
+            "y": 522.0
+          },
+          "text": "S38123"
+        }
+      ],
+      "split": true,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 87.45802307128906,
+      "crop_origin": [
+        696,
+        505
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 42.0,
+        "x": 699.0,
+        "y": 508.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [
+        {
+          "h": 13.0,
+          "w": 40.0,
+          "x": 697.0,
+          "y": 506.0
+        }
+      ],
+      "observation_ms": 0.07305900000000001,
+      "ocr_ms": 18.881777,
+      "original": "122:1",
+      "raw_original": "122:1",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 87.45802307128906,
+          "rect": {
+            "h": 13.0,
+            "w": 40.0,
+            "x": 697.0,
+            "y": 506.0
+          },
+          "text": "122:1"
+        }
+      ],
+      "split": false,
+      "translation": "122:1",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        157,
+        550
+      ],
+      "detector_rect": {
+        "h": 59.0,
+        "w": 131.0,
+        "x": 172.0,
+        "y": 565.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.567037,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1353,
+        582
+      ],
+      "detector_rect": {
+        "h": 34.0,
+        "w": 91.0,
+        "x": 1357.0,
+        "y": 586.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.4600999999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.65861511230469,
+      "crop_origin": [
+        930,
+        602
+      ],
+      "detector_rect": {
+        "h": 57.0,
+        "w": 161.0,
+        "x": 936.0,
+        "y": 608.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 166.0,
+          "x": 934.0,
+          "y": 604.0
+        },
+        {
+          "h": 30.0,
+          "w": 157.0,
+          "x": 940.0,
+          "y": 636.0
+        }
+      ],
+      "observation_ms": 0.048221,
+      "ocr_ms": 28.927505999999997,
+      "original": "rSpeed: 5 ms Temp: 20 C",
+      "raw_original": "rSpeed: 5 ms Temp: 20 C",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.89220428466797,
+          "rect": {
+            "h": 27.0,
+            "w": 166.0,
+            "x": 934.0,
+            "y": 604.0
+          },
+          "text": "rSpeed: 5 ms"
+        },
+        {
+          "confidence": 95.17831420898438,
+          "rect": {
+            "h": 30.0,
+            "w": 157.0,
+            "x": 940.0,
+            "y": 636.0
+          },
+          "text": "Temp: 20 C"
+        }
+      ],
+      "split": false,
+      "translation": "rСтупет: 5 мс Темп: 20 C",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        675,
+        723
+      ],
+      "detector_rect": {
+        "h": 16.0,
+        "w": 68.0,
+        "x": 679.0,
+        "y": 727.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.226326,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        950,
+        721
+      ],
+      "detector_rect": {
+        "h": 21.0,
+        "w": 52.0,
+        "x": 956.0,
+        "y": 727.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.118233,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 90.46713256835938,
+      "crop_origin": [
+        782,
+        732
+      ],
+      "detector_rect": {
+        "h": 24.0,
+        "w": 102.0,
+        "x": 785.0,
+        "y": 735.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [
+        {
+          "h": 26.0,
+          "w": 104.0,
+          "x": 783.0,
+          "y": 733.0
+        }
+      ],
+      "observation_ms": 0.145526,
+      "ocr_ms": 16.742324,
+      "original": "cking",
+      "raw_original": "cking",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 90.46713256835938,
+          "rect": {
+            "h": 26.0,
+            "w": 104.0,
+            "x": 783.0,
+            "y": 733.0
+          },
+          "text": "cking"
+        }
+      ],
+      "split": false,
+      "translation": "ккинг",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        953,
+        747
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 95.0,
+        "x": 956.0,
+        "y": 750.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 7.365101,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1520,
+        758
+      ],
+      "detector_rect": {
+        "h": 47.0,
+        "w": 159.0,
+        "x": 1532.0,
+        "y": 770.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.43357,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.64950561523438,
+      "crop_origin": [
+        43,
+        770
+      ],
+      "detector_rect": {
+        "h": 61.0,
+        "w": 993.0,
+        "x": 59.0,
+        "y": 786.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [
+        {
+          "h": 43.0,
+          "w": 174.0,
+          "x": 53.0,
+          "y": 778.0
+        },
+        {
+          "h": 50.0,
+          "w": 851.0,
+          "x": 210.0,
+          "y": 776.0
+        },
+        {
+          "h": 33.0,
+          "w": 1009.0,
+          "x": 51.0,
+          "y": 829.0
+        }
+      ],
+      "observation_ms": 13.962347999999999,
+      "ocr_ms": 220.277754,
+      "original": "Morning,t Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and. guite frankly. I'm upset at it n",
+      "raw_original": "Morning,t Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and. guite frankly. I'm upset at it n",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 93.4915542602539,
+          "rect": {
+            "h": 43.0,
+            "w": 174.0,
+            "x": 53.0,
+            "y": 778.0
+          },
+          "text": "Morning,t"
+        },
+        {
+          "confidence": 99.47502899169922,
+          "rect": {
+            "h": 50.0,
+            "w": 851.0,
+            "x": 210.0,
+            "y": 776.0
+          },
+          "text": "Ella. Sometimes I wonder if I'm in the right place"
+        },
+        {
+          "confidence": 96.76664733886719,
+          "rect": {
+            "h": 33.0,
+            "w": 1009.0,
+            "x": 51.0,
+            "y": 829.0
+          },
+          "text": "and-forth gets tiresome and. guite frankly. I'm upset at it n"
+        }
+      ],
+      "split": false,
+      "translation": "Утро, у Эллы. Иногда я задаюсь вопросом, нахожусь ли я в правильном месте и-вперед становится утомительным и. говоря, вино. Я расстроен этим n",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.92192077636719,
+      "crop_origin": [
+        1105,
+        777
+      ],
+      "detector_rect": {
+        "h": 34.0,
+        "w": 339.0,
+        "x": 1114.0,
+        "y": 786.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [
+        {
+          "h": 38.0,
+          "w": 350.0,
+          "x": 1109.0,
+          "y": 781.0
+        }
+      ],
+      "observation_ms": 0.49830399999999997,
+      "ocr_ms": 27.827492,
+      "original": "all this hauling back",
+      "raw_original": "all this hauling back",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.92192077636719,
+          "rect": {
+            "h": 38.0,
+            "w": 350.0,
+            "x": 1109.0,
+            "y": 781.0
+          },
+          "text": "all this hauling back"
+        }
+      ],
+      "split": false,
+      "translation": "все это отвоз в ответ",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.72095489501953,
+      "crop_origin": [
+        9,
+        752
+      ],
+      "detector_rect": {
+        "h": 195.0,
+        "w": 1389.0,
+        "x": 58.0,
+        "y": 801.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [
+        {
+          "h": 20.0,
+          "w": 162.0,
+          "x": 18.0,
+          "y": 752.0
+        },
+        {
+          "h": 45.0,
+          "w": 162.0,
+          "x": 50.0,
+          "y": 777.0
+        },
+        {
+          "h": 37.0,
+          "w": 279.0,
+          "x": 218.0,
+          "y": 780.0
+        },
+        {
+          "h": 48.0,
+          "w": 965.0,
+          "x": 499.0,
+          "y": 777.0
+        },
+        {
+          "h": 36.0,
+          "w": 498.0,
+          "x": 52.0,
+          "y": 836.0
+        },
+        {
+          "h": 47.0,
+          "w": 895.0,
+          "x": 553.0,
+          "y": 831.0
+        },
+        {
+          "h": 42.0,
+          "w": 555.0,
+          "x": 51.0,
+          "y": 886.0
+        }
+      ],
+      "observation_ms": 6.117438,
+      "ocr_ms": 457.637698,
+      "original": "Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be.. but I have the right to be angry!",
+      "raw_original": "MuKa Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be.. but I have the right to be angry!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 77.84558868408203,
+          "rect": {
+            "h": 20.0,
+            "w": 162.0,
+            "x": 18.0,
+            "y": 752.0
+          },
+          "text": "MuKa"
+        },
+        {
+          "confidence": 99.9671401977539,
+          "rect": {
+            "h": 45.0,
+            "w": 162.0,
+            "x": 50.0,
+            "y": 777.0
+          },
+          "text": "Morning,"
+        },
+        {
+          "confidence": 99.96475219726562,
+          "rect": {
+            "h": 37.0,
+            "w": 279.0,
+            "x": 218.0,
+            "y": 780.0
+          },
+          "text": "Ella. Sometimes"
+        },
+        {
+          "confidence": 99.22045135498047,
+          "rect": {
+            "h": 48.0,
+            "w": 965.0,
+            "x": 499.0,
+            "y": 777.0
+          },
+          "text": "I wonder if I'm in the right place — all this hauling back-"
+        },
+        {
+          "confidence": 98.1565933227539,
+          "rect": {
+            "h": 36.0,
+            "w": 498.0,
+            "x": 52.0,
+            "y": 836.0
+          },
+          "text": "and-forth gets tiresome and,"
+        },
+        {
+          "confidence": 97.7671127319336,
+          "rect": {
+            "h": 47.0,
+            "w": 895.0,
+            "x": 553.0,
+            "y": 831.0
+          },
+          "text": "quite frankly, I'm upset at it more than I should be.."
+        },
+        {
+          "confidence": 95.4395751953125,
+          "rect": {
+            "h": 42.0,
+            "w": 555.0,
+            "x": 51.0,
+            "y": 886.0
+          },
+          "text": "but I have the right to be angry!"
+        }
+      ],
+      "split": false,
+      "translation": "- Доброе утро, Элла. Иногда я задаюсь вопросом, нахожусь ли я в правильном месте - все это перетаскивание назад и назад становится утомительным, и, честно говоря, я расстроен этим больше, чем должен быть... но я имею право злиться!",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.6268310546875,
+      "crop_origin": [
+        0,
+        826
+      ],
+      "detector_rect": {
+        "h": 136.0,
+        "w": 246.0,
+        "x": 10.0,
+        "y": 860.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [
+        {
+          "h": 34.0,
+          "w": 188.0,
+          "x": 54.0,
+          "y": 837.0
+        },
+        {
+          "h": 38.0,
+          "w": 64.0,
+          "x": 225.0,
+          "y": 836.0
+        },
+        {
+          "h": 37.0,
+          "w": 236.0,
+          "x": 53.0,
+          "y": 887.0
+        }
+      ],
+      "observation_ms": 0.113665,
+      "ocr_ms": 49.228172,
+      "original": "and=forth get but I have the",
+      "raw_original": "and=forth get but I have the",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.6772232055664,
+          "rect": {
+            "h": 34.0,
+            "w": 188.0,
+            "x": 54.0,
+            "y": 837.0
+          },
+          "text": "and=forth"
+        },
+        {
+          "confidence": 99.9952163696289,
+          "rect": {
+            "h": 38.0,
+            "w": 64.0,
+            "x": 225.0,
+            "y": 836.0
+          },
+          "text": "get"
+        },
+        {
+          "confidence": 98.30120086669922,
+          "rect": {
+            "h": 37.0,
+            "w": 236.0,
+            "x": 53.0,
+            "y": 887.0
+          },
+          "text": "but I have the"
+        }
+      ],
+      "split": false,
+      "translation": "и=пот, но у меня есть",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.38154602050781,
+      "crop_origin": [
+        388,
+        836
+      ],
+      "detector_rect": {
+        "h": 98.0,
+        "w": 149.0,
+        "x": 413.0,
+        "y": 861.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [
+        {
+          "h": 30.0,
+          "w": 157.0,
+          "x": 388.0,
+          "y": 841.0
+        },
+        {
+          "h": 40.0,
+          "w": 198.0,
+          "x": 388.0,
+          "y": 890.0
+        }
+      ],
+      "observation_ms": 0.07664499999999999,
+      "ocr_ms": 32.406216,
+      "original": "some and to be angry",
+      "raw_original": "some and to be angry",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 93.81046295166016,
+          "rect": {
+            "h": 30.0,
+            "w": 157.0,
+            "x": 388.0,
+            "y": 841.0
+          },
+          "text": "some and"
+        },
+        {
+          "confidence": 99.97869110107422,
+          "rect": {
+            "h": 40.0,
+            "w": 198.0,
+            "x": 388.0,
+            "y": 890.0
+          },
+          "text": "to be angry"
+        }
+      ],
+      "split": false,
+      "translation": "некоторые и быть злым",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.6604995727539,
+      "crop_origin": [
+        29,
+        866
+      ],
+      "detector_rect": {
+        "h": 104.0,
+        "w": 605.0,
+        "x": 55.0,
+        "y": 892.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [
+        {
+          "h": 42.0,
+          "w": 551.0,
+          "x": 53.0,
+          "y": 886.0
+        }
+      ],
+      "observation_ms": 0.118835,
+      "ocr_ms": 41.103781,
+      "original": "but I have the right to be angry!",
+      "raw_original": "but I have the right to be angry!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.6604995727539,
+          "rect": {
+            "h": 42.0,
+            "w": 551.0,
+            "x": 53.0,
+            "y": 886.0
+          },
+          "text": "but I have the right to be angry!"
+        }
+      ],
+      "split": false,
+      "translation": "Но я имею право злиться!",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1382,
+        922
+      ],
+      "detector_rect": {
+        "h": 59.0,
+        "w": 167.0,
+        "x": 1397.0,
+        "y": 937.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.726295,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.75862121582031,
+      "crop_origin": [
+        550,
+        459
+      ],
+      "detector_rect": {
+        "h": 108.0,
+        "w": 318.0,
+        "x": 553.0,
+        "y": 462.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 11.0,
+          "w": 50.0,
+          "x": 741.0,
+          "y": 460.0
+        },
+        {
+          "h": 11.0,
+          "w": 119.0,
+          "x": 573.0,
+          "y": 461.0
+        },
+        {
+          "h": 15.0,
+          "w": 41.0,
+          "x": 766.0,
+          "y": 473.0
+        },
+        {
+          "h": 14.0,
+          "w": 161.0,
+          "x": 569.0,
+          "y": 474.0
+        },
+        {
+          "h": 13.0,
+          "w": 70.0,
+          "x": 565.0,
+          "y": 490.0
+        },
+        {
+          "h": 9.0,
+          "w": 14.0,
+          "x": 720.0,
+          "y": 492.0
+        },
+        {
+          "h": 10.0,
+          "w": 21.0,
+          "x": 754.0,
+          "y": 492.0
+        },
+        {
+          "h": 14.0,
+          "w": 42.0,
+          "x": 695.0,
+          "y": 504.0
+        },
+        {
+          "h": 13.0,
+          "w": 117.0,
+          "x": 755.0,
+          "y": 505.0
+        },
+        {
+          "h": 14.0,
+          "w": 19.0,
+          "x": 561.0,
+          "y": 506.0
+        },
+        {
+          "h": 12.0,
+          "w": 198.0,
+          "x": 558.0,
+          "y": 523.0
+        },
+        {
+          "h": 13.0,
+          "w": 56.0,
+          "x": 770.0,
+          "y": 522.0
+        },
+        {
+          "h": 16.0,
+          "w": 277.0,
+          "x": 556.0,
+          "y": 538.0
+        },
+        {
+          "h": 14.0,
+          "w": 182.0,
+          "x": 551.0,
+          "y": 556.0
+        },
+        {
+          "h": 16.0,
+          "w": 42.0,
+          "x": 761.0,
+          "y": 555.0
+        }
+      ],
+      "observation_ms": 1.471227,
+      "ocr_ms": 318.760179,
+      "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: on aed ip: 122.1 122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "raw_original": "nominal Fuel heating status: active Exoskeleton management: Auto-pilot: on aed 122.1 122.33:E444:1123 ip: ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.92352294921875,
+          "rect": {
+            "h": 11.0,
+            "w": 50.0,
+            "x": 741.0,
+            "y": 460.0
+          },
+          "text": "nominal"
+        },
+        {
+          "confidence": 99.08992004394531,
+          "rect": {
+            "h": 11.0,
+            "w": 119.0,
+            "x": 573.0,
+            "y": 461.0
+          },
+          "text": "Fuel heating status:"
+        },
+        {
+          "confidence": 99.66336822509766,
+          "rect": {
+            "h": 15.0,
+            "w": 41.0,
+            "x": 766.0,
+            "y": 473.0
+          },
+          "text": "active"
+        },
+        {
+          "confidence": 99.73379516601562,
+          "rect": {
+            "h": 14.0,
+            "w": 161.0,
+            "x": 569.0,
+            "y": 474.0
+          },
+          "text": "Exoskeleton management:"
+        },
+        {
+          "confidence": 99.92961120605469,
+          "rect": {
+            "h": 13.0,
+            "w": 70.0,
+            "x": 565.0,
+            "y": 490.0
+          },
+          "text": "Auto-pilot:"
+        },
+        {
+          "confidence": 68.52862548828125,
+          "rect": {
+            "h": 9.0,
+            "w": 14.0,
+            "x": 720.0,
+            "y": 492.0
+          },
+          "text": "on"
+        },
+        {
+          "confidence": 98.93849182128906,
+          "rect": {
+            "h": 10.0,
+            "w": 21.0,
+            "x": 754.0,
+            "y": 492.0
+          },
+          "text": "aed"
+        },
+        {
+          "confidence": 81.112060546875,
+          "rect": {
+            "h": 14.0,
+            "w": 42.0,
+            "x": 695.0,
+            "y": 504.0
+          },
+          "text": "122.1"
+        },
+        {
+          "confidence": 99.91898345947266,
+          "rect": {
+            "h": 13.0,
+            "w": 117.0,
+            "x": 755.0,
+            "y": 505.0
+          },
+          "text": "122.33:E444:1123"
+        },
+        {
+          "confidence": 98.04800415039062,
+          "rect": {
+            "h": 14.0,
+            "w": 19.0,
+            "x": 561.0,
+            "y": 506.0
+          },
+          "text": "ip:"
+        },
+        {
+          "confidence": 99.28130340576172,
+          "rect": {
+            "h": 12.0,
+            "w": 198.0,
+            "x": 558.0,
+            "y": 523.0
+          },
+          "text": "ship name: Hevacel nikonomiko"
+        },
+        {
+          "confidence": 99.78223419189453,
+          "rect": {
+            "h": 13.0,
+            "w": 56.0,
+            "x": 770.0,
+            "y": 522.0
+          },
+          "text": "S38123"
+        },
+        {
+          "confidence": 99.40208435058594,
+          "rect": {
+            "h": 16.0,
+            "w": 277.0,
+            "x": 556.0,
+            "y": 538.0
+          },
+          "text": "Temporary shielding displacement: 333112"
+        },
+        {
+          "confidence": 99.59622955322266,
+          "rect": {
+            "h": 14.0,
+            "w": 182.0,
+            "x": 551.0,
+            "y": 556.0
+          },
+          "text": "Evasive action management:"
+        },
+        {
+          "confidence": 99.9892807006836,
+          "rect": {
+            "h": 16.0,
+            "w": 42.0,
+            "x": 761.0,
+            "y": 555.0
+          },
+          "text": "active"
+        }
+      ],
+      "split": false,
+      "translation": "Статус нагрева топлива: Номинальное управление экзоскелетом: активный Автопилот: на ed ip: 122.1 122.33:E444:1123 Название корабля: Hevacel nikonomiko S38123 Временное водозащитное смещение: 333112 Управление уклончивым действием: active",
+      "translation_source": "actual translation-engine response"
+    }
+  ],
+  "ocr_scans": 2,
+  "peak_memory": "VmHWM:\t  302028 kB",
+  "placed": [
+    {
+      "alignment": "center",
+      "background": {
+        "color": "#06030f",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 2,
+      "block_type": "button",
+      "box": [
+        0.4726327803613958,
+        0.0,
+        0.053002337660580254,
+        0.018473895199327583
+      ],
+      "font_family": "Inter",
+      "font_px": 9.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.5085865259170532,
+        "generic": false
+      },
+      "font_weight": 500,
+      "inner": [
+        5.4000244140625,
+        0.0,
+        5.4000244140625,
+        5.399999618530273
+      ],
+      "italic": false,
+      "key": "test:2",
+      "layout_width": 79.0,
+      "letter_spacing": 0.2788659632205963,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "Cross x Mars",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "source_coverage": 0.9285714030265808,
+      "text": "Крест x Марс",
+      "text_color": "#126fa0",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "center",
+      "background": {
+        "color": "#104868",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 3,
+      "block_type": "unknown",
+      "box": [
+        0.4497690531177829,
+        0.4226907630522088,
+        0.09699769053117784,
+        0.036646586345381524
+      ],
+      "font_family": "Source Code Pro",
+      "font_px": 22.0,
+      "font_selection": {
+        "category": "monospace",
+        "confidence": 0.5420036911964417,
+        "generic": false
+      },
+      "font_weight": 800,
+      "inner": [
+        6.0,
+        6.0,
+        6.0,
+        1.5
+      ],
+      "italic": false,
+      "key": "test:3",
+      "layout_width": 154.0,
+      "letter_spacing": -0.8895806074142456,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "60% Fuel",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000008",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "60% Топлива",
+      "text_color": "#1eadbb",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "center",
+      "background": {
+        "color": "#000000",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 13,
+      "block_type": "unknown",
+      "box": [
+        0.5348729933106596,
+        0.5987952052350025,
+        0.10461890945258372,
+        0.07750999113642068
+      ],
+      "font_family": "Source Code Pro",
+      "font_px": 20.0,
+      "font_selection": {
+        "category": "monospace",
+        "confidence": 0.6775045990943909,
+        "generic": false
+      },
+      "font_weight": 900,
+      "inner": [
+        6.5999755859375,
+        6.5999755859375,
+        6.5999755859375,
+        6.5999755859375
+      ],
+      "italic": false,
+      "key": "test:13",
+      "layout_width": 166.0,
+      "letter_spacing": 0.677272617816925,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "rSpeed: 5 ms Temp: 20 C",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "rСтупет: 5 мс Темп: 20 C",
+      "text_color": "#2698d2",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "center",
+      "background": {
+        "color": "#386884",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 16,
+      "block_type": "unknown",
+      "box": [
+        0.4495958500040596,
+        0.7316265182801519,
+        0.0650115332482318,
+        0.034738931311182226
+      ],
+      "font_family": "Inter",
+      "font_px": 12.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.44338905811309814,
+        "generic": false
+      },
+      "font_weight": 900,
+      "inner": [
+        3.29998779296875,
+        3.29998779296875,
+        3.29998779296875,
+        3.29998779296875
+      ],
+      "italic": false,
+      "key": "test:16",
+      "layout_width": 104.0,
+      "letter_spacing": 1.649999976158142,
+      "line_height": 1.0,
+      "max_lines": 1,
+      "original": "cking",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000824",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "ккинг",
+      "text_color": "#ffffff",
+      "text_opacity": 1.0,
+      "wrap": "none"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#1e1e1e",
+        "image": "",
+        "mode": "transparent",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 21,
+      "block_type": "subtitle",
+      "box": [
+        0.02771362586605081,
+        0.7781124497991968,
+        0.8187066974595842,
+        0.15562248995983935
+      ],
+      "font_family": "Inter",
+      "font_px": 34.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.6903889179229736,
+        "generic": false
+      },
+      "font_weight": 900,
+      "inner": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "italic": false,
+      "key": "test:21",
+      "layout_width": 1414.0,
+      "letter_spacing": -1.113402009010315,
+      "line_height": 1.0722222328186035,
+      "max_lines": 3,
+      "original": "Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be.. but I have the right to be angry!",
+      "outcome": "replaced",
+      "outline": true,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        866.0,
+        498.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "- Доброе утро, Элла. Иногда я задаюсь вопросом, нахожусь ли я в правильном месте - все это перетаскивание назад и назад становится утомительным, и, честно говоря, я расстроен этим больше, чем должен быть... но я имею право злиться!",
+      "text_color": "#b4bcc9",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 74.814609,
+  "repeat_frame_ms": 20.957309,
+  "repeat_ocr_jobs": 0,
+  "size": [
+    1732,
+    996
+  ],
+  "timings_ms": [
+    [
+      6.665827,
+      26.528942,
+      0.08377799999999999
+    ],
+    [
+      3.978596,
+      25.881536999999998,
+      0.08064299999999999
+    ],
+    [
+      4.548786,
+      26.371425000000002,
+      0.085713
+    ],
+    [
+      5.304097,
+      26.746143,
+      0.086584
+    ],
+    [
+      6.839546,
+      27.279063,
+      0.08451
+    ]
+  ],
+  "translation_cache_hits": 0,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 17,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 293.4538529998463,
+  "update_ms": 3.471286000149121,
+  "layout_diagnostics": [
+    {
+      "width": 79,
+      "height": 13,
+      "contentWidth": 63.078125,
+      "contentHeight": 10.899999737739563,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 154,
+      "height": 29,
+      "contentWidth": 135.4375,
+      "contentHeight": 27.19999933242798,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 166,
+      "height": 64,
+      "contentWidth": 164.53125,
+      "contentHeight": 48.79999876022339,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 104,
+      "height": 28,
+      "contentWidth": 41.5625,
+      "contentHeight": 15,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 1414,
+      "height": 153,
+      "contentWidth": 1385.234375,
+      "contentHeight": 135.10000133514404,
+      "lines": 3,
+      "truncated": false
+    }
+  ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 16,
+    "rendered": 5,
+    "missing": [
+      {
+        "id": 5,
+        "original": "ominal",
+        "confidence": 99.85236358642578,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 6,
+        "original": "nc",
+        "confidence": 89.33844757080078,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 7,
+        "original": "act",
+        "confidence": 83.20309448242188,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 8,
+        "original": "en ied 2 7",
+        "confidence": 78.04035949707031,
+        "reason": "для перевода нет места поверх игры"
+      },
+      {
+        "id": 10,
+        "original": "122:1",
+        "confidence": 87.45802307128906,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 19,
+        "original": "Morning,t Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and. guite frankly. I'm upset at it n",
+        "confidence": 97.64950561523438,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 20,
+        "original": "all this hauling back",
+        "confidence": 99.92192077636719,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 22,
+        "original": "and=forth get but I have the",
+        "confidence": 98.6268310546875,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 23,
+        "original": "some and to be angry",
+        "confidence": 97.38154602050781,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 24,
+        "original": "but I have the right to be angry!",
+        "confidence": 98.6604995727539,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 4,
+        "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: on aed ip: 122.1 122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+        "confidence": 98.75862121582031,
+        "reason": "для перевода нет места поверх игры"
+      }
+    ],
+    "source_coverage": [
+      {
+        "id": 2,
+        "original": "Cross x Mars",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 3,
+        "original": "60% Fuel",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 5,
+        "original": "ominal",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 6,
+        "original": "nc",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 7,
+        "original": "act",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 8,
+        "original": "en ied 2 7",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 10,
+        "original": "122:1",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 13,
+        "original": "rSpeed: 5 ms Temp: 20 C",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 16,
+        "original": "cking",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 19,
+        "original": "Morning,t Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and. guite frankly. I'm upset at it n",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 20,
+        "original": "all this hauling back",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 21,
+        "original": "Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be.. but I have the right to be angry!",
+        "rendered": true,
+        "plate_coverage": 0.9784683271750977
+      },
+      {
+        "id": 22,
+        "original": "and=forth get but I have the",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 23,
+        "original": "some and to be angry",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 24,
+        "original": "but I have the right to be angry!",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 4,
+        "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: on aed ip: 122.1 122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
+        "rendered": false,
+        "plate_coverage": 0.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "FAIL",
+    "uncovered_text_blocks": [
+      8,
+      4
+    ]
+  },
+  "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-15.png",
+  "approved_reference": false
+}

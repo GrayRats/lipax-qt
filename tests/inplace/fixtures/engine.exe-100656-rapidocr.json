@@ -3,77 +3,64 @@
   {
    "accepted": true,
    "automatic_filters": false,
-   "confidence": 99.99590301513672,
+   "confidence": 99.99134826660156,
    "crop_origin": [
-    4,
+    126,
     4
    ],
    "detector_rect": {
-    "h": 8.0,
-    "w": 109.0,
-    "x": 7.0,
+    "h": 10.0,
+    "w": 55.0,
+    "x": 129.0,
     "y": 7.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 1,
    "lines": [
     {
      "h": 11.0,
-     "w": 21.0,
-     "x": 5.0,
-     "y": 5.0
-    },
-    {
-     "h": 11.0,
-     "w": 35.0,
-     "x": 35.0,
+     "w": 24.0,
+     "x": 128.0,
      "y": 6.0
     },
     {
-     "h": 11.0,
-     "w": 37.0,
-     "x": 80.0,
+     "h": 13.0,
+     "w": 25.0,
+     "x": 160.0,
      "y": 5.0
     }
    ],
-   "observation_ms": 0.29093199999999997,
-   "ocr_ms": 610.425899,
-   "original": "File Screen Control",
-   "raw_original": "File Screen Control",
+   "observation_ms": 0.025609000000000003,
+   "ocr_ms": 200.45067,
+   "original": "Text Help",
+   "raw_original": "Text Help",
    "scan": 0,
    "spans": [
     {
-     "confidence": 99.99793243408203,
+     "confidence": 99.99065399169922,
      "rect": {
       "h": 11.0,
-      "w": 21.0,
-      "x": 5.0,
-      "y": 5.0
-     },
-     "text": "File"
-    },
-    {
-     "confidence": 99.99584197998047,
-     "rect": {
-      "h": 11.0,
-      "w": 35.0,
-      "x": 35.0,
+      "w": 24.0,
+      "x": 128.0,
       "y": 6.0
      },
-     "text": "Screen"
+     "text": "Text"
     },
     {
-     "confidence": 99.99480438232422,
+     "confidence": 99.99205017089844,
      "rect": {
-      "h": 11.0,
-      "w": 37.0,
-      "x": 80.0,
+      "h": 13.0,
+      "w": 25.0,
+      "x": 160.0,
       "y": 5.0
      },
-     "text": "Control"
+     "text": "Help"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -89,16 +76,19 @@
     "x": 890.0,
     "y": 350.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 2,
    "lines": [],
-   "observation_ms": 2e-05,
-   "ocr_ms": 32.442816,
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 7.097472,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -114,16 +104,19 @@
     "x": 86.0,
     "y": 414.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 3,
    "lines": [],
-   "observation_ms": 7.000000000000001e-05,
-   "ocr_ms": 61.894216,
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 16.359599999999997,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -139,16 +132,19 @@
     "x": 94.0,
     "y": 758.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 4,
    "lines": [],
-   "observation_ms": 2e-05,
-   "ocr_ms": 7.639613,
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 40.594056,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -164,16 +160,19 @@
     "x": 1381.0,
     "y": 780.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 5,
    "lines": [],
-   "observation_ms": 7.000000000000001e-05,
-   "ocr_ms": 31.65997,
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 271.692987,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -189,6 +188,7 @@
     "x": 361.0,
     "y": 802.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 6,
    "lines": [
@@ -217,8 +217,8 @@
      "y": 878.0
     }
    ],
-   "observation_ms": 62.550542,
-   "ocr_ms": 720.252045,
+   "observation_ms": 4.329242,
+   "ocr_ms": 327.244743,
    "original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my king-sized bed was my whole world back then.",
    "raw_original": "Considering the amount of time I spent lying prone due to illness, it's no exaggeration to say that my king-sized bed was my whole world back then.",
    "scan": 0,
@@ -264,7 +264,9 @@
      "text": "king-sized bed was my whole world back then."
     }
    ],
-   "split": false
+   "split": false,
+   "translation": "Учитывая, сколько времени я провёл в постели из-за болезни, можно без преувеличения сказать, что моя огромная кровать тогда была для меня целым миром.",
+   "translation_source": "reviewed exact translation fixture"
   },
   {
    "accepted": false,
@@ -280,16 +282,19 @@
     "x": 1535.0,
     "y": 820.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 7,
    "lines": [],
-   "observation_ms": 8.999999999999999e-05,
-   "ocr_ms": 7.064762,
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 32.58276,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -305,6 +310,7 @@
     "x": 1381.0,
     "y": 855.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 8,
    "lines": [
@@ -333,8 +339,8 @@
      "y": 910.0
     }
    ],
-   "observation_ms": 19.471798,
-   "ocr_ms": 154.124011,
+   "observation_ms": 2.048746,
+   "ocr_ms": 75.968291,
    "original": "Q Q SAVE LOAD",
    "raw_original": "Q Q SAVE LOAD",
    "scan": 0,
@@ -380,7 +386,9 @@
      "text": "LOAD"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": "Q Q СОХРАНИТЬ ЗАГРУЗИТЬ",
+   "translation_source": "reviewed exact translation fixture"
   },
   {
    "accepted": true,
@@ -396,6 +404,7 @@
     "x": 1598.0,
     "y": 926.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 9,
    "lines": [
@@ -406,8 +415,8 @@
      "y": 921.0
     }
    ],
-   "observation_ms": 1.332628,
-   "ocr_ms": 40.950446,
+   "observation_ms": 0.092776,
+   "ocr_ms": 18.841788,
    "original": "OAD",
    "raw_original": "OAD",
    "scan": 0,
@@ -423,7 +432,9 @@
      "text": "OAD"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -439,16 +450,19 @@
     "x": 144.0,
     "y": 969.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 10,
    "lines": [],
-   "observation_ms": 2e-05,
-   "ocr_ms": 7.662125,
+   "observation_ms": 4.9999999999999996e-05,
+   "ocr_ms": 9.349503,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -464,16 +478,19 @@
     "x": 200.0,
     "y": 971.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 11,
    "lines": [],
-   "observation_ms": 2.9999999999999997e-05,
-   "ocr_ms": 6.025981,
+   "observation_ms": 4.9999999999999996e-05,
+   "ocr_ms": 13.335414,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -489,19 +506,22 @@
     "x": 257.0,
     "y": 974.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 12,
    "lines": [],
-   "observation_ms": 4.9999999999999996e-05,
-   "ocr_ms": 7.373317,
+   "observation_ms": 2e-05,
+   "ocr_ms": 8.920109,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   }
  ],
- "provenance": "Observed native RapidOCR cropped readings on the recorded game frame, re-recorded after the local-contrast/context detector changes of 2026-10-11 (keyed by detector_rect, so a detector geometry change needs a new recording); replay input, NOT manually annotated ground truth. CPU two threads, no GPU.",
+ "provenance": "Observed native RapidOCR cropped readings on the recorded game frame, re-recorded on 2026-10-13 after the colour-plane local-contrast detector change and the second-chance reading of faint crops (keyed by detector_rect, so a detector geometry change needs a new recording); replay input, NOT manually annotated ground truth. CPU two threads, no GPU.",
  "settings": {
   "engine": "rapidocr",
   "language": "eng",

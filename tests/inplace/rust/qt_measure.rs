@@ -41,7 +41,12 @@ impl QtMeasure {
             .borrow_mut()
             .read_line(&mut reply)
             .expect("read Qt measurement response");
-        serde_json::from_str(&reply).expect("valid Qt measurement response")
+        let response: serde_json::Value = serde_json::from_str(&reply).expect("valid Qt measurement response");
+        if let Some(path) = std::env::var_os("LIPAX_TEST_QT_MEASURE_TRACE") {
+            let mut log = std::fs::OpenOptions::new().create(true).append(true).open(path).expect("measurement trace");
+            writeln!(log, "{}", serde_json::json!({"request": request, "response": response})).expect("measurement trace write");
+        }
+        response
     }
 }
 

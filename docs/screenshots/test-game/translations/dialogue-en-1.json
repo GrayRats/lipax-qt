@@ -1,10 +1,1311 @@
 {
-  "block_ocr": [],
+  "block_ocr": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.9836654663086,
+      "crop_origin": [
+        1491,
+        60
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 80.0,
+        "x": 1498.0,
+        "y": 67.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 34.0,
+          "w": 84.0,
+          "x": 1496.0,
+          "y": 63.0
+        }
+      ],
+      "observation_ms": 0.15771900000000003,
+      "ocr_ms": 151.197406,
+      "original": "AUTO",
+      "raw_original": "AUTO",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9836654663086,
+          "rect": {
+            "h": 34.0,
+            "w": 84.0,
+            "x": 1496.0,
+            "y": 63.0
+          },
+          "text": "AUTO"
+        }
+      ],
+      "split": false,
+      "translation": "АВТО",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.98997497558594,
+      "crop_origin": [
+        1717,
+        60
+      ],
+      "detector_rect": {
+        "h": 26.0,
+        "w": 109.0,
+        "x": 1724.0,
+        "y": 67.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 31.0,
+          "w": 81.0,
+          "x": 1721.0,
+          "y": 64.0
+        }
+      ],
+      "observation_ms": 0.017042,
+      "ocr_ms": 15.248453,
+      "original": "SKIP",
+      "raw_original": "SKIP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.98997497558594,
+          "rect": {
+            "h": 31.0,
+            "w": 81.0,
+            "x": 1721.0,
+            "y": 64.0
+          },
+          "text": "SKIP"
+        }
+      ],
+      "split": false,
+      "translation": "СКИП",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.97964477539062,
+      "crop_origin": [
+        1615,
+        63
+      ],
+      "detector_rect": {
+        "h": 22.0,
+        "w": 57.0,
+        "x": 1621.0,
+        "y": 69.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 29.0,
+          "w": 64.0,
+          "x": 1617.0,
+          "y": 65.0
+        }
+      ],
+      "observation_ms": 0.10850599999999999,
+      "ocr_ms": 18.355658000000002,
+      "original": "OFF",
+      "raw_original": "OFF",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.97964477539062,
+          "rect": {
+            "h": 29.0,
+            "w": 64.0,
+            "x": 1617.0,
+            "y": 65.0
+          },
+          "text": "OFF"
+        }
+      ],
+      "split": false,
+      "translation": "ОФФ ВЫХ",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.74017333984375,
+      "crop_origin": [
+        789,
+        58
+      ],
+      "detector_rect": {
+        "h": 552.0,
+        "w": 291.0,
+        "x": 850.0,
+        "y": 119.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 116.0,
+          "w": 53.0,
+          "x": 934.0,
+          "y": 543.0
+        }
+      ],
+      "observation_ms": 0.022653000000000003,
+      "ocr_ms": 64.544455,
+      "original": "ESISLAND",
+      "raw_original": "ESISLAND",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.74017333984375,
+          "rect": {
+            "h": 116.0,
+            "w": 53.0,
+            "x": 934.0,
+            "y": 543.0
+          },
+          "text": "ESISLAND"
+        }
+      ],
+      "split": false,
+      "translation": "ЭСИСЛАНД",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        583,
+        202
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 17.0,
+        "x": 586.0,
+        "y": 205.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.278536,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        755,
+        218
+      ],
+      "detector_rect": {
+        "h": 96.0,
+        "w": 16.0,
+        "x": 779.0,
+        "y": 242.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.209796,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        917,
+        251
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 72.0,
+        "x": 922.0,
+        "y": 256.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.6541609999999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        880,
+        311
+      ],
+      "detector_rect": {
+        "h": 45.0,
+        "w": 17.0,
+        "x": 892.0,
+        "y": 323.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.527453,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        990,
+        335
+      ],
+      "detector_rect": {
+        "h": 201.0,
+        "w": 117.0,
+        "x": 1010.0,
+        "y": 355.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 6.870794,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        881,
+        363
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 37.0,
+        "x": 888.0,
+        "y": 370.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.272359,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1238,
+        398
+      ],
+      "detector_rect": {
+        "h": 126.0,
+        "w": 289.0,
+        "x": 1270.0,
+        "y": 430.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 9.929487,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        804,
+        440
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 30.0,
+        "x": 808.0,
+        "y": 444.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.264152,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        994,
+        447
+      ],
+      "detector_rect": {
+        "h": 47.0,
+        "w": 57.0,
+        "x": 1000.0,
+        "y": 453.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.352091,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        831,
+        469
+      ],
+      "detector_rect": {
+        "h": 21.0,
+        "w": 32.0,
+        "x": 837.0,
+        "y": 475.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.503007,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        762,
+        487
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 30.0,
+        "x": 765.0,
+        "y": 490.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.755726,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 90.75365447998047,
+      "crop_origin": [
+        554,
+        390
+      ],
+      "detector_rect": {
+        "h": 413.0,
+        "w": 220.0,
+        "x": 658.0,
+        "y": 494.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [
+        {
+          "h": 39.0,
+          "w": 412.0,
+          "x": 569.0,
+          "y": 944.0
+        },
+        {
+          "h": 13.0,
+          "w": 105.0,
+          "x": 653.0,
+          "y": 996.0
+        },
+        {
+          "h": 17.0,
+          "w": 64.0,
+          "x": 769.0,
+          "y": 993.0
+        },
+        {
+          "h": 13.0,
+          "w": 66.0,
+          "x": 582.0,
+          "y": 996.0
+        },
+        {
+          "h": 10.0,
+          "w": 38.0,
+          "x": 827.0,
+          "y": 997.0
+        }
+      ],
+      "observation_ms": 0.041078,
+      "ocr_ms": 166.695421,
+      "original": "However, you'll always be the r what. aannons this wi",
+      "raw_original": "However, you'll always be the r aannons this what. wi",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.06925201416016,
+          "rect": {
+            "h": 39.0,
+            "w": 412.0,
+            "x": 569.0,
+            "y": 944.0
+          },
+          "text": "However, you'll always be the r"
+        },
+        {
+          "confidence": 90.93772888183594,
+          "rect": {
+            "h": 13.0,
+            "w": 105.0,
+            "x": 653.0,
+            "y": 996.0
+          },
+          "text": "aannons"
+        },
+        {
+          "confidence": 96.21446990966797,
+          "rect": {
+            "h": 17.0,
+            "w": 64.0,
+            "x": 769.0,
+            "y": 993.0
+          },
+          "text": "this"
+        },
+        {
+          "confidence": 90.2010726928711,
+          "rect": {
+            "h": 13.0,
+            "w": 66.0,
+            "x": 582.0,
+            "y": 996.0
+          },
+          "text": "what."
+        },
+        {
+          "confidence": 78.3457260131836,
+          "rect": {
+            "h": 10.0,
+            "w": 38.0,
+            "x": 827.0,
+            "y": 997.0
+          },
+          "text": "wi"
+        }
+      ],
+      "split": false,
+      "translation": "Тем не менее, вы всегда будете r что. aannons это у",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        838,
+        521
+      ],
+      "detector_rect": {
+        "h": 23.0,
+        "w": 22.0,
+        "x": 844.0,
+        "y": 527.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.682527,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1004,
+        524
+      ],
+      "detector_rect": {
+        "h": 40.0,
+        "w": 31.0,
+        "x": 1014.0,
+        "y": 534.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.839297,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1355,
+        556
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 45.0,
+        "x": 1358.0,
+        "y": 559.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.322339,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 96.26211547851562,
+      "crop_origin": [
+        785,
+        477
+      ],
+      "detector_rect": {
+        "h": 345.0,
+        "w": 261.0,
+        "x": 872.0,
+        "y": 564.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [
+        {
+          "h": 44.0,
+          "w": 24.0,
+          "x": 934.0,
+          "y": 528.0
+        },
+        {
+          "h": 92.0,
+          "w": 40.0,
+          "x": 944.0,
+          "y": 571.0
+        },
+        {
+          "h": 38.0,
+          "w": 434.0,
+          "x": 785.0,
+          "y": 945.0
+        }
+      ],
+      "observation_ms": 0.021341000000000002,
+      "ocr_ms": 134.059335,
+      "original": "DES ISLAND always be the most important pe",
+      "raw_original": "DES ISLAND always be the most important pe",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 90.38617706298828,
+          "rect": {
+            "h": 44.0,
+            "w": 24.0,
+            "x": 934.0,
+            "y": 528.0
+          },
+          "text": "DES"
+        },
+        {
+          "confidence": 99.85423278808594,
+          "rect": {
+            "h": 92.0,
+            "w": 40.0,
+            "x": 944.0,
+            "y": 571.0
+          },
+          "text": "ISLAND"
+        },
+        {
+          "confidence": 98.54592895507812,
+          "rect": {
+            "h": 38.0,
+            "w": 434.0,
+            "x": 785.0,
+            "y": 945.0
+          },
+          "text": "always be the most important pe"
+        }
+      ],
+      "split": true,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        785,
+        623
+      ],
+      "detector_rect": {
+        "h": 30.0,
+        "w": 47.0,
+        "x": 793.0,
+        "y": 631.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.82646,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1167,
+        661
+      ],
+      "detector_rect": {
+        "h": 42.0,
+        "w": 35.0,
+        "x": 1178.0,
+        "y": 672.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.315091,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1082,
+        771
+      ],
+      "detector_rect": {
+        "h": 34.0,
+        "w": 86.0,
+        "x": 1091.0,
+        "y": 780.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.707233,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1253,
+        770
+      ],
+      "detector_rect": {
+        "h": 39.0,
+        "w": 81.0,
+        "x": 1263.0,
+        "y": 780.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.41471,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1160,
+        795
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 24.0,
+        "x": 1163.0,
+        "y": 798.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 26,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.810143,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        899,
+        797
+      ],
+      "detector_rect": {
+        "h": 12.0,
+        "w": 10.0,
+        "x": 902.0,
+        "y": 800.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 27,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.400353,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        841,
+        803
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 14.0,
+        "x": 846.0,
+        "y": 808.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 28,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.37798,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        766,
+        804
+      ],
+      "detector_rect": {
+        "h": 57.0,
+        "w": 80.0,
+        "x": 781.0,
+        "y": 819.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 29,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.92147,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1130,
+        834
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 20.0,
+        "x": 1135.0,
+        "y": 839.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 30,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.169375,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        762,
+        832
+      ],
+      "detector_rect": {
+        "h": 70.0,
+        "w": 86.0,
+        "x": 780.0,
+        "y": 850.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 31,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.268717,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1053,
+        866
+      ],
+      "detector_rect": {
+        "h": 36.0,
+        "w": 29.0,
+        "x": 1059.0,
+        "y": 872.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 32,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.17217,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.96894836425781,
+      "crop_origin": [
+        386,
+        936
+      ],
+      "detector_rect": {
+        "h": 40.0,
+        "w": 98.0,
+        "x": 396.0,
+        "y": 946.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 33,
+      "lines": [
+        {
+          "h": 50.0,
+          "w": 115.0,
+          "x": 388.0,
+          "y": 937.0
+        }
+      ],
+      "observation_ms": 0.43317,
+      "ocr_ms": 16.091379,
+      "original": "Amiya",
+      "raw_original": "Amiya",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.96894836425781,
+          "rect": {
+            "h": 50.0,
+            "w": 115.0,
+            "x": 388.0,
+            "y": 937.0
+          },
+          "text": "Amiya"
+        }
+      ],
+      "split": false,
+      "translation": "Амия",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.04515838623047,
+      "crop_origin": [
+        564,
+        940
+      ],
+      "detector_rect": {
+        "h": 78.0,
+        "w": 1039.0,
+        "x": 573.0,
+        "y": 949.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 34,
+      "lines": [
+        {
+          "h": 43.0,
+          "w": 1046.0,
+          "x": 569.0,
+          "y": 943.0
+        },
+        {
+          "h": 45.0,
+          "w": 501.0,
+          "x": 568.0,
+          "y": 986.0
+        }
+      ],
+      "observation_ms": 4.220704,
+      "ocr_ms": 103.877016,
+      "original": "However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change.",
+      "raw_original": "However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.2509536743164,
+          "rect": {
+            "h": 43.0,
+            "w": 1046.0,
+            "x": 569.0,
+            "y": 943.0
+          },
+          "text": "However, you'll always be the most important person to me, Doctor. No matter"
+        },
+        {
+          "confidence": 99.67649841308594,
+          "rect": {
+            "h": 45.0,
+            "w": 501.0,
+            "x": 568.0,
+            "y": 986.0
+          },
+          "text": "what happens, this will never change."
+        }
+      ],
+      "split": false,
+      "translation": "Тем не менее, вы всегда будете самым важным человеком для меня, доктор. Что бы ни случилось, это никогда не изменится.",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 93.81903076171875,
+      "crop_origin": [
+        789,
+        90
+      ],
+      "detector_rect": {
+        "h": 621.0,
+        "w": 471.0,
+        "x": 818.0,
+        "y": 119.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [
+        {
+          "h": 160.0,
+          "w": 71.0,
+          "x": 921.0,
+          "y": 508.0
+        }
+      ],
+      "observation_ms": 0.060775,
+      "ocr_ms": 68.45907,
+      "original": "ODES ISLAND",
+      "raw_original": "ODES ISLAND",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 93.81903076171875,
+          "rect": {
+            "h": 160.0,
+            "w": 71.0,
+            "x": 921.0,
+            "y": 508.0
+          },
+          "text": "ODES ISLAND"
+        }
+      ],
+      "split": false,
+      "translation": "ОСТРОВ ОДЕС",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        911,
+        505
+      ],
+      "detector_rect": {
+        "h": 135.0,
+        "w": 50.0,
+        "x": 934.0,
+        "y": 528.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 35,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.813613,
+      "original": "",
+      "raw_original": "",
+      "scan": 1,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.890869140625,
+      "crop_origin": [
+        775,
+        935
+      ],
+      "detector_rect": {
+        "h": 38.0,
+        "w": 434.0,
+        "x": 785.0,
+        "y": 945.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 36,
+      "lines": [
+        {
+          "h": 40.0,
+          "w": 450.0,
+          "x": 778.0,
+          "y": 943.0
+        }
+      ],
+      "observation_ms": 1.1435060000000001,
+      "ocr_ms": 30.946747,
+      "original": "always be the most important per",
+      "raw_original": "always be the most important per",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 97.890869140625,
+          "rect": {
+            "h": 40.0,
+            "w": 450.0,
+            "x": 778.0,
+            "y": 943.0
+          },
+          "text": "always be the most important per"
+        }
+      ],
+      "split": false,
+      "translation": "Всегда быть самым важным в",
+      "translation_source": "cached translation-engine response"
+    }
+  ],
   "blocks": [
     {
       "cap_height": 27.0,
       "category": "Unknown",
-      "confidence": 0.06593827903270721,
+      "confidence": 0.03296913951635361,
       "font": "Inter",
       "rect": {
         "h": 27.0,
@@ -16,7 +1317,7 @@
     {
       "cap_height": 26.0,
       "category": "SansSerif",
-      "confidence": 0.3315261900424957,
+      "confidence": 0.28179726004600525,
       "font": "Inter",
       "rect": {
         "h": 26.0,
@@ -28,7 +1329,7 @@
     {
       "cap_height": 22.0,
       "category": "Unknown",
-      "confidence": 0.07021212577819824,
+      "confidence": 0.03510606288909912,
       "font": "Inter",
       "rect": {
         "h": 22.0,
@@ -38,22 +1339,34 @@
       }
     },
     {
-      "cap_height": 141.0,
+      "cap_height": 201.0,
       "category": "Serif",
-      "confidence": 0.5596888661384583,
+      "confidence": 0.32121479511260986,
       "font": "Source Serif 4",
       "rect": {
-        "h": 621.0,
-        "w": 439.0,
+        "h": 552.0,
+        "w": 291.0,
         "x": 850.0,
         "y": 119.0
       }
     },
     {
+      "cap_height": 8.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 8.0,
+        "w": 17.0,
+        "x": 586.0,
+        "y": 205.0
+      }
+    },
+    {
       "cap_height": 96.0,
       "category": "Unknown",
-      "confidence": 0.05583333969116211,
-      "font": "PT Serif",
+      "confidence": 0.029500002041459084,
+      "font": "Inter",
       "rect": {
         "h": 96.0,
         "w": 16.0,
@@ -62,33 +1375,69 @@
       }
     },
     {
+      "cap_height": 16.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 17.0,
+        "w": 72.0,
+        "x": 922.0,
+        "y": 256.0
+      }
+    },
+    {
+      "cap_height": 33.0,
+      "category": "Unknown",
+      "confidence": 0.027916669845581055,
+      "font": "PT Serif",
+      "rect": {
+        "h": 45.0,
+        "w": 17.0,
+        "x": 892.0,
+        "y": 323.0
+      }
+    },
+    {
       "cap_height": 74.0,
       "category": "Condensed",
-      "confidence": 0.3754427134990692,
+      "confidence": 0.30369144678115845,
       "font": "Oswald",
       "rect": {
-        "h": 296.0,
-        "w": 119.0,
+        "h": 201.0,
+        "w": 117.0,
         "x": 1010.0,
         "y": 355.0
       }
     },
     {
-      "cap_height": 89.0,
+      "cap_height": 88.0,
       "category": "Serif",
-      "confidence": 0.8022472262382507,
-      "font": "PT Serif",
+      "confidence": 0.6678726077079773,
+      "font": "Source Serif 4",
       "rect": {
-        "h": 140.0,
-        "w": 257.0,
+        "h": 370.0,
+        "w": 471.0,
         "x": 818.0,
+        "y": 370.0
+      }
+    },
+    {
+      "cap_height": 27.0,
+      "category": "Unknown",
+      "confidence": 0.032824549823999405,
+      "font": "Roboto Slab",
+      "rect": {
+        "h": 27.0,
+        "w": 37.0,
+        "x": 888.0,
         "y": 370.0
       }
     },
     {
       "cap_height": 126.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 126.0,
@@ -98,9 +1447,21 @@
       }
     },
     {
+      "cap_height": 13.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 13.0,
+        "w": 30.0,
+        "x": 808.0,
+        "y": 444.0
+      }
+    },
+    {
       "cap_height": 22.0,
       "category": "Serif",
-      "confidence": 0.3219491243362427,
+      "confidence": 0.3155101537704468,
       "font": "Literata",
       "rect": {
         "h": 47.0,
@@ -110,10 +1471,94 @@
       }
     },
     {
+      "cap_height": 14.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 21.0,
+        "w": 32.0,
+        "x": 837.0,
+        "y": 475.0
+      }
+    },
+    {
+      "cap_height": 11.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 11.0,
+        "w": 30.0,
+        "x": 765.0,
+        "y": 490.0
+      }
+    },
+    {
+      "cap_height": 413.0,
+      "category": "Unknown",
+      "confidence": 0.033878128975629807,
+      "font": "PT Serif",
+      "rect": {
+        "h": 413.0,
+        "w": 220.0,
+        "x": 658.0,
+        "y": 494.0
+      }
+    },
+    {
+      "cap_height": 23.0,
+      "category": "Unknown",
+      "confidence": 0.03122464194893837,
+      "font": "Inter",
+      "rect": {
+        "h": 23.0,
+        "w": 22.0,
+        "x": 844.0,
+        "y": 527.0
+      }
+    },
+    {
+      "cap_height": 38.0,
+      "category": "Unknown",
+      "confidence": 0.03546491637825966,
+      "font": "Inter",
+      "rect": {
+        "h": 40.0,
+        "w": 31.0,
+        "x": 1014.0,
+        "y": 534.0
+      }
+    },
+    {
+      "cap_height": 10.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 10.0,
+        "w": 45.0,
+        "x": 1358.0,
+        "y": 559.0
+      }
+    },
+    {
+      "cap_height": 148.0,
+      "category": "Serif",
+      "confidence": 0.3450872004032135,
+      "font": "Literata",
+      "rect": {
+        "h": 345.0,
+        "w": 261.0,
+        "x": 872.0,
+        "y": 564.0
+      }
+    },
+    {
       "cap_height": 27.0,
       "category": "Unknown",
-      "confidence": 0.06416667252779007,
-      "font": "PT Serif",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
       "rect": {
         "h": 30.0,
         "w": 47.0,
@@ -122,9 +1567,21 @@
       }
     },
     {
+      "cap_height": 42.0,
+      "category": "Unknown",
+      "confidence": 0.03327777981758118,
+      "font": "Inter",
+      "rect": {
+        "h": 42.0,
+        "w": 35.0,
+        "x": 1178.0,
+        "y": 672.0
+      }
+    },
+    {
       "cap_height": 27.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 34.0,
@@ -136,7 +1593,7 @@
     {
       "cap_height": 26.0,
       "category": "SansSerif",
-      "confidence": 0.35531312227249146,
+      "confidence": 0.30201616883277893,
       "font": "Inter",
       "rect": {
         "h": 39.0,
@@ -146,21 +1603,69 @@
       }
     },
     {
-      "cap_height": 84.0,
+      "cap_height": 8.0,
       "category": "Unknown",
-      "confidence": 0.0672539696097374,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
-        "h": 84.0,
+        "h": 8.0,
+        "w": 24.0,
+        "x": 1163.0,
+        "y": 798.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "Unknown",
+      "confidence": 0.03235185518860817,
+      "font": "Inter",
+      "rect": {
+        "h": 12.0,
+        "w": 10.0,
+        "x": 902.0,
+        "y": 800.0
+      }
+    },
+    {
+      "cap_height": 13.0,
+      "category": "Unknown",
+      "confidence": 0.03434615582227707,
+      "font": "Inter",
+      "rect": {
+        "h": 17.0,
+        "w": 14.0,
+        "x": 846.0,
+        "y": 808.0
+      }
+    },
+    {
+      "cap_height": 56.0,
+      "category": "Unknown",
+      "confidence": 0.033476196229457855,
+      "font": "Inter",
+      "rect": {
+        "h": 57.0,
         "w": 80.0,
         "x": 781.0,
-        "y": 792.0
+        "y": 819.0
+      }
+    },
+    {
+      "cap_height": 17.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 17.0,
+        "w": 20.0,
+        "x": 1135.0,
+        "y": 839.0
       }
     },
     {
       "cap_height": 36.0,
       "category": "Condensed",
-      "confidence": 0.40026670694351196,
+      "confidence": 0.3642427325248718,
       "font": "Roboto Condensed",
       "rect": {
         "h": 70.0,
@@ -170,9 +1675,21 @@
       }
     },
     {
+      "cap_height": 24.0,
+      "category": "Unknown",
+      "confidence": 0.03611111268401146,
+      "font": "PT Serif",
+      "rect": {
+        "h": 36.0,
+        "w": 29.0,
+        "x": 1059.0,
+        "y": 872.0
+      }
+    },
+    {
       "cap_height": 31.0,
       "category": "SansSerif",
-      "confidence": 0.31216391921043396,
+      "confidence": 0.26533931493759155,
       "font": "Inter",
       "rect": {
         "h": 40.0,
@@ -184,7 +1701,7 @@
     {
       "cap_height": 26.0,
       "category": "Condensed",
-      "confidence": 0.8344871997833252,
+      "confidence": 0.7593833804130554,
       "font": "Roboto Condensed",
       "rect": {
         "h": 78.0,
@@ -194,362 +1711,1471 @@
       }
     }
   ],
-  "cached_placement_ms": 0.575742,
-  "dropped": 7,
+  "cached_placement_ms": 0.016892,
+  "dropped": 3,
   "dropped_details": [
     {
       "block_id": 4,
-      "original": "fixture 4",
-      "reason": "для перевода нет места поверх игры",
+      "original": "ESISLAND",
+      "reason": "повторный OCR того же текста",
       "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
+      "text": "ЭСИСЛАНД"
     },
     {
-      "block_id": 6,
-      "original": "fixture 6",
-      "reason": "для перевода нет места поверх игры",
+      "block_id": 17,
+      "original": "However, you'll always be the r what. aannons this wi",
+      "reason": "повторный OCR того же текста",
       "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
+      "text": "Тем не менее, вы всегда будете r что. aannons это у"
     },
     {
-      "block_id": 7,
-      "original": "fixture 7",
-      "reason": "для перевода нет места поверх игры",
+      "block_id": 36,
+      "original": "always be the most important per",
+      "reason": "повторный OCR того же текста",
       "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 8,
-      "original": "fixture 8",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 9,
-      "original": "fixture 9",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 13,
-      "original": "fixture 13",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 14,
-      "original": "fixture 14",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
+      "text": "Всегда быть самым важным в"
     }
   ],
   "finish_ms": [
-    0.065915
+    0.535725,
+    2.578364
   ],
-  "first_frame_ms": 875.466874,
-  "fits": 16,
+  "first_frame_ms": 82.792389,
+  "fits": 6,
   "frame_blocks": [
     {
+      "cap_height_px": 27.0,
       "id": 1,
-      "lines_note": "",
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
       "source_lines": 1,
       "text_rect": {
+        "h": 36.0,
+        "w": 86.0,
+        "x": 1495.0,
+        "y": 62.0
+      }
+    },
+    {
+      "cap_height_px": 26.0,
+      "id": 2,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 33.0,
+        "w": 83.0,
+        "x": 1720.0,
+        "y": 63.0
+      }
+    },
+    {
+      "cap_height_px": 22.0,
+      "id": 3,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 31.0,
+        "w": 66.0,
+        "x": 1616.0,
+        "y": 64.0
+      }
+    },
+    {
+      "cap_height_px": 88.0,
+      "id": 10,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 162.0,
+        "w": 73.0,
+        "x": 920.0,
+        "y": 507.0
+      }
+    },
+    {
+      "cap_height_px": 31.0,
+      "id": 33,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 52.0,
+        "w": 117.0,
+        "x": 387.0,
+        "y": 936.0
+      }
+    },
+    {
+      "cap_height_px": 26.0,
+      "id": 34,
+      "lines_note": "строк: 2 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 90.0,
+        "w": 1049.0,
+        "x": 567.0,
+        "y": 942.0
+      }
+    }
+  ],
+  "hits": 6,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-1/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.9836654663086,
+      "crop_origin": [
+        1491,
+        60
+      ],
+      "detector_rect": {
         "h": 27.0,
         "w": 80.0,
         "x": 1498.0,
         "y": 67.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 34.0,
+          "w": 84.0,
+          "x": 1496.0,
+          "y": 63.0
+        }
+      ],
+      "observation_ms": 0.15771900000000003,
+      "ocr_ms": 151.197406,
+      "original": "AUTO",
+      "raw_original": "AUTO",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9836654663086,
+          "rect": {
+            "h": 34.0,
+            "w": 84.0,
+            "x": 1496.0,
+            "y": 63.0
+          },
+          "text": "AUTO"
+        }
+      ],
+      "split": false,
+      "translation": "АВТО",
+      "translation_source": "cached translation-engine response"
     },
     {
-      "id": 2,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.98997497558594,
+      "crop_origin": [
+        1717,
+        60
+      ],
+      "detector_rect": {
         "h": 26.0,
         "w": 109.0,
         "x": 1724.0,
         "y": 67.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 31.0,
+          "w": 81.0,
+          "x": 1721.0,
+          "y": 64.0
+        }
+      ],
+      "observation_ms": 0.017042,
+      "ocr_ms": 15.248453,
+      "original": "SKIP",
+      "raw_original": "SKIP",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.98997497558594,
+          "rect": {
+            "h": 31.0,
+            "w": 81.0,
+            "x": 1721.0,
+            "y": 64.0
+          },
+          "text": "SKIP"
+        }
+      ],
+      "split": false,
+      "translation": "СКИП",
+      "translation_source": "cached translation-engine response"
     },
     {
-      "id": 3,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.97964477539062,
+      "crop_origin": [
+        1615,
+        63
+      ],
+      "detector_rect": {
         "h": 22.0,
         "w": 57.0,
         "x": 1621.0,
         "y": 69.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 29.0,
+          "w": 64.0,
+          "x": 1617.0,
+          "y": 65.0
+        }
+      ],
+      "observation_ms": 0.10850599999999999,
+      "ocr_ms": 18.355658000000002,
+      "original": "OFF",
+      "raw_original": "OFF",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.97964477539062,
+          "rect": {
+            "h": 29.0,
+            "w": 64.0,
+            "x": 1617.0,
+            "y": 65.0
+          },
+          "text": "OFF"
+        }
+      ],
+      "split": false,
+      "translation": "ОФФ ВЫХ",
+      "translation_source": "cached translation-engine response"
     },
     {
-      "id": 4,
-      "lines_note": "",
-      "source_lines": 3,
-      "text_rect": {
-        "h": 621.0,
-        "w": 439.0,
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.74017333984375,
+      "crop_origin": [
+        789,
+        58
+      ],
+      "detector_rect": {
+        "h": 552.0,
+        "w": 291.0,
         "x": 850.0,
         "y": 119.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 116.0,
+          "w": 53.0,
+          "x": 934.0,
+          "y": 543.0
+        }
+      ],
+      "observation_ms": 0.022653000000000003,
+      "ocr_ms": 64.544455,
+      "original": "ESISLAND",
+      "raw_original": "ESISLAND",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.74017333984375,
+          "rect": {
+            "h": 116.0,
+            "w": 53.0,
+            "x": 934.0,
+            "y": 543.0
+          },
+          "text": "ESISLAND"
+        }
+      ],
+      "split": false,
+      "translation": "ЭСИСЛАНД",
+      "translation_source": "cached translation-engine response"
     },
     {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        583,
+        202
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 17.0,
+        "x": 586.0,
+        "y": 205.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
       "id": 5,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.278536,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        755,
+        218
+      ],
+      "detector_rect": {
         "h": 96.0,
         "w": 16.0,
         "x": 779.0,
         "y": 242.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.209796,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 6,
-      "lines_note": "",
-      "source_lines": 3,
-      "text_rect": {
-        "h": 296.0,
-        "w": 119.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        917,
+        251
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 72.0,
+        "x": 922.0,
+        "y": 256.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.6541609999999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        880,
+        311
+      ],
+      "detector_rect": {
+        "h": 45.0,
+        "w": 17.0,
+        "x": 892.0,
+        "y": 323.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.527453,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        990,
+        335
+      ],
+      "detector_rect": {
+        "h": 201.0,
+        "w": 117.0,
         "x": 1010.0,
         "y": 355.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 6.870794,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 7,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 140.0,
-        "w": 257.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 96.22228240966797,
+      "crop_origin": [
+        790,
+        342
+      ],
+      "detector_rect": {
+        "h": 370.0,
+        "w": 471.0,
         "x": 818.0,
         "y": 370.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [
+        {
+          "h": 146.0,
+          "w": 62.0,
+          "x": 926.0,
+          "y": 518.0
+        }
+      ],
+      "observation_ms": 0.033884000000000004,
+      "ocr_ms": 50.063537,
+      "original": "ODES ISLAND",
+      "raw_original": "ODES ISLAND",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 96.22228240966797,
+          "rect": {
+            "h": 146.0,
+            "w": 62.0,
+            "x": 926.0,
+            "y": 518.0
+          },
+          "text": "ODES ISLAND"
+        }
+      ],
+      "split": true,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 8,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        881,
+        363
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 37.0,
+        "x": 888.0,
+        "y": 370.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.272359,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1238,
+        398
+      ],
+      "detector_rect": {
         "h": 126.0,
         "w": 289.0,
         "x": 1270.0,
         "y": 430.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 9.929487,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 9,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        804,
+        440
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 30.0,
+        "x": 808.0,
+        "y": 444.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.264152,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        994,
+        447
+      ],
+      "detector_rect": {
         "h": 47.0,
         "w": 57.0,
         "x": 1000.0,
         "y": 453.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.352091,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 10,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        831,
+        469
+      ],
+      "detector_rect": {
+        "h": 21.0,
+        "w": 32.0,
+        "x": 837.0,
+        "y": 475.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.503007,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        762,
+        487
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 30.0,
+        "x": 765.0,
+        "y": 490.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.755726,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 90.75365447998047,
+      "crop_origin": [
+        554,
+        390
+      ],
+      "detector_rect": {
+        "h": 413.0,
+        "w": 220.0,
+        "x": 658.0,
+        "y": 494.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [
+        {
+          "h": 39.0,
+          "w": 412.0,
+          "x": 569.0,
+          "y": 944.0
+        },
+        {
+          "h": 13.0,
+          "w": 105.0,
+          "x": 653.0,
+          "y": 996.0
+        },
+        {
+          "h": 17.0,
+          "w": 64.0,
+          "x": 769.0,
+          "y": 993.0
+        },
+        {
+          "h": 13.0,
+          "w": 66.0,
+          "x": 582.0,
+          "y": 996.0
+        },
+        {
+          "h": 10.0,
+          "w": 38.0,
+          "x": 827.0,
+          "y": 997.0
+        }
+      ],
+      "observation_ms": 0.041078,
+      "ocr_ms": 166.695421,
+      "original": "However, you'll always be the r what. aannons this wi",
+      "raw_original": "However, you'll always be the r aannons this what. wi",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.06925201416016,
+          "rect": {
+            "h": 39.0,
+            "w": 412.0,
+            "x": 569.0,
+            "y": 944.0
+          },
+          "text": "However, you'll always be the r"
+        },
+        {
+          "confidence": 90.93772888183594,
+          "rect": {
+            "h": 13.0,
+            "w": 105.0,
+            "x": 653.0,
+            "y": 996.0
+          },
+          "text": "aannons"
+        },
+        {
+          "confidence": 96.21446990966797,
+          "rect": {
+            "h": 17.0,
+            "w": 64.0,
+            "x": 769.0,
+            "y": 993.0
+          },
+          "text": "this"
+        },
+        {
+          "confidence": 90.2010726928711,
+          "rect": {
+            "h": 13.0,
+            "w": 66.0,
+            "x": 582.0,
+            "y": 996.0
+          },
+          "text": "what."
+        },
+        {
+          "confidence": 78.3457260131836,
+          "rect": {
+            "h": 10.0,
+            "w": 38.0,
+            "x": 827.0,
+            "y": 997.0
+          },
+          "text": "wi"
+        }
+      ],
+      "split": false,
+      "translation": "Тем не менее, вы всегда будете r что. aannons это у",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        838,
+        521
+      ],
+      "detector_rect": {
+        "h": 23.0,
+        "w": 22.0,
+        "x": 844.0,
+        "y": 527.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.682527,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1004,
+        524
+      ],
+      "detector_rect": {
+        "h": 40.0,
+        "w": 31.0,
+        "x": 1014.0,
+        "y": 534.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.839297,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1355,
+        556
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 45.0,
+        "x": 1358.0,
+        "y": 559.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.322339,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 96.26211547851562,
+      "crop_origin": [
+        785,
+        477
+      ],
+      "detector_rect": {
+        "h": 345.0,
+        "w": 261.0,
+        "x": 872.0,
+        "y": 564.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [
+        {
+          "h": 44.0,
+          "w": 24.0,
+          "x": 934.0,
+          "y": 528.0
+        },
+        {
+          "h": 92.0,
+          "w": 40.0,
+          "x": 944.0,
+          "y": 571.0
+        },
+        {
+          "h": 38.0,
+          "w": 434.0,
+          "x": 785.0,
+          "y": 945.0
+        }
+      ],
+      "observation_ms": 0.021341000000000002,
+      "ocr_ms": 134.059335,
+      "original": "DES ISLAND always be the most important pe",
+      "raw_original": "DES ISLAND always be the most important pe",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 90.38617706298828,
+          "rect": {
+            "h": 44.0,
+            "w": 24.0,
+            "x": 934.0,
+            "y": 528.0
+          },
+          "text": "DES"
+        },
+        {
+          "confidence": 99.85423278808594,
+          "rect": {
+            "h": 92.0,
+            "w": 40.0,
+            "x": 944.0,
+            "y": 571.0
+          },
+          "text": "ISLAND"
+        },
+        {
+          "confidence": 98.54592895507812,
+          "rect": {
+            "h": 38.0,
+            "w": 434.0,
+            "x": 785.0,
+            "y": 945.0
+          },
+          "text": "always be the most important pe"
+        }
+      ],
+      "split": true,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        785,
+        623
+      ],
+      "detector_rect": {
         "h": 30.0,
         "w": 47.0,
         "x": 793.0,
         "y": 631.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.82646,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 11,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1167,
+        661
+      ],
+      "detector_rect": {
+        "h": 42.0,
+        "w": 35.0,
+        "x": 1178.0,
+        "y": 672.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.315091,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1082,
+        771
+      ],
+      "detector_rect": {
         "h": 34.0,
         "w": 86.0,
         "x": 1091.0,
         "y": 780.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.707233,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 12,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1253,
+        770
+      ],
+      "detector_rect": {
         "h": 39.0,
         "w": 81.0,
         "x": 1263.0,
         "y": 780.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.41471,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 13,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 84.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1160,
+        795
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 24.0,
+        "x": 1163.0,
+        "y": 798.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 26,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.810143,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        899,
+        797
+      ],
+      "detector_rect": {
+        "h": 12.0,
+        "w": 10.0,
+        "x": 902.0,
+        "y": 800.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 27,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.400353,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        841,
+        803
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 14.0,
+        "x": 846.0,
+        "y": 808.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 28,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.37798,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        766,
+        804
+      ],
+      "detector_rect": {
+        "h": 57.0,
         "w": 80.0,
         "x": 781.0,
-        "y": 792.0
-      }
+        "y": 819.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 29,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.92147,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 14,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1130,
+        834
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 20.0,
+        "x": 1135.0,
+        "y": 839.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 30,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.169375,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        762,
+        832
+      ],
+      "detector_rect": {
         "h": 70.0,
         "w": 86.0,
         "x": 780.0,
         "y": 850.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 31,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.268717,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 15,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1053,
+        866
+      ],
+      "detector_rect": {
+        "h": 36.0,
+        "w": 29.0,
+        "x": 1059.0,
+        "y": 872.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 32,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.17217,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.96894836425781,
+      "crop_origin": [
+        386,
+        936
+      ],
+      "detector_rect": {
         "h": 40.0,
         "w": 98.0,
         "x": 396.0,
         "y": 946.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 33,
+      "lines": [
+        {
+          "h": 50.0,
+          "w": 115.0,
+          "x": 388.0,
+          "y": 937.0
+        }
+      ],
+      "observation_ms": 0.43317,
+      "ocr_ms": 16.091379,
+      "original": "Amiya",
+      "raw_original": "Amiya",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.96894836425781,
+          "rect": {
+            "h": 50.0,
+            "w": 115.0,
+            "x": 388.0,
+            "y": 937.0
+          },
+          "text": "Amiya"
+        }
+      ],
+      "split": false,
+      "translation": "Амия",
+      "translation_source": "cached translation-engine response"
     },
     {
-      "id": 16,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.04515838623047,
+      "crop_origin": [
+        564,
+        940
+      ],
+      "detector_rect": {
         "h": 78.0,
         "w": 1039.0,
         "x": 573.0,
         "y": 949.0
-      }
-    }
-  ],
-  "hits": 16,
-  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-1/original.png",
-  "measurement": "Qt: shared production helper, test IPC adapter",
-  "minimum_confidence": 30,
-  "ocr": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "latency_ms": 2599.293642,
-    "lines": [
-      {
-        "confidence": 99.97562408447266,
-        "rect": {
-          "h": 39.0,
-          "w": 88.0,
-          "x": 1495.0,
-          "y": 60.0
-        },
-        "text": "AUTO"
       },
-      {
-        "confidence": 92.96492004394531,
-        "rect": {
-          "h": 33.0,
-          "w": 69.0,
-          "x": 1615.0,
-          "y": 63.0
-        },
-        "text": "OFF"
-      },
-      {
-        "confidence": 99.98412322998047,
-        "rect": {
-          "h": 40.0,
-          "w": 123.0,
-          "x": 1714.0,
-          "y": 60.0
-        },
-        "text": "SKIP"
-      },
-      {
-        "confidence": 92.26830291748047,
-        "rect": {
-          "h": 72.0,
-          "w": 40.0,
-          "x": 922.0,
-          "y": 501.0
-        },
-        "text": "HODES"
-      },
-      {
-        "confidence": 20.849782943725586,
-        "rect": {
-          "h": 34.0,
-          "w": 28.0,
-          "x": 849.0,
-          "y": 520.0
-        },
-        "text": "C3"
-      },
-      {
-        "confidence": 99.55213928222656,
-        "rect": {
-          "h": 92.0,
-          "w": 39.0,
-          "x": 944.0,
-          "y": 570.0
-        },
-        "text": "ISLAND"
-      },
-      {
-        "confidence": 75.74992370605469,
-        "rect": {
-          "h": 23.0,
-          "w": 40.0,
-          "x": 781.0,
-          "y": 791.0
-        },
-        "text": "CO"
-      },
-      {
-        "confidence": 99.98410034179688,
-        "rect": {
-          "h": 60.0,
-          "w": 119.0,
-          "x": 387.0,
-          "y": 935.0
-        },
-        "text": "Amiya"
-      },
-      {
-        "confidence": 97.06287384033203,
-        "rect": {
-          "h": 41.0,
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 34,
+      "lines": [
+        {
+          "h": 43.0,
           "w": 1046.0,
           "x": 569.0,
-          "y": 944.0
+          "y": 943.0
         },
-        "text": "However, you'll always be the most important person to me, Doctor. No matter"
-      },
-      {
-        "confidence": 99.04859924316406,
-        "rect": {
-          "h": 40.0,
+        {
+          "h": 45.0,
           "w": 501.0,
           "x": 568.0,
-          "y": 990.0
+          "y": 986.0
+        }
+      ],
+      "observation_ms": 4.220704,
+      "ocr_ms": 103.877016,
+      "original": "However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change.",
+      "raw_original": "However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.2509536743164,
+          "rect": {
+            "h": 43.0,
+            "w": 1046.0,
+            "x": 569.0,
+            "y": 943.0
+          },
+          "text": "However, you'll always be the most important person to me, Doctor. No matter"
         },
-        "text": "what happens, this will never change."
-      }
-    ],
-    "text": "AUTO\nOFF\nSKIP\nHODES\nC3\nISLAND\nCO\nAmiya\nHowever, you'll always be the most important person to me, Doctor. No matter\nwhat happens, this will never change."
-  },
-  "ocr_history": [],
-  "ocr_scans": 1,
-  "peak_memory": "VmHWM:\t  429320 kB",
+        {
+          "confidence": 99.67649841308594,
+          "rect": {
+            "h": 45.0,
+            "w": 501.0,
+            "x": 568.0,
+            "y": 986.0
+          },
+          "text": "what happens, this will never change."
+        }
+      ],
+      "split": false,
+      "translation": "Тем не менее, вы всегда будете самым важным человеком для меня, доктор. Что бы ни случилось, это никогда не изменится.",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 93.81903076171875,
+      "crop_origin": [
+        789,
+        90
+      ],
+      "detector_rect": {
+        "h": 621.0,
+        "w": 471.0,
+        "x": 818.0,
+        "y": 119.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [
+        {
+          "h": 160.0,
+          "w": 71.0,
+          "x": 921.0,
+          "y": 508.0
+        }
+      ],
+      "observation_ms": 0.060775,
+      "ocr_ms": 68.45907,
+      "original": "ODES ISLAND",
+      "raw_original": "ODES ISLAND",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 93.81903076171875,
+          "rect": {
+            "h": 160.0,
+            "w": 71.0,
+            "x": 921.0,
+            "y": 508.0
+          },
+          "text": "ODES ISLAND"
+        }
+      ],
+      "split": false,
+      "translation": "ОСТРОВ ОДЕС",
+      "translation_source": "cached translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        911,
+        505
+      ],
+      "detector_rect": {
+        "h": 135.0,
+        "w": 50.0,
+        "x": 934.0,
+        "y": 528.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 35,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.813613,
+      "original": "",
+      "raw_original": "",
+      "scan": 1,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.890869140625,
+      "crop_origin": [
+        775,
+        935
+      ],
+      "detector_rect": {
+        "h": 38.0,
+        "w": 434.0,
+        "x": 785.0,
+        "y": 945.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 36,
+      "lines": [
+        {
+          "h": 40.0,
+          "w": 450.0,
+          "x": 778.0,
+          "y": 943.0
+        }
+      ],
+      "observation_ms": 1.1435060000000001,
+      "ocr_ms": 30.946747,
+      "original": "always be the most important per",
+      "raw_original": "always be the most important per",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 97.890869140625,
+          "rect": {
+            "h": 40.0,
+            "w": 450.0,
+            "x": 778.0,
+            "y": 943.0
+          },
+          "text": "always be the most important per"
+        }
+      ],
+      "split": false,
+      "translation": "Всегда быть самым важным в",
+      "translation_source": "cached translation-engine response"
+    }
+  ],
+  "ocr_scans": 2,
+  "peak_memory": "VmHWM:\t  235472 kB",
   "placed": [
     {
       "alignment": "right",
       "background": {
-        "color": "#1b1f23",
+        "color": "#1b1e23",
         "image": "",
         "mode": "adaptive_padding_fill",
         "opacity": 1.0,
@@ -558,16 +3184,16 @@
       "block_id": 1,
       "block_type": "button",
       "box": [
-        0.7717708587646485,
-        0.04703703633061162,
-        0.05854161580403646,
-        0.05499999788072374
+        0.7702083587646484,
+        0.04240740670098199,
+        0.061666615804036456,
+        0.06333332768192998
       ],
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
+      "font_family": "Inter",
+      "font_px": 28.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.20639128983020782,
+        "confidence": 0.17543260753154755,
         "generic": false
       },
       "font_weight": 400,
@@ -579,10 +3205,12 @@
       ],
       "italic": false,
       "key": "test:1",
-      "letter_spacing": -0.35771021246910095,
+      "layout_width": 84.0,
+      "letter_spacing": -1.113402009010315,
       "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 1",
+      "max_lines": 1,
+      "original": "AUTO",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -598,7 +3226,8 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "АВТО",
       "text_color": "#c7c7c8",
       "text_opacity": 1.0,
       "wrap": "word"
@@ -606,7 +3235,7 @@
     {
       "alignment": "right",
       "background": {
-        "color": "#1d2225",
+        "color": "#1a1d23",
         "image": "",
         "mode": "adaptive_padding_fill",
         "opacity": 1.0,
@@ -615,31 +3244,33 @@
       "block_id": 2,
       "block_type": "button",
       "box": [
-        0.8897916793823242,
-        0.04759259400544343,
-        0.07302080790201823,
-        0.05296296013726128
+        0.8861458460489909,
+        0.04111111252396195,
+        0.06260414123535156,
+        0.06499999717429832
       ],
       "font_family": "Inter",
-      "font_px": 9.0,
+      "font_px": 26.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.3315261900424957,
+        "confidence": 0.28179726004600525,
         "generic": false
       },
       "font_weight": 500,
       "inner": [
-        15.5999755859375,
-        15.599998474121094,
-        15.5999755859375,
-        15.599998474121094
+        18.5999755859375,
+        18.599998474121094,
+        18.5999755859375,
+        18.599998474121094
       ],
       "italic": false,
       "key": "test:2",
+      "layout_width": 81.0,
       "letter_spacing": 0.02783501148223877,
       "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 2",
+      "max_lines": 1,
+      "original": "SKIP",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -655,7 +3286,8 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "СКИП",
       "text_color": "#cccccd",
       "text_opacity": 1.0,
       "wrap": "word"
@@ -663,7 +3295,7 @@
     {
       "alignment": "right",
       "background": {
-        "color": "#1b1e22",
+        "color": "#1a1e22",
         "image": "",
         "mode": "adaptive_padding_fill",
         "opacity": 1.0,
@@ -672,17 +3304,16 @@
       "block_id": 3,
       "block_type": "button",
       "box": [
-        0.8373958587646484,
-        0.05166666596024125,
-        0.04343744913736979,
-        0.05407407195479782
+        0.8347916920979818,
+        0.04703703633061162,
+        0.04812494913736979,
+        0.05314814602887189
       ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
+      "font_family": "Inter",
+      "font_px": 13.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.07021212577819824,
+        "confidence": 0.03510606288909912,
         "generic": false
       },
       "font_weight": 400,
@@ -694,10 +3325,12 @@
       ],
       "italic": false,
       "key": "test:3",
-      "letter_spacing": -0.3509189486503601,
+      "layout_width": 64.0,
+      "letter_spacing": -0.5411427021026611,
       "line_height": 0.8999999761581421,
-      "max_lines": 3,
-      "original": "fixture 3",
+      "max_lines": 1,
+      "original": "OFF",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -713,7 +3346,8 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "ОФФ ВЫХ",
       "text_color": "#a2a2a4",
       "text_opacity": 1.0,
       "wrap": "word"
@@ -721,29 +3355,28 @@
     {
       "alignment": "left",
       "background": {
-        "color": "#435252",
-        "image": "",
-        "mode": "solid_fill",
+        "color": "#283037",
+        "image": "file:///home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-1/background-10.png",
+        "mode": "inpaint_blur",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 5,
+      "block_id": 10,
       "block_type": "unknown",
       "box": [
-        0.39739583333333334,
-        0.20925925925925926,
-        0.025,
-        0.15925925925925927
+        0.4708333333333333,
+        0.4546296296296296,
+        0.0546875,
+        0.17962962962962964
       ],
-      "expanded": true,
-      "font_family": "PT Serif",
-      "font_px": 8.0,
+      "font_family": "Source Serif 4",
+      "font_px": 19.0,
       "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.05583333969116211,
+        "category": "serif",
+        "confidence": 0.6678726077079773,
         "generic": false
       },
-      "font_weight": 400,
+      "font_weight": 200,
       "inner": [
         16.0,
         16.0,
@@ -751,69 +3384,13 @@
         16.0
       ],
       "italic": false,
-      "key": "test:5",
-      "letter_spacing": -0.34380918741226196,
-      "line_height": 0.8999999761581421,
-      "max_lines": 13,
-      "original": "fixture 5",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#171c1d",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 10,
-      "block_type": "unknown",
-      "box": [
-        0.4083333333333333,
-        0.575925925925926,
-        0.03177083333333333,
-        0.06481481481481481
-      ],
-      "expanded": true,
-      "font_family": "PT Serif",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.06416667252779007,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        9.0,
-        9.0,
-        5.0,
-        9.0
-      ],
-      "italic": true,
       "key": "test:10",
-      "letter_spacing": -0.34945738315582275,
+      "layout_width": 71.0,
+      "letter_spacing": -0.7685204148292542,
       "line_height": 0.8999999761581421,
-      "max_lines": 5,
-      "original": "fixture 10",
+      "max_lines": 6,
+      "original": "ODES ISLAND",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -829,148 +3406,34 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#a09b8c",
+      "source_coverage": 1.0,
+      "text": "ОСТРОВ ОДЕС",
+      "text_color": "#a79083",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
       "alignment": "left",
       "background": {
-        "color": "#222e4f",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 11,
-      "block_type": "button",
-      "box": [
-        0.5576041539510092,
-        0.7037037037037037,
-        0.06604169209798177,
-        0.07814817075376157
-      ],
-      "expanded": true,
-      "font_family": "Inter",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.06100000813603401,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        20.4000244140625,
-        20.0,
-        20.4000244140625,
-        20.4000244140625
-      ],
-      "italic": false,
-      "key": "test:11",
-      "letter_spacing": 2.8365979194641113,
-      "line_height": 0.8999999761581421,
-      "max_lines": 4,
-      "original": "fixture 11",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#8b9bb1",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#161c28",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 12,
-      "block_type": "button",
-      "box": [
-        0.6456249872843425,
-        0.7037037037037037,
-        0.0665625254313151,
-        0.07629631890190972
-      ],
-      "font_family": "Inter",
-      "font_px": 9.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.35531312227249146,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        23.4000244140625,
-        20.0,
-        23.4000244140625,
-        23.4000244140625
-      ],
-      "italic": false,
-      "key": "test:12",
-      "letter_spacing": -0.38983896374702454,
-      "line_height": 0.8999999761581421,
-      "max_lines": 3,
-      "original": "fixture 12",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#8b8a92",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#070808",
+        "color": "#080909",
         "image": "",
         "mode": "solid_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 15,
-      "block_type": "unknown",
+      "block_id": 33,
+      "block_type": "button",
       "box": [
-        0.2,
-        0.8648148148148148,
-        0.06354166666666666,
-        0.05925925925925926
+        0.1953125,
+        0.8555555555555555,
+        0.0734375,
+        0.07037037037037037
       ],
       "font_family": "Inter",
-      "font_px": 10.0,
+      "font_px": 42.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.31216391921043396,
+        "confidence": 0.26533931493759155,
         "generic": false
       },
       "font_weight": 400,
@@ -981,11 +3444,13 @@
         12.0
       ],
       "italic": false,
-      "key": "test:15",
-      "letter_spacing": -0.43691954016685486,
-      "line_height": 0.8999999761581421,
-      "max_lines": 3,
-      "original": "fixture 15",
+      "key": "test:33",
+      "layout_width": 115.0,
+      "letter_spacing": -1.5500000715255737,
+      "line_height": 1.0,
+      "max_lines": 1,
+      "original": "Amiya",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -1001,10 +3466,11 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Амия",
       "text_color": "#888888",
       "text_opacity": 1.0,
-      "wrap": "word"
+      "wrap": "none"
     },
     {
       "alignment": "left",
@@ -1015,19 +3481,19 @@
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 16,
+      "block_id": 34,
       "block_type": "dialogue",
       "box": [
-        0.29328123728434247,
-        0.8695370144314236,
-        0.5514583587646484,
-        0.0905556007667824
+        0.2901562372843424,
+        0.8630555329499421,
+        0.5566666920979818,
+        0.10166671187789351
       ],
       "font_family": "Roboto Condensed",
       "font_px": 36.0,
       "font_selection": {
         "category": "condensed",
-        "confidence": 0.8344871997833252,
+        "confidence": 0.7593833804130554,
         "generic": false
       },
       "font_weight": 400,
@@ -1038,11 +3504,13 @@
         9.9000244140625
       ],
       "italic": false,
-      "key": "test:16",
+      "key": "test:34",
+      "layout_width": 1047.0,
       "letter_spacing": -1.3000000715255737,
-      "line_height": 1.0227272510528564,
-      "max_lines": 1,
-      "original": "fixture 16",
+      "line_height": 0.9772727489471436,
+      "max_lines": 2,
+      "original": "However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change.",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -1058,123 +3526,187 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Тем не менее, вы всегда будете самым важным человеком для меня, доктор. Что бы ни случилось, это никогда не изменится.",
       "text_color": "#d6d7d7",
       "text_opacity": 1.0,
       "wrap": "word"
     }
   ],
-  "placement_ms": 2065.23828,
-  "repeat_frame_ms": 193.45195700000002,
+  "placement_ms": 70.54917900000001,
+  "repeat_frame_ms": 21.662671000000003,
+  "repeat_ocr_jobs": 0,
   "size": [
     1920,
     1080
   ],
   "timings_ms": [
     [
-      88.598739,
-      207.296343,
-      0.605359
+      5.8711709999999995,
+      25.830716,
+      0.107333
     ],
     [
-      86.238991,
-      218.01002,
-      1.1911999999999998
+      6.080998,
+      25.419958,
+      0.111381
     ],
     [
-      100.857257,
-      232.674373,
-      1.308703
+      5.7663020000000005,
+      26.589363000000002,
+      0.16184700000000002
     ],
     [
-      95.375386,
-      212.77226399999998,
-      0.6329509999999999
+      5.962694999999999,
+      23.954131999999998,
+      0.12186100000000001
     ],
     [
-      86.88118,
-      204.845043,
-      0.625837
+      5.005842,
+      23.740367,
+      0.11658
     ]
   ],
-  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
-  "render_ms": 421.0944030000974,
-  "update_ms": 2.2485259996756213,
+  "translation_cache_hits": 9,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 0,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 351.27081100017676,
+  "update_ms": 2.231366000160051,
   "layout_diagnostics": [
     {
-      "width": 80,
-      "height": 27,
-      "contentWidth": 74.109375,
-      "contentHeight": 19.899999499320984,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 109,
-      "height": 26,
-      "contentWidth": 102.734375,
-      "contentHeight": 21.699999451637268,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 57,
-      "height": 32,
-      "contentWidth": 53.140625,
-      "contentHeight": 28.899999260902405,
-      "lines": 3,
-      "truncated": false
-    },
-    {
-      "width": 16,
-      "height": 140,
-      "contentWidth": 15.875,
-      "contentHeight": 109.89999711513519,
-      "lines": 11,
-      "truncated": false
-    },
-    {
-      "width": 47,
-      "height": 52,
-      "contentWidth": 43.6875,
-      "contentHeight": 40.59999895095825,
-      "lines": 4,
-      "truncated": false
-    },
-    {
-      "width": 86,
-      "height": 44,
-      "contentWidth": 71.578125,
-      "contentHeight": 37.899999022483826,
-      "lines": 4,
+      "width": 84,
+      "height": 35.999996185302734,
+      "contentWidth": 70.25,
+      "contentHeight": 33.59999918937683,
+      "lines": 1,
       "truncated": false
     },
     {
       "width": 81,
-      "height": 38.999999999999986,
-      "contentWidth": 77.671875,
-      "contentHeight": 32.49999916553497,
-      "lines": 3,
-      "truncated": false
-    },
-    {
-      "width": 98,
-      "height": 40,
-      "contentWidth": 95.828125,
-      "contentHeight": 36.09999907016754,
-      "lines": 3,
-      "truncated": false
-    },
-    {
-      "width": 1039,
-      "height": 78,
-      "contentWidth": 588.921875,
-      "contentHeight": 47.0454535484314,
+      "height": 33,
+      "contentWidth": 75.40625,
+      "contentHeight": 31.799999237060547,
       "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 64,
+      "height": 31,
+      "contentWidth": 60.234375,
+      "contentHeight": 15.399999618530273,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 71,
+      "height": 162,
+      "contentWidth": 68.5625,
+      "contentHeight": 50.59999871253967,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 115,
+      "height": 52,
+      "contentWidth": 103.203125,
+      "contentHeight": 51,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 1047,
+      "height": 90,
+      "contentWidth": 965.46875,
+      "contentHeight": 86.00000190734863,
+      "lines": 2,
       "truncated": false
     }
   ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 9,
+    "rendered": 6,
+    "missing": [
+      {
+        "id": 4,
+        "original": "ESISLAND",
+        "confidence": 99.74017333984375,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 17,
+        "original": "However, you'll always be the r what. aannons this wi",
+        "confidence": 90.75365447998047,
+        "reason": "повторный OCR того же текста"
+      },
+      {
+        "id": 36,
+        "original": "always be the most important per",
+        "confidence": 97.890869140625,
+        "reason": "повторный OCR того же текста"
+      }
+    ],
+    "source_coverage": [
+      {
+        "id": 1,
+        "original": "AUTO",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 2,
+        "original": "SKIP",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 3,
+        "original": "OFF",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 4,
+        "original": "ESISLAND",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 17,
+        "original": "However, you'll always be the r what. aannons this wi",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 33,
+        "original": "Amiya",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 34,
+        "original": "However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change.",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 10,
+        "original": "ODES ISLAND",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 36,
+        "original": "always be the most important per",
+        "rendered": false,
+        "plate_coverage": 0.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "no failure in this diagnostic",
+    "uncovered_text_blocks": []
+  },
   "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-1.png",
-  "approved_reference": false,
-  "translation_service": "none: predefined deterministic test input"
+  "approved_reference": false
 }

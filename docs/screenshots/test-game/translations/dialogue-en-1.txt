@@ -1,26 +1,17 @@
-[1] fixture 1
-→ Перевод длиннее оригинала. Hello 日本語
+[1] AUTO
+→ АВТО
 
-[2] fixture 2
-→ Перевод длиннее оригинала. Hello 日本語
+[2] SKIP
+→ СКИП
 
-[3] fixture 3
-→ Перевод длиннее оригинала. Hello 日本語
+[3] OFF
+→ ОФФ ВЫХ
 
-[5] fixture 5
-→ Перевод длиннее оригинала. Hello 日本語
+[10] ODES ISLAND
+→ ОСТРОВ ОДЕС
 
-[10] fixture 10
-→ Перевод длиннее оригинала. Hello 日本語
+[33] Amiya
+→ Амия
 
-[11] fixture 11
-→ Перевод длиннее оригинала. Hello 日本語
-
-[12] fixture 12
-→ Перевод длиннее оригинала. Hello 日本語
-
-[15] fixture 15
-→ Перевод длиннее оригинала. Hello 日本語
-
-[16] fixture 16
-→ Перевод длиннее оригинала. Hello 日本語
+[34] However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change.
+→ Тем не менее, вы всегда будете самым важным человеком для меня, доктор. Что бы ни случилось, это никогда не изменится.

@@ -1,23 +1,17 @@
-[1] fixture 1
-→ Перевод длиннее оригинала. Hello 日本語
+[11] RHODES ICI
+→ РОДЕС ICI
 
-[4] fixture 4
-→ Перевод длиннее оригинала. Hello 日本語
+[16] First-time Hire
+→ Первый прокат
 
-[5] fixture 5
-→ Перевод длиннее оригинала. Hello 日本語
+[24] Distinction Certificate
+→ Сертификат отрыва
 
-[9] fixture 9
-→ Перевод длиннее оригинала. Hello 日本語
+[30] Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title.
+→ Я Мирра, травник. Доктор. Кал'сит дал мне этот титул.
 
-[13] fixture 13
-→ Перевод длиннее оригинала. Hello 日本語
+[31] she said myrrh symboliz
+→ Она сказала, что мирр символизирует
 
-[14] fixture 14
-→ Перевод длиннее оригинала. Hello 日本語
-
-[15] fixture 15
-→ Перевод длиннее оригинала. Hello 日本語
-
-[16] fixture 16
-→ Перевод длиннее оригинала. Hello 日本語
+[33] AUGAD
+→ АУГАД

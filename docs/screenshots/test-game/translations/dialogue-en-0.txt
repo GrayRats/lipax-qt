@@ -1,0 +1,14 @@
+[1] Buro
+→ Буро
+
+[2] CHARACTER
+→ ПЕРСКАЯ
+
+[7] Zombie Girl CV: Mao Amatsuka HP:250
+→ Зомби Девушка CV: Мао Амацука HP:250
+
+[24] Zombie Girl can enter Dying Mode for 15 seconds when HP falls to the minimum. She cannot enter Dying Mode again if not collecting any red hearts after quiting
+→ Zombie Girl может войти в режим Dying в течение 15 секунд, когда HP падает до минимума. Она не может снова войти в режим Dying, если не собирает красные сердца после ухода
+
+[25] SELECT
+→ ВИД, К КОТ

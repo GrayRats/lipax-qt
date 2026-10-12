@@ -1,0 +1,35 @@
+   Compiling lipa-core v1.3.9 (/home/art/DEV/LipaX-QT/crates/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.70s
+     Running unittests src/lib.rs (target/debug/deps/lipa_core-60e4f82720c70c81)
+
+running 4 tests
+test layout::background::tests::automatic_strategy_depends_on_the_field_type ... FAILED
+test layout::background::tests::explicit_modes_are_kept_and_padding_adapts ... ok
+test layout::background::tests::flat_panel_gets_a_solid_fill_of_its_colour ... ok
+test layout::background::tests::textured_scene_is_inpainted_without_the_old_letters ... FAILED
+
+failures:
+
+---- layout::background::tests::automatic_strategy_depends_on_the_field_type stdout ----
+
+thread 'layout::background::tests::automatic_strategy_depends_on_the_field_type' (81249) panicked at crates/core/src/layout/background.rs:250:9:
+assertion `left == right` failed
+  left: Transparent
+ right: SolidFill
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- layout::background::tests::textured_scene_is_inpainted_without_the_old_letters stdout ----
+
+thread 'layout::background::tests::textured_scene_is_inpainted_without_the_old_letters' (81252) panicked at crates/core/src/layout/background.rs:263:13:
+assertion `left == right` failed: Subtitle must erase the original text
+  left: Transparent
+ right: InpaintBlur
+
+
+failures:
+    layout::background::tests::automatic_strategy_depends_on_the_field_type
+    layout::background::tests::textured_scene_is_inpainted_without_the_old_letters
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p lipa-core --lib`

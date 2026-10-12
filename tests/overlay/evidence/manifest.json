@@ -1,0 +1,108 @@
+{
+  "rust_workspace": {
+    "command": "QT_QPA_PLATFORM=offscreen cargo test --workspace --no-fail-fast",
+    "passed": 456,
+    "failed": 0,
+    "ignored": 15
+  },
+  "qml_app": {
+    "passed": 126,
+    "failed": 0
+  },
+  "qml_inplace": {
+    "passed": 18,
+    "failed": 0,
+    "platforms": [
+      "offscreen",
+      "wayland"
+    ],
+    "simulated_qt_scales": [
+      1.25,
+      1.5,
+      2
+    ]
+  },
+  "floating": {
+    "status": "unverified",
+    "reason": "KWin did not accept XTest pointer motion; physical pointer validation required"
+  },
+  "release": {
+    "command": "cargo build --offline --release -p lipa --bin lipax",
+    "result": "passed",
+    "binary": "target/release/lipax"
+  },
+  "live": {
+    "wayland": {
+      "command": "QT_QPA_PLATFORM=wayland python tests/inplace/python/live_overlay_pipeline.py",
+      "result": "passed",
+      "field_buffers": 78,
+      "composited_field_differences": [
+        0.0014751475147514752,
+        0.0010507802934170394
+      ],
+      "original_artifact_directory": "tmp/overlay-bugfix/live-pipeline-wayland-538056",
+      "snapshot_geometries": [
+        [
+          161,
+          577,
+          1111,
+          96
+        ],
+        [
+          149,
+          230,
+          1302,
+          115
+        ]
+      ]
+    },
+    "xwayland": {
+      "command": "QT_QPA_PLATFORM=xcb python tests/inplace/python/live_overlay_pipeline.py",
+      "result": "passed",
+      "field_buffers": 74,
+      "composited_field_differences": [
+        0.007250384024577572,
+        0.0051517135996507315
+      ],
+      "original_artifact_directory": "tmp/overlay-bugfix/live-pipeline-xcb-538737",
+      "snapshot_geometries": [
+        [
+          63,
+          299,
+          434,
+          50
+        ],
+        [
+          58,
+          119,
+          509,
+          60
+        ]
+      ]
+    }
+  },
+  "source_files": {
+    "crates/core/src/capture/geometry.rs": "5fc938f394c53865a459194c6788ec102c364d51d2bf5dad016961a9d9954ea4",
+    "crates/core/src/capture/geometry.js": "7acc3e0b6bb7d265b3d08db41a3cb43ddcc33e93f29f187511baa15eb6459efd",
+    "crates/core/src/pipeline.rs": "6541c771acd629a35bb750a54b607537d1dec7778c02b5cd3fbf89fc9cd49d1d",
+    "crates/app/src/bridge.rs": "3bf1aebd74ed726ec9a96ac5b8884a76639b71828f612714339ff95e5798b40f",
+    "crates/app/src/app_icon.h": "badab01186c6922f795f4a9f80d04ae236787132779934d635b76b2d1662aaaa",
+    "crates/app/qml/FloatingTranslationSurface.qml": "98548147239566be10f21560400de9a3cef4af95f4fd61008bb8bfc128b316a3",
+    "crates/app/qml/InplaceTranslation.qml": "6006f3565bc687712b260ee769da8045b50113b397ac3262a9fb7b366326d821",
+    "crates/app/qml/main.qml": "03c23a90ef53a3f8181ec53b1a8fb3825f1504288f6c8bcb1334a71024dde5b9",
+    "tests/inplace/qml/tst_overlaylifecycle.qml": "2af0bbbac5b9b1e9c57968a8f30d75dbb8407e5bdf4b41afdd6560b48ac6da46",
+    "tests/inplace/python/live_overlay_pipeline.py": "4901e759785cb10f4912a55bfef4190bdcdd38e046170fbe6750936cbd3bcbe0",
+    "tests/inplace/python/live_floating_window.py": "9632fade310c0f0fda83dbea903547c71ddbeda9910b79636cabe40a618de659",
+    "tests/inplace/python/kwin_geometry_probe.py": "846160dfb512b0e158652e7322db3800766378b5b8d672b7e71bebeef10086e3"
+  },
+  "crossxmars_recorded": {
+    "result": "passed",
+    "test": "tests/inplace/python/test_inplace_screenshots.py::test_recorded_game_capture_pipeline[CrossxMars.exe]",
+    "command": "CARGO_TARGET_DIR=target QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software LIPAX_QT_MEASURE_SERVER=tmp/inplace-tests/measure-server LIPAX_RAPID_TEST_MODELS=/home/art/.local/share/LipaX/ocr-models LIPAX_RAPID_TEST_ORT=/usr/lib/libonnxruntime.so LIPAX_TEST_OCR=1 python -m pytest tests/inplace/python/test_inplace_screenshots.py::test_recorded_game_capture_pipeline[CrossxMars.exe]",
+    "measurement": "Qt: shared production helper, test IPC adapter",
+    "uncovered_text_blocks": [],
+    "repeat_ocr_jobs": 0,
+    "live_compositor": false,
+    "predefined_translations": true
+  }
+}

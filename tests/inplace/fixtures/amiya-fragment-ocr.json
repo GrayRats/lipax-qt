@@ -1,0 +1,168 @@
+[
+  {
+    "accepted": true,
+    "automatic_filters": false,
+    "confidence": 90.75365447998047,
+    "crop_origin": [
+      554,
+      390
+    ],
+    "detector_rect": {
+      "h": 413.0,
+      "w": 220.0,
+      "x": 658.0,
+      "y": 494.0
+    },
+    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+    "id": 17,
+    "lines": [
+      {
+        "h": 39.0,
+        "w": 412.0,
+        "x": 569.0,
+        "y": 944.0
+      },
+      {
+        "h": 13.0,
+        "w": 66.0,
+        "x": 582.0,
+        "y": 996.0
+      },
+      {
+        "h": 13.0,
+        "w": 105.0,
+        "x": 653.0,
+        "y": 996.0
+      },
+      {
+        "h": 17.0,
+        "w": 64.0,
+        "x": 769.0,
+        "y": 993.0
+      },
+      {
+        "h": 10.0,
+        "w": 38.0,
+        "x": 827.0,
+        "y": 997.0
+      }
+    ],
+    "observation_ms": 0.032842,
+    "ocr_ms": 154.350101,
+    "original": "However, you'll always be the r what. aannons this wi",
+    "raw_original": "However, you'll always be the r what. aannons this wi",
+    "scan": 0,
+    "spans": [
+      {
+        "confidence": 98.06925201416016,
+        "rect": {
+          "h": 39.0,
+          "w": 412.0,
+          "x": 569.0,
+          "y": 944.0
+        },
+        "text": "However, you'll always be the r"
+      },
+      {
+        "confidence": 90.2010726928711,
+        "rect": {
+          "h": 13.0,
+          "w": 66.0,
+          "x": 582.0,
+          "y": 996.0
+        },
+        "text": "what."
+      },
+      {
+        "confidence": 90.93772888183594,
+        "rect": {
+          "h": 13.0,
+          "w": 105.0,
+          "x": 653.0,
+          "y": 996.0
+        },
+        "text": "aannons"
+      },
+      {
+        "confidence": 96.21446990966797,
+        "rect": {
+          "h": 17.0,
+          "w": 64.0,
+          "x": 769.0,
+          "y": 993.0
+        },
+        "text": "this"
+      },
+      {
+        "confidence": 78.3457260131836,
+        "rect": {
+          "h": 10.0,
+          "w": 38.0,
+          "x": 827.0,
+          "y": 997.0
+        },
+        "text": "wi"
+      }
+    ],
+    "split": false
+  },
+  {
+    "accepted": true,
+    "automatic_filters": false,
+    "confidence": 98.04515838623047,
+    "crop_origin": [
+      564,
+      940
+    ],
+    "detector_rect": {
+      "h": 78.0,
+      "w": 1039.0,
+      "x": 573.0,
+      "y": 949.0
+    },
+    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+    "id": 34,
+    "lines": [
+      {
+        "h": 43.0,
+        "w": 1046.0,
+        "x": 569.0,
+        "y": 943.0
+      },
+      {
+        "h": 45.0,
+        "w": 501.0,
+        "x": 568.0,
+        "y": 986.0
+      }
+    ],
+    "observation_ms": 4.293832,
+    "ocr_ms": 102.11263299999999,
+    "original": "However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change.",
+    "raw_original": "However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change.",
+    "scan": 0,
+    "spans": [
+      {
+        "confidence": 97.2509536743164,
+        "rect": {
+          "h": 43.0,
+          "w": 1046.0,
+          "x": 569.0,
+          "y": 943.0
+        },
+        "text": "However, you'll always be the most important person to me, Doctor. No matter"
+      },
+      {
+        "confidence": 99.67649841308594,
+        "rect": {
+          "h": 45.0,
+          "w": 501.0,
+          "x": 568.0,
+          "y": 986.0
+        },
+        "text": "what happens, this will never change."
+      }
+    ],
+    "split": false
+  }
+]

@@ -1,26 +1,377 @@
 {
-  "block_ocr": [],
+  "block_ocr": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 17.486072540283203,
+      "crop_origin": [
+        1151,
+        0
+      ],
+      "detector_rect": {
+        "h": 271.0,
+        "w": 126.0,
+        "x": 1219.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 108.0,
+          "w": 63.0,
+          "x": 1286.0,
+          "y": 142.0
+        }
+      ],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 160.081581,
+      "original": "R",
+      "raw_original": "R",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 17.486072540283203,
+          "rect": {
+            "h": 108.0,
+            "w": 63.0,
+            "x": 1286.0,
+            "y": 142.0
+          },
+          "text": "R"
+        }
+      ],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1254,
+        194
+      ],
+      "detector_rect": {
+        "h": 90.0,
+        "w": 63.0,
+        "x": 1277.0,
+        "y": 217.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.174003,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        677,
+        303
+      ],
+      "detector_rect": {
+        "h": 102.0,
+        "w": 128.0,
+        "x": 703.0,
+        "y": 329.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 6.696706,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        958,
+        352
+      ],
+      "detector_rect": {
+        "h": 90.0,
+        "w": 167.0,
+        "x": 981.0,
+        "y": 375.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.296939,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        821,
+        507
+      ],
+      "detector_rect": {
+        "h": 193.0,
+        "w": 230.0,
+        "x": 870.0,
+        "y": 556.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 14.033634,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        923,
+        697
+      ],
+      "detector_rect": {
+        "h": 70.0,
+        "w": 155.0,
+        "x": 941.0,
+        "y": 715.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 5.519856,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.231689453125,
+      "crop_origin": [
+        506,
+        821
+      ],
+      "detector_rect": {
+        "h": 26.0,
+        "w": 127.0,
+        "x": 513.0,
+        "y": 828.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [
+        {
+          "h": 31.0,
+          "w": 131.0,
+          "x": 510.0,
+          "y": 825.0
+        }
+      ],
+      "observation_ms": 0.18491,
+      "ocr_ms": 18.866569,
+      "original": "Onibi A",
+      "raw_original": "Onibi A",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 96.231689453125,
+          "rect": {
+            "h": 31.0,
+            "w": 131.0,
+            "x": 510.0,
+            "y": 825.0
+          },
+          "text": "Onibi A"
+        }
+      ],
+      "split": false,
+      "translation": "Ониби А",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        878,
+        838
+      ],
+      "detector_rect": {
+        "h": 21.0,
+        "w": 88.0,
+        "x": 884.0,
+        "y": 844.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 4.417579,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.67969512939453,
+      "crop_origin": [
+        471,
+        921
+      ],
+      "detector_rect": {
+        "h": 82.0,
+        "w": 957.0,
+        "x": 481.0,
+        "y": 931.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 50.0,
+          "w": 966.0,
+          "x": 477.0,
+          "y": 923.0
+        },
+        {
+          "h": 42.0,
+          "w": 179.0,
+          "x": 870.0,
+          "y": 970.0
+        }
+      ],
+      "observation_ms": 3.1512089999999997,
+      "ocr_ms": 87.66758800000001,
+      "original": "Hanako-san, the ghost who haunts bathrooms, will find you!",
+      "raw_original": "Hanako-san, the ghost who haunts bathrooms, will find you!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.87053680419922,
+          "rect": {
+            "h": 50.0,
+            "w": 966.0,
+            "x": 477.0,
+            "y": 923.0
+          },
+          "text": "Hanako-san, the ghost who haunts bathrooms, will"
+        },
+        {
+          "confidence": 98.66187286376953,
+          "rect": {
+            "h": 42.0,
+            "w": 179.0,
+            "x": 870.0,
+            "y": 970.0
+          },
+          "text": "find you!"
+        }
+      ],
+      "split": false,
+      "translation": "Ханако-сан, призрак, который преследует ванные комнаты, найдет вас!",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        794,
+        1055
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 324.0,
+        "x": 799.0,
+        "y": 1060.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 8.305353,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    }
+  ],
   "blocks": [
     {
-      "cap_height": 172.0,
+      "cap_height": 271.0,
       "category": "Unknown",
-      "confidence": 0.05900000408291817,
+      "confidence": 0.030773064121603966,
       "font": "Inter",
       "rect": {
-        "h": 172.0,
-        "w": 34.0,
-        "x": 1306.0,
-        "y": 124.0
+        "h": 271.0,
+        "w": 126.0,
+        "x": 1219.0,
+        "y": 0.0
       }
     },
     {
-      "cap_height": 90.0,
+      "cap_height": 19.0,
       "category": "Serif",
-      "confidence": 0.2469250112771988,
-      "font": "PT Serif",
+      "confidence": 0.2852192223072052,
+      "font": "Literata",
       "rect": {
         "h": 90.0,
-        "w": 40.0,
+        "w": 63.0,
         "x": 1277.0,
         "y": 217.0
       }
@@ -28,7 +379,7 @@
     {
       "cap_height": 96.0,
       "category": "Unknown",
-      "confidence": 0.06169445067644119,
+      "confidence": 0.030847225338220596,
       "font": "Inter",
       "rect": {
         "h": 102.0,
@@ -40,7 +391,7 @@
     {
       "cap_height": 89.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 90.0,
@@ -52,7 +403,7 @@
     {
       "cap_height": 177.0,
       "category": "Serif",
-      "confidence": 0.4051695168018341,
+      "confidence": 0.3970661461353302,
       "font": "Source Serif 4",
       "rect": {
         "h": 193.0,
@@ -64,7 +415,7 @@
     {
       "cap_height": 70.0,
       "category": "Unknown",
-      "confidence": 0.05773809552192688,
+      "confidence": 0.02886904776096344,
       "font": "PT Serif",
       "rect": {
         "h": 70.0,
@@ -76,7 +427,7 @@
     {
       "cap_height": 26.0,
       "category": "SansSerif",
-      "confidence": 0.3747462034225464,
+      "confidence": 0.3185342848300934,
       "font": "Inter",
       "rect": {
         "h": 26.0,
@@ -88,7 +439,7 @@
     {
       "cap_height": 21.0,
       "category": "Unknown",
-      "confidence": 0.06000000238418579,
+      "confidence": 0.030000001192092896,
       "font": "PT Serif",
       "rect": {
         "h": 21.0,
@@ -100,7 +451,7 @@
     {
       "cap_height": 29.0,
       "category": "SansSerif",
-      "confidence": 0.760287344455719,
+      "confidence": 0.6462442874908447,
       "font": "Inter",
       "rect": {
         "h": 82.0,
@@ -112,8 +463,8 @@
     {
       "cap_height": 20.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 20.0,
         "w": 324.0,
@@ -122,315 +473,400 @@
       }
     }
   ],
-  "cached_placement_ms": 0.336709,
-  "dropped": 4,
-  "dropped_details": [
-    {
-      "block_id": 1,
-      "original": "fixture 1",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 2,
-      "original": "fixture 2",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 5,
-      "original": "fixture 5",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 6,
-      "original": "fixture 6",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    }
-  ],
+  "cached_placement_ms": 0.009739,
+  "dropped": 0,
+  "dropped_details": [],
   "finish_ms": [
-    0.17536200000000002
+    0.015177999999999999
   ],
-  "first_frame_ms": 410.69604,
-  "fits": 10,
+  "first_frame_ms": 42.515708,
+  "fits": 2,
   "frame_blocks": [
     {
-      "id": 1,
-      "lines_note": "",
+      "cap_height_px": 26.0,
+      "id": 7,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
       "source_lines": 1,
       "text_rect": {
-        "h": 172.0,
-        "w": 34.0,
-        "x": 1306.0,
-        "y": 124.0
+        "h": 33.0,
+        "w": 133.0,
+        "x": 509.0,
+        "y": 824.0
       }
     },
     {
-      "id": 2,
-      "lines_note": "",
-      "source_lines": 1,
+      "cap_height_px": 29.0,
+      "id": 9,
+      "lines_note": "строк: 2 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 2,
       "text_rect": {
+        "h": 91.0,
+        "w": 968.0,
+        "x": 476.0,
+        "y": 922.0
+      }
+    }
+  ],
+  "hits": 2,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-3/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 17.486072540283203,
+      "crop_origin": [
+        1151,
+        0
+      ],
+      "detector_rect": {
+        "h": 271.0,
+        "w": 126.0,
+        "x": 1219.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 108.0,
+          "w": 63.0,
+          "x": 1286.0,
+          "y": 142.0
+        }
+      ],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 160.081581,
+      "original": "R",
+      "raw_original": "R",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 17.486072540283203,
+          "rect": {
+            "h": 108.0,
+            "w": 63.0,
+            "x": 1286.0,
+            "y": 142.0
+          },
+          "text": "R"
+        }
+      ],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1254,
+        194
+      ],
+      "detector_rect": {
         "h": 90.0,
-        "w": 40.0,
+        "w": 63.0,
         "x": 1277.0,
         "y": 217.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.174003,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 3,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        677,
+        303
+      ],
+      "detector_rect": {
         "h": 102.0,
         "w": 128.0,
         "x": 703.0,
         "y": 329.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 6.696706,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 4,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        958,
+        352
+      ],
+      "detector_rect": {
         "h": 90.0,
         "w": 167.0,
         "x": 981.0,
         "y": 375.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 4.296939,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 5,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        821,
+        507
+      ],
+      "detector_rect": {
         "h": 193.0,
         "w": 230.0,
         "x": 870.0,
         "y": 556.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 14.033634,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 6,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        923,
+        697
+      ],
+      "detector_rect": {
         "h": 70.0,
         "w": 155.0,
         "x": 941.0,
         "y": 715.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 5.519856,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 7,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.231689453125,
+      "crop_origin": [
+        506,
+        821
+      ],
+      "detector_rect": {
         "h": 26.0,
         "w": 127.0,
         "x": 513.0,
         "y": 828.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [
+        {
+          "h": 31.0,
+          "w": 131.0,
+          "x": 510.0,
+          "y": 825.0
+        }
+      ],
+      "observation_ms": 0.18491,
+      "ocr_ms": 18.866569,
+      "original": "Onibi A",
+      "raw_original": "Onibi A",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 96.231689453125,
+          "rect": {
+            "h": 31.0,
+            "w": 131.0,
+            "x": 510.0,
+            "y": 825.0
+          },
+          "text": "Onibi A"
+        }
+      ],
+      "split": false,
+      "translation": "Ониби А",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 8,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        878,
+        838
+      ],
+      "detector_rect": {
         "h": 21.0,
         "w": 88.0,
         "x": 884.0,
         "y": 844.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 4.417579,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 9,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.67969512939453,
+      "crop_origin": [
+        471,
+        921
+      ],
+      "detector_rect": {
         "h": 82.0,
         "w": 957.0,
         "x": 481.0,
         "y": 931.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 50.0,
+          "w": 966.0,
+          "x": 477.0,
+          "y": 923.0
+        },
+        {
+          "h": 42.0,
+          "w": 179.0,
+          "x": 870.0,
+          "y": 970.0
+        }
+      ],
+      "observation_ms": 3.1512089999999997,
+      "ocr_ms": 87.66758800000001,
+      "original": "Hanako-san, the ghost who haunts bathrooms, will find you!",
+      "raw_original": "Hanako-san, the ghost who haunts bathrooms, will find you!",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.87053680419922,
+          "rect": {
+            "h": 50.0,
+            "w": 966.0,
+            "x": 477.0,
+            "y": 923.0
+          },
+          "text": "Hanako-san, the ghost who haunts bathrooms, will"
+        },
+        {
+          "confidence": 98.66187286376953,
+          "rect": {
+            "h": 42.0,
+            "w": 179.0,
+            "x": 870.0,
+            "y": 970.0
+          },
+          "text": "find you!"
+        }
+      ],
+      "split": false,
+      "translation": "Ханако-сан, призрак, который преследует ванные комнаты, найдет вас!",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 10,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        794,
+        1055
+      ],
+      "detector_rect": {
         "h": 20.0,
         "w": 324.0,
         "x": 799.0,
         "y": 1060.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 8.305353,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     }
   ],
-  "hits": 10,
-  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-3/original.png",
-  "measurement": "Qt: shared production helper, test IPC adapter",
-  "minimum_confidence": 30,
-  "ocr": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "latency_ms": 3435.471257,
-    "lines": [
-      {
-        "confidence": 99.80158996582031,
-        "rect": {
-          "h": 40.0,
-          "w": 137.0,
-          "x": 507.0,
-          "y": 820.0
-        },
-        "text": "Onibi A"
-      },
-      {
-        "confidence": 98.66776275634766,
-        "rect": {
-          "h": 48.0,
-          "w": 968.0,
-          "x": 476.0,
-          "y": 923.0
-        },
-        "text": "Hanako-san, the ghost who haunts bathrooms, will"
-      },
-      {
-        "confidence": 97.365966796875,
-        "rect": {
-          "h": 44.0,
-          "w": 182.0,
-          "x": 869.0,
-          "y": 968.0
-        },
-        "text": "find you!"
-      }
-    ],
-    "text": "Onibi A\nHanako-san, the ghost who haunts bathrooms, will\nfind you!"
-  },
-  "ocr_history": [],
   "ocr_scans": 1,
-  "peak_memory": "VmHWM:\t  409404 kB",
+  "peak_memory": "VmHWM:\t  172232 kB",
   "placed": [
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#050208",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 3,
-      "block_type": "button",
-      "box": [
-        0.3515625,
-        0.27870370370370373,
-        0.09583333333333334,
-        0.14629629629629629
-      ],
-      "font_family": "Inter",
-      "font_px": 13.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.06169445067644119,
-        "generic": false
-      },
-      "font_weight": 300,
-      "inner": [
-        28.0,
-        28.0,
-        28.0,
-        28.0
-      ],
-      "italic": false,
-      "key": "test:3",
-      "letter_spacing": 9.719999313354492,
-      "line_height": 0.8999999761581421,
-      "max_lines": 6,
-      "original": "fixture 3",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#040205",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 4,
-      "block_type": "button",
-      "box": [
-        0.49635416666666665,
-        0.3212962962962963,
-        0.11614583333333334,
-        0.13518518518518519
-      ],
-      "font_family": "PT Serif",
-      "font_px": 16.0,
-      "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.15804584324359894,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        28.0,
-        28.0,
-        28.0,
-        28.0
-      ],
-      "italic": false,
-      "key": "test:4",
-      "letter_spacing": 1.7699997425079346,
-      "line_height": 0.8999999761581421,
-      "max_lines": 4,
-      "original": "fixture 4",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
     {
       "alignment": "left",
       "background": {
@@ -443,16 +879,16 @@
       "block_id": 7,
       "block_type": "unknown",
       "box": [
-        0.26312500635782876,
-        0.7594444557472512,
-        0.07427082061767579,
-        0.03851849591290509
+        0.26104167302449544,
+        0.7557407520435474,
+        0.07739582061767578,
+        0.044999977394386576
       ],
       "font_family": "Inter",
-      "font_px": 10.0,
+      "font_px": 26.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.3747462034225464,
+        "confidence": 0.3185342848300934,
         "generic": false
       },
       "font_weight": 700,
@@ -464,10 +900,12 @@
       ],
       "italic": false,
       "key": "test:7",
-      "letter_spacing": -0.4147223234176636,
+      "layout_width": 131.0,
+      "letter_spacing": -1.0491548776626587,
       "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 7",
+      "max_lines": 1,
+      "original": "Onibi A",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -483,66 +921,9 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Ониби А",
       "text_color": "#aa854d",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "center",
-      "background": {
-        "color": "#490e28",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 8,
-      "block_type": "unknown",
-      "box": [
-        0.45713542302449545,
-        0.7756481594509549,
-        0.05239582061767578,
-        0.04129627369068287
-      ],
-      "expanded": true,
-      "font_family": "PT Serif",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.06000000238418579,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        6.29998779296875,
-        6.29998779296875,
-        6.29998779296875,
-        6.29998779296875
-      ],
-      "italic": true,
-      "key": "test:8",
-      "letter_spacing": -0.3481275141239166,
-      "line_height": 0.8999999761581421,
-      "max_lines": 3,
-      "original": "fixture 8",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
       "text_opacity": 1.0,
       "wrap": "word"
     },
@@ -558,16 +939,16 @@
       "block_id": 9,
       "block_type": "dialogue",
       "box": [
-        0.24473958015441893,
-        0.8517592818648727,
-        0.5099999745686848,
-        0.09648143627025463
+        0.24213541348775228,
+        0.8434259485315394,
+        0.5157291412353515,
+        0.10481476960358796
       ],
       "font_family": "Inter",
-      "font_px": 39.0,
+      "font_px": 37.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.760287344455719,
+        "confidence": 0.6462442874908447,
         "generic": false
       },
       "font_weight": 700,
@@ -579,67 +960,12 @@
       ],
       "italic": false,
       "key": "test:9",
-      "letter_spacing": -1.4500000476837158,
-      "line_height": 0.9375,
-      "max_lines": 1,
-      "original": "fixture 9",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#c1c0c2",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "center",
-      "background": {
-        "color": "#101023",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 10,
-      "block_type": "unknown",
-      "box": [
-        0.41302083333333334,
-        0.975925925925926,
-        0.175,
-        0.024074074074074074
-      ],
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 13.0,
-      "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
-        "generic": false
-      },
-      "font_weight": 900,
-      "inner": [
-        6.0,
-        6.0,
-        6.0,
-        0.0
-      ],
-      "italic": false,
-      "key": "test:10",
-      "letter_spacing": -0.552600085735321,
+      "layout_width": 966.0,
+      "letter_spacing": -1.4988313913345337,
       "line_height": 0.8999999761581421,
-      "max_lines": 1,
-      "original": "fixture 10",
+      "max_lines": 2,
+      "original": "Hanako-san, the ghost who haunts bathrooms, will find you!",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -655,99 +981,94 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
+      "source_coverage": 1.0,
+      "text": "Ханако-сан, призрак, который преследует ванные комнаты, найдет вас!",
+      "text_color": "#c1c0c2",
       "text_opacity": 1.0,
       "wrap": "word"
     }
   ],
-  "placement_ms": 3808.637634,
-  "repeat_frame_ms": 362.660051,
+  "placement_ms": 49.391813,
+  "repeat_frame_ms": 22.883679,
+  "repeat_ocr_jobs": 0,
   "size": [
     1920,
     1080
   ],
   "timings_ms": [
     [
-      83.42885899999999,
-      103.354013,
-      0.49576000000000003
+      6.028720000000001,
+      13.091919,
+      0.049323
     ],
     [
-      78.737087,
-      107.97127300000001,
-      0.441608
+      4.226937,
+      12.433893,
+      0.045246
     ],
     [
-      82.26359799999999,
-      124.728175,
-      0.516771
+      5.611119,
+      11.871057,
+      0.047961
     ],
     [
-      84.980723,
-      102.975494,
-      0.48746500000000004
+      4.454478000000001,
+      12.227823,
+      0.048352
     ],
     [
-      86.14411,
-      102.537574,
-      0.443482
+      4.421475999999999,
+      12.026983,
+      0.048412000000000004
     ]
   ],
-  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
-  "render_ms": 275.66374500020174,
-  "update_ms": 3.337662001285935,
+  "translation_cache_hits": 0,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 2,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 219.19395799977792,
+  "update_ms": 1.8774459999804094,
   "layout_diagnostics": [
     {
-      "width": 128,
-      "height": 102,
-      "contentWidth": 123.890625,
-      "contentHeight": 89.19999766349792,
-      "lines": 6,
-      "truncated": false
-    },
-    {
-      "width": 167,
-      "height": 90,
-      "contentWidth": 165.90625,
-      "contentHeight": 61.39999842643738,
-      "lines": 3,
-      "truncated": false
-    },
-    {
-      "width": 127,
-      "height": 26,
-      "contentWidth": 106.71875,
-      "contentHeight": 24.399999380111694,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 88,
-      "height": 32,
-      "contentWidth": 80.890625,
-      "contentHeight": 20.799999475479126,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 956.9999694824218,
-      "height": 82,
-      "contentWidth": 742.75,
-      "contentHeight": 49.875,
+      "width": 131,
+      "height": 33,
+      "contentWidth": 100.25,
+      "contentHeight": 31.799999237060547,
       "lines": 1,
       "truncated": false
     },
     {
-      "width": 324,
-      "height": 20,
-      "contentWidth": 262.390625,
-      "contentHeight": 18.0999995470047,
-      "lines": 1,
+      "width": 966,
+      "height": 91,
+      "contentWidth": 848.546875,
+      "contentHeight": 84.99999785423279,
+      "lines": 2,
       "truncated": false
     }
   ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 2,
+    "rendered": 2,
+    "missing": [],
+    "source_coverage": [
+      {
+        "id": 7,
+        "original": "Onibi A",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 9,
+        "original": "Hanako-san, the ghost who haunts bathrooms, will find you!",
+        "rendered": true,
+        "plate_coverage": 1.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "no failure in this diagnostic",
+    "uncovered_text_blocks": []
+  },
   "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-3.jpg",
-  "approved_reference": false,
-  "translation_service": "none: predefined deterministic test input"
+  "approved_reference": false
 }

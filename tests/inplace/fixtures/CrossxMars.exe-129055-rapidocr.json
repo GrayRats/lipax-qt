@@ -14,6 +14,7 @@
     "x": 794.0,
     "y": 413.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 1,
    "lines": [
@@ -30,8 +31,8 @@
      "y": 410.0
     }
    ],
-   "observation_ms": 4.8991240000000005,
-   "ocr_ms": 596.196616,
+   "observation_ms": 0.275563,
+   "ocr_ms": 158.191526,
    "original": "60% Fuel",
    "raw_original": "60% Fuel",
    "scan": 0,
@@ -57,7 +58,9 @@
      "text": "Fuel"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": "60% топлива",
+   "translation_source": "reviewed exact translation fixture"
   },
   {
    "accepted": true,
@@ -73,6 +76,7 @@
     "x": 558.0,
     "y": 443.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 2,
    "lines": [
@@ -155,8 +159,8 @@
      "y": 538.0
     }
    ],
-   "observation_ms": 20.712503,
-   "ocr_ms": 705.2681200000001,
+   "observation_ms": 1.609973,
+   "ocr_ms": 454.009342,
    "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: engaged ip: 122.115.122.33:E444 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
    "raw_original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: engaged ip: 122.115.122.33:E444 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
    "scan": 0,
@@ -292,7 +296,9 @@
      "text": "active"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -308,6 +314,7 @@
     "x": 760.0,
     "y": 444.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 3,
    "lines": [
@@ -318,8 +325,8 @@
      "y": 442.0
     }
    ],
-   "observation_ms": 3.399108,
-   "ocr_ms": 40.382939,
+   "observation_ms": 0.07404000000000001,
+   "ocr_ms": 19.41764,
    "original": "ominal",
    "raw_original": "ominal",
    "scan": 0,
@@ -335,12 +342,14 @@
      "text": "ominal"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
-   "accepted": false,
+   "accepted": true,
    "automatic_filters": false,
-   "confidence": null,
+   "confidence": 90.54907989501953,
    "crop_origin": [
     749,
     442
@@ -351,16 +360,37 @@
     "x": 752.0,
     "y": 445.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 4,
-   "lines": [],
-   "observation_ms": 8e-05,
-   "ocr_ms": 4.912118,
-   "original": "",
-   "raw_original": "",
+   "lines": [
+    {
+     "h": 7.0,
+     "w": 9.333333015441895,
+     "x": 749.6666870117188,
+     "y": 443.6666564941406
+    }
+   ],
+   "observation_ms": 0.014438,
+   "ocr_ms": 19.860279000000002,
+   "original": "ne",
+   "raw_original": "ne",
    "scan": 0,
-   "spans": [],
-   "split": false
+   "spans": [
+    {
+     "confidence": 90.54907989501953,
+     "rect": {
+      "h": 7.0,
+      "w": 9.333333015441895,
+      "x": 749.6666870117188,
+      "y": 443.6666564941406
+     },
+     "text": "ne"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -376,6 +406,7 @@
     "x": 704.0,
     "y": 459.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 5,
    "lines": [
@@ -416,8 +447,8 @@
      "y": 503.0
     }
    ],
-   "observation_ms": 10.384991,
-   "ocr_ms": 376.682205,
+   "observation_ms": 0.710287,
+   "ocr_ms": 256.165596,
    "original": "nent: active engaged 122:115.122.33:E444:1123 conomiko S38123",
    "raw_original": "nent: active engaged 122:115.122.33:E444:1123 conomiko S38123",
    "scan": 0,
@@ -483,7 +514,237 @@
      "text": "S38123"
     }
    ],
-   "split": true
+   "split": true,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 98.9427719116211,
+   "crop_origin": [
+    701,
+    484
+   ],
+   "detector_rect": {
+    "h": 63.0,
+    "w": 173.0,
+    "x": 704.0,
+    "y": 487.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 6,
+   "lines": [
+    {
+     "h": 11.0,
+     "w": 172.0,
+     "x": 703.0,
+     "y": 487.0
+    },
+    {
+     "h": 13.0,
+     "w": 61.0,
+     "x": 701.0,
+     "y": 503.0
+    },
+    {
+     "h": 16.0,
+     "w": 56.0,
+     "x": 775.0,
+     "y": 501.0
+    },
+    {
+     "h": 17.0,
+     "w": 135.0,
+     "x": 702.0,
+     "y": 518.0
+    },
+    {
+     "h": 13.0,
+     "w": 37.0,
+     "x": 701.0,
+     "y": 537.0
+    },
+    {
+     "h": 13.0,
+     "w": 43.0,
+     "x": 766.0,
+     "y": 537.0
+    }
+   ],
+   "observation_ms": 0.808794,
+   "ocr_ms": 386.36690200000004,
+   "original": "122.115.122.33:E444:1123 konomiko S38123 isplacement:333112 ment: active",
+   "raw_original": "122.115.122.33:E444:1123 konomiko S38123 isplacement:333112 ment: active",
+   "scan": 0,
+   "spans": [
+    {
+     "confidence": 97.65725708007812,
+     "rect": {
+      "h": 11.0,
+      "w": 172.0,
+      "x": 703.0,
+      "y": 487.0
+     },
+     "text": "122.115.122.33:E444:1123"
+    },
+    {
+     "confidence": 99.24642181396484,
+     "rect": {
+      "h": 13.0,
+      "w": 61.0,
+      "x": 701.0,
+      "y": 503.0
+     },
+     "text": "konomiko"
+    },
+    {
+     "confidence": 99.90544128417969,
+     "rect": {
+      "h": 16.0,
+      "w": 56.0,
+      "x": 775.0,
+      "y": 501.0
+     },
+     "text": "S38123"
+    },
+    {
+     "confidence": 99.61366271972656,
+     "rect": {
+      "h": 17.0,
+      "w": 135.0,
+      "x": 702.0,
+      "y": 518.0
+     },
+     "text": "isplacement:333112"
+    },
+    {
+     "confidence": 99.798095703125,
+     "rect": {
+      "h": 13.0,
+      "w": 37.0,
+      "x": 701.0,
+      "y": 537.0
+     },
+     "text": "ment:"
+    },
+    {
+     "confidence": 99.9917984008789,
+     "rect": {
+      "h": 13.0,
+      "w": 43.0,
+      "x": 766.0,
+      "y": 537.0
+     },
+     "text": "active"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 99.80184173583984,
+   "crop_origin": [
+    550,
+    502
+   ],
+   "detector_rect": {
+    "h": 64.0,
+    "w": 171.0,
+    "x": 553.0,
+    "y": 505.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 7,
+   "lines": [
+    {
+     "h": 15.0,
+     "w": 43.0,
+     "x": 561.0,
+     "y": 520.0
+    }
+   ],
+   "observation_ms": 0.054613,
+   "ocr_ms": 20.257553,
+   "original": "Tempo",
+   "raw_original": "Tempo",
+   "scan": 0,
+   "spans": [
+    {
+     "confidence": 99.80184173583984,
+     "rect": {
+      "h": 15.0,
+      "w": 43.0,
+      "x": 561.0,
+      "y": 520.0
+     },
+     "text": "Tempo"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    723,
+    554
+   ],
+   "detector_rect": {
+    "h": 12.0,
+    "w": 143.0,
+    "x": 726.0,
+    "y": 557.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 8,
+   "lines": [],
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 28.376963,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    547,
+    573
+   ],
+   "detector_rect": {
+    "h": 10.0,
+    "w": 176.0,
+    "x": 550.0,
+    "y": 576.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 9,
+   "lines": [],
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 85.386174,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -499,8 +760,9 @@
     "x": 941.0,
     "y": 589.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 6,
+   "id": 10,
    "lines": [
     {
      "h": 27.0,
@@ -515,8 +777,8 @@
      "y": 617.0
     }
    ],
-   "observation_ms": 0.613173,
-   "ocr_ms": 71.35627699999999,
+   "observation_ms": 0.056678,
+   "ocr_ms": 33.518225,
    "original": "rSpeed: 5 ms Temp: 20 C",
    "raw_original": "rSpeed: 5 ms Temp: 20 C",
    "scan": 0,
@@ -542,7 +804,139 @@
      "text": "Temp: 20 C"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": "Скорость: 5 мс Темп.: 20 C",
+   "translation_source": "reviewed exact translation fixture"
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    1307,
+    585
+   ],
+   "detector_rect": {
+    "h": 14.0,
+    "w": 54.0,
+    "x": 1311.0,
+    "y": 589.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 11,
+   "lines": [],
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 13.869064999999999,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    1287,
+    596
+   ],
+   "detector_rect": {
+    "h": 95.0,
+    "w": 103.0,
+    "x": 1291.0,
+    "y": 600.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 12,
+   "lines": [],
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 46.976471,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": false,
+   "automatic_filters": false,
+   "confidence": null,
+   "crop_origin": [
+    652,
+    603
+   ],
+   "detector_rect": {
+    "h": 38.0,
+    "w": 76.0,
+    "x": 662.0,
+    "y": 613.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 13,
+   "lines": [],
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 23.090497000000003,
+   "original": "",
+   "raw_original": "",
+   "scan": 0,
+   "spans": [],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 96.65508270263672,
+   "crop_origin": [
+    565,
+    649
+   ],
+   "detector_rect": {
+    "h": 27.0,
+    "w": 292.0,
+    "x": 572.0,
+    "y": 656.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 14,
+   "lines": [
+    {
+     "h": 23.0,
+     "w": 271.0,
+     "x": 595.0,
+     "y": 659.0
+    }
+   ],
+   "observation_ms": 0.017904,
+   "ocr_ms": 57.569033,
+   "original": "unread message",
+   "raw_original": "unread message",
+   "scan": 0,
+   "spans": [
+    {
+     "confidence": 96.65508270263672,
+     "rect": {
+      "h": 23.0,
+      "w": 271.0,
+      "x": 595.0,
+      "y": 659.0
+     },
+     "text": "unread message"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -558,8 +952,9 @@
     "x": 66.0,
     "y": 708.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 7,
+   "id": 15,
    "lines": [
     {
      "h": 62.0,
@@ -568,8 +963,8 @@
      "y": 697.0
     }
    ],
-   "observation_ms": 1.335303,
-   "ocr_ms": 37.814626,
+   "observation_ms": 0.100791,
+   "ocr_ms": 15.818313,
    "original": "Mik",
    "raw_original": "Mik",
    "scan": 0,
@@ -585,7 +980,9 @@
      "text": "Mik"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -601,16 +998,19 @@
     "x": 970.0,
     "y": 708.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 8,
+   "id": 16,
    "lines": [],
-   "observation_ms": 2e-05,
-   "ocr_ms": 5.226245,
+   "observation_ms": 0.000111,
+   "ocr_ms": 7.278846000000001,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -626,16 +1026,19 @@
     "x": 824.0,
     "y": 716.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 9,
+   "id": 17,
    "lines": [],
-   "observation_ms": 9.099999999999999e-05,
-   "ocr_ms": 8.032117999999999,
+   "observation_ms": 9.999999999999999e-05,
+   "ocr_ms": 9.978786999999999,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -651,8 +1054,9 @@
     "x": 147.0,
     "y": 721.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 10,
+   "id": 18,
    "lines": [
     {
      "h": 32.0,
@@ -661,8 +1065,8 @@
      "y": 717.0
     }
    ],
-   "observation_ms": 0.672946,
-   "ocr_ms": 29.449717,
+   "observation_ms": 0.06211800000000001,
+   "ocr_ms": 16.336105,
    "original": "ca",
    "raw_original": "ca",
    "scan": 0,
@@ -678,7 +1082,9 @@
      "text": "ca"
     }
    ],
-   "split": true
+   "split": true,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -694,16 +1100,19 @@
     "x": 859.0,
     "y": 731.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 11,
+   "id": 19,
    "lines": [],
-   "observation_ms": 2e-05,
-   "ocr_ms": 8.209314000000001,
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 10.978503,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -719,59 +1128,19 @@
     "x": 980.0,
     "y": 731.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 12,
+   "id": 20,
    "lines": [],
-   "observation_ms": 7.000000000000001e-05,
-   "ocr_ms": 11.214544,
+   "observation_ms": 2.9999999999999997e-05,
+   "ocr_ms": 14.198792,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
-  },
-  {
-   "accepted": false,
-   "automatic_filters": false,
-   "confidence": 64.77375793457031,
-   "crop_origin": [
-    1544,
-    739
-   ],
-   "detector_rect": {
-    "h": 47.0,
-    "w": 140.0,
-    "x": 1556.0,
-    "y": 751.0
-   },
-   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 13,
-   "lines": [
-    {
-     "h": 28.0,
-     "w": 59.0,
-     "x": 1557.0,
-     "y": 760.0
-    }
-   ],
-   "observation_ms": 2e-05,
-   "ocr_ms": 33.167511,
-   "original": "<<",
-   "raw_original": "<<",
-   "scan": 0,
-   "spans": [
-    {
-     "confidence": 64.77375793457031,
-     "rect": {
-      "h": 28.0,
-      "w": 59.0,
-      "x": 1557.0,
-      "y": 760.0
-     },
-     "text": "<<"
-    }
-   ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -787,8 +1156,9 @@
     "x": 64.0,
     "y": 767.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 14,
+   "id": 21,
    "lines": [
     {
      "h": 43.0,
@@ -809,8 +1179,8 @@
      "y": 808.0
     }
    ],
-   "observation_ms": 346.641476,
-   "ocr_ms": 453.531091,
+   "observation_ms": 20.008630999999998,
+   "ocr_ms": 261.01840999999996,
    "original": "Morning, Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and, guite frankly, I'm upset at it m",
    "raw_original": "Morning, Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and, guite frankly, I'm upset at it m",
    "scan": 0,
@@ -846,7 +1216,9 @@
      "text": "and-forth gets tiresome and, guite frankly, I'm upset at it m"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -862,8 +1234,9 @@
     "x": 1119.0,
     "y": 767.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 15,
+   "id": 22,
    "lines": [
     {
      "h": 41.0,
@@ -872,8 +1245,8 @@
      "y": 761.0
     }
    ],
-   "observation_ms": 11.377473,
-   "ocr_ms": 86.261342,
+   "observation_ms": 0.5588700000000001,
+   "ocr_ms": 32.699211,
    "original": "all this hauling back-",
    "raw_original": "all this hauling back-",
    "scan": 0,
@@ -889,7 +1262,9 @@
      "text": "all this hauling back-"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -905,8 +1280,9 @@
     "x": 63.0,
     "y": 782.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 16,
+   "id": 23,
    "lines": [
     {
      "h": 21.0,
@@ -951,10 +1327,10 @@
      "y": 867.0
     }
    ],
-   "observation_ms": 114.002318,
-   "ocr_ms": 1237.34183,
-   "original": "Morning, Ella. Sometimes I wonder if I'm in the right place \u2014 all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be... but I have the right to be angry!",
-   "raw_original": "MuKa Morning, Ella. Sometimes I wonder if I'm in the right place \u2014 all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be... but I have the right to be angry!",
+   "observation_ms": 37.075332,
+   "ocr_ms": 632.713333,
+   "original": "Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be... but I have the right to be angry!",
+   "raw_original": "MuKa Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be... but I have the right to be angry!",
    "scan": 0,
    "spans": [
     {
@@ -995,7 +1371,7 @@
       "x": 504.0,
       "y": 758.0
      },
-     "text": "I wonder if I'm in the right place \u2014 all this hauling back-"
+     "text": "I wonder if I'm in the right place — all this hauling back-"
     },
     {
      "confidence": 97.30450439453125,
@@ -1028,7 +1404,9 @@
      "text": "but I have the right to be angry!"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": "Доброе утро, Элла. Иногда я сомневаюсь, что нахожусь на своём месте — эти перевозки туда-сюда утомляют, и, честно говоря, я расстраиваюсь из-за них сильнее, чем следовало бы… Но я имею право злиться!",
+   "translation_source": "reviewed exact translation fixture"
   },
   {
    "accepted": true,
@@ -1044,8 +1422,9 @@
     "x": 111.0,
     "y": 841.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 17,
+   "id": 24,
    "lines": [
     {
      "h": 38.0,
@@ -1060,8 +1439,8 @@
      "y": 866.0
     }
    ],
-   "observation_ms": 0.596692,
-   "ocr_ms": 106.698823,
+   "observation_ms": 0.1103,
+   "ocr_ms": 35.0238,
    "original": "nd-forth get ut I have the",
    "raw_original": "nd-forth get ut I have the",
    "scan": 0,
@@ -1087,7 +1466,9 @@
      "text": "ut I have the"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -1103,8 +1484,9 @@
     "x": 529.0,
     "y": 842.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 18,
+   "id": 25,
    "lines": [
     {
      "h": 16.0,
@@ -1113,8 +1495,8 @@
      "y": 831.0
     }
    ],
-   "observation_ms": 0.059343,
-   "ocr_ms": 54.20508,
+   "observation_ms": 0.012534,
+   "ocr_ms": 30.449695,
    "original": "Ia",
    "raw_original": "Ia",
    "scan": 0,
@@ -1130,7 +1512,9 @@
      "text": "Ia"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -1146,16 +1530,19 @@
     "x": 0.0,
     "y": 848.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 19,
+   "id": 26,
    "lines": [],
-   "observation_ms": 2.9999999999999997e-05,
-   "ocr_ms": 4.820786,
+   "observation_ms": 9.999999999999999e-05,
+   "ocr_ms": 7.786619,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -1171,8 +1558,9 @@
     "x": 59.0,
     "y": 873.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 20,
+   "id": 27,
    "lines": [
     {
      "h": 45.0,
@@ -1181,8 +1569,8 @@
      "y": 866.0
     }
    ],
-   "observation_ms": 0.7645,
-   "ocr_ms": 184.816296,
+   "observation_ms": 0.11852499999999999,
+   "ocr_ms": 41.801095000000004,
    "original": "but I have the right to be angry!",
    "raw_original": "but I have the right to be angry!",
    "scan": 0,
@@ -1198,7 +1586,9 @@
      "text": "but I have the right to be angry!"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -1214,8 +1604,9 @@
     "x": 13.0,
     "y": 896.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 21,
+   "id": 28,
    "lines": [
     {
      "h": 29.0,
@@ -1224,8 +1615,8 @@
      "y": 875.0
     }
    ],
-   "observation_ms": 0.391242,
-   "ocr_ms": 58.201191,
+   "observation_ms": 0.052067999999999996,
+   "ocr_ms": 21.19443,
    "original": "but I have",
    "raw_original": "but I have",
    "scan": 0,
@@ -1241,7 +1632,9 @@
      "text": "but I have"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": false,
@@ -1257,16 +1650,19 @@
     "x": 1402.0,
     "y": 918.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 22,
+   "id": 29,
    "lines": [],
-   "observation_ms": 0.00011,
-   "ocr_ms": 15.683523000000001,
+   "observation_ms": 2e-05,
+   "ocr_ms": 52.060916,
    "original": "",
    "raw_original": "",
    "scan": 0,
    "spans": [],
-   "split": false
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -1282,6 +1678,7 @@
     "x": 558.0,
     "y": 443.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
    "id": 2,
    "lines": [
@@ -1364,8 +1761,8 @@
      "y": 538.0
     }
    ],
-   "observation_ms": 27.818183,
-   "ocr_ms": 754.177934,
+   "observation_ms": 1.621716,
+   "ocr_ms": 548.948103,
    "original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: engaged ip: 122:115.122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
    "raw_original": "Fuel heating status: nominal Exoskeleton management: active Auto-pilot: engaged ip: 122:115.122.33:E444:1123 ship name: Hevacel nikonomiko S38123 Temporary shielding displacement: 333112 Evasive action management: active",
    "scan": 1,
@@ -1501,7 +1898,319 @@
      "text": "active"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": "Нагрев топлива: штатно\nУправление экзоскелетом: активно\nАвтопилот: включён\nip: 122:115.122.33:E444:1123\nИмя корабля: Hevacel nikonomiko S38123\nВременное смещение щита: 333112\nУправление уклонением: активно",
+   "translation_source": "reviewed exact translation fixture"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 98.45217895507812,
+   "crop_origin": [
+    757,
+    441
+   ],
+   "detector_rect": {
+    "h": 6.0,
+    "w": 33.0,
+    "x": 760.0,
+    "y": 444.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 3,
+   "lines": [
+    {
+     "h": 10.0,
+     "w": 38.0,
+     "x": 757.0,
+     "y": 442.0
+    }
+   ],
+   "observation_ms": 0.071916,
+   "ocr_ms": 22.987782,
+   "original": "ominal",
+   "raw_original": "ominal",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 98.45217895507812,
+     "rect": {
+      "h": 10.0,
+      "w": 38.0,
+      "x": 757.0,
+      "y": 442.0
+     },
+     "text": "ominal"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 90.54907989501953,
+   "crop_origin": [
+    749,
+    442
+   ],
+   "detector_rect": {
+    "h": 5.0,
+    "w": 5.0,
+    "x": 752.0,
+    "y": 445.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 4,
+   "lines": [
+    {
+     "h": 7.0,
+     "w": 9.333333015441895,
+     "x": 749.6666870117188,
+     "y": 443.6666564941406
+    }
+   ],
+   "observation_ms": 0.014728,
+   "ocr_ms": 22.058348,
+   "original": "ne",
+   "raw_original": "ne",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 90.54907989501953,
+     "rect": {
+      "h": 7.0,
+      "w": 9.333333015441895,
+      "x": 749.6666870117188,
+      "y": 443.6666564941406
+     },
+     "text": "ne"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 98.9427719116211,
+   "crop_origin": [
+    701,
+    484
+   ],
+   "detector_rect": {
+    "h": 63.0,
+    "w": 173.0,
+    "x": 704.0,
+    "y": 487.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 6,
+   "lines": [
+    {
+     "h": 11.0,
+     "w": 172.0,
+     "x": 703.0,
+     "y": 487.0
+    },
+    {
+     "h": 13.0,
+     "w": 61.0,
+     "x": 701.0,
+     "y": 503.0
+    },
+    {
+     "h": 16.0,
+     "w": 56.0,
+     "x": 775.0,
+     "y": 501.0
+    },
+    {
+     "h": 17.0,
+     "w": 135.0,
+     "x": 702.0,
+     "y": 518.0
+    },
+    {
+     "h": 13.0,
+     "w": 37.0,
+     "x": 701.0,
+     "y": 537.0
+    },
+    {
+     "h": 13.0,
+     "w": 43.0,
+     "x": 766.0,
+     "y": 537.0
+    }
+   ],
+   "observation_ms": 0.271946,
+   "ocr_ms": 304.961949,
+   "original": "122.115.122.33:E444:1123 konomiko S38123 isplacement:333112 ment: active",
+   "raw_original": "122.115.122.33:E444:1123 konomiko S38123 isplacement:333112 ment: active",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 97.65725708007812,
+     "rect": {
+      "h": 11.0,
+      "w": 172.0,
+      "x": 703.0,
+      "y": 487.0
+     },
+     "text": "122.115.122.33:E444:1123"
+    },
+    {
+     "confidence": 99.24642181396484,
+     "rect": {
+      "h": 13.0,
+      "w": 61.0,
+      "x": 701.0,
+      "y": 503.0
+     },
+     "text": "konomiko"
+    },
+    {
+     "confidence": 99.90544128417969,
+     "rect": {
+      "h": 16.0,
+      "w": 56.0,
+      "x": 775.0,
+      "y": 501.0
+     },
+     "text": "S38123"
+    },
+    {
+     "confidence": 99.61366271972656,
+     "rect": {
+      "h": 17.0,
+      "w": 135.0,
+      "x": 702.0,
+      "y": 518.0
+     },
+     "text": "isplacement:333112"
+    },
+    {
+     "confidence": 99.798095703125,
+     "rect": {
+      "h": 13.0,
+      "w": 37.0,
+      "x": 701.0,
+      "y": 537.0
+     },
+     "text": "ment:"
+    },
+    {
+     "confidence": 99.9917984008789,
+     "rect": {
+      "h": 13.0,
+      "w": 43.0,
+      "x": 766.0,
+      "y": 537.0
+     },
+     "text": "active"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 99.80184173583984,
+   "crop_origin": [
+    550,
+    502
+   ],
+   "detector_rect": {
+    "h": 64.0,
+    "w": 171.0,
+    "x": 553.0,
+    "y": 505.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 7,
+   "lines": [
+    {
+     "h": 15.0,
+     "w": 43.0,
+     "x": 561.0,
+     "y": 520.0
+    }
+   ],
+   "observation_ms": 0.071345,
+   "ocr_ms": 16.797530000000002,
+   "original": "Tempo",
+   "raw_original": "Tempo",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 99.80184173583984,
+     "rect": {
+      "h": 15.0,
+      "w": 43.0,
+      "x": 561.0,
+      "y": 520.0
+     },
+     "text": "Tempo"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 96.65508270263672,
+   "crop_origin": [
+    565,
+    649
+   ],
+   "detector_rect": {
+    "h": 27.0,
+    "w": 292.0,
+    "x": 572.0,
+    "y": 656.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 14,
+   "lines": [
+    {
+     "h": 23.0,
+     "w": 271.0,
+     "x": 595.0,
+     "y": 659.0
+    }
+   ],
+   "observation_ms": 0.09267600000000001,
+   "ocr_ms": 58.227902,
+   "original": "unread message",
+   "raw_original": "unread message",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 96.65508270263672,
+     "rect": {
+      "h": 23.0,
+      "w": 271.0,
+      "x": 595.0,
+      "y": 659.0
+     },
+     "text": "unread message"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   },
   {
    "accepted": true,
@@ -1517,8 +2226,9 @@
     "x": 66.0,
     "y": 708.0
    },
+   "engine": "rapidocr",
    "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
-   "id": 7,
+   "id": 15,
    "lines": [
     {
      "h": 63.0,
@@ -1527,8 +2237,8 @@
      "y": 697.0
     }
    ],
-   "observation_ms": 1.9936620000000003,
-   "ocr_ms": 49.071541,
+   "observation_ms": 0.174601,
+   "ocr_ms": 16.620635,
    "original": "Mika",
    "raw_original": "Mika",
    "scan": 1,
@@ -1544,10 +2254,336 @@
      "text": "Mika"
     }
    ],
-   "split": false
+   "split": false,
+   "translation": "Мика",
+   "translation_source": "reviewed exact translation fixture"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 98.0224838256836,
+   "crop_origin": [
+    47,
+    750
+   ],
+   "detector_rect": {
+    "h": 66.0,
+    "w": 993.0,
+    "x": 64.0,
+    "y": 767.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 21,
+   "lines": [
+    {
+     "h": 43.0,
+     "w": 170.0,
+     "x": 58.0,
+     "y": 760.0
+    },
+    {
+     "h": 49.0,
+     "w": 850.0,
+     "x": 216.0,
+     "y": 757.0
+    },
+    {
+     "h": 41.0,
+     "w": 1018.0,
+     "x": 55.0,
+     "y": 808.0
+    }
+   ],
+   "observation_ms": 0.24491500000000002,
+   "ocr_ms": 223.371865,
+   "original": "Morning, Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and, guite frankly, I'm upset at it m",
+   "raw_original": "Morning, Ella. Sometimes I wonder if I'm in the right place and-forth gets tiresome and, guite frankly, I'm upset at it m",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 99.89382934570312,
+     "rect": {
+      "h": 43.0,
+      "w": 170.0,
+      "x": 58.0,
+      "y": 760.0
+     },
+     "text": "Morning,"
+    },
+    {
+     "confidence": 99.13208770751953,
+     "rect": {
+      "h": 49.0,
+      "w": 850.0,
+      "x": 216.0,
+      "y": 757.0
+     },
+     "text": "Ella. Sometimes I wonder if I'm in the right place"
+    },
+    {
+     "confidence": 96.8675537109375,
+     "rect": {
+      "h": 41.0,
+      "w": 1018.0,
+      "x": 55.0,
+      "y": 808.0
+     },
+     "text": "and-forth gets tiresome and, guite frankly, I'm upset at it m"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 97.40919494628906,
+   "crop_origin": [
+    1110,
+    758
+   ],
+   "detector_rect": {
+    "h": 34.0,
+    "w": 353.0,
+    "x": 1119.0,
+    "y": 767.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 22,
+   "lines": [
+    {
+     "h": 41.0,
+     "w": 353.0,
+     "x": 1114.0,
+     "y": 761.0
+    }
+   ],
+   "observation_ms": 0.06784899999999999,
+   "ocr_ms": 26.580896,
+   "original": "all this hauling back-",
+   "raw_original": "all this hauling back-",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 97.40919494628906,
+     "rect": {
+      "h": 41.0,
+      "w": 353.0,
+      "x": 1114.0,
+      "y": 761.0
+     },
+     "text": "all this hauling back-"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 97.76971435546875,
+   "crop_origin": [
+    86,
+    816
+   ],
+   "detector_rect": {
+    "h": 97.0,
+    "w": 150.0,
+    "x": 111.0,
+    "y": 841.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 24,
+   "lines": [
+    {
+     "h": 38.0,
+     "w": 199.0,
+     "x": 86.0,
+     "y": 816.0
+    },
+    {
+     "h": 41.0,
+     "w": 199.0,
+     "x": 86.0,
+     "y": 866.0
+    }
+   ],
+   "observation_ms": 0.13563799999999998,
+   "ocr_ms": 31.563848,
+   "original": "nd-forth get ut I have the",
+   "raw_original": "nd-forth get ut I have the",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 98.33448028564453,
+     "rect": {
+      "h": 38.0,
+      "w": 199.0,
+      "x": 86.0,
+      "y": 816.0
+     },
+     "text": "nd-forth get"
+    },
+    {
+     "confidence": 97.2483901977539,
+     "rect": {
+      "h": 41.0,
+      "w": 199.0,
+      "x": 86.0,
+      "y": 866.0
+     },
+     "text": "ut I have the"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 80.4993667602539,
+   "crop_origin": [
+    518,
+    831
+   ],
+   "detector_rect": {
+    "h": 41.0,
+    "w": 39.0,
+    "x": 529.0,
+    "y": 842.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 25,
+   "lines": [
+    {
+     "h": 16.0,
+     "w": 27.0,
+     "x": 519.0,
+     "y": 831.0
+    }
+   ],
+   "observation_ms": 0.039925999999999996,
+   "ocr_ms": 35.082361,
+   "original": "Ia",
+   "raw_original": "Ia",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 80.4993667602539,
+     "rect": {
+      "h": 16.0,
+      "w": 27.0,
+      "x": 519.0,
+      "y": 831.0
+     },
+     "text": "Ia"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 99.94538879394531,
+   "crop_origin": [
+    32,
+    846
+   ],
+   "detector_rect": {
+    "h": 105.0,
+    "w": 606.0,
+    "x": 59.0,
+    "y": 873.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 27,
+   "lines": [
+    {
+     "h": 45.0,
+     "w": 554.0,
+     "x": 57.0,
+     "y": 866.0
+    }
+   ],
+   "observation_ms": 0.11253300000000001,
+   "ocr_ms": 57.572439,
+   "original": "but I have the right to be angry!",
+   "raw_original": "but I have the right to be angry!",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 99.94538879394531,
+     "rect": {
+      "h": 45.0,
+      "w": 554.0,
+      "x": 57.0,
+      "y": 866.0
+     },
+     "text": "but I have the right to be angry!"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
+  },
+  {
+   "accepted": true,
+   "automatic_filters": false,
+   "confidence": 96.22689819335938,
+   "crop_origin": [
+    0,
+    875
+   ],
+   "detector_rect": {
+    "h": 82.0,
+    "w": 217.0,
+    "x": 13.0,
+    "y": 896.0
+   },
+   "engine": "rapidocr",
+   "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+   "id": 28,
+   "lines": [
+    {
+     "h": 29.0,
+     "w": 175.0,
+     "x": 60.0,
+     "y": 875.0
+    }
+   ],
+   "observation_ms": 0.055004,
+   "ocr_ms": 17.977288,
+   "original": "but I have",
+   "raw_original": "but I have",
+   "scan": 1,
+   "spans": [
+    {
+     "confidence": 96.22689819335938,
+     "rect": {
+      "h": 29.0,
+      "w": 175.0,
+      "x": 60.0,
+      "y": 875.0
+     },
+     "text": "but I have"
+    }
+   ],
+   "split": false,
+   "translation": null,
+   "translation_source": "none"
   }
  ],
- "provenance": "Observed native RapidOCR cropped readings on the recorded game frame, re-recorded after the local-contrast/context detector changes of 2026-10-11 (keyed by detector_rect, so a detector geometry change needs a new recording); replay input, NOT manually annotated ground truth. CPU two threads, no GPU.",
+ "provenance": "Observed native RapidOCR cropped readings on the recorded game frame, re-recorded on 2026-10-13 after the colour-plane local-contrast detector change and the second-chance reading of faint crops (keyed by detector_rect, so a detector geometry change needs a new recording); replay input, NOT manually annotated ground truth. CPU two threads, no GPU.",
  "settings": {
   "engine": "rapidocr",
   "language": "eng",

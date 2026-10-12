@@ -1,0 +1,87 @@
+{
+  "source": "tests/inplace/fixtures/shop-source.png",
+  "origin": [
+    262,
+    123
+  ],
+  "detector_rect": {
+    "h": 610.0,
+    "w": 719.0,
+    "x": 415.0,
+    "y": 276.0
+  },
+  "spans": [
+    {
+      "confidence": 97.48937225341797,
+      "rect": {
+        "h": 59.0,
+        "w": 690.0,
+        "x": 596.0,
+        "y": 201.0
+      },
+      "text": "Spend the coins you've collecte"
+    },
+    {
+      "confidence": 99.63601684570312,
+      "rect": {
+        "h": 60.0,
+        "w": 455.0,
+        "x": 648.0,
+        "y": 250.0
+      },
+      "text": "while playing in the"
+    },
+    {
+      "confidence": 94.08466339111328,
+      "rect": {
+        "h": 66.0,
+        "w": 181.0,
+        "x": 1094.0,
+        "y": 244.0
+      },
+      "text": "Shop!"
+    },
+    {
+      "confidence": 99.99677276611328,
+      "rect": {
+        "h": 183.0,
+        "w": 52.0,
+        "x": 436.0,
+        "y": 488.0
+      },
+      "text": "Lantern"
+    },
+    {
+      "confidence": 99.99573516845703,
+      "rect": {
+        "h": 191.0,
+        "w": 56.0,
+        "x": 803.0,
+        "y": 484.0
+      },
+      "text": "Monster"
+    },
+    {
+      "confidence": 98.8682632446289,
+      "rect": {
+        "h": 48.0,
+        "w": 453.0,
+        "x": 500.0,
+        "y": 809.0
+      },
+      "text": "As your rank increases,"
+    },
+    {
+      "confidence": 98.34255981445312,
+      "rect": {
+        "h": 53.0,
+        "w": 627.0,
+        "x": 496.0,
+        "y": 855.0
+      },
+      "text": "the lineup gets better and better!"
+    }
+  ],
+  "original_source": "docs/screenshots/test-game/dialogue-en-2.jpg",
+  "original_sha256": "c22013045fb5d886ac1958b06e486b97877f497d4a1248eac3ea8d5e7dbc5505"
+}

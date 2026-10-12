@@ -1,10 +1,691 @@
 {
-  "block_ocr": [],
+  "block_ocr": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.98759460449219,
+      "crop_origin": [
+        680,
+        313
+      ],
+      "detector_rect": {
+        "h": 36.0,
+        "w": 155.0,
+        "x": 689.0,
+        "y": 322.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 45.0,
+          "w": 110.0,
+          "x": 738.0,
+          "y": 316.0
+        }
+      ],
+      "observation_ms": 0.010289,
+      "ocr_ms": 150.993086,
+      "original": "TIPS",
+      "raw_original": "TIPS",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.98759460449219,
+          "rect": {
+            "h": 45.0,
+            "w": 110.0,
+            "x": 738.0,
+            "y": 316.0
+          },
+          "text": "TIPS"
+        }
+      ],
+      "split": false,
+      "translation": "СОВЕТЫ",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.88980865478516,
+      "crop_origin": [
+        681,
+        400
+      ],
+      "detector_rect": {
+        "h": 35.0,
+        "w": 231.0,
+        "x": 690.0,
+        "y": 409.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 37.0,
+          "w": 236.0,
+          "x": 687.0,
+          "y": 408.0
+        }
+      ],
+      "observation_ms": 0.057188,
+      "ocr_ms": 19.580331,
+      "original": "(Obakeidoro)",
+      "raw_original": "(Obakeidoro)",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.88980865478516,
+          "rect": {
+            "h": 37.0,
+            "w": 236.0,
+            "x": 687.0,
+            "y": 408.0
+          },
+          "text": "(Obakeidoro)"
+        }
+      ],
+      "split": false,
+      "translation": "(Обакейдоро)",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        526,
+        444
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 20.0,
+        "x": 530.0,
+        "y": 448.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.9793089999999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        504,
+        452
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 9.0,
+        "x": 507.0,
+        "y": 455.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.247593,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        518,
+        455
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 8.0,
+        "x": 521.0,
+        "y": 458.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.188361,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.59459686279297,
+      "crop_origin": [
+        681,
+        467
+      ],
+      "detector_rect": {
+        "h": 154.0,
+        "w": 540.0,
+        "x": 688.0,
+        "y": 474.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [
+        {
+          "h": 36.0,
+          "w": 386.0,
+          "x": 685.0,
+          "y": 469.0
+        },
+        {
+          "h": 32.0,
+          "w": 255.0,
+          "x": 686.0,
+          "y": 513.0
+        },
+        {
+          "h": 35.0,
+          "w": 534.0,
+          "x": 686.0,
+          "y": 552.0
+        },
+        {
+          "h": 40.0,
+          "w": 545.0,
+          "x": 685.0,
+          "y": 592.0
+        }
+      ],
+      "observation_ms": 0.361655,
+      "ocr_ms": 137.28044,
+      "original": "A game that's all the rage among Monsters. Lately, more and more Humans have been spirited away to play the game.",
+      "raw_original": "A game that's all the rage among Monsters. Lately, more and more Humans have been spirited away to play the game.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.63764953613281,
+          "rect": {
+            "h": 36.0,
+            "w": 386.0,
+            "x": 685.0,
+            "y": 469.0
+          },
+          "text": "A game that's all the rage"
+        },
+        {
+          "confidence": 98.15750122070312,
+          "rect": {
+            "h": 32.0,
+            "w": 255.0,
+            "x": 686.0,
+            "y": 513.0
+          },
+          "text": "among Monsters."
+        },
+        {
+          "confidence": 99.2984390258789,
+          "rect": {
+            "h": 35.0,
+            "w": 534.0,
+            "x": 686.0,
+            "y": 552.0
+          },
+          "text": "Lately, more and more Humans have"
+        },
+        {
+          "confidence": 98.82264709472656,
+          "rect": {
+            "h": 40.0,
+            "w": 545.0,
+            "x": 685.0,
+            "y": 592.0
+          },
+          "text": "been spirited away to play the game."
+        }
+      ],
+      "split": false,
+      "translation": "Игра, которая в ярости среди монстров. В последнее время все больше и больше людей увлечены, чтобы играть в игру.",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        759,
+        483
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 10.0,
+        "x": 762.0,
+        "y": 486.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 1.813756,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        709,
+        524
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 9.0,
+        "x": 712.0,
+        "y": 527.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.306815,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 84.76493072509766,
+      "crop_origin": [
+        720,
+        567
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 15.0,
+        "x": 723.0,
+        "y": 570.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 10.0,
+          "w": 16.0,
+          "x": 722.0,
+          "y": 567.0
+        }
+      ],
+      "observation_ms": 0.026871,
+      "ocr_ms": 15.952088,
+      "original": "T",
+      "raw_original": "T",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 84.76493072509766,
+          "rect": {
+            "h": 10.0,
+            "w": 16.0,
+            "x": 722.0,
+            "y": 567.0
+          },
+          "text": "T"
+        }
+      ],
+      "split": false,
+      "translation": "Т",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1072,
+        567
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 9.0,
+        "x": 1075.0,
+        "y": 570.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.661718,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        775,
+        578
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 10.0,
+        "x": 778.0,
+        "y": 581.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.570435,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        764,
+        582
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 15.0,
+        "x": 767.0,
+        "y": 585.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.680153,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        746,
+        587
+      ],
+      "detector_rect": {
+        "h": 14.0,
+        "w": 19.0,
+        "x": 750.0,
+        "y": 591.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.40431,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        787,
+        599
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 6.0,
+        "x": 790.0,
+        "y": 602.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.313448,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1183,
+        609
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 9.0,
+        "x": 1186.0,
+        "y": 612.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.2870679999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        644,
+        736
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 7.0,
+        "x": 647.0,
+        "y": 739.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.242413,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        575,
+        771
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 15.0,
+        "x": 579.0,
+        "y": 775.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.207517,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        434,
+        796
+      ],
+      "detector_rect": {
+        "h": 32.0,
+        "w": 21.0,
+        "x": 442.0,
+        "y": 804.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.542753,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        451,
+        823
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 54.0,
+        "x": 456.0,
+        "y": 828.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.7122729999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        262,
+        1023
+      ],
+      "detector_rect": {
+        "h": 45.0,
+        "w": 102.0,
+        "x": 274.0,
+        "y": 1035.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.031618,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    }
+  ],
   "blocks": [
     {
       "cap_height": 10.0,
       "category": "SansSerif",
-      "confidence": 0.2534700334072113,
+      "confidence": 0.2154495269060135,
       "font": "Inter",
       "rect": {
         "h": 15.0,
@@ -16,7 +697,7 @@
     {
       "cap_height": 9.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 9.0,
@@ -26,12 +707,12 @@
       }
     },
     {
-      "cap_height": 9.0,
+      "cap_height": 6.0,
       "category": "Unknown",
-      "confidence": 0.060111112892627716,
+      "confidence": 0.03283333405852318,
       "font": "Inter",
       "rect": {
-        "h": 10.0,
+        "h": 9.0,
         "w": 8.0,
         "x": 521.0,
         "y": 458.0
@@ -40,7 +721,7 @@
     {
       "cap_height": 8.0,
       "category": "Unknown",
-      "confidence": 0.05583333969116211,
+      "confidence": 0.027916669845581055,
       "font": "PT Serif",
       "rect": {
         "h": 8.0,
@@ -52,7 +733,7 @@
     {
       "cap_height": 10.0,
       "category": "Unknown",
-      "confidence": 0.05583333969116211,
+      "confidence": 0.027916669845581055,
       "font": "PT Serif",
       "rect": {
         "h": 10.0,
@@ -64,7 +745,7 @@
     {
       "cap_height": 9.0,
       "category": "Unknown",
-      "confidence": 0.06381481885910034,
+      "confidence": 0.03190740942955017,
       "font": "Inter",
       "rect": {
         "h": 9.0,
@@ -76,7 +757,7 @@
     {
       "cap_height": 8.0,
       "category": "Unknown",
-      "confidence": 0.05900000408291817,
+      "confidence": 0.029500002041459084,
       "font": "Inter",
       "rect": {
         "h": 8.0,
@@ -86,33 +767,57 @@
       }
     },
     {
-      "cap_height": 7.0,
-      "category": "Serif",
-      "confidence": 0.28177502751350403,
+      "cap_height": 5.0,
+      "category": "Unknown",
+      "confidence": 0.03333333507180214,
       "font": "PT Serif",
       "rect": {
         "h": 7.0,
-        "w": 11.0,
-        "x": 771.0,
+        "w": 10.0,
+        "x": 778.0,
+        "y": 581.0
+      }
+    },
+    {
+      "cap_height": 3.0,
+      "category": "Unknown",
+      "confidence": 0.030000001192092896,
+      "font": "PT Serif",
+      "rect": {
+        "h": 7.0,
+        "w": 15.0,
+        "x": 767.0,
         "y": 585.0
       }
     },
     {
-      "cap_height": 19.0,
+      "cap_height": 14.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
-        "h": 19.0,
-        "w": 23.0,
+        "h": 14.0,
+        "w": 19.0,
         "x": 750.0,
-        "y": 586.0
+        "y": 591.0
+      }
+    },
+    {
+      "cap_height": 5.0,
+      "category": "Unknown",
+      "confidence": 0.03450000286102295,
+      "font": "Inter",
+      "rect": {
+        "h": 5.0,
+        "w": 6.0,
+        "x": 790.0,
+        "y": 602.0
       }
     },
     {
       "cap_height": 8.0,
       "category": "Unknown",
-      "confidence": 0.05583333969116211,
+      "confidence": 0.027916669845581055,
       "font": "PT Serif",
       "rect": {
         "h": 8.0,
@@ -124,20 +829,20 @@
     {
       "cap_height": 5.0,
       "category": "Unknown",
-      "confidence": 0.06485898047685623,
-      "font": "Roboto Slab",
+      "confidence": 0.03541666641831398,
+      "font": "PT Serif",
       "rect": {
-        "h": 13.0,
-        "w": 8.0,
-        "x": 626.0,
-        "y": 694.0
+        "h": 5.0,
+        "w": 7.0,
+        "x": 647.0,
+        "y": 739.0
       }
     },
     {
       "cap_height": 10.0,
       "category": "Unknown",
-      "confidence": 0.0676666721701622,
-      "font": "Inter",
+      "confidence": 0.03541666641831398,
+      "font": "PT Serif",
       "rect": {
         "h": 13.0,
         "w": 15.0,
@@ -146,21 +851,9 @@
       }
     },
     {
-      "cap_height": 24.0,
-      "category": "Unknown",
-      "confidence": 0.06288889050483704,
-      "font": "Inter",
-      "rect": {
-        "h": 37.0,
-        "w": 12.0,
-        "x": 491.0,
-        "y": 781.0
-      }
-    },
-    {
       "cap_height": 32.0,
       "category": "Unknown",
-      "confidence": 0.0654262825846672,
+      "confidence": 0.0327131412923336,
       "font": "Inter",
       "rect": {
         "h": 32.0,
@@ -172,7 +865,7 @@
     {
       "cap_height": 12.0,
       "category": "Unknown",
-      "confidence": 0.06000000238418579,
+      "confidence": 0.030000001192092896,
       "font": "PT Serif",
       "rect": {
         "h": 17.0,
@@ -184,8 +877,8 @@
     {
       "cap_height": 45.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 45.0,
         "w": 102.0,
@@ -194,330 +887,791 @@
       }
     }
   ],
-  "cached_placement_ms": 3.3915249999999997,
-  "dropped": 3,
+  "cached_placement_ms": 0.010931,
+  "dropped": 1,
   "dropped_details": [
     {
       "block_id": 9,
-      "original": "fixture 9",
-      "reason": "для перевода нет места поверх игры",
+      "original": "T",
+      "reason": "повторный OCR того же текста",
       "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 14,
-      "original": "fixture 14",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 15,
-      "original": "fixture 15",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
+      "text": "Т"
     }
   ],
   "finish_ms": [
-    0.069021
+    0.048702999999999996
   ],
-  "first_frame_ms": 131.873963,
-  "fits": 16,
+  "first_frame_ms": 31.235649000000002,
+  "fits": 3,
   "frame_blocks": [
     {
+      "cap_height_px": 34.0,
       "id": 1,
-      "lines_note": "",
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
       "source_lines": 1,
       "text_rect": {
+        "h": 47.0,
+        "w": 112.0,
+        "x": 737.0,
+        "y": 315.0
+      }
+    },
+    {
+      "cap_height_px": 28.0,
+      "id": 2,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 39.0,
+        "w": 238.0,
+        "x": 686.0,
+        "y": 407.0
+      }
+    },
+    {
+      "cap_height_px": 22.0,
+      "id": 6,
+      "lines_note": "строк: 4 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 4,
+      "text_rect": {
+        "h": 165.0,
+        "w": 547.0,
+        "x": 684.0,
+        "y": 468.0
+      }
+    }
+  ],
+  "hits": 3,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-4/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.98759460449219,
+      "crop_origin": [
+        680,
+        313
+      ],
+      "detector_rect": {
+        "h": 36.0,
+        "w": 155.0,
+        "x": 689.0,
+        "y": 322.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 45.0,
+          "w": 110.0,
+          "x": 738.0,
+          "y": 316.0
+        }
+      ],
+      "observation_ms": 0.010289,
+      "ocr_ms": 150.993086,
+      "original": "TIPS",
+      "raw_original": "TIPS",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.98759460449219,
+          "rect": {
+            "h": 45.0,
+            "w": 110.0,
+            "x": 738.0,
+            "y": 316.0
+          },
+          "text": "TIPS"
+        }
+      ],
+      "split": false,
+      "translation": "СОВЕТЫ",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.88980865478516,
+      "crop_origin": [
+        681,
+        400
+      ],
+      "detector_rect": {
+        "h": 35.0,
+        "w": 231.0,
+        "x": 690.0,
+        "y": 409.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 37.0,
+          "w": 236.0,
+          "x": 687.0,
+          "y": 408.0
+        }
+      ],
+      "observation_ms": 0.057188,
+      "ocr_ms": 19.580331,
+      "original": "(Obakeidoro)",
+      "raw_original": "(Obakeidoro)",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.88980865478516,
+          "rect": {
+            "h": 37.0,
+            "w": 236.0,
+            "x": 687.0,
+            "y": 408.0
+          },
+          "text": "(Obakeidoro)"
+        }
+      ],
+      "split": false,
+      "translation": "(Обакейдоро)",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        526,
+        444
+      ],
+      "detector_rect": {
         "h": 15.0,
         "w": 20.0,
         "x": 530.0,
         "y": 448.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.9793089999999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 2,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        504,
+        452
+      ],
+      "detector_rect": {
         "h": 9.0,
         "w": 9.0,
         "x": 507.0,
         "y": 455.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.247593,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 3,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 10.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        518,
+        455
+      ],
+      "detector_rect": {
+        "h": 9.0,
         "w": 8.0,
         "x": 521.0,
         "y": 458.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.188361,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 4,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.59459686279297,
+      "crop_origin": [
+        681,
+        467
+      ],
+      "detector_rect": {
+        "h": 154.0,
+        "w": 540.0,
+        "x": 688.0,
+        "y": 474.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [
+        {
+          "h": 36.0,
+          "w": 386.0,
+          "x": 685.0,
+          "y": 469.0
+        },
+        {
+          "h": 32.0,
+          "w": 255.0,
+          "x": 686.0,
+          "y": 513.0
+        },
+        {
+          "h": 35.0,
+          "w": 534.0,
+          "x": 686.0,
+          "y": 552.0
+        },
+        {
+          "h": 40.0,
+          "w": 545.0,
+          "x": 685.0,
+          "y": 592.0
+        }
+      ],
+      "observation_ms": 0.361655,
+      "ocr_ms": 137.28044,
+      "original": "A game that's all the rage among Monsters. Lately, more and more Humans have been spirited away to play the game.",
+      "raw_original": "A game that's all the rage among Monsters. Lately, more and more Humans have been spirited away to play the game.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.63764953613281,
+          "rect": {
+            "h": 36.0,
+            "w": 386.0,
+            "x": 685.0,
+            "y": 469.0
+          },
+          "text": "A game that's all the rage"
+        },
+        {
+          "confidence": 98.15750122070312,
+          "rect": {
+            "h": 32.0,
+            "w": 255.0,
+            "x": 686.0,
+            "y": 513.0
+          },
+          "text": "among Monsters."
+        },
+        {
+          "confidence": 99.2984390258789,
+          "rect": {
+            "h": 35.0,
+            "w": 534.0,
+            "x": 686.0,
+            "y": 552.0
+          },
+          "text": "Lately, more and more Humans have"
+        },
+        {
+          "confidence": 98.82264709472656,
+          "rect": {
+            "h": 40.0,
+            "w": 545.0,
+            "x": 685.0,
+            "y": 592.0
+          },
+          "text": "been spirited away to play the game."
+        }
+      ],
+      "split": false,
+      "translation": "Игра, которая в ярости среди монстров. В последнее время все больше и больше людей увлечены, чтобы играть в игру.",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        759,
+        483
+      ],
+      "detector_rect": {
         "h": 8.0,
         "w": 10.0,
         "x": 762.0,
         "y": 486.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 1.813756,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 5,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        709,
+        524
+      ],
+      "detector_rect": {
         "h": 10.0,
         "w": 9.0,
         "x": 712.0,
         "y": 527.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.306815,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 6,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 84.76493072509766,
+      "crop_origin": [
+        720,
+        567
+      ],
+      "detector_rect": {
         "h": 9.0,
         "w": 15.0,
         "x": 723.0,
         "y": 570.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 10.0,
+          "w": 16.0,
+          "x": 722.0,
+          "y": 567.0
+        }
+      ],
+      "observation_ms": 0.026871,
+      "ocr_ms": 15.952088,
+      "original": "T",
+      "raw_original": "T",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 84.76493072509766,
+          "rect": {
+            "h": 10.0,
+            "w": 16.0,
+            "x": 722.0,
+            "y": 567.0
+          },
+          "text": "T"
+        }
+      ],
+      "split": false,
+      "translation": "Т",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 7,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1072,
+        567
+      ],
+      "detector_rect": {
         "h": 8.0,
         "w": 9.0,
         "x": 1075.0,
         "y": 570.0
-      }
-    },
-    {
-      "id": 8,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 7.0,
-        "w": 11.0,
-        "x": 771.0,
-        "y": 585.0
-      }
-    },
-    {
-      "id": 9,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 19.0,
-        "w": 23.0,
-        "x": 750.0,
-        "y": 586.0
-      }
-    },
-    {
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
       "id": 10,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.661718,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        775,
+        578
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 10.0,
+        "x": 778.0,
+        "y": 581.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.570435,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        764,
+        582
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 15.0,
+        "x": 767.0,
+        "y": 585.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.680153,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        746,
+        587
+      ],
+      "detector_rect": {
+        "h": 14.0,
+        "w": 19.0,
+        "x": 750.0,
+        "y": 591.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.40431,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        787,
+        599
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 6.0,
+        "x": 790.0,
+        "y": 602.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.313448,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1183,
+        609
+      ],
+      "detector_rect": {
         "h": 8.0,
         "w": 9.0,
         "x": 1186.0,
         "y": 612.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.2870679999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 11,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 13.0,
-        "w": 8.0,
-        "x": 626.0,
-        "y": 694.0
-      }
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        644,
+        736
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 7.0,
+        "x": 647.0,
+        "y": 739.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.242413,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 12,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        575,
+        771
+      ],
+      "detector_rect": {
         "h": 13.0,
         "w": 15.0,
         "x": 579.0,
         "y": 775.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.207517,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 13,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 37.0,
-        "w": 12.0,
-        "x": 491.0,
-        "y": 781.0
-      }
-    },
-    {
-      "id": 14,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        434,
+        796
+      ],
+      "detector_rect": {
         "h": 32.0,
         "w": 21.0,
         "x": 442.0,
         "y": 804.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.542753,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 15,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        451,
+        823
+      ],
+      "detector_rect": {
         "h": 17.0,
         "w": 54.0,
         "x": 456.0,
         "y": 828.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.7122729999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 16,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        262,
+        1023
+      ],
+      "detector_rect": {
         "h": 45.0,
         "w": 102.0,
         "x": 274.0,
         "y": 1035.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.031618,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     }
   ],
-  "hits": 16,
-  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-4/original.png",
-  "measurement": "Qt: shared production helper, test IPC adapter",
-  "minimum_confidence": 30,
-  "ocr": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "latency_ms": 5789.7258,
-    "lines": [
-      {
-        "confidence": 99.99336242675781,
-        "rect": {
-          "h": 49.0,
-          "w": 113.0,
-          "x": 737.0,
-          "y": 314.0
-        },
-        "text": "TIPS"
-      },
-      {
-        "confidence": 99.98112487792969,
-        "rect": {
-          "h": 42.0,
-          "w": 238.0,
-          "x": 686.0,
-          "y": 406.0
-        },
-        "text": "(Obakeidoro)"
-      },
-      {
-        "confidence": 98.8118896484375,
-        "rect": {
-          "h": 36.0,
-          "w": 389.0,
-          "x": 683.0,
-          "y": 469.0
-        },
-        "text": "A game that's all the rage"
-      },
-      {
-        "confidence": 99.96154022216797,
-        "rect": {
-          "h": 36.0,
-          "w": 257.0,
-          "x": 683.0,
-          "y": 510.0
-        },
-        "text": "among Monsters."
-      },
-      {
-        "confidence": 98.25304412841797,
-        "rect": {
-          "h": 42.0,
-          "w": 540.0,
-          "x": 683.0,
-          "y": 549.0
-        },
-        "text": "Lately, more and more Humans have"
-      },
-      {
-        "confidence": 99.11114501953125,
-        "rect": {
-          "h": 40.0,
-          "w": 549.0,
-          "x": 684.0,
-          "y": 593.0
-        },
-        "text": "been spirited away to play the game."
-      }
-    ],
-    "text": "TIPS\n(Obakeidoro)\nA game that's all the rage\namong Monsters.\nLately, more and more Humans have\nbeen spirited away to play the game."
-  },
-  "ocr_history": [],
   "ocr_scans": 1,
-  "peak_memory": "VmHWM:\t  423432 kB",
+  "peak_memory": "VmHWM:\t  191784 kB",
   "placed": [
     {
       "alignment": "left",
       "background": {
-        "color": "#736355",
+        "color": "#000000",
         "image": "",
-        "mode": "adaptive_padding_fill",
+        "mode": "solid_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
       "block_id": 1,
-      "block_type": "button",
+      "block_type": "unknown",
       "box": [
-        0.27578125,
-        0.4064814814814815,
-        0.015364583333333333,
-        0.13240740740740742
+        0.3768229166666667,
+        0.2791666666666667,
+        0.07239583333333334,
+        0.06851851851851852
       ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
+      "font_family": "Source Serif 4",
+      "font_px": 27.0,
       "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.2534700334072113,
+        "category": "serif",
+        "confidence": 0.5549476146697998,
         "generic": false
       },
-      "font_weight": 500,
+      "font_weight": 400,
       "inner": [
-        0.5,
-        9.0,
-        9.0,
-        9.0
+        13.5,
+        13.5,
+        13.5,
+        13.5
       ],
       "italic": false,
       "key": "test:1",
-      "letter_spacing": 1.0876288414001465,
+      "layout_width": 110.0,
+      "letter_spacing": -1.0933083295822144,
       "line_height": 0.8999999761581421,
-      "max_lines": 12,
-      "original": "fixture 1",
+      "max_lines": 1,
+      "original": "TIPS",
+      "outcome": "replaced",
       "outline": false,
-      "outline_color": "#130300",
+      "outline_color": "#000000",
       "outline_width": 1.0,
       "rect": {
         "h": 1.0,
@@ -531,51 +1685,53 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
+      "source_coverage": 1.0,
+      "text": "СОВЕТЫ",
+      "text_color": "#ebe9e7",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
       "alignment": "left",
       "background": {
-        "color": "#756759",
+        "color": "#000000",
         "image": "",
-        "mode": "adaptive_padding_fill",
+        "mode": "solid_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
       "block_id": 2,
-      "block_type": "button",
+      "block_type": "unknown",
       "box": [
-        0.2612500031789144,
-        0.39462964093243635,
-        0.008802080154418945,
-        0.2035185072157118
+        0.35182291666666665,
+        0.36712962962962964,
+        0.13489583333333333,
+        0.05555555555555555
       ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
+      "font_family": "Source Serif 4",
+      "font_px": 27.0,
       "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.06100000813603401,
+        "category": "serif",
+        "confidence": 0.7882778644561768,
         "generic": false
       },
-      "font_weight": 400,
+      "font_weight": 200,
       "inner": [
-        5.399993896484375,
-        5.399993896484375,
-        2.5,
-        5.4000244140625
+        10.5,
+        10.5,
+        10.5,
+        10.5
       ],
       "italic": false,
       "key": "test:2",
-      "letter_spacing": -0.3413788974285126,
+      "layout_width": 236.0,
+      "letter_spacing": -1.0840222835540771,
       "line_height": 0.8999999761581421,
-      "max_lines": 20,
-      "original": "fixture 2",
+      "max_lines": 1,
+      "original": "(Obakeidoro)",
+      "outcome": "replaced",
       "outline": false,
-      "outline_color": "#150700",
+      "outline_color": "#000000",
       "outline_width": 1.0,
       "rect": {
         "h": 1.0,
@@ -589,226 +1745,53 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
+      "source_coverage": 1.0,
+      "text": "(Обакейдоро)",
+      "text_color": "#e6e2df",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
       "alignment": "left",
       "background": {
-        "color": "#746557",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 3,
-      "block_type": "button",
-      "box": [
-        0.27005208333333336,
-        0.0,
-        0.005729166666666666,
-        1.0
-      ],
-      "degraded": "elided",
-      "expanded": true,
-      "font_family": "Inter",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.060111112892627716,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        2.5,
-        6.0,
-        0.5,
-        6.0
-      ],
-      "italic": true,
-      "key": "test:3",
-      "letter_spacing": -0.3711340129375458,
-      "line_height": 0.8999999761581421,
-      "max_lines": 107,
-      "original": "fixture 3",
-      "outline": false,
-      "outline_color": "#140500",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
-      "text_opacity": 1.0,
-      "wrap": "elide"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#f1ece9",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 4,
-      "block_type": "unknown",
-      "box": [
-        0.3956249872843424,
-        0.2636111224139178,
-        0.007708358764648438,
-        0.2359259146231192
-      ],
-      "expanded": true,
-      "font_family": "PT Serif",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.05583333969116211,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        2.4000244140625,
-        2.399993896484375,
-        2.4000244140625,
-        2.4000244140625
-      ],
-      "italic": false,
-      "key": "test:4",
-      "letter_spacing": -0.34285715222358704,
-      "line_height": 0.8999999761581421,
-      "max_lines": 25,
-      "original": "fixture 4",
-      "outline": false,
-      "outline_color": "#ffffff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#5e5452",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#ece4e0",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 5,
-      "block_type": "unknown",
-      "box": [
-        0.3692708333333333,
-        0.35833333333333334,
-        0.013541666666666667,
-        0.1675925925925926
-      ],
-      "expanded": true,
-      "font_family": "PT Serif",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.05583333969116211,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        3.0,
-        3.0,
-        3.0,
-        3.0
-      ],
-      "italic": false,
-      "key": "test:5",
-      "letter_spacing": 1.5714285373687744,
-      "line_height": 0.8999999761581421,
-      "max_lines": 17,
-      "original": "fixture 5",
-      "outline": false,
-      "outline_color": "#ffffff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#5b5452",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#cac5c4",
+        "color": "#68635c",
         "image": "",
         "mode": "solid_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
       "block_id": 6,
-      "block_type": "button",
+      "block_type": "unknown",
       "box": [
-        0.37552083333333336,
-        0.5259259259259259,
-        0.009895833333333333,
-        0.13240740740740742
+        0.35187498728434247,
+        0.4255555612069589,
+        0.29364585876464844,
+        0.1683333502875434
       ],
-      "degraded": "plain-plate",
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
+      "font_family": "Inter",
+      "font_px": 30.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.06381481885910034,
+        "confidence": 0.5594996809959412,
         "generic": false
       },
-      "font_weight": 900,
+      "font_weight": 100,
       "inner": [
-        2.0,
-        2.0,
-        2.0,
-        2.0
+        8.4000244140625,
+        8.399993896484375,
+        8.4000244140625,
+        8.4000244140625
       ],
       "italic": false,
       "key": "test:6",
-      "letter_spacing": -0.3413788974285126,
-      "line_height": 0.8999999761581421,
-      "max_lines": 13,
-      "original": "fixture 6",
+      "layout_width": 545.0,
+      "letter_spacing": -1.100000023841858,
+      "line_height": 1.0810810327529907,
+      "max_lines": 4,
+      "original": "A game that's all the rage among Monsters. Lately, more and more Humans have been spirited away to play the game.",
+      "outcome": "replaced",
       "outline": false,
-      "outline_color": "#ffffff",
+      "outline_color": "#080300",
       "outline_width": 1.0,
       "rect": {
         "h": 1.0,
@@ -822,560 +1805,121 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#645d58",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#e8e3e1",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 7,
-      "block_type": "button",
-      "box": [
-        0.5586458206176758,
-        0.5255555329499422,
-        0.012395858764648438,
-        0.1044444896556713
-      ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.05900000408291817,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        2.4000244140625,
-        2.4000244140625,
-        2.4000244140625,
-        2.4000244140625
-      ],
-      "italic": false,
-      "key": "test:7",
-      "letter_spacing": -0.32989686727523804,
-      "line_height": 0.8999999761581421,
-      "max_lines": 10,
-      "original": "fixture 7",
-      "outline": false,
-      "outline_color": "#ffffff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#5b5656",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#69635d",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 8,
-      "block_type": "button",
-      "box": [
-        0.4015625,
-        0.523518541124132,
-        0.041666666666666664,
-        0.016296273690682872
-      ],
-      "degraded": "beside-original",
-      "font_family": "PT Serif",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.28177502751350403,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        4.0,
-        4.0,
-        4.0,
-        4.0
-      ],
-      "italic": true,
-      "key": "test:8",
-      "letter_spacing": 1.100000023841858,
-      "line_height": 0.8999999761581421,
-      "max_lines": 1,
-      "original": "fixture 8",
-      "outline": false,
-      "outline_color": "#090300",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
-      "text_opacity": 1.0,
-      "wrap": "elide"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#eae7e5",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 10,
-      "block_type": "unknown",
-      "box": [
-        0.6164583206176758,
-        0.564444421838831,
-        0.01291669209798177,
-        0.11370374891493056
-      ],
-      "expanded": true,
-      "font_family": "PT Serif",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.05583333969116211,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        2.4000244140625,
-        2.4000244140625,
-        2.4000244140625,
-        2.4000244140625
-      ],
-      "italic": false,
-      "key": "test:10",
-      "letter_spacing": -0.34285715222358704,
-      "line_height": 0.8999999761581421,
-      "max_lines": 11,
-      "original": "fixture 10",
-      "outline": false,
-      "outline_color": "#ffffff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#5d5958",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#6b6660",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 11,
-      "block_type": "unknown",
-      "box": [
-        0.3240104039510091,
-        0.6389814588758681,
-        0.013958358764648437,
-        0.11092597113715277
-      ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "slab_serif",
-        "confidence": 0.06485898047685623,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        3.9000244140625,
-        3.9000244140625,
-        3.9000244140625,
-        3.9000244140625
-      ],
-      "italic": false,
-      "key": "test:11",
-      "letter_spacing": -0.3199999928474426,
-      "line_height": 0.8999999761581421,
-      "max_lines": 11,
-      "original": "fixture 11",
-      "outline": false,
-      "outline_color": "#0b0600",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#ada89f",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 12,
-      "block_type": "button",
-      "box": [
-        0.29750000635782875,
-        0.7103703816731771,
-        0.01593748728434245,
-        0.13759256998697916
-      ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.0676666721701622,
-        "generic": false
-      },
-      "font_weight": 300,
-      "inner": [
-        7.79998779296875,
-        7.79998779296875,
-        7.79998779296875,
-        7.79998779296875
-      ],
-      "italic": true,
-      "key": "test:12",
-      "letter_spacing": -0.3565512001514435,
-      "line_height": 0.8999999761581421,
-      "max_lines": 13,
-      "original": "fixture 12",
-      "outline": false,
-      "outline_color": "#ffffff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#65605a",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#e4dfde",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 13,
-      "block_type": "button",
-      "box": [
-        0.25283854802449546,
-        0.6068981594509548,
-        0.012031253178914387,
-        0.15513887758608216
-      ],
-      "degraded": "plain-plate",
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.06288889050483704,
-        "generic": false
-      },
-      "font_weight": 300,
-      "inner": [
-        5.54998779296875,
-        5.54998779296875,
-        5.550018310546875,
-        5.0
-      ],
-      "italic": false,
-      "key": "test:13",
-      "letter_spacing": -0.35985133051872253,
-      "line_height": 0.8999999761581421,
-      "max_lines": 15,
-      "original": "fixture 13",
-      "outline": false,
-      "outline_color": "#ffffff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#47432f",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#817b6f",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 16,
-      "block_type": "unknown",
-      "box": [
-        0.13567708333333334,
-        0.9458333333333333,
-        0.0671875,
-        0.05416666666666667
-      ],
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 10.0,
-      "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
-        "generic": false
-      },
-      "font_weight": 900,
-      "inner": [
-        13.5,
-        13.5,
-        13.5,
-        0.0
-      ],
-      "italic": false,
-      "key": "test:16",
-      "letter_spacing": -0.43427717685699463,
-      "line_height": 0.8999999761581421,
-      "max_lines": 3,
-      "original": "fixture 16",
-      "outline": false,
-      "outline_color": "#e1dbcf",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#000000",
+      "source_coverage": 1.0,
+      "text": "Игра, которая в ярости среди монстров. В последнее время все больше и больше людей увлечены, чтобы играть в игру.",
+      "text_color": "#ded9d6",
       "text_opacity": 1.0,
       "wrap": "word"
     }
   ],
-  "placement_ms": 5729.938462,
-  "repeat_frame_ms": 191.027965,
+  "placement_ms": 56.057981,
+  "repeat_frame_ms": 21.734001,
+  "repeat_ocr_jobs": 0,
   "size": [
     1920,
     1080
   ],
   "timings_ms": [
     [
-      92.554333,
-      6.527825999999999,
-      1.306659
+      4.538287,
+      0.5310659999999999,
+      0.070023
     ],
     [
-      97.158829,
-      10.349356,
-      0.837309
+      5.315169,
+      0.545774,
+      0.060705
     ],
     [
-      89.04839000000001,
-      6.313517999999999,
-      0.771514
+      3.9737169999999997,
+      0.509305,
+      0.05818
     ],
     [
-      107.039535,
-      8.864969,
-      1.08602
+      5.3023940000000005,
+      0.523862,
+      0.065805
     ],
     [
-      106.578851,
-      6.576758,
-      0.683066
+      4.0752999999999995,
+      0.509645,
+      0.061416
     ]
   ],
-  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
-  "render_ms": 468.1683799990424,
-  "update_ms": 4.6301849997689715,
+  "translation_cache_hits": 0,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 4,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 261.23180199965645,
+  "update_ms": 1.920007000080659,
   "layout_diagnostics": [
     {
-      "width": 20,
-      "height": 125,
-      "contentWidth": 19.9375,
-      "contentHeight": 101.79999732971191,
-      "lines": 11,
-      "truncated": false
-    },
-    {
-      "width": 9,
-      "height": 208.99996948242188,
-      "contentWidth": 8.046875,
-      "contentHeight": 165.69999563694,
-      "lines": 18,
-      "truncated": false
-    },
-    {
-      "width": 8,
-      "height": 1068,
-      "contentWidth": 10.640625,
-      "contentHeight": 273.69999277591705,
-      "lines": 30,
-      "truncated": false
-    },
-    {
-      "width": 10,
-      "height": 249.99996948242188,
-      "contentWidth": 9.921875,
-      "contentHeight": 208.89999449253082,
-      "lines": 21,
-      "truncated": false
-    },
-    {
-      "width": 20,
-      "height": 175,
-      "contentWidth": 19.890625,
-      "contentHeight": 159.399995803833,
-      "lines": 16,
-      "truncated": false
-    },
-    {
-      "width": 15,
-      "height": 139,
-      "contentWidth": 14.671875,
-      "contentHeight": 120.6999968290329,
-      "lines": 13,
-      "truncated": false
-    },
-    {
-      "width": 19,
-      "height": 108,
-      "contentWidth": 18.40625,
-      "contentHeight": 83.79999780654907,
-      "lines": 9,
-      "truncated": false
-    },
-    {
-      "width": 72,
-      "height": 9.5999755859375,
-      "contentWidth": 69.953125,
-      "contentHeight": 10.899999737739563,
+      "width": 110,
+      "height": 47,
+      "contentWidth": 102.5625,
+      "contentHeight": 36.29999911785126,
       "lines": 1,
-      "truncated": true
-    },
-    {
-      "width": 20,
-      "height": 118,
-      "contentWidth": 19.171875,
-      "contentHeight": 99.99999737739563,
-      "lines": 10,
       "truncated": false
     },
     {
-      "width": 19,
-      "height": 112,
-      "contentWidth": 18.484375,
-      "contentHeight": 83.79999780654907,
-      "lines": 9,
+      "width": 236,
+      "height": 39,
+      "contentWidth": 157.5,
+      "contentHeight": 36.29999911785126,
+      "lines": 1,
       "truncated": false
     },
     {
-      "width": 15.000000000000004,
-      "height": 133,
-      "contentWidth": 13.8125,
-      "contentHeight": 120.6999968290329,
-      "lines": 13,
-      "truncated": false
-    },
-    {
-      "width": 12,
-      "height": 157,
-      "contentWidth": 11.5625,
-      "contentHeight": 138.69999635219574,
-      "lines": 15,
-      "truncated": false
-    },
-    {
-      "width": 102,
-      "height": 45,
-      "contentWidth": 93.8125,
-      "contentHeight": 41.499998927116394,
-      "lines": 3,
+      "width": 545,
+      "height": 165,
+      "contentWidth": 488.5625,
+      "contentHeight": 159.99999284744263,
+      "lines": 4,
       "truncated": false
     }
   ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 4,
+    "rendered": 3,
+    "missing": [
+      {
+        "id": 9,
+        "original": "T",
+        "confidence": 84.76493072509766,
+        "reason": "повторный OCR того же текста"
+      }
+    ],
+    "source_coverage": [
+      {
+        "id": 1,
+        "original": "TIPS",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 2,
+        "original": "(Obakeidoro)",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 6,
+        "original": "A game that's all the rage among Monsters. Lately, more and more Humans have been spirited away to play the game.",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 9,
+        "original": "T",
+        "rendered": false,
+        "plate_coverage": 0.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "no failure in this diagnostic",
+    "uncovered_text_blocks": []
+  },
   "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-4.jpg",
-  "approved_reference": false,
-  "translation_service": "none: predefined deterministic test input"
+  "approved_reference": false
 }

@@ -626,6 +626,9 @@ pub fn to_result(pieces: Vec<Piece>) -> OcrResult {
         let (y0, y1) = (p.quad.iter().map(|c| c[1]).fold(f32::MAX, f32::min), p.quad.iter().map(|c| c[1]).fold(f32::MIN, f32::max));
         OcrLine { rect: CropRect::in_space(x0, y0, x1 - x0, y1 - y0), text: p.text.trim().to_owned(), confidence: (p.confidence * 100.0).clamp(0.0, 100.0) }
     }).collect();
+    // Preserve the recognition pipeline orientation/order. Source-space x sorting
+    // reverses fragments in a line recognized after a 180-degree crop rotation.
+    // Validated upright overlay fields reconstruct their own horizontal rows.
     let text = lines.iter().map(|l| l.text.as_str()).collect::<Vec<_>>().join("\n");
     OcrResult { text, lines, confidence, engine: ENGINE, ..OcrResult::default() }
 }

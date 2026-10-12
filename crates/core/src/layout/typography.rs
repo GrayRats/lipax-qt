@@ -107,6 +107,17 @@ pub(crate) fn reconstructed_ocr_lines(lines: &[Rect]) -> Vec<Rect> {
     normalized_lines(&rows)
 }
 
+/// Reading order of horizontal OCR fragments: row first, then x within it.
+/// A slightly higher italic word on the same baseline must not precede the
+/// beginning of its sentence. Geometry is kept unchanged.
+pub(crate) fn ocr_reading_order(lines: &[Rect], rows: &[Rect]) -> Vec<usize> {
+    let mut indices: Vec<_> = (0..lines.len()).collect();
+    let row = |r: &Rect| rows.iter().position(|row| row.contains(r)).unwrap_or(rows.len());
+    indices.sort_by(|&a, &b| row(&lines[a]).cmp(&row(&lines[b]))
+        .then_with(|| lines[a].x.total_cmp(&lines[b].x)));
+    indices
+}
+
 impl TypographyEstimator {
     /// `frame_w` — ширина кадра области: одиночную строку выравнивают по её положению в кадре.
     pub fn estimate(&self, block: &DetectedTextBlock, analysis: &FontAnalysis, background: [u8; 3], frame_w: f32) -> TypographyEstimate {

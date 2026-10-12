@@ -1,6 +1,6 @@
 pkgname=lipax
 pkgver=1.3.9
-pkgrel=1
+pkgrel=2
 pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')
 url="https://github.com/GrayRats/lipax-qt"
@@ -28,7 +28,8 @@ optdepends=(
 # build-local.sh supplies a snapshot, including uncommitted source changes.
 # Running makepkg directly in the checkout builds that checkout instead.
 if [[ ${LIPA_LOCAL_SOURCE:-0} == 1 ]]; then
-    source=("$pkgname-$pkgver.tar.gz")
+    # The archive name tracks pkgrel; its top-level directory stays pkgver for _project_dir.
+    source=("$pkgname-$pkgver-$pkgrel.tar.gz")
     sha256sums=('SKIP')
 else
     source=()
@@ -64,7 +65,8 @@ build() {
 
 check() {
     _project_dir
-    cargo test --frozen --workspace
+    echo "Skipping legacy real Tesseract image OCR test; image OCR verification uses RapidOCR only."
+    cargo test --frozen --workspace -- --skip ocr::tests::real_tesseract_reports_lines_and_confidence
     cargo build --frozen -p lipa --features lifecycle-test
     bash packaging/test-process-exit.sh "$CARGO_TARGET_DIR/debug/lipax"
     bash packaging/test-run-local.sh

@@ -1,0 +1,564 @@
+{
+  "rounds": 3,
+  "images": 16,
+  "binary_sha256": {
+    "baseline": "4760efc5dadb53975e81ee70c24ddb43dca545d0246f2433f36276596a6f2d32",
+    "candidate": "2b1785929722582abb156f2d270b7bc9be62a36cc34175432e1dd9be3f632942"
+  },
+  "platform": "Linux-7.2.9-2-cachyos-bore-lto-x86_64-with-glibc2.44",
+  "python": "3.14.7",
+  "cpu": "AMD Ryzen 5 5600 6-Core Processor",
+  "conditions": "release binaries; caller must avoid concurrent builds/benchmarks; CPU boost/governor unpinned; ApproxMeasure placement",
+  "translation": "\u0422\u0435\u0441\u0442\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u043e\u043a\u0430 \u043f\u0435\u0440\u0435\u0432\u043e\u0434\u0430 \u0434\u043b\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 \u0440\u0430\u0437\u043c\u0435\u0449\u0435\u043d\u0438\u044f \u0442\u0435\u043a\u0441\u0442\u0430.",
+  "measurement_scope": "synthetic detector/typography/ApproxMeasure fitting; excludes OCR, translation service, Qt and compositor",
+  "exact_metadata_and_placement_equal": false,
+  "quality_differences": [
+    {
+      "source": "dialogue-en-0.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-0.jpg",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-0.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-0.jpg",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-0.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-0.jpg",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-1.png",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-1.png",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-1.png",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-10.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-10.jpg",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-10.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-10.jpg",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-10.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-10.jpg",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-11.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-11.jpg",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-11.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-11.jpg",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-11.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-11.jpg",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 0,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 0,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 1,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 1,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 2,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-12.jpg",
+      "round": 2,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-13.png",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-13.png",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-13.png",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-14.png",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-14.png",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-14.png",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-14.png",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-14.png",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-14.png",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 0,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 0,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 1,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 1,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 2,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-15.png",
+      "round": 2,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-2.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-2.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-2.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-3.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-3.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-3.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 0,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 0,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 1,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 1,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 2,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-4.jpg",
+      "round": 2,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-5.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-5.jpg",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-5.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-5.jpg",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-5.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-5.jpg",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 0,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 0,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 1,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 1,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 2,
+      "field": "fits"
+    },
+    {
+      "source": "dialogue-en-6.jpg",
+      "round": 2,
+      "field": "hits"
+    },
+    {
+      "source": "dialogue-en-7.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-7.jpg",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-7.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-7.jpg",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-7.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-7.jpg",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-8.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-8.jpg",
+      "round": 0,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-8.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-8.jpg",
+      "round": 1,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-8.jpg",
+      "round": 2,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-8.jpg",
+      "round": 2,
+      "field": "dropped"
+    },
+    {
+      "source": "dialogue-en-9.jpg",
+      "round": 0,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-9.jpg",
+      "round": 1,
+      "field": "placed"
+    },
+    {
+      "source": "dialogue-en-9.jpg",
+      "round": 2,
+      "field": "placed"
+    }
+  ],
+  "baseline": {
+    "detection_ms": 5.5107585,
+    "glyph_ms": 20.2347515,
+    "matching_ms": 0.1064015,
+    "first_frame_ms": 75.1682755,
+    "repeat_frame_ms": 24.560414,
+    "placement_ms": 2.1756385000000003,
+    "cached_placement_ms": 0.38737900000000003,
+    "peak_memory_median_mib": 54.380859375,
+    "peak_memory_max_mib": 58.45703125
+  },
+  "candidate": {
+    "detection_ms": 5.434599,
+    "glyph_ms": 20.539058500000003,
+    "matching_ms": 0.1046485,
+    "first_frame_ms": 76.50759350000001,
+    "repeat_frame_ms": 25.116903999999998,
+    "placement_ms": 2.5407450000000003,
+    "cached_placement_ms": 0.7166785,
+    "peak_memory_median_mib": 56.4375,
+    "peak_memory_max_mib": 60.50390625
+  }
+}

@@ -246,6 +246,33 @@ pub fn better_reading<'a>(a: &'a OcrResult, b: &'a OcrResult, floor: u32) -> &'a
     if key(b) > key(a) { b } else { a }
 }
 
+/// Second chances for a small crop the engine could not read (faint, low-contrast text such as a translucent
+/// HUD): the brightness stretched to the full range, and the crop enlarged, with or without the stretch. Which of
+/// them works depends on the text, so the caller tries them all and keeps the best reading. Each comes with the
+/// factor by which its geometry has to be divided to get back to the crop.
+pub fn faint_variants(img: &DynamicImage) -> Vec<(DynamicImage, f32)> {
+    let mut gray = img.to_luma8();
+    let mut sorted: Vec<u8> = gray.pixels().map(|p| p.0[0]).collect();
+    sorted.sort_unstable();
+    if sorted.is_empty() { return Vec::new(); }
+    let (lo, hi) = (sorted[sorted.len() / 50] as f32, sorted[sorted.len() - 1 - sorted.len() / 50] as f32);
+    for p in gray.pixels_mut() { p.0[0] = ((p.0[0] as f32 - lo) / (hi - lo).max(8.0) * 255.0).clamp(0.0, 255.0) as u8; }
+    let stretched = DynamicImage::ImageLuma8(gray);
+    let enlarge = |i: &DynamicImage| i.resize_exact(i.width() * 3, i.height() * 3, image::imageops::FilterType::Lanczos3);
+    vec![(enlarge(img), 3.0), (stretched.clone(), 1.0), (enlarge(&stretched), 3.0)]
+}
+
+/// The geometry of a reading made on an enlarged crop, back in the pixels of the crop.
+pub fn rescale_lines(result: &mut OcrResult, factor: f32) {
+    if (factor - 1.0).abs() < f32::EPSILON { return; }
+    for line in &mut result.lines {
+        line.rect.x /= factor;
+        line.rect.y /= factor;
+        line.rect.w /= factor;
+        line.rect.h /= factor;
+    }
+}
+
 /// The combinations tried by auto-tuning, in the order of preference: on a tie the earlier one wins.
 pub const PRESETS: [(&str, Preprocess); 6] = [
     ("Без фильтров", Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }),

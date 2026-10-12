@@ -1,0 +1,30 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_right_aligned_italic_ink_is_included_before_fitting ___________
+
+qt = <PySide6.QtGui.QGuiApplication(0x55d88fafb400) at 0x7fc509eaf2c0>
+
+    def test_right_aligned_italic_ink_is_included_before_fitting(qt):
+        text = "Проверка переноса: длинная тестовая строка. Hello 日本語"
+        measured = measure([request(text)])[0]
+        directory = ROOT / "tmp/inplace-tests/ink-bounds"
+        directory.mkdir(parents=True, exist_ok=True)
+        source = directory / "source.png"
+        Image.new("RGB", (98, 164), (24, 32, 48)).save(source)
+        entry = {"key": "source10-negative-italic", "box": [0, 0, 1, 1],
+            "inner": [28, 28, 28, 28], "layout_width": 40, "text": text,
+            "font_family": "Source Serif 4", "font_weight": 200, "font_px": 9,
+            "italic": True, "letter_spacing": -0.38910049200057983,
+            "line_height": 0.8999999761581421, "alignment": "right", "wrap": "word",
+            "max_lines": 9, "outline": False, "shadow": False,
+            "text_color": "#ffffff", "background": {"mode": "solid_fill",
+            "color": "#182030", "opacity": 1, "radius": 0}}
+        _, _, narrow = render(qt, source, [entry], directory)
+>       assert measured["width"] >= narrow[0]["contentWidth"] - 1e-6, (measured, narrow)
+E       AssertionError: ({'height': 91, 'line_spacing': 13, 'lines': 7, 'width': 39.65625}, [{'width': 40, 'height': 108, 'contentWidth': 41.640625, 'contentHeight': 82.89999783039093, ...}])
+E       assert 39.65625 >= (41.640625 - 1e-06)
+
+tests/inplace/python/test_qt_ink_bounds.py:52: AssertionError
+=========================== short test summary info ============================
+FAILED tests/inplace/python/test_qt_ink_bounds.py::test_right_aligned_italic_ink_is_included_before_fitting
+1 failed, 1 passed in 0.73s

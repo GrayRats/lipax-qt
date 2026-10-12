@@ -1,0 +1,12 @@
+   Compiling lipa-core v1.3.9 (/home/art/DEV/LipaX-QT/crates/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.24s
+     Running unittests src/lib.rs (target/debug/deps/lipa_core-60e4f82720c70c81)
+
+running 4 tests
+test layout::background::tests::automatic_strategy_depends_on_the_field_type ... ok
+test layout::background::tests::explicit_modes_are_kept_and_padding_adapts ... ok
+test layout::background::tests::flat_panel_gets_a_solid_fill_of_its_colour ... ok
+test layout::background::tests::textured_scene_is_inpainted_without_the_old_letters ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.08s
+

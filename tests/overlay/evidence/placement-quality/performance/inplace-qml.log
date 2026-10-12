@@ -1,0 +1,35 @@
+********* Start testing of qmltestrunner *********
+Config: Using QtTest library 6.12.0, Qt 6.12.0 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 16.2.1 20260810), cachyos unknown
+PASS   : qmltestrunner::InplaceGeometry::initTestCase()
+PASS   : qmltestrunner::InplaceGeometry::test_allDecorationClipped()
+PASS   : qmltestrunner::InplaceGeometry::test_captureBoundary()
+PASS   : qmltestrunner::InplaceGeometry::test_invalidInput(missing)
+PASS   : qmltestrunner::InplaceGeometry::test_invalidInput(zero)
+PASS   : qmltestrunner::InplaceGeometry::test_invalidInput(height)
+PASS   : qmltestrunner::InplaceGeometry::test_invalidInput(nan)
+PASS   : qmltestrunner::InplaceGeometry::test_invalidInput(infinite)
+PASS   : qmltestrunner::InplaceGeometry::test_invalidInput(string)
+PASS   : qmltestrunner::InplaceGeometry::test_mixedScriptAndHardBreaks()
+PASS   : qmltestrunner::InplaceGeometry::test_negativeMonitorAndFractionalScale()
+PASS   : qmltestrunner::InplaceGeometry::test_unusedOutlineDoesNotAllocateEightTextItems()
+PASS   : qmltestrunner::InplaceGeometry::cleanupTestCase()
+PASS   : qmltestrunner::OverlayLifecycleRegression::initTestCase()
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_nativeResizeSurvivesSettingsEchoAndModeSwitch() translation_window.state: visible=true width=700 height=120 screen=
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_nativeResizeSurvivesSettingsEchoAndModeSwitch() translation_window.state: pinned=false floating=true window_role=xdg_toplevel layershell=false
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_nativeResizeSurvivesSettingsEchoAndModeSwitch() translation_window.layershell: active=true anchors=top|left layer=overlay reason=pinned_surface_created screen= margins=100,100
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_nativeResizeSurvivesSettingsEchoAndModeSwitch() translation_window.layershell: active=true anchors=top|left layer=overlay reason=pin_transition screen= margins=100,100
+QWARN  : qmltestrunner::OverlayLifecycleRegression::test_nativeResizeSurvivesSettingsEchoAndModeSwitch() layershellqt: PinnedTranslationSurface_QMLTYPE_13(0x56463f745890, name="translationWindow") is not a wayland window. Not creating zwlr_layer_surface
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_nativeResizeSurvivesSettingsEchoAndModeSwitch() translation_window.state: visible=false width=720 height=220 screen=
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_nativeResizeSurvivesSettingsEchoAndModeSwitch() translation_window.state: visible=true width=720 height=220 screen=
+PASS   : qmltestrunner::OverlayLifecycleRegression::test_nativeResizeSurvivesSettingsEchoAndModeSwitch()
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_savedSizeRespectsRememberGeometry(enabled) translation_window.state: visible=true width=700 height=120 screen=
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_savedSizeRespectsRememberGeometry(enabled) translation_window.state: pinned=false floating=true window_role=xdg_toplevel layershell=false
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_savedSizeRespectsRememberGeometry(enabled) translation_window.layershell: active=true anchors=top|left layer=overlay reason=pinned_surface_created screen= margins=100,100
+PASS   : qmltestrunner::OverlayLifecycleRegression::test_savedSizeRespectsRememberGeometry(enabled)
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_savedSizeRespectsRememberGeometry(disabled) translation_window.state: visible=true width=700 height=120 screen=
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_savedSizeRespectsRememberGeometry(disabled) translation_window.state: pinned=false floating=true window_role=xdg_toplevel layershell=false
+QDEBUG : qmltestrunner::OverlayLifecycleRegression::test_savedSizeRespectsRememberGeometry(disabled) translation_window.layershell: active=true anchors=top|left layer=overlay reason=pinned_surface_created screen= margins=100,100
+PASS   : qmltestrunner::OverlayLifecycleRegression::test_savedSizeRespectsRememberGeometry(disabled)
+PASS   : qmltestrunner::OverlayLifecycleRegression::cleanupTestCase()
+Totals: 18 passed, 0 failed, 0 skipped, 0 blacklisted, 137ms
+********* Finished testing of qmltestrunner *********

@@ -41,6 +41,7 @@ struct State {
     focus: Mutex<(String, bool)>,
     minimized: Mutex<HashSet<String>>,
     ready: Notify,
+    startup_error: Mutex<Option<String>>,
     /// JSON the KWin script applies to the floating translation window when it appears.
     placement: Mutex<String>,
     /// Geometry of the floating window after the user moved it (with the reason).
@@ -49,7 +50,7 @@ struct State {
 
 impl Default for State {
     fn default() -> Self {
-        Self { windows: Default::default(), focus: Default::default(), minimized: Default::default(), ready: Notify::new(), placement: Mutex::new("null".into()), floating: watch::channel(None).0 }
+        Self { windows: Default::default(), focus: Default::default(), minimized: Default::default(), ready: Notify::new(), startup_error: Default::default(), placement: Mutex::new("null".into()), floating: watch::channel(None).0 }
     }
 }
 
@@ -99,6 +100,12 @@ impl GeometryService {
         self.0.ready.notify_one();
     }
 
+    fn script_failed(&self, reason: &str) {
+        tracing::error!(target: "capture.geometry", stage = "kwin_script", reason, "KWin geometry script failed");
+        *self.0.startup_error.lock().unwrap() = Some(reason.to_owned());
+        self.0.ready.notify_one();
+    }
+
     /// Where to put the floating translation window: `{x,y}` on the desktop, or
     /// `{output,rx,ry}` relative to an output, or `null` to let KWin place it.
     fn floating_placement(&self) -> String {
@@ -140,6 +147,9 @@ impl ClientGeometry {
         let script = include_str!("geometry.js")
             .replace("__DESTINATION__", destination)
             .replace("__PID__", &std::process::id().to_string());
+        // KWin's run method does not propagate JavaScript evaluation exceptions over D-Bus.
+        // Report the exact failure through the existing geometry service instead of a timeout.
+        let script = format!("try {{\n{script}\n}} catch (error) {{\ncallDBus(\"{destination}\", \"/io/lipa/Geometry\", \"io.lipa.Geometry\", \"ScriptFailed\", String(error) + \" line=\" + error.lineNumber);\n}}");
         let path = dirs::runtime_dir()
             .unwrap_or_else(std::env::temp_dir)
             .join(format!("{plugin}.js"));
@@ -173,24 +183,33 @@ impl ClientGeometry {
             if id < 0 {
                 return Err("KWin could not load geometry script".into());
             }
-            let tracker = Self {
-                state: state.clone(),
-                conn: conn.clone(),
-                plugin,
-            };
-            let script_path = format!("/Scripting/Script{id}");
+            // KWin allocates IDs from scripts.size(), so unloading a script can leave an
+            // occupied /Script{id} belonging to another script. Starting through that path
+            // can silently run the wrong object. The public manager starts loaded scripts
+            // by object identity and leaves already-running scripts alone.
             conn.call_method(
                 Some("org.kde.KWin"),
-                script_path.as_str(),
-                Some("org.kde.kwin.Script"),
-                "run",
+                "/Scripting",
+                Some("org.kde.kwin.Scripting"),
+                "start",
                 &(),
             )
             .await?;
             tokio::time::timeout(std::time::Duration::from_secs(3), state.ready.notified()).await?;
+            if let Some(reason) = state.startup_error.lock().unwrap().take() {
+                return Err(reason.into());
+            }
+            tracing::debug!(target: "capture.geometry", script_id = id, "KWin geometry tracker ready");
+            let tracker = Self { state: state.clone(), conn: conn.clone(), plugin: plugin.clone() };
             Ok::<_, Box<dyn std::error::Error + Send + Sync>>(tracker)
         }
         .await;
+        if result.is_err() {
+            // A retry must not accumulate idle scripts or keep obsolete D-Bus services alive.
+            let _ = conn.call_method(Some("org.kde.KWin"), "/Scripting",
+                Some("org.kde.kwin.Scripting"), "unloadScript", &(plugin.as_str(),)).await;
+            SCRIPTS.get().unwrap().lock().unwrap().retain(|(_, name)| name != &plugin);
+        }
         let _ = std::fs::remove_file(path);
         result
     }
@@ -243,6 +262,17 @@ impl Drop for ClientGeometry {
 mod tests {
     use super::*;
     use crate::settings::NormRect;
+
+    #[tokio::test]
+    async fn script_failure_reports_the_reason_and_wakes_the_loader() {
+        let state = Arc::new(State::default());
+        let service = GeometryService(state.clone());
+        service.script_failed("TypeError: missing client geometry signal line=24");
+        tokio::time::timeout(std::time::Duration::from_millis(50), state.ready.notified()).await.unwrap();
+        assert_eq!(state.startup_error.lock().unwrap().take().as_deref(),
+            Some("TypeError: missing client geometry signal line=24"));
+        assert!(state.windows.lock().unwrap().is_empty());
+    }
 
     #[test]
     fn floating_focus_guard_is_consumed_once_per_automatic_show() {

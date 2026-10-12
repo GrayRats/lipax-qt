@@ -27,6 +27,7 @@ ort = { version = "=2.0.0-rc.13", default-features = false, features = ["std", "
 [dev-dependencies]
 # Draws the text of the opt-in OCR tests (no Python): a pure Rust rasterizer, never part of the application.
 ab_glyph = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Task-specific regression tests live together in the repository test folder.
 [[test]]
@@ -56,3 +57,7 @@ path = "../../tests/inplace/rust/typography.rs"
 [[test]]
 name = "inplace_stress"
 path = "../../tests/inplace/rust/stress.rs"
+
+[[test]]
+name = "inplace_placement_quality"
+path = "../../tests/inplace/rust/placement_quality.rs"

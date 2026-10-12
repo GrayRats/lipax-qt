@@ -1,2 +1,77 @@
-[6] fixture 6
-→ Перевод длиннее оригинала. Hello 日本語
+[4] 7-day Sign-in Event Sign in for 7 days consecutively
+→ 7-дневный вход в событие-войдите в течение 7 дней подряд
+
+[6] Cliffhheart
+→ Клиффхарт
+
+[8] Consecutive Sign-in
+→ Подливная войда
+
+[13] Rookie Mission
+→ Миссия новичка
+
+[16] Cumulative Sign-in
+→ Совокупивная вой.
+
+[17] Day
+→ День
+
+[18] Day
+→ День
+
+[19] Day
+→ День
+
+[20] Day
+→ День
+
+[21] Day
+→ День
+
+[23] Claimable
+→ Претензия
+
+[24] Claimable
+→ Претензия
+
+[25] Claimable
+→ Претензия
+
+[26] Claimable
+→ Претензия
+
+[27] Claimable
+→ Претензия
+
+[28] Claimable
+→ Претензия
+
+[32] SUPELIESCATEGORY SUPELIES LATEGORY SUPELES CATEGORY SUPPLIES CATEGORY SHPELIES CATECCRY Checked in Headhunting Headhunting Expedited Plan Permit Originite Prime Furniture Part Permit AT
+→ SUPELIESCATEGORY SUPELIES LATEGORY SUPELIES КАТЕГОРИЯ ПОСТАВКИ КАТЕГОРИЯ SHPELIES CATECCRY Проверяет в Headhhunting Headhunting УСКОРЕНный план Разрешение Originite Prime Мебель часть РАЗРЕШЕНИЕ ПО
+
+[33] SPMISTHEMO
+→ СПМИСТЕМО
+
+[35] Contract
+→ Контракт
+
+[38] DES ISLAND
+→ ОСТРОВ ДЕС
+
+[40] CUT ALONG THE DOTTED LNE
+→ ВЫРЕЖЬТЕ ВДОЛЬ ПУСТОЧНОГО LNE
+
+[50] HUNTIN
+→ ХАНТИН
+
+[58] x600
+→ x600
+
+[59] AN EDITED x2 x1
+→ ОДНИМОДАННЫЙ x2 x1
+
+[65] CUT ALONG THE DOTTED UINE K CUT ALONG THE DOTTED LINE CUT ALONG THE DOTTED LINE CUT ALONG THE DOTTED LINE
+→ НАРЕЗАТЬ ВДОЛЬ ПУСКОГО ПОДСТРЕДАЛЬНОГО КРОЯ ВДОЛЬ ПУТИНОЙ ЛИНИИ ВДОЛЬ ПУНКТИВОЙ ЛИНИИ, ВДОЛЬ ПУТИНОЙ ВДОЛЬ ПУТИНОЙ ЛИНИИ
+
+[72] PLAUGAOUND
+→ ПЛАВКА

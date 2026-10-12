@@ -72,6 +72,9 @@ pub struct FitResult {
     /// Сколько строк помещается: для усечения при `WrapMode::Elide`.
     pub max_lines: u32,
     pub overflow: bool,
+    /// Exact logical width used for shaping. Rendering at a wider width can
+    /// choose different line breaks and expose italic glyph overhangs.
+    pub layout_width: f32,
 }
 
 /// The height of one line as QML `Text` lays it out: the font's line spacing rounded up to a whole pixel.
@@ -91,7 +94,7 @@ pub(crate) fn text_height(m: &Measured, line_height: f32) -> f32 {
 /// How many lines of the same model fit into `height`.
 fn lines_within(m: &Measured, line_height: f32, height: f32) -> u32 {
     let (line, last) = (line_px(m) * line_height.max(0.1), line_px(m) * line_height.max(1.0));
-    if height < last { return 1; }
+    if height < last { return 0; }
     ((height - last) / line).floor() as u32 + 1
 }
 
@@ -108,6 +111,7 @@ pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> Fi
     // Lines are broken a little short of the box: QML lays text out with its own rounding of advances, and a line
     // that is a hair too wide there would wrap or be elided although it fitted here.
     let slack = |px: f32| (WIDTH_SLACK * px).min(0.25 * w);
+    let layout_width = |px: f32| (w - slack(px)).floor().max(1.0);
     let fits = |m: &Measured, lh: f32| m.width <= w + FIT_EPS && text_height(m, lh) <= h + FIT_EPS;
     // Перенос: CJK — по символам; одна строка, если и оригинал в одну и перевод помещается.
     let mut wrap = input.manual_wrap.unwrap_or_else(|| {
@@ -125,13 +129,20 @@ pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> Fi
     };
     let mut line_height = natural_lh(start, &input.font);
     let mut spacing = input.letter_spacing;
+    // Qt's Text.Wrap can break an overlong word anywhere. That is useful as a
+    // last-resort elision, but a one-character-wide column is not a successful
+    // word-wrapped fit. Measure complete words before accepting that result.
+    let words = input.text.split_whitespace().collect::<Vec<_>>().join("\n");
     let try_size = |family: &FontSpec, px: f32, lh: f32, ls: f32, wrap: WrapMode| {
-        let m = measure.measure(input.text, family, px, ls, w - slack(px), wrap);
-        (fits(&m, lh), m)
+        let m = measure.measure(input.text, family, px, ls, layout_width(px), wrap);
+        let ok = fits(&m, lh) && (wrap != WrapMode::WordWrap
+            || measure.measure(&words, family, px, ls, f32::MAX, WrapMode::NoWrap).width <= layout_width(px) + FIT_EPS);
+        (ok, m)
     };
     let done = |family: &FontSpec, px: f32, lh: f32, ls: f32, wrap: WrapMode, overflow: bool, m: &Measured| FitResult {
         family: family.family.clone(), font_px: px, line_height: lh, letter_spacing: ls, wrap_mode: wrap,
         max_lines: lines_within(m, lh, h), overflow,
+        layout_width: layout_width(px),
     };
 
     // 1–2. Начальный кегль с выбранным переносом; одна строка не поместилась — перенос по словам.
@@ -170,7 +181,7 @@ pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> Fi
     }
     // 7. Не помещается и на минимуме: явное усечение в пределах поля.
     let px = if input.manual_px.is_some() { start } else { input.min_px };
-    let m = measure.measure(input.text, &input.font, px, spacing, w, wrap);
+    let m = measure.measure(input.text, &input.font, px, spacing, layout_width(px), wrap);
     done(&input.font, px, line_height, spacing, WrapMode::Elide, true, &m)
 }
 
@@ -182,6 +193,11 @@ impl TextMeasure for ApproxMeasure {
     fn measure(&self, text: &str, _font: &FontSpec, px: f32, ls: f32, width: f32, wrap: WrapMode) -> Measured {
         let cw = |c: char| if (c as u32) >= 0x2E80 { px } else { 0.55 * px } + ls;
         let line_spacing = 1.2 * px;
+        if matches!(wrap, WrapMode::NoWrap | WrapMode::Elide) {
+            let lines = text.split('\n').count() as u32;
+            let width = text.split('\n').map(|line| line.chars().map(cw).sum::<f32>()).fold(0.0, f32::max);
+            return Measured { width, height: lines as f32 * line_spacing, lines, line_spacing };
+        }
         let words: Vec<String> = match wrap {
             WrapMode::WrapAnywhere => text.chars().map(String::from).collect(),
             _ => text.split(' ').map(String::from).collect(),
@@ -251,7 +267,7 @@ mod tests {
         assert_eq!(text_height(&one, 1.5), 36.0, "a single line is scaled too");
         assert_eq!(lines_within(&m, 1.5, 108.0), 3);
         assert_eq!(lines_within(&m, 1.5, 107.0), 2);
-        assert_eq!(lines_within(&m, 1.0, 5.0), 1, "at least one line");
+        assert_eq!(lines_within(&m, 1.0, 5.0), 0, "a clipped fragment is not a visible line");
     }
 
     #[test]

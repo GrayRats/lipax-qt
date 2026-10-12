@@ -1,0 +1,235 @@
+********* Start testing of qmltestrunner *********
+Config: Using QtTest library 6.12.0, Qt 6.12.0 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 16.2.1 20260810), cachyos unknown
+PASS   : qmltestrunner::SvgActions::initTestCase()
+PASS   : qmltestrunner::SvgActions::test_svgActionsAreAccessibleAndDoNotInterceptClicks()
+PASS   : qmltestrunner::SvgActions::test_translationIndicatorFollowsRuntimeState()
+PASS   : qmltestrunner::SvgActions::cleanupTestCase()
+PASS   : qmltestrunner::HistoryWindow::initTestCase()
+QWARN  : qmltestrunner::HistoryWindow::test_openCopyAndClear() This plugin does not support raise()
+PASS   : qmltestrunner::HistoryWindow::test_openCopyAndClear()
+PASS   : qmltestrunner::HistoryWindow::cleanupTestCase()
+QDEBUG : qmltestrunner::UnknownTestFunc() inplace.surface: stage=geometry key=subtitles:7 visible=false geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::UnknownTestFunc() inplace.surface: stage=updated key=subtitles:7 visible=false geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::UnknownTestFunc() inplace.surface: stage=created key=subtitles:7 visible=false geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QWARN  : qmltestrunner::UnknownTestFunc() file:///home/art/DEV/LipaX-QT/crates/app/qml/InplaceTranslation.qml:70:5: Unable to assign QQuickScreenInfo to QScreen
+QDEBUG : qmltestrunner::UnknownTestFunc() inplace.surface: stage=visibility key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QWARN  : qmltestrunner::UnknownTestFunc() layershellqt: InplaceTranslation_QMLTYPE_61(0x55c87d5d0a30, name="inplaceTranslation") is not a wayland window. Not creating zwlr_layer_surface
+QDEBUG : qmltestrunner::UnknownTestFunc() inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::initTestCase()
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(solid) inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(solid) inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_backgroundModes(solid)
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(adaptive) inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(adaptive) inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(adaptive) inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(adaptive) inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_backgroundModes(adaptive)
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(inpaint) inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(inpaint) inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(inpaint) inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(inpaint) inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QWARN  : qmltestrunner::Inplace::test_backgroundModes(inpaint) file:///home/art/DEV/LipaX-QT/crates/app/qml/InplaceTranslationContent.qml:18:9: QML QQuickImage: Cannot open: file:///nonexistent.png
+PASS   : qmltestrunner::Inplace::test_backgroundModes(inpaint)
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(transparent) inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(transparent) inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(transparent) inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(transparent) inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_backgroundModes(transparent) inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_backgroundModes(transparent)
+QDEBUG : qmltestrunner::Inplace::test_edgesAreRoundedNotTheSize() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_edgesAreRoundedNotTheSize() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_edgesAreRoundedNotTheSize() inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_edgesAreRoundedNotTheSize() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350.45000000000005,444.99999999999994,500.1,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_edgesAreRoundedNotTheSize() inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=[350.45000000000005,444.99999999999994,500.1,60] screen= width=501 height=60
+PASS   : qmltestrunner::Inplace::test_edgesAreRoundedNotTheSize()
+QDEBUG : qmltestrunner::Inplace::test_middleButtonRequestsHide() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=501 height=60
+QDEBUG : qmltestrunner::Inplace::test_middleButtonRequestsHide() inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_middleButtonRequestsHide()
+QDEBUG : qmltestrunner::Inplace::test_noGeometryNoPlacement() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=null screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_noGeometryNoPlacement() inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=null screen=none width=8 height=8
+PASS   : qmltestrunner::Inplace::test_noGeometryNoPlacement()
+QDEBUG : qmltestrunner::Inplace::test_overflowFallbackElides() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen=none width=8 height=8
+QWARN  : qmltestrunner::Inplace::test_overflowFallbackElides() file:///home/art/DEV/LipaX-QT/crates/app/qml/InplaceTranslation.qml:70:5: Unable to assign QQuickScreenInfo to QScreen
+QDEBUG : qmltestrunner::Inplace::test_overflowFallbackElides() inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowFallbackElides() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowFallbackElides() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_overflowFallbackElides()
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_overflowingTextIsCutToTheFieldNotSpilledOver()
+QDEBUG : qmltestrunner::Inplace::test_placedOverTheOriginalField() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_placedOverTheOriginalField() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_placedOverTheOriginalField() inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_placedOverTheOriginalField()
+QDEBUG : qmltestrunner::Inplace::test_propertiesUpdateWithoutRecreatingTheItem() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_propertiesUpdateWithoutRecreatingTheItem() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_propertiesUpdateWithoutRecreatingTheItem()
+QDEBUG : qmltestrunner::Inplace::test_rendersEveryPropertyFromRust() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_rendersEveryPropertyFromRust() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_rendersEveryPropertyFromRust() inplace.surface: stage=frame_submitted key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_rendersEveryPropertyFromRust()
+QDEBUG : qmltestrunner::Inplace::test_transparentOutlineAndShadowSettings() inplace.surface: stage=updated key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+QDEBUG : qmltestrunner::Inplace::test_transparentOutlineAndShadowSettings() inplace.surface: stage=geometry key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::Inplace::test_transparentOutlineAndShadowSettings()
+PASS   : qmltestrunner::Inplace::cleanupTestCase()
+QDEBUG : qmltestrunner::UnknownTestFunc() inplace.surface: stage=removed key=subtitles:7 visible=true geometry=[350,444.99999999999994,500,60] screen= width=500 height=60
+PASS   : qmltestrunner::MainWindowParts::initTestCase()
+PASS   : qmltestrunner::MainWindowParts::test_aChangedScaleOrResolutionDistrustsThePosition()
+PASS   : qmltestrunner::MainWindowParts::test_aDisconnectedMonitorFallsBackToAnAvailableScreenAndCentres()
+PASS   : qmltestrunner::MainWindowParts::test_aWindowOutsideTheWorkAreaIsPulledInside()
+PASS   : qmltestrunner::MainWindowParts::test_anOversizedWindowIsLimitedToTheAvailableArea()
+PASS   : qmltestrunner::MainWindowParts::test_disabledIconButtonStaysVisibleButDimmedAndDoesNotToggle()
+PASS   : qmltestrunner::MainWindowParts::test_englishTextPassesThrough()
+PASS   : qmltestrunner::MainWindowParts::test_longTextDoesNotChangeTheLayoutOrTheImplicitSize()
+PASS   : qmltestrunner::MainWindowParts::test_minimumSizeWinsOverASmallRecord()
+PASS   : qmltestrunner::MainWindowParts::test_negativeCoordinatesOfASecondMonitorAreKept()
+PASS   : qmltestrunner::MainWindowParts::test_processTitleIsUnderlinedShrinksToEightPixelsThenElides()
+PASS   : qmltestrunner::MainWindowParts::test_sameScreenKeepsSizeAndPosition()
+PASS   : qmltestrunner::MainWindowParts::test_stackedLayoutAlsoKeepsItsSize()
+PASS   : qmltestrunner::MainWindowParts::test_statusLightPulsesGentlyOnlyWhileRunningOrProcessing()
+PASS   : qmltestrunner::MainWindowParts::test_statusLightStatesAndAccessibleNames()
+PASS   : qmltestrunner::MainWindowParts::test_statusMessagesAreEnglish()
+PASS   : qmltestrunner::MainWindowParts::test_toggleIsACheckableButtonWithItsStateInAccessibility()
+PASS   : qmltestrunner::MainWindowParts::test_unknownRussianMessagesNeverLeakIntoTheEnglishLine()
+PASS   : qmltestrunner::MainWindowParts::test_waylandRestoresSizeOnlyAndTheRecordIsRejectedWhenBroken()
+PASS   : qmltestrunner::MainWindowParts::cleanupTestCase()
+PASS   : qmltestrunner::OcrPreviewWindow::initTestCase()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_autoTuneAsksForTheBestFilterAndShowsTheScores() This plugin does not support raise()
+PASS   : qmltestrunner::OcrPreviewWindow::test_autoTuneAsksForTheBestFilterAndShowsTheScores()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_automaticFiltersAreAnnouncedForTheFrame() This plugin does not support raise()
+PASS   : qmltestrunner::OcrPreviewWindow::test_automaticFiltersAreAnnouncedForTheFrame()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_blocksAreListedAndOutlined() This plugin does not support raise()
+PASS   : qmltestrunner::OcrPreviewWindow::test_blocksAreListedAndOutlined()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_confidenceColoursAndFilteredFrame() This plugin does not support raise()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_confidenceColoursAndFilteredFrame() file:///home/art/DEV/LipaX-QT/crates/app/qml/OcrPreviewWindow.qml:89:13: QML QQuickImage*: Cannot open: file:///raw.png
+QWARN  : qmltestrunner::OcrPreviewWindow::test_confidenceColoursAndFilteredFrame() file:///home/art/DEV/LipaX-QT/crates/app/qml/OcrPreviewWindow.qml:89:13: QML QQuickImage*: Cannot open: file:///raw.png
+QWARN  : qmltestrunner::OcrPreviewWindow::test_confidenceColoursAndFilteredFrame() file:///home/art/DEV/LipaX-QT/crates/app/qml/OcrPreviewWindow.qml:89:13: QML QQuickImage*: Cannot open: file:///filtered.png
+QWARN  : qmltestrunner::OcrPreviewWindow::test_confidenceColoursAndFilteredFrame() file:///home/art/DEV/LipaX-QT/crates/app/qml/OcrPreviewWindow.qml:89:13: QML QQuickImage*: Cannot open: file:///raw.png
+PASS   : qmltestrunner::OcrPreviewWindow::test_confidenceColoursAndFilteredFrame()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_emptyStateExplainsWhatToDo() This plugin does not support raise()
+PASS   : qmltestrunner::OcrPreviewWindow::test_emptyStateExplainsWhatToDo()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_frameIsRequestedOnlyWhileTheWindowIsOpen() This plugin does not support raise()
+PASS   : qmltestrunner::OcrPreviewWindow::test_frameIsRequestedOnlyWhileTheWindowIsOpen()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_inspectorShowsTimingsPhaseAndDecisions() This plugin does not support raise()
+PASS   : qmltestrunner::OcrPreviewWindow::test_inspectorShowsTimingsPhaseAndDecisions()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_refreshAndCopy() This plugin does not support raise()
+PASS   : qmltestrunner::OcrPreviewWindow::test_refreshAndCopy()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_severalRegionsGetTabs() This plugin does not support raise()
+PASS   : qmltestrunner::OcrPreviewWindow::test_severalRegionsGetTabs()
+QWARN  : qmltestrunner::OcrPreviewWindow::test_wholeRegionTranslationIsShownWhenLinesCarryNone() This plugin does not support raise()
+PASS   : qmltestrunner::OcrPreviewWindow::test_wholeRegionTranslationIsShownWhenLinesCarryNone()
+PASS   : qmltestrunner::OcrPreviewWindow::cleanupTestCase()
+QWARN  : qmltestrunner::UnknownTestFunc() layershellqt: RegionFrame_QMLTYPE_146(0x55c87d613320) is not a wayland window. Not creating zwlr_layer_surface
+QWARN  : qmltestrunner::UnknownTestFunc() layershellqt: RegionFrame_QMLTYPE_146(0x55c87de4b900) is not a wayland window. Not creating zwlr_layer_surface
+PASS   : qmltestrunner::RegionFrame::initTestCase()
+PASS   : qmltestrunner::RegionFrame::test_geometryFollowsRegion()
+PASS   : qmltestrunner::RegionFrame::test_newSelectionFlashes()
+PASS   : qmltestrunner::RegionFrame::test_perRegionOverride()
+PASS   : qmltestrunner::RegionFrame::test_persistentModes(pattern)
+PASS   : qmltestrunner::RegionFrame::test_persistentModes(solid)
+PASS   : qmltestrunner::RegionFrame::test_persistentModes(off)
+PASS   : qmltestrunner::RegionFrame::test_selectionFadesOutWithOwnTimer()
+PASS   : qmltestrunner::RegionFrame::cleanupTestCase()
+PASS   : qmltestrunner::RegionSelector::initTestCase()
+PASS   : qmltestrunner::RegionSelector::test_noHintWhenTheWindowHasNoTitleBarOfItsOwn()
+PASS   : qmltestrunner::RegionSelector::test_theBarIsHighlightedAndASelectionOverItIsFlagged()
+PASS   : qmltestrunner::RegionSelector::cleanupTestCase()
+QINFO  : qmltestrunner::SettingsLayout::initTestCase() qml: Typography: system=Sans Serif 9pt, interface=11pt
+PASS   : qmltestrunner::SettingsLayout::initTestCase()
+PASS   : qmltestrunner::SettingsLayout::test_aboutTabRespectsReducedMotionAndTellsWhatLipaXIs()
+PASS   : qmltestrunner::SettingsLayout::test_appearanceEditKeepsNewCaptureState()
+PASS   : qmltestrunner::SettingsLayout::test_appearanceOffersOnlyBundledFontsAndSavesAutoShrink()
+PASS   : qmltestrunner::SettingsLayout::test_appearanceResetAndSourceLanguageAreIndependent()
+PASS   : qmltestrunner::SettingsLayout::test_applicationTabHoldsThemeTrayAutostartNotificationsAndLog()
+PASS   : qmltestrunner::SettingsLayout::test_autoOffersTheOptionalMeikiModelForJapanese()
+PASS   : qmltestrunner::SettingsLayout::test_bergamotOffersVersionsAndUpdate()
+PASS   : qmltestrunner::SettingsLayout::test_bergamotProgressAndMissingModelMessage()
+PASS   : qmltestrunner::SettingsLayout::test_bergamotVersionsAreReReadWhenThePairOrTheStateChanges()
+PASS   : qmltestrunner::SettingsLayout::test_captureActionsFitNarrowSettingsWindow()
+PASS   : qmltestrunner::SettingsLayout::test_captureSelectionUsesTheJustEditedSource()
+PASS   : qmltestrunner::SettingsLayout::test_closeToTraySwitchSavesTheSetting()
+PASS   : qmltestrunner::SettingsLayout::test_disabledDisplayChoiceExplainsReasonOnHover()
+PASS   : qmltestrunner::SettingsLayout::test_displayChoiceControlsAppearanceAndExplainsBothModes()
+PASS   : qmltestrunner::SettingsLayout::test_enabledSettingTooltipAndClicks()
+PASS   : qmltestrunner::SettingsLayout::test_filtersAndOverlayOptionsAreInTheSettings()
+PASS   : qmltestrunner::SettingsLayout::test_gameProfilesAreListedAndTheSelectedOneCannotBeForgotten()
+PASS   : qmltestrunner::SettingsLayout::test_gameProfilesSwitchSavesTheSetting()
+PASS   : qmltestrunner::SettingsLayout::test_generalTabHoldsOnlyTheMainWindowText()
+PASS   : qmltestrunner::SettingsLayout::test_inplaceSettingsDoNotShowWindowControls()
+PASS   : qmltestrunner::SettingsLayout::test_languagesWithoutAPackageAreDownloadedWithoutAPassword()
+PASS   : qmltestrunner::SettingsLayout::test_layoutAndSave()
+PASS   : qmltestrunner::SettingsLayout::test_lineGapFactorIsEditableAndSaved()
+PASS   : qmltestrunner::SettingsLayout::test_manualInplacePropertyUsesOnlyItsOwnAppearance()
+PASS   : qmltestrunner::SettingsLayout::test_meikiIsCheckedByItselfAndOffersItsModel()
+PASS   : qmltestrunner::SettingsLayout::test_ocrEngineAutoAndConfidenceThreshold()
+PASS   : qmltestrunner::SettingsLayout::test_paddleIsCheckedByItselfAndTheFixesAreShown()
+PASS   : qmltestrunner::SettingsLayout::test_pinnedRadiusIsVisibleAndEditsTheSavedSetting()
+PASS   : qmltestrunner::SettingsLayout::test_providerExplanationPreservesOtherCredentials()
+PASS   : qmltestrunner::SettingsLayout::test_rapidIsCheckedByItselfAndOffersItsModel()
+PASS   : qmltestrunner::SettingsLayout::test_regionModel()
+PASS   : qmltestrunner::SettingsLayout::test_reloadDoesNotScheduleAnUnchangedSave()
+PASS   : qmltestrunner::SettingsLayout::test_rememberWindowGeometryIsOnByDefaultAndSavedAsAGeneralSetting()
+PASS   : qmltestrunner::SettingsLayout::test_switchingTheLanguageOffersTheMissingModelAndNeverDownloadsUnasked()
+PASS   : qmltestrunner::SettingsLayout::test_topTabsScrollAndAcceptKeyboardNavigation()
+PASS   : qmltestrunner::SettingsLayout::test_uiTypographyIsIndependentAndRestartCanBeCancelled()
+PASS   : qmltestrunner::SettingsLayout::test_unsupportedCaptureFeaturesAreExplained()
+PASS   : qmltestrunner::SettingsLayout::test_windowSettingsAreOffInTheInplaceMode()
+PASS   : qmltestrunner::SettingsLayout::cleanupTestCase()
+QDEBUG : qmltestrunner::UnknownTestFunc() translation_window.state: visible=true width=700 height=120 screen=
+QDEBUG : qmltestrunner::UnknownTestFunc() translation_window.state: pinned=false floating=true window_role=xdg_toplevel layershell=false
+QDEBUG : qmltestrunner::UnknownTestFunc() translation_window.layershell: active=true anchors=top|left layer=overlay reason=pinned_surface_created screen= margins=100,100
+PASS   : qmltestrunner::TranslationWindow::initTestCase()
+PASS   : qmltestrunner::TranslationWindow::test_closeButtonHidesOnlyThroughTheOwner()
+PASS   : qmltestrunner::TranslationWindow::test_displayStyles(solid)
+PASS   : qmltestrunner::TranslationWindow::test_displayStyles(blur)
+PASS   : qmltestrunner::TranslationWindow::test_displayStyles(blur-off)
+PASS   : qmltestrunner::TranslationWindow::test_displayStyles(transparent)
+PASS   : qmltestrunner::TranslationWindow::test_displayStyles(dim)
+PASS   : qmltestrunner::TranslationWindow::test_displayStyles(dim-inverse)
+PASS   : qmltestrunner::TranslationWindow::test_floatingIsAnOrdinaryTopLevel()
+QDEBUG : qmltestrunner::TranslationWindow::test_hiddenControllerKeepsBothSurfaceObjects() translation_window.state: visible=false width=600 height=140 screen=
+QDEBUG : qmltestrunner::TranslationWindow::test_hiddenControllerKeepsBothSurfaceObjects() translation_window.state: visible=true width=600 height=140 screen=
+PASS   : qmltestrunner::TranslationWindow::test_hiddenControllerKeepsBothSurfaceObjects()
+QDEBUG : qmltestrunner::TranslationWindow::test_lmbStartsNativeMoveAndNothingRepositions() translation_window.drag: system_move_started
+QWARN  : qmltestrunner::TranslationWindow::test_lmbStartsNativeMoveAndNothingRepositions() translation_window.drag: startSystemMove is not supported by this platform
+PASS   : qmltestrunner::TranslationWindow::test_lmbStartsNativeMoveAndNothingRepositions()
+QDEBUG : qmltestrunner::TranslationWindow::test_pinTransitionsSwapTheSurface() translation_window.layershell: active=true anchors=top|left layer=overlay reason=pin_transition screen= margins=50,60
+QWARN  : qmltestrunner::TranslationWindow::test_pinTransitionsSwapTheSurface() layershellqt: PinnedTranslationSurface_QMLTYPE_262(0x55c87e7374f0, name="translationWindow") is not a wayland window. Not creating zwlr_layer_surface
+QDEBUG : qmltestrunner::TranslationWindow::test_pinTransitionsSwapTheSurface() translation_window.state: visible=false width=600 height=140 screen=
+QDEBUG : qmltestrunner::TranslationWindow::test_pinTransitionsSwapTheSurface() translation_window.state: visible=true width=600 height=140 screen=
+QDEBUG : qmltestrunner::TranslationWindow::test_pinTransitionsSwapTheSurface() translation_window.layershell: active=true anchors=top|left layer=overlay reason=pin_transition screen= margins=50,60
+QDEBUG : qmltestrunner::TranslationWindow::test_pinTransitionsSwapTheSurface() translation_window.state: visible=false width=600 height=140 screen=
+QDEBUG : qmltestrunner::TranslationWindow::test_pinTransitionsSwapTheSurface() translation_window.state: visible=true width=600 height=140 screen=
+PASS   : qmltestrunner::TranslationWindow::test_pinTransitionsSwapTheSurface()
+QDEBUG : qmltestrunner::TranslationWindow::test_pinnedCornerRadiusChangesWithoutRecreatingTheWindow() translation_window.layershell: active=true anchors=top|left layer=overlay reason=pin_transition screen= margins=50,60
+QDEBUG : qmltestrunner::TranslationWindow::test_pinnedCornerRadiusChangesWithoutRecreatingTheWindow() translation_window.state: visible=false width=600 height=140 screen=
+PASS   : qmltestrunner::TranslationWindow::test_pinnedCornerRadiusChangesWithoutRecreatingTheWindow()
+QDEBUG : qmltestrunner::TranslationWindow::test_pinnedSurfaceIsNotMovedByGameOrSettings() translation_window.state: visible=true width=600 height=140 screen=
+QDEBUG : qmltestrunner::TranslationWindow::test_pinnedSurfaceIsNotMovedByGameOrSettings() translation_window.layershell: active=true anchors=top|left layer=overlay reason=pin_transition screen= margins=50,60
+QDEBUG : qmltestrunner::TranslationWindow::test_pinnedSurfaceIsNotMovedByGameOrSettings() translation_window.state: visible=false width=600 height=140 screen=
+PASS   : qmltestrunner::TranslationWindow::test_pinnedSurfaceIsNotMovedByGameOrSettings()
+QDEBUG : qmltestrunner::TranslationWindow::test_textFitRespondsToWindowSizeAndBaseFont() translation_window.state: visible=true width=600 height=140 screen=
+PASS   : qmltestrunner::TranslationWindow::test_textFitRespondsToWindowSizeAndBaseFont()
+PASS   : qmltestrunner::TranslationWindow::test_textShrinksTo14ThenScrollsAndResets()
+QDEBUG : qmltestrunner::TranslationWindow::test_unpinInEveryFrameMode(always) translation_window.layershell: active=true anchors=top|left layer=overlay reason=pin_transition screen= margins=50,60
+QDEBUG : qmltestrunner::TranslationWindow::test_unpinInEveryFrameMode(always) translation_window.state: visible=false width=600 height=140 screen=
+QDEBUG : qmltestrunner::TranslationWindow::test_unpinInEveryFrameMode(always) translation_window.state: visible=true width=600 height=140 screen=
+PASS   : qmltestrunner::TranslationWindow::test_unpinInEveryFrameMode(always)
+QDEBUG : qmltestrunner::TranslationWindow::test_unpinInEveryFrameMode(after-selection) translation_window.layershell: active=true anchors=top|left layer=overlay reason=pin_transition screen= margins=50,60
+QDEBUG : qmltestrunner::TranslationWindow::test_unpinInEveryFrameMode(after-selection) translation_window.state: visible=false width=600 height=140 screen=
+QDEBUG : qmltestrunner::TranslationWindow::test_unpinInEveryFrameMode(after-selection) translation_window.state: visible=true width=600 height=140 screen=
+PASS   : qmltestrunner::TranslationWindow::test_unpinInEveryFrameMode(after-selection)
+PASS   : qmltestrunner::TranslationWindow::cleanupTestCase()
+Totals: 126 passed, 0 failed, 0 skipped, 0 blacklisted, 44206ms
+********* Finished testing of qmltestrunner *********

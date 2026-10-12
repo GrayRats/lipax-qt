@@ -1,0 +1,104 @@
+{
+  "ocr_history": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        652,
+        603
+      ],
+      "detector_rect": {
+        "h": 38.0,
+        "w": 76.0,
+        "x": 662.0,
+        "y": 613.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 0.000029999999999999997,
+      "ocr_ms": 4.341105,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "confidence": 99.3681411743164,
+      "detector_rect": {
+        "h": 11.0,
+        "w": 173.0,
+        "x": 704.0,
+        "y": 487.0
+      },
+      "engine": "rapidocr",
+      "original": "122.115.122.33:E444:1123",
+      "raw_original": "122.115.122.33:E444:1123",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.3681411743164,
+          "rect": {
+            "h": 12.0,
+            "w": 174.0,
+            "x": 703.0,
+            "y": 487.0
+          },
+          "text": "122.115.122.33:E444:1123"
+        }
+      ]
+    },
+    {
+      "confidence": 98.88835906982422,
+      "detector_rect": {
+        "h": 45.0,
+        "w": 71.0,
+        "x": 765.0,
+        "y": 505.0
+      },
+      "engine": "rapidocr",
+      "original": "S38123 ent:333112 active",
+      "raw_original": "S38123 ent:333112 active",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.79917907714844,
+          "rect": {
+            "h": 12.0,
+            "w": 53.0,
+            "x": 777.0,
+            "y": 503.0
+          },
+          "text": "S38123"
+        },
+        {
+          "confidence": 97.67879486083984,
+          "rect": {
+            "h": 14.0,
+            "w": 74.0,
+            "x": 762.0,
+            "y": 519.0
+          },
+          "text": "ent:333112"
+        },
+        {
+          "confidence": 99.99347686767578,
+          "rect": {
+            "h": 15.0,
+            "w": 39.0,
+            "x": 768.0,
+            "y": 536.0
+          },
+          "text": "active"
+        }
+      ]
+    }
+  ],
+  "provenance": "Real production RapidOCR readings (with the second chances for faint crops) of the jobs that the replay needed after the colour-plane local-contrast detector change; replay input, NOT manually annotated ground truth.",
+  "source": "CrossxMars.exe-129055"
+}

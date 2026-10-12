@@ -1,261 +1,969 @@
 {
-  "block_ocr": [],
+  "block_ocr": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1231,
+        335
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 12.0,
+        "x": 1234.0,
+        "y": 338.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 130.678507,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        462,
+        425
+      ],
+      "detector_rect": {
+        "h": 94.0,
+        "w": 877.0,
+        "x": 486.0,
+        "y": 449.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 19.573617000000002,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 45.02751922607422,
+      "crop_origin": [
+        232,
+        796
+      ],
+      "detector_rect": {
+        "h": 26.0,
+        "w": 120.0,
+        "x": 239.0,
+        "y": 803.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 28.0,
+          "w": 117.0,
+          "x": 242.0,
+          "y": 801.0
+        }
+      ],
+      "observation_ms": 2e-05,
+      "ocr_ms": 18.940628,
+      "original": "103",
+      "raw_original": "103",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 45.02751922607422,
+          "rect": {
+            "h": 28.0,
+            "w": 117.0,
+            "x": 242.0,
+            "y": 801.0
+          },
+          "text": "103"
+        }
+      ],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.47932434082031,
+      "crop_origin": [
+        51,
+        876
+      ],
+      "detector_rect": {
+        "h": 120.0,
+        "w": 1560.0,
+        "x": 65.0,
+        "y": 890.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 81.0,
+          "w": 204.0,
+          "x": 51.0,
+          "y": 876.0
+        },
+        {
+          "h": 70.0,
+          "w": 198.0,
+          "x": 255.0,
+          "y": 884.0
+        },
+        {
+          "h": 69.0,
+          "w": 83.0,
+          "x": 454.0,
+          "y": 887.0
+        },
+        {
+          "h": 60.0,
+          "w": 244.0,
+          "x": 860.0,
+          "y": 885.0
+        },
+        {
+          "h": 63.0,
+          "w": 111.0,
+          "x": 1123.0,
+          "y": 883.0
+        },
+        {
+          "h": 65.0,
+          "w": 146.0,
+          "x": 1235.0,
+          "y": 881.0
+        },
+        {
+          "h": 66.0,
+          "w": 168.0,
+          "x": 1388.0,
+          "y": 882.0
+        },
+        {
+          "h": 57.0,
+          "w": 76.0,
+          "x": 1559.0,
+          "y": 895.0
+        },
+        {
+          "h": 66.0,
+          "w": 165.0,
+          "x": 543.0,
+          "y": 883.0
+        },
+        {
+          "h": 62.0,
+          "w": 134.0,
+          "x": 716.0,
+          "y": 883.0
+        },
+        {
+          "h": 70.0,
+          "w": 134.0,
+          "x": 305.0,
+          "y": 950.0
+        },
+        {
+          "h": 71.0,
+          "w": 101.0,
+          "x": 442.0,
+          "y": 948.0
+        },
+        {
+          "h": 77.0,
+          "w": 204.0,
+          "x": 542.0,
+          "y": 946.0
+        },
+        {
+          "h": 75.0,
+          "w": 259.0,
+          "x": 54.0,
+          "y": 947.0
+        }
+      ],
+      "observation_ms": 0.556634,
+      "ocr_ms": 216.98398,
+      "original": "Finally opened WP after that incident. the idiot broke my counter. with his head..",
+      "raw_original": "Finally opened WP incident. the idiot broke my after that with his head.. counter.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.99151611328125,
+          "rect": {
+            "h": 81.0,
+            "w": 204.0,
+            "x": 51.0,
+            "y": 876.0
+          },
+          "text": "Finally"
+        },
+        {
+          "confidence": 99.69439697265625,
+          "rect": {
+            "h": 70.0,
+            "w": 198.0,
+            "x": 255.0,
+            "y": 884.0
+          },
+          "text": "opened"
+        },
+        {
+          "confidence": 56.671630859375,
+          "rect": {
+            "h": 69.0,
+            "w": 83.0,
+            "x": 454.0,
+            "y": 887.0
+          },
+          "text": "WP"
+        },
+        {
+          "confidence": 97.67355346679688,
+          "rect": {
+            "h": 60.0,
+            "w": 244.0,
+            "x": 860.0,
+            "y": 885.0
+          },
+          "text": "incident."
+        },
+        {
+          "confidence": 99.99602508544922,
+          "rect": {
+            "h": 63.0,
+            "w": 111.0,
+            "x": 1123.0,
+            "y": 883.0
+          },
+          "text": "the"
+        },
+        {
+          "confidence": 99.9791030883789,
+          "rect": {
+            "h": 65.0,
+            "w": 146.0,
+            "x": 1235.0,
+            "y": 881.0
+          },
+          "text": "idiot"
+        },
+        {
+          "confidence": 99.93101501464844,
+          "rect": {
+            "h": 66.0,
+            "w": 168.0,
+            "x": 1388.0,
+            "y": 882.0
+          },
+          "text": "broke"
+        },
+        {
+          "confidence": 99.20819091796875,
+          "rect": {
+            "h": 57.0,
+            "w": 76.0,
+            "x": 1559.0,
+            "y": 895.0
+          },
+          "text": "my"
+        },
+        {
+          "confidence": 99.99340057373047,
+          "rect": {
+            "h": 66.0,
+            "w": 165.0,
+            "x": 543.0,
+            "y": 883.0
+          },
+          "text": "after"
+        },
+        {
+          "confidence": 99.99887084960938,
+          "rect": {
+            "h": 62.0,
+            "w": 134.0,
+            "x": 716.0,
+            "y": 883.0
+          },
+          "text": "that"
+        },
+        {
+          "confidence": 99.99915313720703,
+          "rect": {
+            "h": 70.0,
+            "w": 134.0,
+            "x": 305.0,
+            "y": 950.0
+          },
+          "text": "with"
+        },
+        {
+          "confidence": 99.98367309570312,
+          "rect": {
+            "h": 71.0,
+            "w": 101.0,
+            "x": 442.0,
+            "y": 948.0
+          },
+          "text": "his"
+        },
+        {
+          "confidence": 92.3714828491211,
+          "rect": {
+            "h": 77.0,
+            "w": 204.0,
+            "x": 542.0,
+            "y": 946.0
+          },
+          "text": "head.."
+        },
+        {
+          "confidence": 97.93340301513672,
+          "rect": {
+            "h": 75.0,
+            "w": 259.0,
+            "x": 54.0,
+            "y": 947.0
+          },
+          "text": "counter."
+        }
+      ],
+      "split": false,
+      "translation": "Наконец, открыл WP после этого инцидента, идиот сломал мне счетчик.",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.85602569580078,
+      "crop_origin": [
+        45,
+        948
+      ],
+      "detector_rect": {
+        "h": 51.0,
+        "w": 676.0,
+        "x": 58.0,
+        "y": 961.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 61.0,
+          "w": 675.0,
+          "x": 58.0,
+          "y": 955.0
+        }
+      ],
+      "observation_ms": 0.170202,
+      "ocr_ms": 32.497839,
+      "original": "counter, with his head..-",
+      "raw_original": "counter, with his head..-",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 96.85602569580078,
+          "rect": {
+            "h": 61.0,
+            "w": 675.0,
+            "x": 58.0,
+            "y": 955.0
+          },
+          "text": "counter, with his head..-"
+        }
+      ],
+      "split": false,
+      "translation": "прилаво, с головой...",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1754,
+        1054
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 26.0,
+        "x": 1757.0,
+        "y": 1057.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 4.168175,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    }
+  ],
   "blocks": [
+    {
+      "cap_height": 6.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 6.0,
+        "w": 12.0,
+        "x": 1234.0,
+        "y": 338.0
+      }
+    },
     {
       "cap_height": 85.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 94.0,
         "w": 877.0,
         "x": 486.0,
         "y": 449.0
       }
+    },
+    {
+      "cap_height": 6.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 6.0,
+        "w": 26.0,
+        "x": 1757.0,
+        "y": 1057.0
+      }
     }
   ],
-  "cached_placement_ms": 0.087777,
-  "dropped": 0,
-  "dropped_details": [],
-  "finish_ms": [
-    0.06335099999999999
+  "cached_placement_ms": 0.009258,
+  "dropped": 1,
+  "dropped_details": [
+    {
+      "block_id": 5,
+      "original": "counter, with his head..-",
+      "reason": "повторный OCR того же текста",
+      "region_id": "test",
+      "text": "прилаво, с головой..."
+    }
   ],
-  "first_frame_ms": 218.55187700000002,
+  "finish_ms": [
+    0.050085
+  ],
+  "first_frame_ms": 50.410368999999996,
   "fits": 1,
   "frame_blocks": [
     {
-      "id": 1,
-      "lines_note": "",
-      "source_lines": 1,
+      "cap_height_px": 45.0,
+      "id": 4,
+      "lines_note": "строк: 2 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 2,
       "text_rect": {
-        "h": 94.0,
-        "w": 877.0,
-        "x": 486.0,
-        "y": 449.0
+        "h": 149.0,
+        "w": 1586.0,
+        "x": 50.0,
+        "y": 875.0
       }
     }
   ],
   "hits": 1,
   "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-14/original.png",
   "measurement": "Qt: shared production helper, test IPC adapter",
-  "minimum_confidence": 30,
-  "ocr": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "latency_ms": 2654.678017,
-    "lines": [
-      {
-        "confidence": 99.77458953857422,
-        "rect": {
-          "h": 55.0,
-          "w": 83.0,
-          "x": 67.0,
-          "y": 14.0
-        },
-        "text": "Day"
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1231,
+        335
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 12.0,
+        "x": 1234.0,
+        "y": 338.0
       },
-      {
-        "confidence": 99.90365600585938,
-        "rect": {
-          "h": 42.0,
-          "w": 71.0,
-          "x": 324.0,
-          "y": 27.0
-        },
-        "text": "Skip"
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 130.678507,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        462,
+        425
+      ],
+      "detector_rect": {
+        "h": 94.0,
+        "w": 877.0,
+        "x": 486.0,
+        "y": 449.0
       },
-      {
-        "confidence": 52.99011993408203,
-        "rect": {
-          "h": 71.0,
-          "w": 76.0,
-          "x": 1343.0,
-          "y": 49.0
-        },
-        "text": "A"
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 19.573617000000002,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 45.02751922607422,
+      "crop_origin": [
+        232,
+        796
+      ],
+      "detector_rect": {
+        "h": 26.0,
+        "w": 120.0,
+        "x": 239.0,
+        "y": 803.0
       },
-      {
-        "confidence": 99.32009887695312,
-        "rect": {
-          "h": 61.0,
-          "w": 147.0,
-          "x": 226.0,
-          "y": 782.0
-        },
-        "text": "Gorna"
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 28.0,
+          "w": 117.0,
+          "x": 242.0,
+          "y": 801.0
+        }
+      ],
+      "observation_ms": 2e-05,
+      "ocr_ms": 18.940628,
+      "original": "103",
+      "raw_original": "103",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 45.02751922607422,
+          "rect": {
+            "h": 28.0,
+            "w": 117.0,
+            "x": 242.0,
+            "y": 801.0
+          },
+          "text": "103"
+        }
+      ],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.47932434082031,
+      "crop_origin": [
+        51,
+        876
+      ],
+      "detector_rect": {
+        "h": 120.0,
+        "w": 1560.0,
+        "x": 65.0,
+        "y": 890.0
       },
-      {
-        "confidence": 94.9266586303711,
-        "rect": {
-          "h": 90.0,
-          "w": 208.0,
-          "x": 47.0,
-          "y": 870.0
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 81.0,
+          "w": 204.0,
+          "x": 51.0,
+          "y": 876.0
         },
-        "text": "Finally"
-      },
-      {
-        "confidence": 99.60971069335938,
-        "rect": {
-          "h": 67.0,
-          "w": 196.0,
+        {
+          "h": 70.0,
+          "w": 198.0,
           "x": 255.0,
-          "y": 886.0
+          "y": 884.0
         },
-        "text": "opened"
-      },
-      {
-        "confidence": 67.74937438964844,
-        "rect": {
-          "h": 71.0,
-          "w": 84.0,
-          "x": 455.0,
-          "y": 886.0
+        {
+          "h": 69.0,
+          "w": 83.0,
+          "x": 454.0,
+          "y": 887.0
         },
-        "text": "WP"
-      },
-      {
-        "confidence": 99.99311828613281,
-        "rect": {
-          "h": 64.0,
-          "w": 172.0,
+        {
+          "h": 60.0,
+          "w": 244.0,
+          "x": 860.0,
+          "y": 885.0
+        },
+        {
+          "h": 63.0,
+          "w": 111.0,
+          "x": 1123.0,
+          "y": 883.0
+        },
+        {
+          "h": 65.0,
+          "w": 146.0,
+          "x": 1235.0,
+          "y": 881.0
+        },
+        {
+          "h": 66.0,
+          "w": 168.0,
+          "x": 1388.0,
+          "y": 882.0
+        },
+        {
+          "h": 57.0,
+          "w": 76.0,
+          "x": 1559.0,
+          "y": 895.0
+        },
+        {
+          "h": 66.0,
+          "w": 165.0,
           "x": 543.0,
           "y": 883.0
         },
-        "text": "after"
-      },
-      {
-        "confidence": 99.9984359741211,
-        "rect": {
-          "h": 64.0,
-          "w": 136.0,
-          "x": 714.0,
-          "y": 882.0
-        },
-        "text": "that"
-      },
-      {
-        "confidence": 95.56552124023438,
-        "rect": {
-          "h": 63.0,
-          "w": 259.0,
-          "x": 857.0,
-          "y": 883.0
-        },
-        "text": "incident,"
-      },
-      {
-        "confidence": 99.99523162841797,
-        "rect": {
-          "h": 60.0,
-          "w": 110.0,
-          "x": 1121.0,
-          "y": 885.0
-        },
-        "text": "the"
-      },
-      {
-        "confidence": 99.96519470214844,
-        "rect": {
-          "h": 60.0,
-          "w": 149.0,
-          "x": 1235.0,
-          "y": 885.0
-        },
-        "text": "idiot"
-      },
-      {
-        "confidence": 88.4680404663086,
-        "rect": {
-          "h": 68.0,
-          "w": 201.0,
-          "x": 1385.0,
-          "y": 883.0
-        },
-        "text": "broke D"
-      },
-      {
-        "confidence": 93.24459075927734,
-        "rect": {
-          "h": 54.0,
-          "w": 77.0,
-          "x": 1556.0,
-          "y": 896.0
-        },
-        "text": "my"
-      },
-      {
-        "confidence": 93.89928436279297,
-        "rect": {
-          "h": 65.0,
-          "w": 226.0,
-          "x": 55.0,
-          "y": 953.0
-        },
-        "text": "counter:"
-      },
-      {
-        "confidence": 99.9985580444336,
-        "rect": {
-          "h": 71.0,
+        {
+          "h": 62.0,
           "w": 134.0,
-          "x": 306.0,
+          "x": 716.0,
+          "y": 883.0
+        },
+        {
+          "h": 70.0,
+          "w": 134.0,
+          "x": 305.0,
           "y": 950.0
         },
-        "text": "with"
-      },
-      {
-        "confidence": 99.98918151855469,
-        "rect": {
-          "h": 70.0,
-          "w": 100.0,
-          "x": 443.0,
-          "y": 947.0
-        },
-        "text": "his"
-      },
-      {
-        "confidence": 93.78873443603516,
-        "rect": {
-          "h": 74.0,
-          "w": 198.0,
-          "x": 545.0,
+        {
+          "h": 71.0,
+          "w": 101.0,
+          "x": 442.0,
           "y": 948.0
         },
-        "text": "head.."
-      }
-    ],
-    "text": "Day\nSkip\nA\nGorna\nFinally\nopened\nWP\nafter\nthat\nincident,\nthe\nidiot\nbroke D\nmy\ncounter:\nwith\nhis\nhead.."
-  },
-  "ocr_history": [],
+        {
+          "h": 77.0,
+          "w": 204.0,
+          "x": 542.0,
+          "y": 946.0
+        },
+        {
+          "h": 75.0,
+          "w": 259.0,
+          "x": 54.0,
+          "y": 947.0
+        }
+      ],
+      "observation_ms": 0.556634,
+      "ocr_ms": 216.98398,
+      "original": "Finally opened WP after that incident. the idiot broke my counter. with his head..",
+      "raw_original": "Finally opened WP incident. the idiot broke my after that with his head.. counter.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.99151611328125,
+          "rect": {
+            "h": 81.0,
+            "w": 204.0,
+            "x": 51.0,
+            "y": 876.0
+          },
+          "text": "Finally"
+        },
+        {
+          "confidence": 99.69439697265625,
+          "rect": {
+            "h": 70.0,
+            "w": 198.0,
+            "x": 255.0,
+            "y": 884.0
+          },
+          "text": "opened"
+        },
+        {
+          "confidence": 56.671630859375,
+          "rect": {
+            "h": 69.0,
+            "w": 83.0,
+            "x": 454.0,
+            "y": 887.0
+          },
+          "text": "WP"
+        },
+        {
+          "confidence": 97.67355346679688,
+          "rect": {
+            "h": 60.0,
+            "w": 244.0,
+            "x": 860.0,
+            "y": 885.0
+          },
+          "text": "incident."
+        },
+        {
+          "confidence": 99.99602508544922,
+          "rect": {
+            "h": 63.0,
+            "w": 111.0,
+            "x": 1123.0,
+            "y": 883.0
+          },
+          "text": "the"
+        },
+        {
+          "confidence": 99.9791030883789,
+          "rect": {
+            "h": 65.0,
+            "w": 146.0,
+            "x": 1235.0,
+            "y": 881.0
+          },
+          "text": "idiot"
+        },
+        {
+          "confidence": 99.93101501464844,
+          "rect": {
+            "h": 66.0,
+            "w": 168.0,
+            "x": 1388.0,
+            "y": 882.0
+          },
+          "text": "broke"
+        },
+        {
+          "confidence": 99.20819091796875,
+          "rect": {
+            "h": 57.0,
+            "w": 76.0,
+            "x": 1559.0,
+            "y": 895.0
+          },
+          "text": "my"
+        },
+        {
+          "confidence": 99.99340057373047,
+          "rect": {
+            "h": 66.0,
+            "w": 165.0,
+            "x": 543.0,
+            "y": 883.0
+          },
+          "text": "after"
+        },
+        {
+          "confidence": 99.99887084960938,
+          "rect": {
+            "h": 62.0,
+            "w": 134.0,
+            "x": 716.0,
+            "y": 883.0
+          },
+          "text": "that"
+        },
+        {
+          "confidence": 99.99915313720703,
+          "rect": {
+            "h": 70.0,
+            "w": 134.0,
+            "x": 305.0,
+            "y": 950.0
+          },
+          "text": "with"
+        },
+        {
+          "confidence": 99.98367309570312,
+          "rect": {
+            "h": 71.0,
+            "w": 101.0,
+            "x": 442.0,
+            "y": 948.0
+          },
+          "text": "his"
+        },
+        {
+          "confidence": 92.3714828491211,
+          "rect": {
+            "h": 77.0,
+            "w": 204.0,
+            "x": 542.0,
+            "y": 946.0
+          },
+          "text": "head.."
+        },
+        {
+          "confidence": 97.93340301513672,
+          "rect": {
+            "h": 75.0,
+            "w": 259.0,
+            "x": 54.0,
+            "y": 947.0
+          },
+          "text": "counter."
+        }
+      ],
+      "split": false,
+      "translation": "Наконец, открыл WP после этого инцидента, идиот сломал мне счетчик.",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.85602569580078,
+      "crop_origin": [
+        45,
+        948
+      ],
+      "detector_rect": {
+        "h": 51.0,
+        "w": 676.0,
+        "x": 58.0,
+        "y": 961.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 61.0,
+          "w": 675.0,
+          "x": 58.0,
+          "y": 955.0
+        }
+      ],
+      "observation_ms": 0.170202,
+      "ocr_ms": 32.497839,
+      "original": "counter, with his head..-",
+      "raw_original": "counter, with his head..-",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 96.85602569580078,
+          "rect": {
+            "h": 61.0,
+            "w": 675.0,
+            "x": 58.0,
+            "y": 955.0
+          },
+          "text": "counter, with his head..-"
+        }
+      ],
+      "split": false,
+      "translation": "прилаво, с головой...",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1754,
+        1054
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 26.0,
+        "x": 1757.0,
+        "y": 1057.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 4.168175,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    }
+  ],
   "ocr_scans": 1,
-  "peak_memory": "VmHWM:\t  385420 kB",
+  "peak_memory": "VmHWM:\t  204448 kB",
   "placed": [
     {
-      "alignment": "center",
+      "alignment": "left",
       "background": {
-        "color": "#6d3947",
+        "color": "#67314b",
         "image": "",
         "mode": "solid_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 1,
-      "block_type": "unknown",
+      "block_id": 4,
+      "block_type": "dialogue",
       "box": [
-        0.2517407605784681,
-        0.40733772342427094,
-        0.4868773433315479,
-        0.11853245531514581
+        0.01821103374397429,
+        0.8080903104421449,
+        0.8666309587573647,
+        0.1702728127939793
       ],
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 37.0,
+      "font_family": "JetBrains Mono",
+      "font_px": 57.0,
       "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
+        "category": "monospace",
+        "confidence": 0.8061777949333191,
         "generic": false
       },
-      "font_weight": 900,
+      "font_weight": 800,
       "inner": [
         16.0,
         16.0,
@@ -263,13 +971,15 @@
         16.0
       ],
       "italic": false,
-      "key": "test:1",
-      "letter_spacing": 1.3699991703033447,
-      "line_height": 0.8999999761581421,
-      "max_lines": 1,
-      "original": "fixture 1",
+      "key": "test:4",
+      "layout_width": 1583.0,
+      "letter_spacing": -1.8493149280548096,
+      "line_height": 0.8641975522041321,
+      "max_lines": 2,
+      "original": "Finally opened WP after that incident. the idiot broke my counter. with his head..",
+      "outcome": "replaced",
       "outline": false,
-      "outline_color": "#0d0000",
+      "outline_color": "#070000",
       "outline_width": 1.0,
       "rect": {
         "h": 1.0,
@@ -283,59 +993,93 @@
         531.5
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#c69885",
+      "source_coverage": 1.0,
+      "text": "Наконец, открыл WP после этого инцидента, идиот сломал мне счетчик.",
+      "text_color": "#ffffff",
       "text_opacity": 1.0,
       "wrap": "word"
     }
   ],
-  "placement_ms": 60.188576,
-  "repeat_frame_ms": 93.652055,
+  "placement_ms": 43.196435,
+  "repeat_frame_ms": 22.777316,
+  "repeat_ocr_jobs": 0,
   "size": [
     1867,
     1063
   ],
   "timings_ms": [
     [
-      77.005212,
-      67.250715,
-      0.138773
+      4.204044,
+      4.65615,
+      0.027311
     ],
     [
-      122.196172,
-      50.541731999999996,
-      0.14958300000000002
+      4.480737,
+      4.40761,
+      0.019426
     ],
     [
-      84.88350899999999,
-      48.878868,
-      0.111161
+      4.869524,
+      4.46633,
+      0.020449000000000002
     ],
     [
-      78.78106,
-      49.489747,
-      0.119207
+      3.869961,
+      4.399674,
+      0.018664999999999998
     ],
     [
-      88.924085,
-      46.087201,
-      0.170213
+      5.03133,
+      4.452875000000001,
+      0.019086
     ]
   ],
-  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
-  "render_ms": 166.7665550012316,
-  "update_ms": 2.030131998253637,
+  "translation_cache_hits": 0,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 2,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 170.6573470000876,
+  "update_ms": 2.27605100008077,
   "layout_diagnostics": [
     {
-      "width": 877,
-      "height": 94,
-      "contentWidth": 852.3125,
-      "contentHeight": 53.59999871253967,
-      "lines": 1,
+      "width": 1583,
+      "height": 149,
+      "contentWidth": 1520.15625,
+      "contentHeight": 141.35802793502808,
+      "lines": 2,
       "truncated": false
     }
   ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 2,
+    "rendered": 1,
+    "missing": [
+      {
+        "id": 5,
+        "original": "counter, with his head..-",
+        "confidence": 96.85602569580078,
+        "reason": "повторный OCR того же текста"
+      }
+    ],
+    "source_coverage": [
+      {
+        "id": 4,
+        "original": "Finally opened WP after that incident. the idiot broke my counter. with his head..",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 5,
+        "original": "counter, with his head..-",
+        "rendered": false,
+        "plate_coverage": 0.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "no failure in this diagnostic",
+    "uncovered_text_blocks": []
+  },
   "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-14.png",
-  "approved_reference": false,
-  "translation_service": "none: predefined deterministic test input"
+  "approved_reference": false
 }

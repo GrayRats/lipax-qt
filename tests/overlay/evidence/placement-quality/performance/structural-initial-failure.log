@@ -1,0 +1,152 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+cachedir: tmp/pytest-cache
+rootdir: /home/art/DEV/LipaX-QT
+plugins: respx-0.23.1, anyio-4.15.1, platformdirs-4.12.2
+collected 37 items
+
+tests/inplace/python/test_inplace_screenshots.py ...F.................ss [ 62%]
+s..                                                                      [ 70%]
+tests/inplace/python/test_typography_qt.py ...........                   [100%]
+
+=================================== FAILURES ===================================
+______________ test_real_screenshot_pipeline[dialogue-en-10.jpg] _______________
+
+source = PosixPath('/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-10.jpg')
+qt = <PySide6.QtGui.QGuiApplication(0x5617821240f0) at 0x7f6f9f06a8c0>
+
+    @pytest.mark.parametrize("source", SOURCES, ids=lambda p: p.name)
+    def test_real_screenshot_pipeline(source, qt):
+>       run_screenshot_pipeline(source, qt)
+
+tests/inplace/python/test_inplace_screenshots.py:267: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = PosixPath('/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-10.jpg')
+qt = <PySide6.QtGui.QGuiApplication(0x5617821240f0) at 0x7f6f9f06a8c0>
+translation = 'Проверка переноса: длинная тестовая строка. Hello 日本語'
+case = None, ocr_blocks = False, window = None, screens = None
+translations = None, translation_rules = None, unmapped_original = False
+service_cache = None, translation_service = 'bergamot'
+
+    def run_screenshot_pipeline(source, qt, translation=None, case=None, ocr_blocks=False, window=None, screens=None, translations=None, translation_rules=None, unmapped_original=False, service_cache=None, translation_service="bergamot"):
+        executable = Path(os.environ.get("LIPAX_INPLACE_BENCH", Path(os.environ.get("CARGO_TARGET_DIR", ROOT / "tmp/cargo-target")) / "debug/examples/inplace_bench"))
+        assert executable.exists(), "build cargo example inplace_bench first"
+        directory = ARTIFACTS / source.stem
+        if case:
+            directory = directory / case
+        directory.mkdir(parents=True, exist_ok=True)
+        original = Image.open(source).convert("RGBA")
+        # Captured game frames are opaque. Normalize translucent screenshot borders
+        # explicitly, rather than comparing RGB values that discard source alpha.
+        original = Image.alpha_composite(Image.new("RGBA", original.size, (0, 0, 0, 255)), original)
+        assert original.width > 0 and original.height > 0
+        png = directory / "original.png"
+        original.save(png)
+        env = dict(os.environ, LIPAX_DIAGNOSTICS_DIR=str(directory))
+        command = [str(executable), str(png)]
+        if not ocr_blocks and translation is None:
+            # Only a deliberately synthetic stress test, never a translation screenshot.
+            translation = "Проверка переноса: длинная тестовая строка. Hello 日本語"
+        if translation is not None:
+            command.append("--translation=" + translation)
+        if translations is not None:
+            command.append("--translations=" + str(translations))
+        if translation_rules is not None:
+            command.append("--translation-rules=" + str(translation_rules))
+        if unmapped_original:
+            command.append("--unmapped-original")
+        if service_cache is not None:
+            command.extend(["--service-cache=" + str(service_cache), "--service=" + translation_service])
+        if ocr_blocks:
+            command.append("--ocr-blocks")
+        if window:
+            command.append("--window=" + ",".join(str(v) for v in window))
+        if screens:
+            command.append("--screens=" + json.dumps(screens))
+        if os.environ.get("LIPAX_TEST_OCR") == "1":
+            command.extend(["--ocr", "--lang=rus" if source.stem.endswith("-ru") else "--lang=eng"])
+        data = json.loads(subprocess.check_output(command, env=env, text=True, timeout=120))
+        if os.environ.get("LIPAX_TEST_OCR") == "1":
+            assert data["ocr"]["engine"] == "rapidocr", "requested RapidOCR was not used"
+        entries = data["placed"]
+        if ocr_blocks:
+            assert data["block_ocr"]
+            assert all(block["engine"] == "rapidocr" for block in data["ocr_history"]), "unexpected OCR backend in image test"
+            assert any(block["accepted"] for block in data["block_ocr"])
+            assert all(not entry["original"].startswith("fixture ") for entry in entries)
+            accepted = {block["id"] for block in data["block_ocr"] if block["accepted"]}
+            assert all(entry["block_id"] in accepted for entry in entries)
+            assert all(block["confidence"] is None or block["confidence"] >= data["minimum_confidence"]
+                       for block in data["block_ocr"] if block["accepted"])
+        assert data["blocks"], "detector found no candidates in a text-bearing screenshot"
+        assert entries, "all candidates dropped"
+        assert data["hits"] > 0, "identical placement did not reuse cached metrics"
+        boxes = ImageDraw.Draw(original)
+        for block in data["blocks"]:
+            r = block["rect"]
+            assert 0 <= block["confidence"] <= 1
+            boxes.rectangle((r["x"], r["y"], r["x"] + r["w"], r["y"] + r["h"]), outline="red", width=2)
+        original.save(directory / "detected.png")
+        for entry in entries:
+            x, y, w, h = entry["box"]
+            assert x >= -1e-6 and y >= -1e-6 and x+w <= 1+1e-6 and y+h <= 1+1e-6
+            assert entry["font_px"] > 0
+        if os.environ.get("LIPAX_QT_MEASURE_SERVER"):
+            assert data["measurement"].startswith("Qt:"), "Qt measurement adapter was not used"
+        render_ms, update_ms, diagnostics = render(qt, png, entries, directory)
+        data.update(render_ms=render_ms, update_ms=update_ms, layout_diagnostics=diagnostics)
+        if ocr_blocks:
+            drawn = {entry["block_id"]: entry for entry in entries}
+            dropped = {entry["block_id"]: entry for entry in data["dropped_details"]}
+            data["overlay_quality"] = {
+                "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+                "accepted": sum(block["accepted"] for block in data["block_ocr"]),
+                "rendered": len(entries),
+                "missing": [dict(id=block["id"], original=block["original"],
+                    confidence=block["confidence"], reason=dropped.get(block["id"], {}).get("reason", "not published"))
+                    for block in data["block_ocr"] if block["accepted"] and block["id"] not in drawn],
+                "source_coverage": [dict(id=block["id"], original=block["original"],
+                    rendered=block["id"] in drawn, plate_coverage=source_coverage(block["lines"],
+                        drawn[block["id"]]["box"] if block["id"] in drawn else [0, 0, 0, 0], original.width, original.height))
+                    for block in data["block_ocr"] if block["accepted"]],
+                "fallbacks": [dict(id=entry["block_id"], mode=entry["degraded"])
+                    for entry in entries if entry.get("degraded")],
+            }
+        if ocr_blocks:
+            # This is a diagnostic acceptance threshold on OCR-derived rectangles, not OCR accuracy.
+            # Exact duplicated readings are reported separately rather than counted as lost dialogue.
+            repeated = {entry["block_id"] for entry in data["dropped_details"]
+                        if entry["reason"] == "повторный OCR того же текста"}
+            failures = [entry["id"] for entry in data["overlay_quality"]["source_coverage"]
+                        if entry["id"] not in repeated and len(entry["original"].split()) >= 3
+                        and entry["plate_coverage"] is not None and entry["plate_coverage"] < 0.9]
+            data["overlay_quality"]["placement_diagnostic"] = "FAIL" if failures else "no failure in this diagnostic"
+            data["overlay_quality"]["uncovered_text_blocks"] = failures
+        (directory / "metadata.json").write_text(json.dumps(data, indent=2, ensure_ascii=False))
+        if data["measurement"].startswith("Qt:"):
+            for entry, layout in zip(entries, diagnostics):
+                if entry["wrap"] != "elide":
+                    assert not layout["truncated"], (entry["key"], layout)
+                    # Qt 6.12 reports a right/centre-aligned line two pixels wider than the same left-aligned line when
+                    # the font is italic with positive letter spacing (measured: 48.05 left, 50.05 right, in
+                    # InplaceTranslationContent). The glyphs are not clipped (inspected); the allowance is that
+                    # accounting artefact only, not a general widening of the tolerance.
+                    accounting = 2 if entry["alignment"] != "left" and entry["letter_spacing"] > 0 else 0
+>                   assert layout["contentWidth"] <= layout["width"] + 1 + accounting, (entry["key"], layout)
+E                   AssertionError: ('test:30', {'width': 40, 'height': 108, 'contentWidth': 41.640625, 'contentHeight': 82.89999783039093, ...})
+E                   assert 41.640625 <= ((40 + 1) + 0)
+
+tests/inplace/python/test_inplace_screenshots.py:230: AssertionError
+=============================== warnings summary ===============================
+tests/inplace/python/test_inplace_screenshots.py::test_visual_comparison_rejects_a_real_regression
+tests/inplace/python/test_inplace_screenshots.py::test_visual_comparison_rejects_a_real_regression
+  /home/art/DEV/LipaX-QT/tests/inplace/python/test_inplace_screenshots.py:51: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+    bad = sum(max(pixel) > 8 for pixel in diff.getdata())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/inplace/python/test_inplace_screenshots.py:285: NOT RUN: RapidOCR models not provisioned (LIPAX_TEST_OCR != 1)
+SKIPPED [2] tests/inplace/python/test_inplace_screenshots.py:296: NOT RUN: RapidOCR models not provisioned (LIPAX_TEST_OCR != 1)
+FAILED tests/inplace/python/test_inplace_screenshots.py::test_real_screenshot_pipeline[dialogue-en-10.jpg]
+======= 1 failed, 33 passed, 3 skipped, 2 warnings in 469.11s (0:07:49) ========

@@ -1,10 +1,1735 @@
 {
-  "block_ocr": [],
+  "block_ocr": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 85.00779724121094,
+      "crop_origin": [
+        1722,
+        15
+      ],
+      "detector_rect": {
+        "h": 48.0,
+        "w": 148.0,
+        "x": 1734.0,
+        "y": 27.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 10.0,
+          "w": 8.0,
+          "x": 1736.0,
+          "y": 43.0
+        }
+      ],
+      "observation_ms": 0.009798,
+      "ocr_ms": 186.89507,
+      "original": "7",
+      "raw_original": "7",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 85.00779724121094,
+          "rect": {
+            "h": 10.0,
+            "w": 8.0,
+            "x": 1736.0,
+            "y": 43.0
+          },
+          "text": "7"
+        }
+      ],
+      "split": false,
+      "translation": "7",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.99275207519531,
+      "crop_origin": [
+        1611,
+        30
+      ],
+      "detector_rect": {
+        "h": 24.0,
+        "w": 86.0,
+        "x": 1617.0,
+        "y": 36.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [
+        {
+          "h": 24.0,
+          "w": 36.0,
+          "x": 1645.0,
+          "y": 36.0
+        }
+      ],
+      "observation_ms": 0.01069,
+      "ocr_ms": 29.875524000000002,
+      "original": "76",
+      "raw_original": "76",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.99275207519531,
+          "rect": {
+            "h": 24.0,
+            "w": 36.0,
+            "x": 1645.0,
+            "y": 36.0
+          },
+          "text": "76"
+        }
+      ],
+      "split": false,
+      "translation": "76",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.84371948242188,
+      "crop_origin": [
+        44,
+        33
+      ],
+      "detector_rect": {
+        "h": 24.0,
+        "w": 468.0,
+        "x": 50.0,
+        "y": 39.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 30.0,
+          "w": 211.0,
+          "x": 49.0,
+          "y": 37.0
+        },
+        {
+          "h": 25.0,
+          "w": 219.0,
+          "x": 302.0,
+          "y": 40.0
+        }
+      ],
+      "observation_ms": 0.498484,
+      "ocr_ms": 60.822137,
+      "original": "AWORKBENCH OUTFIT UPGRADES",
+      "raw_original": "AWORKBENCH OUTFIT UPGRADES",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 93.69026184082031,
+          "rect": {
+            "h": 30.0,
+            "w": 211.0,
+            "x": 49.0,
+            "y": 37.0
+          },
+          "text": "AWORKBENCH"
+        },
+        {
+          "confidence": 98.94601440429688,
+          "rect": {
+            "h": 25.0,
+            "w": 219.0,
+            "x": 302.0,
+            "y": 40.0
+          },
+          "text": "OUTFIT UPGRADES"
+        }
+      ],
+      "split": false,
+      "translation": "РАБОЧИЕ ФОРУСЫ МОДЕРНИЗАЦИИ",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 81.86499786376953,
+      "crop_origin": [
+        371,
+        172
+      ],
+      "detector_rect": {
+        "h": 32.0,
+        "w": 22.0,
+        "x": 379.0,
+        "y": 180.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 34.0,
+          "w": 31.0,
+          "x": 371.0,
+          "y": 179.0
+        }
+      ],
+      "observation_ms": 0.11068,
+      "ocr_ms": 17.400913,
+      "original": "ED",
+      "raw_original": "ED",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 81.86499786376953,
+          "rect": {
+            "h": 34.0,
+            "w": 31.0,
+            "x": 371.0,
+            "y": 179.0
+          },
+          "text": "ED"
+        }
+      ],
+      "split": false,
+      "translation": "ED",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        933,
+        195
+      ],
+      "detector_rect": {
+        "h": 36.0,
+        "w": 83.0,
+        "x": 942.0,
+        "y": 204.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.4558929999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        978,
+        217
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 7.0,
+        "x": 987.0,
+        "y": 226.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 2.115197,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 99.9649429321289,
+      "crop_origin": [
+        261,
+        223
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 114.0,
+        "x": 266.0,
+        "y": 228.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 119.0,
+          "x": 263.0,
+          "y": 227.0
+        }
+      ],
+      "observation_ms": 0.177245,
+      "ocr_ms": 18.834449,
+      "original": "Uncommon",
+      "raw_original": "Uncommon",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9649429321289,
+          "rect": {
+            "h": 21.0,
+            "w": 119.0,
+            "x": 263.0,
+            "y": 227.0
+          },
+          "text": "Uncommon"
+        }
+      ],
+      "split": true,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.72750854492188,
+      "crop_origin": [
+        52,
+        257
+      ],
+      "detector_rect": {
+        "h": 77.0,
+        "w": 590.0,
+        "x": 58.0,
+        "y": 263.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 592.0,
+          "x": 57.0,
+          "y": 258.0
+        },
+        {
+          "h": 29.0,
+          "w": 530.0,
+          "x": 54.0,
+          "y": 284.0
+        },
+        {
+          "h": 23.0,
+          "w": 385.0,
+          "x": 55.0,
+          "y": 315.0
+        }
+      ],
+      "observation_ms": 1.460257,
+      "ocr_ms": 161.95916499999998,
+      "original": "Well-worn armor made with repurposed technology from an ancient lab. After losing its power source, it was modified to augment ranged combat.",
+      "raw_original": "Well-worn armor made with repurposed technology from an ancient lab. After losing its power source, it was modified to augment ranged combat.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.69422149658203,
+          "rect": {
+            "h": 27.0,
+            "w": 592.0,
+            "x": 57.0,
+            "y": 258.0
+          },
+          "text": "Well-worn armor made with repurposed technology from"
+        },
+        {
+          "confidence": 97.83027648925781,
+          "rect": {
+            "h": 29.0,
+            "w": 530.0,
+            "x": 54.0,
+            "y": 284.0
+          },
+          "text": "an ancient lab. After losing its power source, it was"
+        },
+        {
+          "confidence": 98.64764404296875,
+          "rect": {
+            "h": 23.0,
+            "w": 385.0,
+            "x": 55.0,
+            "y": 315.0
+          },
+          "text": "modified to augment ranged combat."
+        }
+      ],
+      "split": false,
+      "translation": "Хорошо изношенная броня сделана с перепрофилированной технологией из древней лаборатории. После потери источника питания он был модифицирован для усиления дальной борьбы.",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        879,
+        267
+      ],
+      "detector_rect": {
+        "h": 59.0,
+        "w": 135.0,
+        "x": 894.0,
+        "y": 282.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 3.43172,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        894,
+        301
+      ],
+      "detector_rect": {
+        "h": 16.0,
+        "w": 6.0,
+        "x": 898.0,
+        "y": 305.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.75231,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        838,
+        342
+      ],
+      "detector_rect": {
+        "h": 471.0,
+        "w": 267.0,
+        "x": 879.0,
+        "y": 383.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 30.389468,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        951,
+        394
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 42.0,
+        "x": 954.0,
+        "y": 397.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.927175,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1031,
+        395
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 7.0,
+        "x": 1034.0,
+        "y": 398.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 1.843552,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        988,
+        411
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 13.0,
+        "x": 991.0,
+        "y": 414.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.503438,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        907,
+        423
+      ],
+      "detector_rect": {
+        "h": 31.0,
+        "w": 35.0,
+        "x": 915.0,
+        "y": 431.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.992278,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        38,
+        432
+      ],
+      "detector_rect": {
+        "h": 69.0,
+        "w": 243.0,
+        "x": 56.0,
+        "y": 450.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 4.725703,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1064,
+        457
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 6.0,
+        "x": 1067.0,
+        "y": 460.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.338436,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        235,
+        459
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 21.0,
+        "x": 238.0,
+        "y": 462.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.5051109999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        820,
+        457
+      ],
+      "detector_rect": {
+        "h": 70.0,
+        "w": 198.0,
+        "x": 838.0,
+        "y": 475.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.7253469999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        849,
+        497
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 7.0,
+        "x": 853.0,
+        "y": 501.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.600462,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        894,
+        525
+      ],
+      "detector_rect": {
+        "h": 28.0,
+        "w": 48.0,
+        "x": 898.0,
+        "y": 529.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.813771,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        917,
+        540
+      ],
+      "detector_rect": {
+        "h": 126.0,
+        "w": 145.0,
+        "x": 924.0,
+        "y": 547.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.376175,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.97765350341797,
+      "crop_origin": [
+        55,
+        560
+      ],
+      "detector_rect": {
+        "h": 18.0,
+        "w": 207.0,
+        "x": 60.0,
+        "y": 565.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 97.0,
+          "x": 56.0,
+          "y": 563.0
+        },
+        {
+          "h": 22.0,
+          "w": 113.0,
+          "x": 157.0,
+          "y": 563.0
+        }
+      ],
+      "observation_ms": 0.254983,
+      "ocr_ms": 31.244958,
+      "original": "LEVEL 2 UPGRADE",
+      "raw_original": "LEVEL 2 UPGRADE",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.98599243164062,
+          "rect": {
+            "h": 21.0,
+            "w": 97.0,
+            "x": 56.0,
+            "y": 563.0
+          },
+          "text": "LEVEL 2"
+        },
+        {
+          "confidence": 99.96930694580078,
+          "rect": {
+            "h": 22.0,
+            "w": 113.0,
+            "x": 157.0,
+            "y": 563.0
+          },
+          "text": "UPGRADE"
+        }
+      ],
+      "split": false,
+      "translation": "ОБОБРАЩЕНА УРОВЕНЬ 2",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        994,
+        575
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 16.0,
+        "x": 997.0,
+        "y": 578.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 2.055654,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        904,
+        577
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 40.0,
+        "x": 908.0,
+        "y": 581.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 26,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.978387,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        855,
+        594
+      ],
+      "detector_rect": {
+        "h": 40.0,
+        "w": 31.0,
+        "x": 865.0,
+        "y": 604.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 27,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.2652670000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.61370086669922,
+      "crop_origin": [
+        53,
+        613
+      ],
+      "detector_rect": {
+        "h": 52.0,
+        "w": 244.0,
+        "x": 58.0,
+        "y": 618.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 28,
+      "lines": [
+        {
+          "h": 23.0,
+          "w": 241.0,
+          "x": 62.0,
+          "y": 614.0
+        },
+        {
+          "h": 27.0,
+          "w": 237.0,
+          "x": 57.0,
+          "y": 644.0
+        }
+      ],
+      "observation_ms": 0.476663,
+      "ocr_ms": 45.695763,
+      "original": "Increases Resistances Ix Skill Improvement",
+      "raw_original": "Increases Resistances Ix Skill Improvement",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9729995727539,
+          "rect": {
+            "h": 23.0,
+            "w": 241.0,
+            "x": 62.0,
+            "y": 614.0
+          },
+          "text": "Increases Resistances"
+        },
+        {
+          "confidence": 97.18645477294922,
+          "rect": {
+            "h": 27.0,
+            "w": 237.0,
+            "x": 57.0,
+            "y": 644.0
+          },
+          "text": "Ix Skill Improvement"
+        }
+      ],
+      "split": false,
+      "translation": "Повышает Сопротивление Ix Улучшение Умений",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        802,
+        617
+      ],
+      "detector_rect": {
+        "h": 141.0,
+        "w": 200.0,
+        "x": 823.0,
+        "y": 638.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 29,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 7.929642,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        776,
+        607
+      ],
+      "detector_rect": {
+        "h": 133.0,
+        "w": 36.0,
+        "x": 810.0,
+        "y": 641.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 30,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 4.06434,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        879,
+        663
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 17.0,
+        "x": 883.0,
+        "y": 667.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 31,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.358473,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        864,
+        670
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 14.0,
+        "x": 868.0,
+        "y": 674.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 32,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 1.279284,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        857,
+        652
+      ],
+      "detector_rect": {
+        "h": 163.0,
+        "w": 157.0,
+        "x": 898.0,
+        "y": 693.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 33,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 9.966881,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        970,
+        695
+      ],
+      "detector_rect": {
+        "h": 31.0,
+        "w": 67.0,
+        "x": 978.0,
+        "y": 703.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 34,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.100459,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        681,
+        655
+      ],
+      "detector_rect": {
+        "h": 284.0,
+        "w": 123.0,
+        "x": 752.0,
+        "y": 726.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 35,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 15.505491999999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        818,
+        731
+      ],
+      "detector_rect": {
+        "h": 75.0,
+        "w": 73.0,
+        "x": 837.0,
+        "y": 750.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 36,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.7777119999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1112,
+        766
+      ],
+      "detector_rect": {
+        "h": 12.0,
+        "w": 20.0,
+        "x": 1115.0,
+        "y": 769.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 37,
+      "lines": [],
+      "observation_ms": 2.1e-05,
+      "ocr_ms": 1.590162,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1008,
+        762
+      ],
+      "detector_rect": {
+        "h": 47.0,
+        "w": 25.0,
+        "x": 1020.0,
+        "y": 774.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 38,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.6838,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1096,
+        774
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 23.0,
+        "x": 1103.0,
+        "y": 781.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 39,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.428947,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1071,
+        844
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 14.0,
+        "x": 1074.0,
+        "y": 847.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 40,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.840661,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        827,
+        875
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 18.0,
+        "x": 830.0,
+        "y": 878.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 41,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.811661,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1379,
+        963
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 37.0,
+        "x": 1382.0,
+        "y": 966.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 42,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.332649,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        780,
+        966
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 8.0,
+        "x": 783.0,
+        "y": 969.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 43,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.287089,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        867,
+        1003
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 12.0,
+        "x": 870.0,
+        "y": 1006.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 44,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.575044,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1338,
+        1012
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 17.0,
+        "x": 1341.0,
+        "y": 1015.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 45,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.775153,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.8239974975586,
+      "crop_origin": [
+        47,
+        1009
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 110.0,
+        "x": 56.0,
+        "y": 1018.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 46,
+      "lines": [
+        {
+          "h": 24.0,
+          "w": 32.0,
+          "x": 56.0,
+          "y": 1020.0
+        },
+        {
+          "h": 31.0,
+          "w": 72.0,
+          "x": 101.0,
+          "y": 1021.0
+        }
+      ],
+      "observation_ms": 0.28345699999999996,
+      "ocr_ms": 27.977158,
+      "original": "Esc Close",
+      "raw_original": "Esc Close",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.66669464111328,
+          "rect": {
+            "h": 24.0,
+            "w": 32.0,
+            "x": 56.0,
+            "y": 1020.0
+          },
+          "text": "Esc"
+        },
+        {
+          "confidence": 99.91838073730469,
+          "rect": {
+            "h": 31.0,
+            "w": 72.0,
+            "x": 101.0,
+            "y": 1021.0
+          },
+          "text": "Close"
+        }
+      ],
+      "split": false,
+      "translation": "Esc Закрыть",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1058,
+        1016
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 14.0,
+        "x": 1061.0,
+        "y": 1019.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 47,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.450106,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1033,
+        1025
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 18.0,
+        "x": 1036.0,
+        "y": 1028.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 48,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.9054090000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1132,
+        1032
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 22.0,
+        "x": 1135.0,
+        "y": 1035.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 49,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.0605939999999996,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1176,
+        1034
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 27.0,
+        "x": 1179.0,
+        "y": 1037.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 50,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.293826,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.74061584472656,
+      "crop_origin": [
+        23,
+        146
+      ],
+      "detector_rect": {
+        "h": 83.0,
+        "w": 336.0,
+        "x": 44.0,
+        "y": 167.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 36.0,
+          "w": 102.0,
+          "x": 153.0,
+          "y": 178.0
+        },
+        {
+          "h": 38.0,
+          "w": 157.0,
+          "x": 243.0,
+          "y": 177.0
+        },
+        {
+          "h": 23.0,
+          "w": 74.0,
+          "x": 156.0,
+          "y": 224.0
+        },
+        {
+          "h": 15.0,
+          "w": 85.0,
+          "x": 294.0,
+          "y": 231.0
+        }
+      ],
+      "observation_ms": 0.032972,
+      "ocr_ms": 63.44372400000001,
+      "original": "NORA ANOINTED Hunter common",
+      "raw_original": "NORA ANOINTED Hunter common",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.84165954589844,
+          "rect": {
+            "h": 36.0,
+            "w": 102.0,
+            "x": 153.0,
+            "y": 178.0
+          },
+          "text": "NORA"
+        },
+        {
+          "confidence": 99.36219024658203,
+          "rect": {
+            "h": 38.0,
+            "w": 157.0,
+            "x": 243.0,
+            "y": 177.0
+          },
+          "text": "ANOINTED"
+        },
+        {
+          "confidence": 99.99401092529297,
+          "rect": {
+            "h": 23.0,
+            "w": 74.0,
+            "x": 156.0,
+            "y": 224.0
+          },
+          "text": "Hunter"
+        },
+        {
+          "confidence": 99.92445373535156,
+          "rect": {
+            "h": 15.0,
+            "w": 85.0,
+            "x": 294.0,
+            "y": 231.0
+          },
+          "text": "common"
+        }
+      ],
+      "split": false,
+      "translation": "НОРА АНОИНДИРОВАННЫЙ Охотник общий",
+      "translation_source": "actual translation-engine response"
+    }
+  ],
   "blocks": [
     {
       "cap_height": 48.0,
       "category": "SansSerif",
-      "confidence": 0.26338666677474976,
+      "confidence": 0.2238786816596985,
       "font": "Inter",
       "rect": {
         "h": 48.0,
@@ -14,9 +1739,21 @@
       }
     },
     {
+      "cap_height": 24.0,
+      "category": "Condensed",
+      "confidence": 0.2658519744873047,
+      "font": "Oswald",
+      "rect": {
+        "h": 24.0,
+        "w": 86.0,
+        "x": 1617.0,
+        "y": 36.0
+      }
+    },
+    {
       "cap_height": 18.0,
       "category": "SlabSerif",
-      "confidence": 0.8357407450675964,
+      "confidence": 0.3760833144187927,
       "font": "Roboto Slab",
       "rect": {
         "h": 24.0,
@@ -28,7 +1765,7 @@
     {
       "cap_height": 83.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 83.0,
@@ -38,9 +1775,45 @@
       }
     },
     {
+      "cap_height": 30.0,
+      "category": "Unknown",
+      "confidence": 0.033944450318813324,
+      "font": "Inter",
+      "rect": {
+        "h": 32.0,
+        "w": 22.0,
+        "x": 379.0,
+        "y": 180.0
+      }
+    },
+    {
+      "cap_height": 33.0,
+      "category": "Unknown",
+      "confidence": 0.029500002041459084,
+      "font": "Inter",
+      "rect": {
+        "h": 33.0,
+        "w": 7.0,
+        "x": 987.0,
+        "y": 226.0
+      }
+    },
+    {
+      "cap_height": 12.0,
+      "category": "SansSerif",
+      "confidence": 0.3761817216873169,
+      "font": "Inter",
+      "rect": {
+        "h": 17.0,
+        "w": 114.0,
+        "x": 266.0,
+        "y": 228.0
+      }
+    },
+    {
       "cap_height": 17.0,
       "category": "SansSerif",
-      "confidence": 0.7676093578338623,
+      "confidence": 0.6524679660797119,
       "font": "Roboto",
       "rect": {
         "h": 77.0,
@@ -50,21 +1823,81 @@
       }
     },
     {
-      "cap_height": 133.0,
+      "cap_height": 16.0,
+      "category": "Unknown",
+      "confidence": 0.03333333507180214,
+      "font": "PT Serif",
+      "rect": {
+        "h": 16.0,
+        "w": 6.0,
+        "x": 898.0,
+        "y": 305.0
+      }
+    },
+    {
+      "cap_height": 134.0,
       "category": "Serif",
-      "confidence": 0.3941646218299866,
+      "confidence": 0.6186798214912415,
       "font": "Source Serif 4",
       "rect": {
-        "h": 469.0,
-        "w": 185.0,
-        "x": 810.0,
+        "h": 471.0,
+        "w": 267.0,
+        "x": 879.0,
         "y": 383.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 9.0,
+        "w": 42.0,
+        "x": 954.0,
+        "y": 397.0
+      }
+    },
+    {
+      "cap_height": 11.0,
+      "category": "Unknown",
+      "confidence": 0.030560610815882683,
+      "font": "Inter",
+      "rect": {
+        "h": 11.0,
+        "w": 7.0,
+        "x": 1034.0,
+        "y": 398.0
+      }
+    },
+    {
+      "cap_height": 6.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 6.0,
+        "w": 13.0,
+        "x": 991.0,
+        "y": 414.0
+      }
+    },
+    {
+      "cap_height": 31.0,
+      "category": "Unknown",
+      "confidence": 0.02695513144135475,
+      "font": "Noto Sans",
+      "rect": {
+        "h": 31.0,
+        "w": 35.0,
+        "x": 915.0,
+        "y": 431.0
       }
     },
     {
       "cap_height": 69.0,
       "category": "Serif",
-      "confidence": 0.32963740825653076,
+      "confidence": 0.32304468750953674,
       "font": "Literata",
       "rect": {
         "h": 69.0,
@@ -74,33 +1907,81 @@
       }
     },
     {
-      "cap_height": 76.0,
-      "category": "Serif",
-      "confidence": 0.5457000136375427,
-      "font": "Literata",
+      "cap_height": 7.0,
+      "category": "Unknown",
+      "confidence": 0.03402381017804146,
+      "font": "Inter",
       "rect": {
-        "h": 304.0,
-        "w": 233.0,
-        "x": 823.0,
+        "h": 8.0,
+        "w": 6.0,
+        "x": 1067.0,
+        "y": 460.0
+      }
+    },
+    {
+      "cap_height": 10.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 10.0,
+        "w": 21.0,
+        "x": 238.0,
+        "y": 462.0
+      }
+    },
+    {
+      "cap_height": 56.0,
+      "category": "Serif",
+      "confidence": 0.2902013659477234,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 70.0,
+        "w": 198.0,
+        "x": 838.0,
         "y": 475.0
       }
     },
     {
-      "cap_height": 22.0,
+      "cap_height": 15.0,
+      "category": "Unknown",
+      "confidence": 0.032277777791023254,
+      "font": "Inter",
+      "rect": {
+        "h": 15.0,
+        "w": 7.0,
+        "x": 853.0,
+        "y": 501.0
+      }
+    },
+    {
+      "cap_height": 14.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 28.0,
+        "w": 48.0,
+        "x": 898.0,
+        "y": 529.0
+      }
+    },
+    {
+      "cap_height": 25.0,
       "category": "Serif",
-      "confidence": 0.38520002365112305,
+      "confidence": 0.41944006085395813,
       "font": "Literata",
       "rect": {
-        "h": 101.0,
-        "w": 47.0,
-        "x": 1018.0,
+        "h": 126.0,
+        "w": 145.0,
+        "x": 924.0,
         "y": 547.0
       }
     },
     {
       "cap_height": 18.0,
       "category": "SansSerif",
-      "confidence": 0.6467870473861694,
+      "confidence": 0.5798731446266174,
       "font": "Inter",
       "rect": {
         "h": 18.0,
@@ -110,9 +1991,45 @@
       }
     },
     {
+      "cap_height": 7.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 9.0,
+        "w": 16.0,
+        "x": 997.0,
+        "y": 578.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 15.0,
+        "w": 40.0,
+        "x": 908.0,
+        "y": 581.0
+      }
+    },
+    {
+      "cap_height": 40.0,
+      "category": "Unknown",
+      "confidence": 0.03450000286102295,
+      "font": "Inter",
+      "rect": {
+        "h": 40.0,
+        "w": 31.0,
+        "x": 865.0,
+        "y": 604.0
+      }
+    },
+    {
       "cap_height": 16.0,
       "category": "SansSerif",
-      "confidence": 0.7602564692497253,
+      "confidence": 0.6462180018424988,
       "font": "Roboto",
       "rect": {
         "h": 52.0,
@@ -122,45 +2039,57 @@
       }
     },
     {
-      "cap_height": 62.0,
+      "cap_height": 76.0,
+      "category": "Serif",
+      "confidence": 0.2852192223072052,
+      "font": "Literata",
+      "rect": {
+        "h": 141.0,
+        "w": 200.0,
+        "x": 823.0,
+        "y": 638.0
+      }
+    },
+    {
+      "cap_height": 133.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.029500002041459084,
       "font": "Inter",
       "rect": {
-        "h": 62.0,
-        "w": 145.0,
-        "x": 924.0,
-        "y": 648.0
+        "h": 133.0,
+        "w": 36.0,
+        "x": 810.0,
+        "y": 641.0
       }
     },
     {
-      "cap_height": 134.0,
-      "category": "Serif",
-      "confidence": 0.3336355984210968,
-      "font": "Source Serif 4",
+      "cap_height": 13.0,
+      "category": "Unknown",
+      "confidence": 0.03219231218099594,
+      "font": "Inter",
       "rect": {
-        "h": 175.0,
-        "w": 57.0,
-        "x": 1089.0,
-        "y": 679.0
+        "h": 13.0,
+        "w": 17.0,
+        "x": 883.0,
+        "y": 667.0
       }
     },
     {
-      "cap_height": 159.0,
-      "category": "Serif",
-      "confidence": 0.6939727663993835,
-      "font": "Source Serif 4",
+      "cap_height": 10.0,
+      "category": "Unknown",
+      "confidence": 0.03216667100787163,
+      "font": "Inter",
       "rect": {
-        "h": 317.0,
-        "w": 123.0,
-        "x": 752.0,
-        "y": 693.0
+        "h": 13.0,
+        "w": 14.0,
+        "x": 868.0,
+        "y": 674.0
       }
     },
     {
       "cap_height": 130.0,
       "category": "Serif",
-      "confidence": 0.29731693863868713,
+      "confidence": 0.2913706302642822,
       "font": "Literata",
       "rect": {
         "h": 163.0,
@@ -172,7 +2101,7 @@
     {
       "cap_height": 31.0,
       "category": "Unknown",
-      "confidence": 0.07158064842224121,
+      "confidence": 0.035790324211120605,
       "font": "Inter",
       "rect": {
         "h": 31.0,
@@ -182,9 +2111,141 @@
       }
     },
     {
+      "cap_height": 197.0,
+      "category": "Serif",
+      "confidence": 0.5653719902038574,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 284.0,
+        "w": 123.0,
+        "x": 752.0,
+        "y": 726.0
+      }
+    },
+    {
+      "cap_height": 63.0,
+      "category": "Unknown",
+      "confidence": 0.03552645817399025,
+      "font": "Inter",
+      "rect": {
+        "h": 75.0,
+        "w": 73.0,
+        "x": 837.0,
+        "y": 750.0
+      }
+    },
+    {
+      "cap_height": 11.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 12.0,
+        "w": 20.0,
+        "x": 1115.0,
+        "y": 769.0
+      }
+    },
+    {
+      "cap_height": 47.0,
+      "category": "Unknown",
+      "confidence": 0.03336524963378906,
+      "font": "Inter",
+      "rect": {
+        "h": 47.0,
+        "w": 25.0,
+        "x": 1020.0,
+        "y": 774.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Condensed",
+      "confidence": 0.266934871673584,
+      "font": "Roboto Condensed",
+      "rect": {
+        "h": 27.0,
+        "w": 23.0,
+        "x": 1103.0,
+        "y": 781.0
+      }
+    },
+    {
+      "cap_height": 8.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 8.0,
+        "w": 14.0,
+        "x": 1074.0,
+        "y": 847.0
+      }
+    },
+    {
+      "cap_height": 5.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 5.0,
+        "w": 18.0,
+        "x": 830.0,
+        "y": 878.0
+      }
+    },
+    {
+      "cap_height": 7.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 8.0,
+        "w": 37.0,
+        "x": 1382.0,
+        "y": 966.0
+      }
+    },
+    {
+      "cap_height": 6.0,
+      "category": "Unknown",
+      "confidence": 0.0356111153960228,
+      "font": "Inter",
+      "rect": {
+        "h": 6.0,
+        "w": 8.0,
+        "x": 783.0,
+        "y": 969.0
+      }
+    },
+    {
+      "cap_height": 5.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 5.0,
+        "w": 12.0,
+        "x": 870.0,
+        "y": 1006.0
+      }
+    },
+    {
+      "cap_height": 7.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 7.0,
+        "w": 17.0,
+        "x": 1341.0,
+        "y": 1015.0
+      }
+    },
+    {
       "cap_height": 19.0,
       "category": "SansSerif",
-      "confidence": 0.34996432065963745,
+      "confidence": 0.31372591853141785,
       "font": "Roboto",
       "rect": {
         "h": 33.0,
@@ -192,449 +2253,2017 @@
         "x": 56.0,
         "y": 1018.0
       }
+    },
+    {
+      "cap_height": 7.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 7.0,
+        "w": 14.0,
+        "x": 1061.0,
+        "y": 1019.0
+      }
+    },
+    {
+      "cap_height": 6.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 6.0,
+        "w": 18.0,
+        "x": 1036.0,
+        "y": 1028.0
+      }
+    },
+    {
+      "cap_height": 7.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 7.0,
+        "w": 22.0,
+        "x": 1135.0,
+        "y": 1035.0
+      }
+    },
+    {
+      "cap_height": 4.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 6.0,
+        "w": 27.0,
+        "x": 1179.0,
+        "y": 1037.0
+      }
     }
   ],
-  "cached_placement_ms": 0.5432809999999999,
-  "dropped": 7,
+  "cached_placement_ms": 7.869197,
+  "dropped": 2,
   "dropped_details": [
     {
+      "block_id": 4,
+      "original": "NORA ANOINTED Hunter common",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "НОРА АНОИНДИРОВАННЫЙ Охотник общий"
+    },
+    {
       "block_id": 5,
-      "original": "fixture 5",
+      "original": "ED",
       "reason": "для перевода нет места поверх игры",
       "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 7,
-      "original": "fixture 7",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 8,
-      "original": "fixture 8",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 11,
-      "original": "fixture 11",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 13,
-      "original": "fixture 13",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 14,
-      "original": "fixture 14",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 15,
-      "original": "fixture 15",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
+      "text": "ED"
     }
   ],
   "finish_ms": [
-    0.065264
+    0.775238,
+    0.5586690000000001
   ],
-  "first_frame_ms": 651.865094,
-  "fits": 16,
+  "first_frame_ms": 63.643242,
+  "fits": 9,
   "frame_blocks": [
     {
+      "cap_height_px": 48.0,
       "id": 1,
-      "lines_note": "",
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
       "source_lines": 1,
       "text_rect": {
+        "h": 12.0,
+        "w": 10.0,
+        "x": 1735.0,
+        "y": 42.0
+      }
+    },
+    {
+      "cap_height_px": 24.0,
+      "id": 2,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 26.0,
+        "w": 38.0,
+        "x": 1644.0,
+        "y": 35.0
+      }
+    },
+    {
+      "cap_height_px": 18.0,
+      "id": 3,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 32.0,
+        "w": 474.0,
+        "x": 48.0,
+        "y": 36.0
+      }
+    },
+    {
+      "cap_height_px": 83.0,
+      "id": 4,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 72.0,
+        "w": 249.0,
+        "x": 152.0,
+        "y": 176.0
+      }
+    },
+    {
+      "cap_height_px": 30.0,
+      "id": 5,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 36.0,
+        "w": 33.0,
+        "x": 370.0,
+        "y": 178.0
+      }
+    },
+    {
+      "cap_height_px": 17.0,
+      "id": 9,
+      "lines_note": "строк: 3 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 82.0,
+        "w": 597.0,
+        "x": 53.0,
+        "y": 257.0
+      }
+    },
+    {
+      "cap_height_px": 18.0,
+      "id": 24,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 24.0,
+        "w": 216.0,
+        "x": 55.0,
+        "y": 562.0
+      }
+    },
+    {
+      "cap_height_px": 16.0,
+      "id": 28,
+      "lines_note": "строк: 2 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 59.0,
+        "w": 248.0,
+        "x": 56.0,
+        "y": 613.0
+      }
+    },
+    {
+      "cap_height_px": 19.0,
+      "id": 46,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 34.0,
+        "w": 119.0,
+        "x": 55.0,
+        "y": 1019.0
+      }
+    }
+  ],
+  "hits": 9,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-6/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 85.00779724121094,
+      "crop_origin": [
+        1722,
+        15
+      ],
+      "detector_rect": {
         "h": 48.0,
         "w": 148.0,
         "x": 1734.0,
         "y": 27.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [
+        {
+          "h": 10.0,
+          "w": 8.0,
+          "x": 1736.0,
+          "y": 43.0
+        }
+      ],
+      "observation_ms": 0.009798,
+      "ocr_ms": 186.89507,
+      "original": "7",
+      "raw_original": "7",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 85.00779724121094,
+          "rect": {
+            "h": 10.0,
+            "w": 8.0,
+            "x": 1736.0,
+            "y": 43.0
+          },
+          "text": "7"
+        }
+      ],
+      "split": false,
+      "translation": "7",
+      "translation_source": "actual translation-engine response"
     },
     {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.99275207519531,
+      "crop_origin": [
+        1611,
+        30
+      ],
+      "detector_rect": {
+        "h": 24.0,
+        "w": 86.0,
+        "x": 1617.0,
+        "y": 36.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
       "id": 2,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "lines": [
+        {
+          "h": 24.0,
+          "w": 36.0,
+          "x": 1645.0,
+          "y": 36.0
+        }
+      ],
+      "observation_ms": 0.01069,
+      "ocr_ms": 29.875524000000002,
+      "original": "76",
+      "raw_original": "76",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.99275207519531,
+          "rect": {
+            "h": 24.0,
+            "w": 36.0,
+            "x": 1645.0,
+            "y": 36.0
+          },
+          "text": "76"
+        }
+      ],
+      "split": false,
+      "translation": "76",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 96.84371948242188,
+      "crop_origin": [
+        44,
+        33
+      ],
+      "detector_rect": {
         "h": 24.0,
         "w": 468.0,
         "x": 50.0,
         "y": 39.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [
+        {
+          "h": 30.0,
+          "w": 211.0,
+          "x": 49.0,
+          "y": 37.0
+        },
+        {
+          "h": 25.0,
+          "w": 219.0,
+          "x": 302.0,
+          "y": 40.0
+        }
+      ],
+      "observation_ms": 0.498484,
+      "ocr_ms": 60.822137,
+      "original": "AWORKBENCH OUTFIT UPGRADES",
+      "raw_original": "AWORKBENCH OUTFIT UPGRADES",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 93.69026184082031,
+          "rect": {
+            "h": 30.0,
+            "w": 211.0,
+            "x": 49.0,
+            "y": 37.0
+          },
+          "text": "AWORKBENCH"
+        },
+        {
+          "confidence": 98.94601440429688,
+          "rect": {
+            "h": 25.0,
+            "w": 219.0,
+            "x": 302.0,
+            "y": 40.0
+          },
+          "text": "OUTFIT UPGRADES"
+        }
+      ],
+      "split": false,
+      "translation": "РАБОЧИЕ ФОРУСЫ МОДЕРНИЗАЦИИ",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 3,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.33517456054688,
+      "crop_origin": [
+        23,
+        146
+      ],
+      "detector_rect": {
         "h": 83.0,
         "w": 335.0,
         "x": 44.0,
         "y": 167.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 37.0,
+          "w": 104.0,
+          "x": 153.0,
+          "y": 177.0
+        },
+        {
+          "h": 38.0,
+          "w": 157.0,
+          "x": 242.0,
+          "y": 177.0
+        },
+        {
+          "h": 26.0,
+          "w": 75.0,
+          "x": 155.0,
+          "y": 224.0
+        },
+        {
+          "h": 17.0,
+          "w": 107.0,
+          "x": 274.0,
+          "y": 230.0
+        }
+      ],
+      "observation_ms": 0.024707,
+      "ocr_ms": 58.103828,
+      "original": "NORA ANOINTED Hunter Incommon",
+      "raw_original": "NORA ANOINTED Hunter Incommon",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.86982727050781,
+          "rect": {
+            "h": 37.0,
+            "w": 104.0,
+            "x": 153.0,
+            "y": 177.0
+          },
+          "text": "NORA"
+        },
+        {
+          "confidence": 97.42207336425781,
+          "rect": {
+            "h": 38.0,
+            "w": 157.0,
+            "x": 242.0,
+            "y": 177.0
+          },
+          "text": "ANOINTED"
+        },
+        {
+          "confidence": 99.99058532714844,
+          "rect": {
+            "h": 26.0,
+            "w": 75.0,
+            "x": 155.0,
+            "y": 224.0
+          },
+          "text": "Hunter"
+        },
+        {
+          "confidence": 93.98936462402344,
+          "rect": {
+            "h": 17.0,
+            "w": 107.0,
+            "x": 274.0,
+            "y": 230.0
+          },
+          "text": "Incommon"
+        }
+      ],
+      "split": false,
+      "translation": "NORA АНОИНДИРОВАННЫЙ Хантер Неудобный",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 4,
-      "lines_note": "",
-      "source_lines": 3,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 81.86499786376953,
+      "crop_origin": [
+        371,
+        172
+      ],
+      "detector_rect": {
+        "h": 32.0,
+        "w": 22.0,
+        "x": 379.0,
+        "y": 180.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 34.0,
+          "w": 31.0,
+          "x": 371.0,
+          "y": 179.0
+        }
+      ],
+      "observation_ms": 0.11068,
+      "ocr_ms": 17.400913,
+      "original": "ED",
+      "raw_original": "ED",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 81.86499786376953,
+          "rect": {
+            "h": 34.0,
+            "w": 31.0,
+            "x": 371.0,
+            "y": 179.0
+          },
+          "text": "ED"
+        }
+      ],
+      "split": false,
+      "translation": "ED",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        933,
+        195
+      ],
+      "detector_rect": {
+        "h": 36.0,
+        "w": 83.0,
+        "x": 942.0,
+        "y": 204.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.4558929999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        978,
+        217
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 7.0,
+        "x": 987.0,
+        "y": 226.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 2.115197,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 99.9649429321289,
+      "crop_origin": [
+        261,
+        223
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 114.0,
+        "x": 266.0,
+        "y": 228.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 119.0,
+          "x": 263.0,
+          "y": 227.0
+        }
+      ],
+      "observation_ms": 0.177245,
+      "ocr_ms": 18.834449,
+      "original": "Uncommon",
+      "raw_original": "Uncommon",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9649429321289,
+          "rect": {
+            "h": 21.0,
+            "w": 119.0,
+            "x": 263.0,
+            "y": 227.0
+          },
+          "text": "Uncommon"
+        }
+      ],
+      "split": true,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.72750854492188,
+      "crop_origin": [
+        52,
+        257
+      ],
+      "detector_rect": {
         "h": 77.0,
         "w": 590.0,
         "x": 58.0,
         "y": 263.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [
+        {
+          "h": 27.0,
+          "w": 592.0,
+          "x": 57.0,
+          "y": 258.0
+        },
+        {
+          "h": 29.0,
+          "w": 530.0,
+          "x": 54.0,
+          "y": 284.0
+        },
+        {
+          "h": 23.0,
+          "w": 385.0,
+          "x": 55.0,
+          "y": 315.0
+        }
+      ],
+      "observation_ms": 1.460257,
+      "ocr_ms": 161.95916499999998,
+      "original": "Well-worn armor made with repurposed technology from an ancient lab. After losing its power source, it was modified to augment ranged combat.",
+      "raw_original": "Well-worn armor made with repurposed technology from an ancient lab. After losing its power source, it was modified to augment ranged combat.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.69422149658203,
+          "rect": {
+            "h": 27.0,
+            "w": 592.0,
+            "x": 57.0,
+            "y": 258.0
+          },
+          "text": "Well-worn armor made with repurposed technology from"
+        },
+        {
+          "confidence": 97.83027648925781,
+          "rect": {
+            "h": 29.0,
+            "w": 530.0,
+            "x": 54.0,
+            "y": 284.0
+          },
+          "text": "an ancient lab. After losing its power source, it was"
+        },
+        {
+          "confidence": 98.64764404296875,
+          "rect": {
+            "h": 23.0,
+            "w": 385.0,
+            "x": 55.0,
+            "y": 315.0
+          },
+          "text": "modified to augment ranged combat."
+        }
+      ],
+      "split": false,
+      "translation": "Хорошо изношенная броня сделана с перепрофилированной технологией из древней лаборатории. После потери источника питания он был модифицирован для усиления дальной борьбы.",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 5,
-      "lines_note": "",
-      "source_lines": 3,
-      "text_rect": {
-        "h": 469.0,
-        "w": 185.0,
-        "x": 810.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        879,
+        267
+      ],
+      "detector_rect": {
+        "h": 59.0,
+        "w": 135.0,
+        "x": 894.0,
+        "y": 282.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 3.43172,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        894,
+        301
+      ],
+      "detector_rect": {
+        "h": 16.0,
+        "w": 6.0,
+        "x": 898.0,
+        "y": 305.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.75231,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        838,
+        342
+      ],
+      "detector_rect": {
+        "h": 471.0,
+        "w": 267.0,
+        "x": 879.0,
         "y": 383.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 30.389468,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 6,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        951,
+        394
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 42.0,
+        "x": 954.0,
+        "y": 397.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.927175,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1031,
+        395
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 7.0,
+        "x": 1034.0,
+        "y": 398.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 1.843552,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        988,
+        411
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 13.0,
+        "x": 991.0,
+        "y": 414.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.503438,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        907,
+        423
+      ],
+      "detector_rect": {
+        "h": 31.0,
+        "w": 35.0,
+        "x": 915.0,
+        "y": 431.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.992278,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        38,
+        432
+      ],
+      "detector_rect": {
         "h": 69.0,
         "w": 243.0,
         "x": 56.0,
         "y": 450.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 4.725703,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 7,
-      "lines_note": "",
-      "source_lines": 4,
-      "text_rect": {
-        "h": 304.0,
-        "w": 233.0,
-        "x": 823.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1064,
+        457
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 6.0,
+        "x": 1067.0,
+        "y": 460.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.338436,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        235,
+        459
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 21.0,
+        "x": 238.0,
+        "y": 462.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.5051109999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        820,
+        457
+      ],
+      "detector_rect": {
+        "h": 70.0,
+        "w": 198.0,
+        "x": 838.0,
         "y": 475.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.7253469999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 8,
-      "lines_note": "",
-      "source_lines": 3,
-      "text_rect": {
-        "h": 101.0,
-        "w": 47.0,
-        "x": 1018.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        849,
+        497
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 7.0,
+        "x": 853.0,
+        "y": 501.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.600462,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        894,
+        525
+      ],
+      "detector_rect": {
+        "h": 28.0,
+        "w": 48.0,
+        "x": 898.0,
+        "y": 529.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.813771,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        917,
+        540
+      ],
+      "detector_rect": {
+        "h": 126.0,
+        "w": 145.0,
+        "x": 924.0,
         "y": 547.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.376175,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 9,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.97765350341797,
+      "crop_origin": [
+        55,
+        560
+      ],
+      "detector_rect": {
         "h": 18.0,
         "w": 207.0,
         "x": 60.0,
         "y": 565.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 97.0,
+          "x": 56.0,
+          "y": 563.0
+        },
+        {
+          "h": 22.0,
+          "w": 113.0,
+          "x": 157.0,
+          "y": 563.0
+        }
+      ],
+      "observation_ms": 0.254983,
+      "ocr_ms": 31.244958,
+      "original": "LEVEL 2 UPGRADE",
+      "raw_original": "LEVEL 2 UPGRADE",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.98599243164062,
+          "rect": {
+            "h": 21.0,
+            "w": 97.0,
+            "x": 56.0,
+            "y": 563.0
+          },
+          "text": "LEVEL 2"
+        },
+        {
+          "confidence": 99.96930694580078,
+          "rect": {
+            "h": 22.0,
+            "w": 113.0,
+            "x": 157.0,
+            "y": 563.0
+          },
+          "text": "UPGRADE"
+        }
+      ],
+      "split": false,
+      "translation": "ОБОБРАЩЕНА УРОВЕНЬ 2",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 10,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        994,
+        575
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 16.0,
+        "x": 997.0,
+        "y": 578.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 2.055654,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        904,
+        577
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 40.0,
+        "x": 908.0,
+        "y": 581.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 26,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.978387,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        855,
+        594
+      ],
+      "detector_rect": {
+        "h": 40.0,
+        "w": 31.0,
+        "x": 865.0,
+        "y": 604.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 27,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.2652670000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 98.61370086669922,
+      "crop_origin": [
+        53,
+        613
+      ],
+      "detector_rect": {
         "h": 52.0,
         "w": 244.0,
         "x": 58.0,
         "y": 618.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 28,
+      "lines": [
+        {
+          "h": 23.0,
+          "w": 241.0,
+          "x": 62.0,
+          "y": 614.0
+        },
+        {
+          "h": 27.0,
+          "w": 237.0,
+          "x": 57.0,
+          "y": 644.0
+        }
+      ],
+      "observation_ms": 0.476663,
+      "ocr_ms": 45.695763,
+      "original": "Increases Resistances Ix Skill Improvement",
+      "raw_original": "Increases Resistances Ix Skill Improvement",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.9729995727539,
+          "rect": {
+            "h": 23.0,
+            "w": 241.0,
+            "x": 62.0,
+            "y": 614.0
+          },
+          "text": "Increases Resistances"
+        },
+        {
+          "confidence": 97.18645477294922,
+          "rect": {
+            "h": 27.0,
+            "w": 237.0,
+            "x": 57.0,
+            "y": 644.0
+          },
+          "text": "Ix Skill Improvement"
+        }
+      ],
+      "split": false,
+      "translation": "Повышает Сопротивление Ix Улучшение Умений",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 11,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 62.0,
-        "w": 145.0,
-        "x": 924.0,
-        "y": 648.0
-      }
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        802,
+        617
+      ],
+      "detector_rect": {
+        "h": 141.0,
+        "w": 200.0,
+        "x": 823.0,
+        "y": 638.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 29,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 7.929642,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 12,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 175.0,
-        "w": 57.0,
-        "x": 1089.0,
-        "y": 679.0
-      }
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        776,
+        607
+      ],
+      "detector_rect": {
+        "h": 133.0,
+        "w": 36.0,
+        "x": 810.0,
+        "y": 641.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 30,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 4.06434,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 13,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 317.0,
-        "w": 123.0,
-        "x": 752.0,
-        "y": 693.0
-      }
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        879,
+        663
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 17.0,
+        "x": 883.0,
+        "y": 667.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 31,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.358473,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 14,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        864,
+        670
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 14.0,
+        "x": 868.0,
+        "y": 674.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 32,
+      "lines": [],
+      "observation_ms": 9.999999999999999e-05,
+      "ocr_ms": 1.279284,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        857,
+        652
+      ],
+      "detector_rect": {
         "h": 163.0,
         "w": 157.0,
         "x": 898.0,
         "y": 693.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 33,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 9.966881,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 15,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        970,
+        695
+      ],
+      "detector_rect": {
         "h": 31.0,
         "w": 67.0,
         "x": 978.0,
         "y": 703.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 34,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.100459,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 16,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        681,
+        655
+      ],
+      "detector_rect": {
+        "h": 284.0,
+        "w": 123.0,
+        "x": 752.0,
+        "y": 726.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 35,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 15.505491999999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        818,
+        731
+      ],
+      "detector_rect": {
+        "h": 75.0,
+        "w": 73.0,
+        "x": 837.0,
+        "y": 750.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 36,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 2.7777119999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1112,
+        766
+      ],
+      "detector_rect": {
+        "h": 12.0,
+        "w": 20.0,
+        "x": 1115.0,
+        "y": 769.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 37,
+      "lines": [],
+      "observation_ms": 2.1e-05,
+      "ocr_ms": 1.590162,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1008,
+        762
+      ],
+      "detector_rect": {
+        "h": 47.0,
+        "w": 25.0,
+        "x": 1020.0,
+        "y": 774.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 38,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.6838,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1096,
+        774
+      ],
+      "detector_rect": {
+        "h": 27.0,
+        "w": 23.0,
+        "x": 1103.0,
+        "y": 781.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 39,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.428947,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1071,
+        844
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 14.0,
+        "x": 1074.0,
+        "y": 847.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 40,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.840661,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        827,
+        875
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 18.0,
+        "x": 830.0,
+        "y": 878.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 41,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.811661,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1379,
+        963
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 37.0,
+        "x": 1382.0,
+        "y": 966.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 42,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.332649,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        780,
+        966
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 8.0,
+        "x": 783.0,
+        "y": 969.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 43,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.287089,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        867,
+        1003
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 12.0,
+        "x": 870.0,
+        "y": 1006.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 44,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.575044,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1338,
+        1012
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 17.0,
+        "x": 1341.0,
+        "y": 1015.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 45,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.775153,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.8239974975586,
+      "crop_origin": [
+        47,
+        1009
+      ],
+      "detector_rect": {
         "h": 33.0,
         "w": 110.0,
         "x": 56.0,
         "y": 1018.0
-      }
-    }
-  ],
-  "hits": 16,
-  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-6/original.png",
-  "measurement": "Qt: shared production helper, test IPC adapter",
-  "minimum_confidence": 30,
-  "ocr": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "latency_ms": 3078.081811,
-    "lines": [
-      {
-        "confidence": 94.88129425048828,
-        "rect": {
-          "h": 58.0,
-          "w": 57.0,
-          "x": 1830.0,
-          "y": 20.0
-        },
-        "text": "3"
       },
-      {
-        "confidence": 70.74913024902344,
-        "rect": {
-          "h": 26.0,
-          "w": 43.0,
-          "x": 48.0,
-          "y": 39.0
-        },
-        "text": "A"
-      },
-      {
-        "confidence": 99.96995544433594,
-        "rect": {
-          "h": 27.0,
-          "w": 158.0,
-          "x": 104.0,
-          "y": 38.0
-        },
-        "text": "WORKBENCH"
-      },
-      {
-        "confidence": 99.99524688720703,
-        "rect": {
-          "h": 27.0,
-          "w": 69.0,
-          "x": 1613.0,
-          "y": 36.0
-        },
-        "text": "76"
-      },
-      {
-        "confidence": 55.77972412109375,
-        "rect": {
-          "h": 36.0,
-          "w": 36.0,
-          "x": 1728.0,
-          "y": 30.0
-        },
-        "text": "R"
-      },
-      {
-        "confidence": 99.42312622070312,
-        "rect": {
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 46,
+      "lines": [
+        {
           "h": 24.0,
-          "w": 246.0,
-          "x": 276.0,
-          "y": 40.0
+          "w": 32.0,
+          "x": 56.0,
+          "y": 1020.0
         },
-        "text": "OUTFIT UPGRADES"
-      },
-      {
-        "confidence": 49.26930618286133,
-        "rect": {
-          "h": 18.0,
-          "w": 14.0,
-          "x": 1776.0,
-          "y": 41.0
+        {
+          "h": 31.0,
+          "w": 72.0,
+          "x": 101.0,
+          "y": 1021.0
+        }
+      ],
+      "observation_ms": 0.28345699999999996,
+      "ocr_ms": 27.977158,
+      "original": "Esc Close",
+      "raw_original": "Esc Close",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.66669464111328,
+          "rect": {
+            "h": 24.0,
+            "w": 32.0,
+            "x": 56.0,
+            "y": 1020.0
+          },
+          "text": "Esc"
         },
-        "text": "0"
+        {
+          "confidence": 99.91838073730469,
+          "rect": {
+            "h": 31.0,
+            "w": 72.0,
+            "x": 101.0,
+            "y": 1021.0
+          },
+          "text": "Close"
+        }
+      ],
+      "split": false,
+      "translation": "Esc Закрыть",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1058,
+        1016
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 14.0,
+        "x": 1061.0,
+        "y": 1019.0
       },
-      {
-        "confidence": 97.79437255859375,
-        "rect": {
-          "h": 39.0,
-          "w": 250.0,
-          "x": 150.0,
-          "y": 176.0
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 47,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.450106,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1033,
+        1025
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 18.0,
+        "x": 1036.0,
+        "y": 1028.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 48,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.9054090000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1132,
+        1032
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 22.0,
+        "x": 1135.0,
+        "y": 1035.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 49,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.0605939999999996,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1176,
+        1034
+      ],
+      "detector_rect": {
+        "h": 6.0,
+        "w": 27.0,
+        "x": 1179.0,
+        "y": 1037.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 50,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.293826,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.74061584472656,
+      "crop_origin": [
+        23,
+        146
+      ],
+      "detector_rect": {
+        "h": 83.0,
+        "w": 336.0,
+        "x": 44.0,
+        "y": 167.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [
+        {
+          "h": 36.0,
+          "w": 102.0,
+          "x": 153.0,
+          "y": 178.0
         },
-        "text": "NORA ANOINTED"
-      },
-      {
-        "confidence": 99.98661041259766,
-        "rect": {
+        {
+          "h": 38.0,
+          "w": 157.0,
+          "x": 243.0,
+          "y": 177.0
+        },
+        {
           "h": 23.0,
-          "w": 83.0,
-          "x": 154.0,
-          "y": 225.0
-        },
-        "text": "Hunter"
-      },
-      {
-        "confidence": 97.62092590332031,
-        "rect": {
-          "h": 27.0,
-          "w": 152.0,
-          "x": 231.0,
+          "w": 74.0,
+          "x": 156.0,
           "y": 224.0
         },
-        "text": "Uncommon"
-      },
-      {
-        "confidence": 99.91441345214844,
-        "rect": {
-          "h": 29.0,
-          "w": 598.0,
-          "x": 53.0,
-          "y": 258.0
+        {
+          "h": 15.0,
+          "w": 85.0,
+          "x": 294.0,
+          "y": 231.0
+        }
+      ],
+      "observation_ms": 0.032972,
+      "ocr_ms": 63.44372400000001,
+      "original": "NORA ANOINTED Hunter common",
+      "raw_original": "NORA ANOINTED Hunter common",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.84165954589844,
+          "rect": {
+            "h": 36.0,
+            "w": 102.0,
+            "x": 153.0,
+            "y": 178.0
+          },
+          "text": "NORA"
         },
-        "text": "Well-worn armor made with repurposed technology from"
-      },
-      {
-        "confidence": 99.70037841796875,
-        "rect": {
-          "h": 27.0,
-          "w": 530.0,
-          "x": 53.0,
-          "y": 287.0
+        {
+          "confidence": 99.36219024658203,
+          "rect": {
+            "h": 38.0,
+            "w": 157.0,
+            "x": 243.0,
+            "y": 177.0
+          },
+          "text": "ANOINTED"
         },
-        "text": "an ancient lab. After losing its power source, it was"
-      },
-      {
-        "confidence": 99.97539520263672,
-        "rect": {
-          "h": 27.0,
-          "w": 388.0,
-          "x": 54.0,
-          "y": 315.0
+        {
+          "confidence": 99.99401092529297,
+          "rect": {
+            "h": 23.0,
+            "w": 74.0,
+            "x": 156.0,
+            "y": 224.0
+          },
+          "text": "Hunter"
         },
-        "text": "modified to augment ranged combat."
-      },
-      {
-        "confidence": 99.2206802368164,
-        "rect": {
-          "h": 25.0,
-          "w": 215.0,
-          "x": 55.0,
-          "y": 560.0
-        },
-        "text": "LEVEL 2 UPGRADE"
-      },
-      {
-        "confidence": 99.83721160888672,
-        "rect": {
-          "h": 26.0,
-          "w": 249.0,
-          "x": 56.0,
-          "y": 613.0
-        },
-        "text": "Increases Resistances"
-      },
-      {
-        "confidence": 96.93328094482422,
-        "rect": {
-          "h": 28.0,
-          "w": 236.0,
-          "x": 55.0,
-          "y": 645.0
-        },
-        "text": "Ix Skill Improvement"
-      },
-      {
-        "confidence": 92.78993225097656,
-        "rect": {
-          "h": 12.0,
-          "w": 11.0,
-          "x": 941.0,
-          "y": 827.0
-        },
-        "text": "A"
-      },
-      {
-        "confidence": 99.302001953125,
-        "rect": {
-          "h": 28.0,
-          "w": 34.0,
-          "x": 54.0,
-          "y": 1018.0
-        },
-        "text": "Esc"
-      },
-      {
-        "confidence": 99.9306869506836,
-        "rect": {
-          "h": 32.0,
-          "w": 73.0,
-          "x": 99.0,
-          "y": 1021.0
-        },
-        "text": "Close"
-      }
-    ],
-    "text": "3\nA\nWORKBENCH\n76\nR\nOUTFIT UPGRADES\n0\nNORA ANOINTED\nHunter\nUncommon\nWell-worn armor made with repurposed technology from\nan ancient lab. After losing its power source, it was\nmodified to augment ranged combat.\nLEVEL 2 UPGRADE\nIncreases Resistances\nIx Skill Improvement\nA\nEsc\nClose"
-  },
-  "ocr_history": [],
-  "ocr_scans": 1,
-  "peak_memory": "VmHWM:\t  463636 kB",
+        {
+          "confidence": 99.92445373535156,
+          "rect": {
+            "h": 15.0,
+            "w": 85.0,
+            "x": 294.0,
+            "y": 231.0
+          },
+          "text": "common"
+        }
+      ],
+      "split": false,
+      "translation": "НОРА АНОИНДИРОВАННЫЙ Охотник общий",
+      "translation_source": "actual translation-engine response"
+    }
+  ],
+  "ocr_scans": 2,
+  "peak_memory": "VmHWM:\t  218784 kB",
   "placed": [
     {
       "alignment": "right",
@@ -648,31 +4277,34 @@
       "block_id": 1,
       "block_type": "button",
       "box": [
-        0.8885416666666667,
-        0.0,
-        0.10625,
-        0.09537037037037037
+        0.88984375,
+        0.012962962962962963,
+        0.038802083333333334,
+        0.07222222222222222
       ],
+      "expanded": true,
       "font_family": "Inter",
-      "font_px": 9.0,
+      "font_px": 17.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.26338666677474976,
+        "confidence": 0.2238786816596985,
         "generic": false
       },
       "font_weight": 200,
       "inner": [
+        26.5,
         28.0,
-        27.0,
         28.0,
         28.0
       ],
       "italic": false,
       "key": "test:1",
+      "layout_width": 18.0,
       "letter_spacing": 7.62061882019043,
       "line_height": 0.8999999761581421,
-      "max_lines": 4,
-      "original": "fixture 1",
+      "max_lines": 1,
+      "original": "7",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -688,13 +4320,14 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "7",
       "text_color": "#bab8b2",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
-      "alignment": "left",
+      "alignment": "right",
       "background": {
         "color": "#000000",
         "image": "",
@@ -705,16 +4338,76 @@
       "block_id": 2,
       "block_type": "button",
       "box": [
-        0.01854166587193807,
-        0.02277777636492694,
-        0.25875000953674315,
-        0.048888891714590564
+        0.8487499872843425,
+        0.019074072661223233,
+        0.03479169209798177,
+        0.05074074356644242
+      ],
+      "font_family": "Roboto",
+      "font_px": 20.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.4667297303676605,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        14.4000244140625,
+        14.400001525878906,
+        14.4000244140625,
+        14.400001525878906
+      ],
+      "italic": false,
+      "key": "test:2",
+      "layout_width": 36.0,
+      "letter_spacing": 3.787252902984619,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "76",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "76",
+      "text_color": "#b1b0aa",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#000000",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 3,
+      "block_type": "button",
+      "box": [
+        0.017499999205271403,
+        0.01999999858714916,
+        0.26187500953674314,
+        0.056296299121997975
       ],
       "font_family": "Roboto Slab",
-      "font_px": 17.0,
+      "font_px": 23.0,
       "font_selection": {
         "category": "slab_serif",
-        "confidence": 0.8357407450675964,
+        "confidence": 0.3760833144187927,
         "generic": false
       },
       "font_weight": 500,
@@ -725,11 +4418,13 @@
         14.400001525878906
       ],
       "italic": false,
-      "key": "test:2",
-      "letter_spacing": -0.6986637711524963,
+      "key": "test:3",
+      "layout_width": 472.0,
+      "letter_spacing": -0.7595604062080383,
       "line_height": 0.8999999761581421,
       "max_lines": 1,
-      "original": "fixture 2",
+      "original": "AWORKBENCH OUTFIT UPGRADES",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -745,179 +4440,9 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "РАБОЧИЕ ФОРУСЫ МОДЕРНИЗАЦИИ",
       "text_color": "#9c9b97",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#081108",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 3,
-      "block_type": "menu_item",
-      "box": [
-        0.008333333333333333,
-        0.1287037037037037,
-        0.20364583333333333,
-        0.1087962962962963
-      ],
-      "font_family": "Literata",
-      "font_px": 27.0,
-      "font_selection": {
-        "category": "serif",
-        "confidence": 0.3085166811943054,
-        "generic": false
-      },
-      "font_weight": 200,
-      "inner": [
-        28.0,
-        28.0,
-        28.0,
-        6.5
-      ],
-      "italic": false,
-      "key": "test:3",
-      "letter_spacing": -1.114007830619812,
-      "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 3",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#607660",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#010000",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 4,
-      "block_type": "unknown",
-      "box": [
-        0.02677083412806193,
-        0.2375,
-        0.31416664123535154,
-        0.08342593157732928
-      ],
-      "font_family": "Roboto",
-      "font_px": 23.0,
-      "font_selection": {
-        "category": "neo_grotesque_sans",
-        "confidence": 0.7676093578338623,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        6.599998474121094,
-        6.5,
-        6.5999755859375,
-        6.600006103515625
-      ],
-      "italic": false,
-      "key": "test:4",
-      "letter_spacing": 0.0,
-      "line_height": 1.0,
-      "max_lines": 2,
-      "original": "fixture 4",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#8b8a87",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#000000",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 6,
-      "block_type": "unknown",
-      "box": [
-        0.020833333333333332,
-        0.40185185185185185,
-        0.14322916666666666,
-        0.09351851851851851
-      ],
-      "font_family": "Literata",
-      "font_px": 21.0,
-      "font_selection": {
-        "category": "serif",
-        "confidence": 0.32963740825653076,
-        "generic": false
-      },
-      "font_weight": 800,
-      "inner": [
-        16.0,
-        16.0,
-        16.0,
-        16.0
-      ],
-      "italic": false,
-      "key": "test:6",
-      "letter_spacing": -0.8697605133056641,
-      "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 6",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#888c7d",
       "text_opacity": 1.0,
       "wrap": "word"
     },
@@ -933,31 +4458,33 @@
       "block_id": 9,
       "block_type": "unknown",
       "box": [
-        0.028437499205271402,
-        0.5181481255425348,
-        0.11343749364217122,
-        0.026666711877893517
+        0.024166667461395265,
+        0.2337962962962963,
+        0.3178124745686849,
+        0.08620370935510706
       ],
-      "font_family": "Inter",
-      "font_px": 10.0,
+      "font_family": "Roboto",
+      "font_px": 19.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.6467870473861694,
+        "confidence": 0.6524679660797119,
         "generic": false
       },
-      "font_weight": 500,
+      "font_weight": 400,
       "inner": [
-        5.400001525878906,
-        5.4000244140625,
-        5.399993896484375,
-        5.4000244140625
+        6.599998474121094,
+        4.5,
+        6.5999755859375,
+        6.600006103515625
       ],
       "italic": false,
       "key": "test:9",
-      "letter_spacing": -0.4161878824234009,
-      "line_height": 0.8999999761581421,
-      "max_lines": 1,
-      "original": "fixture 9",
+      "layout_width": 595.0,
+      "letter_spacing": -0.717362642288208,
+      "line_height": 0.9571428298950195,
+      "max_lines": 3,
+      "original": "Well-worn armor made with repurposed technology from an ancient lab. After losing its power source, it was modified to augment ranged combat.",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -973,7 +4500,68 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Хорошо изношенная броня сделана с перепрофилированной технологией из древней лаборатории. После потери источника питания он был модифицирован для усиления дальной борьбы.",
+      "text_color": "#8b8a87",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#010000",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 24,
+      "block_type": "button",
+      "box": [
+        0.023020833730697632,
+        0.510370381673177,
+        0.12374999523162841,
+        0.042222199616608794
+      ],
+      "font_family": "Inter",
+      "font_px": 17.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.5798731446266174,
+        "generic": false
+      },
+      "font_weight": 500,
+      "inner": [
+        10.799999237060547,
+        10.79998779296875,
+        10.79998779296875,
+        10.79998779296875
+      ],
+      "italic": false,
+      "key": "test:24",
+      "layout_width": 214.0,
+      "letter_spacing": -0.6827577948570251,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "LEVEL 2 UPGRADE",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "ОБОБРАЩЕНА УРОВЕНЬ 2",
       "text_color": "#b6b4af",
       "text_opacity": 1.0,
       "wrap": "word"
@@ -987,19 +4575,19 @@
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 10,
+      "block_id": 28,
       "block_type": "unknown",
       "box": [
-        0.027083333333333334,
-        0.5666666666666667,
-        0.13333333333333333,
-        0.05925925925925926
+        0.026041666666666668,
+        0.562037037037037,
+        0.13541666666666666,
+        0.06574074074074074
       ],
       "font_family": "Roboto",
       "font_px": 19.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.7602564692497253,
+        "confidence": 0.6462180018424988,
         "generic": false
       },
       "font_weight": 500,
@@ -1010,11 +4598,13 @@
         6.0
       ],
       "italic": false,
-      "key": "test:10",
+      "key": "test:28",
+      "layout_width": 246.0,
       "letter_spacing": -0.6751648187637329,
-      "line_height": 1.0351852178573608,
+      "line_height": 0.9611111879348755,
       "max_lines": 2,
-      "original": "fixture 10",
+      "original": "Increases Resistances Ix Skill Improvement",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -1030,65 +4620,9 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Повышает Сопротивление Ix Улучшение Умений",
       "text_color": "#afafaf",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#140b06",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 12,
-      "block_type": "button",
-      "box": [
-        0.5619791666666667,
-        0.6027777777777777,
-        0.049479166666666664,
-        0.21388888888888888
-      ],
-      "font_family": "Source Serif 4",
-      "font_px": 16.0,
-      "font_selection": {
-        "category": "serif",
-        "confidence": 0.3336355984210968,
-        "generic": false
-      },
-      "font_weight": 200,
-      "inner": [
-        10.0,
-        28.0,
-        28.0,
-        28.0
-      ],
-      "italic": false,
-      "key": "test:12",
-      "letter_spacing": -0.6790646314620972,
-      "line_height": 0.8999999761581421,
-      "max_lines": 8,
-      "original": "fixture 12",
-      "outline": false,
-      "outline_color": "#000000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
       "text_opacity": 1.0,
       "wrap": "word"
     },
@@ -1097,38 +4631,40 @@
       "background": {
         "color": "#000000",
         "image": "",
-        "mode": "solid_fill",
+        "mode": "adaptive_padding_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 16,
-      "block_type": "unknown",
+      "block_id": 46,
+      "block_type": "button",
       "box": [
-        0.02401041587193807,
-        0.9334259033203125,
-        0.0676041603088379,
-        0.048888934100115744
+        0.01833333174387614,
+        0.9251851964879919,
+        0.08260416984558105,
+        0.0681481820565683
       ],
       "font_family": "Roboto",
-      "font_px": 10.0,
+      "font_px": 20.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.34996432065963745,
+        "confidence": 0.31372591853141785,
         "generic": false
       },
       "font_weight": 400,
       "inner": [
-        9.900001525878906,
-        9.9000244140625,
-        9.899993896484375,
-        9.9000244140625
+        19.800003051757812,
+        19.79998779296875,
+        19.800003051757812,
+        19.800048828125
       ],
       "italic": false,
-      "key": "test:16",
-      "letter_spacing": -0.42257124185562134,
+      "key": "test:46",
+      "layout_width": 117.0,
+      "letter_spacing": -0.8017582297325134,
       "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 16",
+      "max_lines": 1,
+      "original": "Esc Close",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -1144,123 +4680,191 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Esc Закрыть",
       "text_color": "#bababa",
       "text_opacity": 1.0,
       "wrap": "word"
     }
   ],
-  "placement_ms": 1444.542391,
-  "repeat_frame_ms": 173.133254,
+  "placement_ms": 207.420055,
+  "repeat_frame_ms": 24.461218,
+  "repeat_ocr_jobs": 0,
   "size": [
     1920,
     1080
   ],
   "timings_ms": [
     [
-      125.114318,
-      199.300651,
-      0.693075
+      7.555583,
+      17.580434,
+      0.139705
     ],
     [
-      101.524632,
-      197.334379,
-      0.594759
+      6.468984,
+      17.083762999999998,
+      0.14778
     ],
     [
-      95.27803,
-      200.20769099999998,
-      0.619665
+      5.949140000000001,
+      17.314199,
+      0.148932
     ],
     [
-      95.47243800000001,
-      213.334106,
-      0.602803
+      6.775144,
+      17.295182999999998,
+      0.154813
     ],
     [
-      101.151834,
-      194.908166,
-      0.794307
+      6.74599,
+      17.367379,
+      0.15001399999999998
     ]
   ],
-  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
-  "render_ms": 317.52047699956165,
-  "update_ms": 3.409499000554206,
+  "translation_cache_hits": 0,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 10,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 276.93378799995116,
+  "update_ms": 2.8371250000418513,
   "layout_diagnostics": [
     {
-      "width": 148,
-      "height": 48,
-      "contentWidth": 124.796875,
-      "contentHeight": 41.499998927116394,
-      "lines": 4,
+      "width": 18,
+      "height": 21.999999999999986,
+      "contentWidth": 17.21875,
+      "contentHeight": 20.899999499320984,
+      "lines": 1,
       "truncated": false
     },
     {
-      "width": 467.99999237060547,
+      "width": 36,
+      "height": 26,
+      "contentWidth": 30.03125,
+      "contentHeight": 23.59999942779541,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 472,
+      "height": 32,
+      "contentWidth": 405.828125,
+      "contentHeight": 30.899999260902405,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 595,
+      "height": 82,
+      "contentWidth": 535.953125,
+      "contentHeight": 66.04285526275635,
+      "lines": 3,
+      "truncated": false
+    },
+    {
+      "width": 214,
       "height": 24,
-      "contentWidth": 328.125,
-      "contentHeight": 22.699999451637268,
+      "contentWidth": 206.234375,
+      "contentHeight": 20.899999499320984,
       "lines": 1,
       "truncated": false
     },
     {
-      "width": 335,
-      "height": 83,
-      "contentWidth": 295.203125,
-      "contentHeight": 77.79999804496765,
+      "width": 246,
+      "height": 59,
+      "contentWidth": 242.3125,
+      "contentHeight": 44.21111464500427,
       "lines": 2,
       "truncated": false
     },
     {
-      "width": 589.9999771118164,
-      "height": 77,
-      "contentWidth": 448.796875,
-      "contentHeight": 29,
+      "width": 117,
+      "height": 34,
+      "contentWidth": 109.078125,
+      "contentHeight": 23.59999942779541,
       "lines": 1,
-      "truncated": false
-    },
-    {
-      "width": 243,
-      "height": 69,
-      "contentWidth": 229.65625,
-      "contentHeight": 60.599998474121094,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 206.99999237060547,
-      "height": 18,
-      "contentWidth": 188.96875,
-      "contentHeight": 12.699999690055847,
-      "lines": 1,
-      "truncated": false
-    },
-    {
-      "width": 244,
-      "height": 52,
-      "contentWidth": 243.109375,
-      "contentHeight": 48.65370523929596,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 57,
-      "height": 175,
-      "contentWidth": 53.609375,
-      "contentHeight": 160.399995803833,
-      "lines": 8,
-      "truncated": false
-    },
-    {
-      "width": 109.99999237060547,
-      "height": 33,
-      "contentWidth": 101.546875,
-      "contentHeight": 23.499999403953552,
-      "lines": 2,
       "truncated": false
     }
   ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 9,
+    "rendered": 7,
+    "missing": [
+      {
+        "id": 5,
+        "original": "ED",
+        "confidence": 81.86499786376953,
+        "reason": "для перевода нет места поверх игры"
+      },
+      {
+        "id": 4,
+        "original": "NORA ANOINTED Hunter common",
+        "confidence": 99.74061584472656,
+        "reason": "для перевода нет места поверх игры"
+      }
+    ],
+    "source_coverage": [
+      {
+        "id": 1,
+        "original": "7",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 2,
+        "original": "76",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 3,
+        "original": "AWORKBENCH OUTFIT UPGRADES",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 5,
+        "original": "ED",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 9,
+        "original": "Well-worn armor made with repurposed technology from an ancient lab. After losing its power source, it was modified to augment ranged combat.",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 24,
+        "original": "LEVEL 2 UPGRADE",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 28,
+        "original": "Increases Resistances Ix Skill Improvement",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 46,
+        "original": "Esc Close",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 4,
+        "original": "NORA ANOINTED Hunter common",
+        "rendered": false,
+        "plate_coverage": 0.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "FAIL",
+    "uncovered_text_blocks": [
+      4
+    ]
+  },
   "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-6.jpg",
-  "approved_reference": false,
-  "translation_service": "none: predefined deterministic test input"
+  "approved_reference": false
 }

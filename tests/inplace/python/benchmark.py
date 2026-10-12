@@ -23,6 +23,10 @@ def main():
     parser.add_argument("candidate", type=Path)
     parser.add_argument("--rounds", type=int, default=3)
     parser.add_argument("--output", type=Path, default=ROOT / "tmp/phase23/paired-benchmark")
+    parser.add_argument("--translation", default="Тестовая строка перевода для проверки размещения текста.",
+                        help="explicit synthetic fitting text; never sent to a translation service")
+    parser.add_argument("--require-identical", action="store_true",
+                        help="fail on metadata/placement differences (use only for pure performance changes)")
     args = parser.parse_args()
     output = args.output.resolve()
     if not output.is_relative_to((ROOT / "tmp").resolve()) or args.rounds < 1:
@@ -34,6 +38,7 @@ def main():
     env.pop("LIPAX_QT_MEASURE_SERVER", None)
     env.pop("LIPAX_DIAGNOSTICS_DIR", None)
     results = {key: [] for key in binaries}
+    differences = []
     with (output / "samples.jsonl").open("w") as log:
         sources = sorted(p for p in (ROOT / "docs/screenshots/test-game").iterdir()
                          if p.is_file() and (p.suffix.lower() in {".png", ".jpg", ".jpeg"} or not p.suffix))
@@ -46,7 +51,7 @@ def main():
                 order = list(binaries) if round_index % 2 == 0 else list(reversed(binaries))
                 pair = {}
                 for key in order:
-                    data = json.loads(subprocess.check_output([str(binaries[key]), str(png)],
+                    data = json.loads(subprocess.check_output([str(binaries[key]), str(png), "--translation=" + args.translation],
                         env=env, text=True, timeout=120))
                     data.update(source=source.name, implementation=key, round=round_index)
                     results[key].append(data)
@@ -54,14 +59,18 @@ def main():
                     log.write(json.dumps(data) + "\n")
                     log.flush()
                 for field in ("blocks", "placed", "dropped", "fits", "hits"):
-                    assert pair["baseline"][field] == pair["candidate"][field], (source.name, field)
+                    if pair["baseline"][field] != pair["candidate"][field]:
+                        differences.append({"source": source.name, "round": round_index, "field": field})
     summary = {"rounds": args.rounds, "images": len(results["baseline"]) // args.rounds,
         "binary_sha256": {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in binaries.items()},
         "platform": platform.platform(), "python": platform.python_version(),
         "cpu": next((line.split(":", 1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines()
                      if line.startswith("model name")), "unknown"),
-        "conditions": "release binaries, no concurrent benchmark jobs, CPU boost/governor unpinned; ApproxMeasure placement",
-        "exact_metadata_and_placement_equal": True}
+        "conditions": "release binaries; caller must avoid concurrent builds/benchmarks; CPU boost/governor unpinned; ApproxMeasure placement",
+        "translation": args.translation,
+        "measurement_scope": "synthetic detector/typography/ApproxMeasure fitting; excludes OCR, translation service, Qt and compositor",
+        "exact_metadata_and_placement_equal": not differences,
+        "quality_differences": differences}
     for key, rows in results.items():
         samples = {}
         for label, column in [("detection_ms", 0), ("glyph_ms", 1), ("matching_ms", 2)]:
@@ -73,6 +82,8 @@ def main():
         summary[key] = samples
     (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps(summary, indent=2))
+    if differences and args.require_identical:
+        raise SystemExit("metadata/placement changed; inspect samples.jsonl (not a speed-only comparison)")
 
 
 if __name__ == "__main__":

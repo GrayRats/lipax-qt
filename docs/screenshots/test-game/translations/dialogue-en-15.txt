@@ -1,14 +1,14 @@
-[1] fixture 1
-→ Перевод длиннее оригинала. Hello 日本語
+[2] Cross x Mars
+→ Крест x Марс
 
-[5] fixture 5
-→ Перевод длиннее оригинала. Hello 日本語
+[3] 60% Fuel
+→ 60% Топлива
 
-[6] fixture 6
-→ Перевод длиннее оригинала. Hello 日本語
+[13] rSpeed: 5 ms Temp: 20 C
+→ rСтупет: 5 мс Темп: 20 C
 
-[7] fixture 7
-→ Перевод длиннее оригинала. Hello 日本語
+[16] cking
+→ ккинг
 
-[11] fixture 11
-→ Перевод длиннее оригинала. Hello 日本語
+[21] Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back- and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be.. but I have the right to be angry!
+→ - Доброе утро, Элла. Иногда я задаюсь вопросом, нахожусь ли я в правильном месте - все это перетаскивание назад и назад становится утомительным, и, честно говоря, я расстроен этим больше, чем должен быть... но я имею право злиться!

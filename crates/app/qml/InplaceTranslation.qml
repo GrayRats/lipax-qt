@@ -1,4 +1,5 @@
 import QtQuick
+import QtQml
 import "InplaceGeometry.js" as Geometry
 import org.kde.layershell 1.0 as LayerShell
 
@@ -10,12 +11,28 @@ import org.kde.layershell 1.0 as LayerShell
 // Instances are reused by field key, so a stable field keeps its window between scans.
 Window {
     id: win
+    objectName: "inplaceTranslation"
     property var settings: ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
     // Element of Controller.inplaceJson.
     property var entry: null
     property string gameGeometry: ""
     property bool relocating: false
+    property bool framePending: true
     signal hideRequested()
+    LoggingCategory { id: logSurface; name: "inplace.surface"; defaultLogLevel: LoggingCategory.Debug }
+    function diagnose(stage) {
+        console.debug(logSurface, "stage=" + stage + " key=" + (entry ? entry.key : "?")
+                      + " visible=" + visible + " geometry=" + JSON.stringify(desktopRect)
+                      + " screen=" + (targetScreen ? targetScreen.name : "none")
+                      + " width=" + width + " height=" + height)
+    }
+    Component.onCompleted: diagnose("created")
+    Component.onDestruction: diagnose("removed")
+    onEntryChanged: { framePending = true; diagnose("updated") }
+    onDesktopRectChanged: { framePending = true; diagnose("geometry") }
+    onVisibleChanged: { framePending = true; diagnose("visibility") }
+    // This means a Qt frame was submitted, not that compositor visibility was verified.
+    onFrameSwapped: if (framePending && visible) { diagnose("frame_submitted"); framePending = false }
 
     // Desktop rectangle: game window → region → field box (box is relative to the region frame).
     readonly property var desktopRect: {
@@ -30,7 +47,7 @@ Window {
         const cx = p ? p[0] : desktopRect[0] + desktopRect[2] / 2, cy = p ? p[1] : desktopRect[1] + desktopRect[3] / 2
         for (const s of Qt.application.screens)
             if (cx >= s.virtualX && cx < s.virtualX + s.width && cy >= s.virtualY && cy < s.virtualY + s.height) return s
-        return Qt.application.screens.length ? Qt.application.screens[0] : null
+        return null
     }
     onTargetScreenChanged: if (targetScreen && screen !== targetScreen) {
         relocating = true
@@ -50,6 +67,7 @@ Window {
     y: pixelRect ? pixelRect[1] : 0
 
     LayerShell.Window.scope: "lipa-inplace"
+    LayerShell.Window.screen: targetScreen
     LayerShell.Window.layer: LayerShell.Window.LayerOverlay
     LayerShell.Window.anchors: LayerShell.Window.AnchorTop | LayerShell.Window.AnchorLeft
     LayerShell.Window.margins: ({ left: pixelRect && targetScreen ? pixelRect[0] - targetScreen.virtualX : 0,

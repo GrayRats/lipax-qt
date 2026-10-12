@@ -1,10 +1,1145 @@
 {
-  "block_ocr": [],
+  "block_ocr": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1049,
+        369
+      ],
+      "detector_rect": {
+        "h": 95.0,
+        "w": 55.0,
+        "x": 1059.0,
+        "y": 379.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 136.53368,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1146,
+        404
+      ],
+      "detector_rect": {
+        "h": 14.0,
+        "w": 15.0,
+        "x": 1150.0,
+        "y": 408.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.718245,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1086,
+        392
+      ],
+      "detector_rect": {
+        "h": 82.0,
+        "w": 84.0,
+        "x": 1107.0,
+        "y": 413.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.21456,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1117,
+        432
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 17.0,
+        "x": 1120.0,
+        "y": 435.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.841959,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1012,
+        469
+      ],
+      "detector_rect": {
+        "h": 52.0,
+        "w": 122.0,
+        "x": 1025.0,
+        "y": 482.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.7616669999999996,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1163,
+        527
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 21.0,
+        "x": 1166.0,
+        "y": 530.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.563221,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1206,
+        536
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 5.0,
+        "x": 1209.0,
+        "y": 539.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.228547,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1237,
+        583
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 6.0,
+        "x": 1240.0,
+        "y": 586.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.163273,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1159,
+        599
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 17.0,
+        "x": 1162.0,
+        "y": 602.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.4327050000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1104,
+        608
+      ],
+      "detector_rect": {
+        "h": 18.0,
+        "w": 74.0,
+        "x": 1109.0,
+        "y": 613.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.594645,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 95.10543060302734,
+      "crop_origin": [
+        553,
+        606
+      ],
+      "detector_rect": {
+        "h": 39.0,
+        "w": 264.0,
+        "x": 563.0,
+        "y": 616.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [
+        {
+          "h": 38.0,
+          "w": 181.0,
+          "x": 559.0,
+          "y": 616.0
+        },
+        {
+          "h": 27.0,
+          "w": 50.0,
+          "x": 749.0,
+          "y": 616.0
+        }
+      ],
+      "observation_ms": 0.013195,
+      "ocr_ms": 31.283683999999997,
+      "original": "RHODES ICI",
+      "raw_original": "RHODES ICI",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.71600341796875,
+          "rect": {
+            "h": 38.0,
+            "w": 181.0,
+            "x": 559.0,
+            "y": 616.0
+          },
+          "text": "RHODES"
+        },
+        {
+          "confidence": 85.88426971435547,
+          "rect": {
+            "h": 27.0,
+            "w": 50.0,
+            "x": 749.0,
+            "y": 616.0
+          },
+          "text": "ICI"
+        }
+      ],
+      "split": false,
+      "translation": "РОДЕС ICI",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1117,
+        625
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 21.0,
+        "x": 1120.0,
+        "y": 628.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.2149259999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1030,
+        667
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 5.0,
+        "x": 1033.0,
+        "y": 670.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.062983,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1145,
+        669
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 27.0,
+        "x": 1148.0,
+        "y": 672.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 1.828624,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1021,
+        678
+      ],
+      "detector_rect": {
+        "h": 18.0,
+        "w": 11.0,
+        "x": 1026.0,
+        "y": 683.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 4.9999999999999996e-05,
+      "ocr_ms": 1.515241,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.98898315429688,
+      "crop_origin": [
+        1728,
+        698
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 131.0,
+        "x": 1733.0,
+        "y": 703.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [
+        {
+          "h": 23.0,
+          "w": 89.0,
+          "x": 1734.0,
+          "y": 701.0
+        },
+        {
+          "h": 25.0,
+          "w": 43.0,
+          "x": 1825.0,
+          "y": 700.0
+        }
+      ],
+      "observation_ms": 0.24441300000000002,
+      "ocr_ms": 29.80383,
+      "original": "First-time Hire",
+      "raw_original": "First-time Hire",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.99297332763672,
+          "rect": {
+            "h": 23.0,
+            "w": 89.0,
+            "x": 1734.0,
+            "y": 701.0
+          },
+          "text": "First-time"
+        },
+        {
+          "confidence": 99.97901916503906,
+          "rect": {
+            "h": 25.0,
+            "w": 43.0,
+            "x": 1825.0,
+            "y": 700.0
+          },
+          "text": "Hire"
+        }
+      ],
+      "split": false,
+      "translation": "Первый прокат",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        930,
+        700
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 14.0,
+        "x": 934.0,
+        "y": 704.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.351494,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 95.19115447998047,
+      "crop_origin": [
+        1739,
+        699
+      ],
+      "detector_rect": {
+        "h": 18.0,
+        "w": 120.0,
+        "x": 1744.0,
+        "y": 704.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [
+        {
+          "h": 22.0,
+          "w": 84.0,
+          "x": 1740.0,
+          "y": 702.0
+        },
+        {
+          "h": 25.0,
+          "w": 43.0,
+          "x": 1825.0,
+          "y": 700.0
+        }
+      ],
+      "observation_ms": 0.21302300000000002,
+      "ocr_ms": 30.165285,
+      "original": "first-time Hire",
+      "raw_original": "first-time Hire",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 93.2755355834961,
+          "rect": {
+            "h": 22.0,
+            "w": 84.0,
+            "x": 1740.0,
+            "y": 702.0
+          },
+          "text": "first-time"
+        },
+        {
+          "confidence": 99.98018646240234,
+          "rect": {
+            "h": 25.0,
+            "w": 43.0,
+            "x": 1825.0,
+            "y": 700.0
+          },
+          "text": "Hire"
+        }
+      ],
+      "split": false,
+      "translation": "Первый прокат",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        921,
+        708
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 31.0,
+        "x": 930.0,
+        "y": 717.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.9560359999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1012,
+        721
+      ],
+      "detector_rect": {
+        "h": 44.0,
+        "w": 46.0,
+        "x": 1017.0,
+        "y": 726.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.522685,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1048,
+        738
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 8.0,
+        "x": 1051.0,
+        "y": 741.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.3652060000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1668,
+        747
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 8.0,
+        "x": 1671.0,
+        "y": 750.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.2929389999999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 66.93231964111328,
+      "crop_origin": [
+        865,
+        744
+      ],
+      "detector_rect": {
+        "h": 68.0,
+        "w": 99.0,
+        "x": 882.0,
+        "y": 761.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [
+        {
+          "h": 94.0,
+          "w": 99.0,
+          "x": 869.0,
+          "y": 751.0
+        }
+      ],
+      "observation_ms": 4e-05,
+      "ocr_ms": 19.471988999999997,
+      "original": "*",
+      "raw_original": "*",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 66.93231964111328,
+          "rect": {
+            "h": 94.0,
+            "w": 99.0,
+            "x": 869.0,
+            "y": 751.0
+          },
+          "text": "*"
+        }
+      ],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.92383575439453,
+      "crop_origin": [
+        1665,
+        768
+      ],
+      "detector_rect": {
+        "h": 18.0,
+        "w": 195.0,
+        "x": 1670.0,
+        "y": 773.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 197.0,
+          "x": 1668.0,
+          "y": 771.0
+        }
+      ],
+      "observation_ms": 0.071085,
+      "ocr_ms": 24.453966,
+      "original": "Distinction Certificate",
+      "raw_original": "Distinction Certificate",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.92383575439453,
+          "rect": {
+            "h": 21.0,
+            "w": 197.0,
+            "x": 1668.0,
+            "y": 771.0
+          },
+          "text": "Distinction Certificate"
+        }
+      ],
+      "split": false,
+      "translation": "Сертификат отрыва",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1609,
+        773
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 35.0,
+        "x": 1612.0,
+        "y": 776.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.471973,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        927,
+        775
+      ],
+      "detector_rect": {
+        "h": 20.0,
+        "w": 49.0,
+        "x": 932.0,
+        "y": 780.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 26,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.2407489999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1666,
+        812
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 26.0,
+        "x": 1669.0,
+        "y": 815.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 27,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.82125,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        993,
+        839
+      ],
+      "detector_rect": {
+        "h": 22.0,
+        "w": 17.0,
+        "x": 997.0,
+        "y": 843.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 28,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.984549,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1097,
+        871
+      ],
+      "detector_rect": {
+        "h": 39.0,
+        "w": 22.0,
+        "x": 1107.0,
+        "y": 881.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 29,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 1.753361,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.2492446899414,
+      "crop_origin": [
+        353,
+        960
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 724.0,
+        "x": 362.0,
+        "y": 969.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 30,
+      "lines": [
+        {
+          "h": 43.0,
+          "w": 741.0,
+          "x": 353.0,
+          "y": 960.0
+        }
+      ],
+      "observation_ms": 1.795762,
+      "ocr_ms": 45.684686,
+      "original": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title.",
+      "raw_original": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.2492446899414,
+          "rect": {
+            "h": 43.0,
+            "w": 741.0,
+            "x": 353.0,
+            "y": 960.0
+          },
+          "text": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title."
+        }
+      ],
+      "split": false,
+      "translation": "Я Мирра, травник. Доктор. Кал'сит дал мне этот титул.",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.84952545166016,
+      "crop_origin": [
+        1111,
+        960
+      ],
+      "detector_rect": {
+        "h": 33.0,
+        "w": 314.0,
+        "x": 1120.0,
+        "y": 969.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 31,
+      "lines": [
+        {
+          "h": 38.0,
+          "w": 323.0,
+          "x": 1115.0,
+          "y": 963.0
+        }
+      ],
+      "observation_ms": 0.869818,
+      "ocr_ms": 23.096124,
+      "original": "she said myrrh symboliz",
+      "raw_original": "she said myrrh symboliz",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.84952545166016,
+          "rect": {
+            "h": 38.0,
+            "w": 323.0,
+            "x": 1115.0,
+            "y": 963.0
+          },
+          "text": "she said myrrh symboliz"
+        }
+      ],
+      "split": false,
+      "translation": "Она сказала, что мирр символизирует",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 33.61008071899414,
+      "crop_origin": [
+        1085,
+        987
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 20.0,
+        "x": 1088.0,
+        "y": 990.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 32,
+      "lines": [
+        {
+          "h": 9.0,
+          "w": 24.0,
+          "x": 1086.0,
+          "y": 987.0
+        }
+      ],
+      "observation_ms": 2e-05,
+      "ocr_ms": 16.841504999999998,
+      "original": "WMM",
+      "raw_original": "WMM",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 33.61008071899414,
+          "rect": {
+            "h": 9.0,
+            "w": 24.0,
+            "x": 1086.0,
+            "y": 987.0
+          },
+          "text": "WMM"
+        }
+      ],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 86.21513366699219,
+      "crop_origin": [
+        1849,
+        1033
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 45.0,
+        "x": 1853.0,
+        "y": 1037.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 33,
+      "lines": [
+        {
+          "h": 20.0,
+          "w": 40.0,
+          "x": 1850.0,
+          "y": 1037.0
+        }
+      ],
+      "observation_ms": 0.012835,
+      "ocr_ms": 16.236118,
+      "original": "AUGAD",
+      "raw_original": "AUGAD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 86.21513366699219,
+          "rect": {
+            "h": 20.0,
+            "w": 40.0,
+            "x": 1850.0,
+            "y": 1037.0
+          },
+          "text": "AUGAD"
+        }
+      ],
+      "split": false,
+      "translation": "АУГАД",
+      "translation_source": "actual translation-engine response"
+    }
+  ],
   "blocks": [
     {
       "cap_height": 36.0,
       "category": "Serif",
-      "confidence": 0.27403056621551514,
+      "confidence": 0.26854997873306274,
       "font": "PT Serif",
       "rect": {
         "h": 95.0,
@@ -14,9 +1149,21 @@
       }
     },
     {
+      "cap_height": 14.0,
+      "category": "Unknown",
+      "confidence": 0.0340714305639267,
+      "font": "Inter",
+      "rect": {
+        "h": 14.0,
+        "w": 15.0,
+        "x": 1150.0,
+        "y": 408.0
+      }
+    },
+    {
       "cap_height": 74.0,
       "category": "Serif",
-      "confidence": 0.2871813476085663,
+      "confidence": 0.2814377248287201,
       "font": "Source Serif 4",
       "rect": {
         "h": 82.0,
@@ -26,9 +1173,21 @@
       }
     },
     {
+      "cap_height": 9.0,
+      "category": "Unknown",
+      "confidence": 0.0356111153960228,
+      "font": "Inter",
+      "rect": {
+        "h": 10.0,
+        "w": 17.0,
+        "x": 1120.0,
+        "y": 435.0
+      }
+    },
+    {
       "cap_height": 47.0,
       "category": "Serif",
-      "confidence": 0.24346473813056946,
+      "confidence": 0.23859545588493347,
       "font": "Source Serif 4",
       "rect": {
         "h": 52.0,
@@ -38,57 +1197,129 @@
       }
     },
     {
-      "cap_height": 15.0,
+      "cap_height": 10.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
-      "font": "Inter",
+      "confidence": 0.030000001192092896,
+      "font": "PT Serif",
       "rect": {
-        "h": 15.0,
+        "h": 10.0,
         "w": 21.0,
         "x": 1166.0,
-        "y": 525.0
+        "y": 530.0
       }
     },
     {
-      "cap_height": 20.0,
+      "cap_height": 5.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.031955134123563766,
+      "font": "Noto Sans",
       "rect": {
-        "h": 26.0,
+        "h": 5.0,
+        "w": 5.0,
+        "x": 1209.0,
+        "y": 539.0
+      }
+    },
+    {
+      "cap_height": 5.0,
+      "category": "Unknown",
+      "confidence": 0.03541666641831398,
+      "font": "PT Serif",
+      "rect": {
+        "h": 7.0,
+        "w": 6.0,
+        "x": 1240.0,
+        "y": 586.0
+      }
+    },
+    {
+      "cap_height": 11.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 11.0,
+        "w": 17.0,
+        "x": 1162.0,
+        "y": 602.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 18.0,
         "w": 74.0,
         "x": 1109.0,
         "y": 613.0
       }
     },
     {
-      "cap_height": 150.0,
+      "cap_height": 9.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
-      "font": "Inter",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
-        "h": 150.0,
-        "w": 280.0,
-        "x": 1593.0,
-        "y": 674.0
+        "h": 9.0,
+        "w": 21.0,
+        "x": 1120.0,
+        "y": 628.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "Unknown",
+      "confidence": 0.034259263426065445,
+      "font": "PT Serif",
+      "rect": {
+        "h": 9.0,
+        "w": 5.0,
+        "x": 1033.0,
+        "y": 670.0
+      }
+    },
+    {
+      "cap_height": 7.0,
+      "category": "Unknown",
+      "confidence": 0.032380953431129456,
+      "font": "PT Serif",
+      "rect": {
+        "h": 19.0,
+        "w": 27.0,
+        "x": 1148.0,
+        "y": 672.0
       }
     },
     {
       "cap_height": 18.0,
-      "category": "SlabSerif",
-      "confidence": 0.39430004358291626,
-      "font": "Roboto Slab",
+      "category": "Unknown",
+      "confidence": 0.0312500037252903,
+      "font": "PT Serif",
       "rect": {
-        "h": 62.0,
-        "w": 45.0,
-        "x": 1017.0,
+        "h": 18.0,
+        "w": 11.0,
+        "x": 1026.0,
         "y": 683.0
+      }
+    },
+    {
+      "cap_height": 13.0,
+      "category": "Unknown",
+      "confidence": 0.033064104616642,
+      "font": "Inter",
+      "rect": {
+        "h": 13.0,
+        "w": 14.0,
+        "x": 934.0,
+        "y": 704.0
       }
     },
     {
       "cap_height": 17.0,
       "category": "Condensed",
-      "confidence": 0.8322548866271973,
+      "confidence": 0.7573519945144653,
       "font": "Roboto Condensed",
       "rect": {
         "h": 18.0,
@@ -100,7 +1331,7 @@
     {
       "cap_height": 30.0,
       "category": "Unknown",
-      "confidence": 0.06322222203016281,
+      "confidence": 0.031611111015081406,
       "font": "Inter",
       "rect": {
         "h": 33.0,
@@ -111,23 +1342,47 @@
     },
     {
       "cap_height": 15.0,
-      "category": "Condensed",
-      "confidence": 0.29730167984962463,
-      "font": "Roboto Condensed",
+      "category": "Serif",
+      "confidence": 0.32320404052734375,
+      "font": "Source Serif 4",
       "rect": {
-        "h": 29.0,
-        "w": 12.0,
+        "h": 44.0,
+        "w": 46.0,
+        "x": 1017.0,
+        "y": 726.0
+      }
+    },
+    {
+      "cap_height": 8.0,
+      "category": "Unknown",
+      "confidence": 0.030750000849366188,
+      "font": "Inter",
+      "rect": {
+        "h": 11.0,
+        "w": 8.0,
         "x": 1051.0,
         "y": 741.0
       }
     },
     {
-      "cap_height": 89.0,
+      "cap_height": 7.0,
       "category": "Unknown",
-      "confidence": 0.06624345481395721,
+      "confidence": 0.03660714626312256,
+      "font": "PT Serif",
+      "rect": {
+        "h": 8.0,
+        "w": 8.0,
+        "x": 1671.0,
+        "y": 750.0
+      }
+    },
+    {
+      "cap_height": 64.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
-        "h": 93.0,
+        "h": 68.0,
         "w": 99.0,
         "x": 882.0,
         "y": 761.0
@@ -136,7 +1391,7 @@
     {
       "cap_height": 20.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 20.0,
@@ -148,7 +1403,19 @@
     {
       "cap_height": 9.0,
       "category": "Unknown",
-      "confidence": 0.06898149102926254,
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 9.0,
+        "w": 26.0,
+        "x": 1669.0,
+        "y": 815.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "Unknown",
+      "confidence": 0.03449074551463127,
       "font": "PT Serif",
       "rect": {
         "h": 22.0,
@@ -160,8 +1427,8 @@
     {
       "cap_height": 39.0,
       "category": "Unknown",
-      "confidence": 0.05583333969116211,
-      "font": "PT Serif",
+      "confidence": 0.029500002041459084,
+      "font": "Inter",
       "rect": {
         "h": 39.0,
         "w": 22.0,
@@ -172,7 +1439,7 @@
     {
       "cap_height": 26.0,
       "category": "Condensed",
-      "confidence": 0.8344871997833252,
+      "confidence": 0.7593833804130554,
       "font": "Roboto Condensed",
       "rect": {
         "h": 33.0,
@@ -184,7 +1451,7 @@
     {
       "cap_height": 26.0,
       "category": "Condensed",
-      "confidence": 0.8344871997833252,
+      "confidence": 0.7593833804130554,
       "font": "Roboto Condensed",
       "rect": {
         "h": 33.0,
@@ -192,609 +1459,1293 @@
         "x": 1120.0,
         "y": 969.0
       }
+    },
+    {
+      "cap_height": 5.0,
+      "category": "Unknown",
+      "confidence": 0.0338333360850811,
+      "font": "Inter",
+      "rect": {
+        "h": 5.0,
+        "w": 20.0,
+        "x": 1088.0,
+        "y": 990.0
+      }
     }
   ],
-  "cached_placement_ms": 1.9725530000000002,
-  "dropped": 8,
+  "cached_placement_ms": 0.016881999999999998,
+  "dropped": 1,
   "dropped_details": [
     {
-      "block_id": 2,
-      "original": "fixture 2",
-      "reason": "для перевода нет места поверх игры",
+      "block_id": 18,
+      "original": "first-time Hire",
+      "reason": "повторный OCR того же текста",
       "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 3,
-      "original": "fixture 3",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 6,
-      "original": "fixture 6",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 7,
-      "original": "fixture 7",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 8,
-      "original": "fixture 8",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 10,
-      "original": "fixture 10",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 11,
-      "original": "fixture 11",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 12,
-      "original": "fixture 12",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
+      "text": "Первый прокат"
     }
   ],
   "finish_ms": [
-    0.065585
+    2.010228
   ],
-  "first_frame_ms": 299.002111,
-  "fits": 16,
+  "first_frame_ms": 35.927421,
+  "fits": 6,
   "frame_blocks": [
     {
-      "id": 1,
-      "lines_note": "",
-      "source_lines": 2,
+      "cap_height_px": 36.0,
+      "id": 11,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
       "text_rect": {
+        "h": 40.0,
+        "w": 242.0,
+        "x": 558.0,
+        "y": 615.0
+      }
+    },
+    {
+      "cap_height_px": 19.0,
+      "id": 16,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 27.0,
+        "w": 136.0,
+        "x": 1733.0,
+        "y": 699.0
+      }
+    },
+    {
+      "cap_height_px": 18.0,
+      "id": 24,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 23.0,
+        "w": 199.0,
+        "x": 1667.0,
+        "y": 770.0
+      }
+    },
+    {
+      "cap_height_px": 26.0,
+      "id": 30,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 45.0,
+        "w": 743.0,
+        "x": 352.0,
+        "y": 959.0
+      }
+    },
+    {
+      "cap_height_px": 26.0,
+      "id": 31,
+      "lines_note": "строк: 1 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 40.0,
+        "w": 325.0,
+        "x": 1114.0,
+        "y": 962.0
+      }
+    },
+    {
+      "cap_height_px": 11.0,
+      "id": 33,
+      "lines_note": "строки и границы по валидированным OCR-фрагментам",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 22.0,
+        "w": 42.0,
+        "x": 1849.0,
+        "y": 1036.0
+      }
+    }
+  ],
+  "hits": 6,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-9/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1049,
+        369
+      ],
+      "detector_rect": {
         "h": 95.0,
         "w": 55.0,
         "x": 1059.0,
         "y": 379.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 136.53368,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1146,
+        404
+      ],
+      "detector_rect": {
+        "h": 14.0,
+        "w": 15.0,
+        "x": 1150.0,
+        "y": 408.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
       "id": 2,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.718245,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1086,
+        392
+      ],
+      "detector_rect": {
         "h": 82.0,
         "w": 84.0,
         "x": 1107.0,
         "y": 413.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.21456,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 3,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1117,
+        432
+      ],
+      "detector_rect": {
+        "h": 10.0,
+        "w": 17.0,
+        "x": 1120.0,
+        "y": 435.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.841959,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1012,
+        469
+      ],
+      "detector_rect": {
         "h": 52.0,
         "w": 122.0,
         "x": 1025.0,
         "y": 482.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.7616669999999996,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 4,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 15.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1163,
+        527
+      ],
+      "detector_rect": {
+        "h": 10.0,
         "w": 21.0,
         "x": 1166.0,
-        "y": 525.0
-      }
+        "y": 530.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.563221,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 5,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 26.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1206,
+        536
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 5.0,
+        "x": 1209.0,
+        "y": 539.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.228547,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1237,
+        583
+      ],
+      "detector_rect": {
+        "h": 7.0,
+        "w": 6.0,
+        "x": 1240.0,
+        "y": 586.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.163273,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1159,
+        599
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 17.0,
+        "x": 1162.0,
+        "y": 602.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.4327050000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1104,
+        608
+      ],
+      "detector_rect": {
+        "h": 18.0,
         "w": 74.0,
         "x": 1109.0,
         "y": 613.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.594645,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 6,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 150.0,
-        "w": 280.0,
-        "x": 1593.0,
-        "y": 674.0
-      }
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 95.10543060302734,
+      "crop_origin": [
+        553,
+        606
+      ],
+      "detector_rect": {
+        "h": 39.0,
+        "w": 264.0,
+        "x": 563.0,
+        "y": 616.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 11,
+      "lines": [
+        {
+          "h": 38.0,
+          "w": 181.0,
+          "x": 559.0,
+          "y": 616.0
+        },
+        {
+          "h": 27.0,
+          "w": 50.0,
+          "x": 749.0,
+          "y": 616.0
+        }
+      ],
+      "observation_ms": 0.013195,
+      "ocr_ms": 31.283683999999997,
+      "original": "RHODES ICI",
+      "raw_original": "RHODES ICI",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.71600341796875,
+          "rect": {
+            "h": 38.0,
+            "w": 181.0,
+            "x": 559.0,
+            "y": 616.0
+          },
+          "text": "RHODES"
+        },
+        {
+          "confidence": 85.88426971435547,
+          "rect": {
+            "h": 27.0,
+            "w": 50.0,
+            "x": 749.0,
+            "y": 616.0
+          },
+          "text": "ICI"
+        }
+      ],
+      "split": false,
+      "translation": "РОДЕС ICI",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 7,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
-        "h": 62.0,
-        "w": 45.0,
-        "x": 1017.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1117,
+        625
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 21.0,
+        "x": 1120.0,
+        "y": 628.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 12,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.2149259999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1030,
+        667
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 5.0,
+        "x": 1033.0,
+        "y": 670.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 13,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.062983,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1145,
+        669
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 27.0,
+        "x": 1148.0,
+        "y": 672.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 14,
+      "lines": [],
+      "observation_ms": 4e-05,
+      "ocr_ms": 1.828624,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1021,
+        678
+      ],
+      "detector_rect": {
+        "h": 18.0,
+        "w": 11.0,
+        "x": 1026.0,
         "y": 683.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 15,
+      "lines": [],
+      "observation_ms": 4.9999999999999996e-05,
+      "ocr_ms": 1.515241,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 8,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.98898315429688,
+      "crop_origin": [
+        1728,
+        698
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 131.0,
+        "x": 1733.0,
+        "y": 703.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 16,
+      "lines": [
+        {
+          "h": 23.0,
+          "w": 89.0,
+          "x": 1734.0,
+          "y": 701.0
+        },
+        {
+          "h": 25.0,
+          "w": 43.0,
+          "x": 1825.0,
+          "y": 700.0
+        }
+      ],
+      "observation_ms": 0.24441300000000002,
+      "ocr_ms": 29.80383,
+      "original": "First-time Hire",
+      "raw_original": "First-time Hire",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.99297332763672,
+          "rect": {
+            "h": 23.0,
+            "w": 89.0,
+            "x": 1734.0,
+            "y": 701.0
+          },
+          "text": "First-time"
+        },
+        {
+          "confidence": 99.97901916503906,
+          "rect": {
+            "h": 25.0,
+            "w": 43.0,
+            "x": 1825.0,
+            "y": 700.0
+          },
+          "text": "Hire"
+        }
+      ],
+      "split": false,
+      "translation": "Первый прокат",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        930,
+        700
+      ],
+      "detector_rect": {
+        "h": 13.0,
+        "w": 14.0,
+        "x": 934.0,
+        "y": 704.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 17,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.351494,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 95.19115447998047,
+      "crop_origin": [
+        1739,
+        699
+      ],
+      "detector_rect": {
         "h": 18.0,
         "w": 120.0,
         "x": 1744.0,
         "y": 704.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 18,
+      "lines": [
+        {
+          "h": 22.0,
+          "w": 84.0,
+          "x": 1740.0,
+          "y": 702.0
+        },
+        {
+          "h": 25.0,
+          "w": 43.0,
+          "x": 1825.0,
+          "y": 700.0
+        }
+      ],
+      "observation_ms": 0.21302300000000002,
+      "ocr_ms": 30.165285,
+      "original": "first-time Hire",
+      "raw_original": "first-time Hire",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 93.2755355834961,
+          "rect": {
+            "h": 22.0,
+            "w": 84.0,
+            "x": 1740.0,
+            "y": 702.0
+          },
+          "text": "first-time"
+        },
+        {
+          "confidence": 99.98018646240234,
+          "rect": {
+            "h": 25.0,
+            "w": 43.0,
+            "x": 1825.0,
+            "y": 700.0
+          },
+          "text": "Hire"
+        }
+      ],
+      "split": false,
+      "translation": "Первый прокат",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 9,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        921,
+        708
+      ],
+      "detector_rect": {
         "h": 33.0,
         "w": 31.0,
         "x": 930.0,
         "y": 717.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 19,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.9560359999999999,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 10,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
-        "h": 29.0,
-        "w": 12.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1012,
+        721
+      ],
+      "detector_rect": {
+        "h": 44.0,
+        "w": 46.0,
+        "x": 1017.0,
+        "y": 726.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 20,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.522685,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1048,
+        738
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 8.0,
         "x": 1051.0,
         "y": 741.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 21,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.3652060000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 11,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
-        "h": 93.0,
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1668,
+        747
+      ],
+      "detector_rect": {
+        "h": 8.0,
+        "w": 8.0,
+        "x": 1671.0,
+        "y": 750.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 22,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.2929389999999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 66.93231964111328,
+      "crop_origin": [
+        865,
+        744
+      ],
+      "detector_rect": {
+        "h": 68.0,
         "w": 99.0,
         "x": 882.0,
         "y": 761.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 23,
+      "lines": [
+        {
+          "h": 94.0,
+          "w": 99.0,
+          "x": 869.0,
+          "y": 751.0
+        }
+      ],
+      "observation_ms": 4e-05,
+      "ocr_ms": 19.471988999999997,
+      "original": "*",
+      "raw_original": "*",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 66.93231964111328,
+          "rect": {
+            "h": 94.0,
+            "w": 99.0,
+            "x": 869.0,
+            "y": 751.0
+          },
+          "text": "*"
+        }
+      ],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 12,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.92383575439453,
+      "crop_origin": [
+        1665,
+        768
+      ],
+      "detector_rect": {
+        "h": 18.0,
+        "w": 195.0,
+        "x": 1670.0,
+        "y": 773.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 24,
+      "lines": [
+        {
+          "h": 21.0,
+          "w": 197.0,
+          "x": 1668.0,
+          "y": 771.0
+        }
+      ],
+      "observation_ms": 0.071085,
+      "ocr_ms": 24.453966,
+      "original": "Distinction Certificate",
+      "raw_original": "Distinction Certificate",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.92383575439453,
+          "rect": {
+            "h": 21.0,
+            "w": 197.0,
+            "x": 1668.0,
+            "y": 771.0
+          },
+          "text": "Distinction Certificate"
+        }
+      ],
+      "split": false,
+      "translation": "Сертификат отрыва",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1609,
+        773
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 35.0,
+        "x": 1612.0,
+        "y": 776.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 25,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.471973,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        927,
+        775
+      ],
+      "detector_rect": {
         "h": 20.0,
         "w": 49.0,
         "x": 932.0,
         "y": 780.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 26,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 3.2407489999999997,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 13,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1666,
+        812
+      ],
+      "detector_rect": {
+        "h": 9.0,
+        "w": 26.0,
+        "x": 1669.0,
+        "y": 815.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 27,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.82125,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        993,
+        839
+      ],
+      "detector_rect": {
         "h": 22.0,
         "w": 17.0,
         "x": 997.0,
         "y": 843.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 28,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 1.984549,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 14,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1097,
+        871
+      ],
+      "detector_rect": {
         "h": 39.0,
         "w": 22.0,
         "x": 1107.0,
         "y": 881.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 29,
+      "lines": [],
+      "observation_ms": 3.1e-05,
+      "ocr_ms": 1.753361,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 15,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.2492446899414,
+      "crop_origin": [
+        353,
+        960
+      ],
+      "detector_rect": {
         "h": 33.0,
         "w": 724.0,
         "x": 362.0,
         "y": 969.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 30,
+      "lines": [
+        {
+          "h": 43.0,
+          "w": 741.0,
+          "x": 353.0,
+          "y": 960.0
+        }
+      ],
+      "observation_ms": 1.795762,
+      "ocr_ms": 45.684686,
+      "original": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title.",
+      "raw_original": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.2492446899414,
+          "rect": {
+            "h": 43.0,
+            "w": 741.0,
+            "x": 353.0,
+            "y": 960.0
+          },
+          "text": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title."
+        }
+      ],
+      "split": false,
+      "translation": "Я Мирра, травник. Доктор. Кал'сит дал мне этот титул.",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 16,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 97.84952545166016,
+      "crop_origin": [
+        1111,
+        960
+      ],
+      "detector_rect": {
         "h": 33.0,
         "w": 314.0,
         "x": 1120.0,
         "y": 969.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 31,
+      "lines": [
+        {
+          "h": 38.0,
+          "w": 323.0,
+          "x": 1115.0,
+          "y": 963.0
+        }
+      ],
+      "observation_ms": 0.869818,
+      "ocr_ms": 23.096124,
+      "original": "she said myrrh symboliz",
+      "raw_original": "she said myrrh symboliz",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 97.84952545166016,
+          "rect": {
+            "h": 38.0,
+            "w": 323.0,
+            "x": 1115.0,
+            "y": 963.0
+          },
+          "text": "she said myrrh symboliz"
+        }
+      ],
+      "split": false,
+      "translation": "Она сказала, что мирр символизирует",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": 33.61008071899414,
+      "crop_origin": [
+        1085,
+        987
+      ],
+      "detector_rect": {
+        "h": 5.0,
+        "w": 20.0,
+        "x": 1088.0,
+        "y": 990.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 32,
+      "lines": [
+        {
+          "h": 9.0,
+          "w": 24.0,
+          "x": 1086.0,
+          "y": 987.0
+        }
+      ],
+      "observation_ms": 2e-05,
+      "ocr_ms": 16.841504999999998,
+      "original": "WMM",
+      "raw_original": "WMM",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 33.61008071899414,
+          "rect": {
+            "h": 9.0,
+            "w": 24.0,
+            "x": 1086.0,
+            "y": 987.0
+          },
+          "text": "WMM"
+        }
+      ],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 86.21513366699219,
+      "crop_origin": [
+        1849,
+        1033
+      ],
+      "detector_rect": {
+        "h": 19.0,
+        "w": 45.0,
+        "x": 1853.0,
+        "y": 1037.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 33,
+      "lines": [
+        {
+          "h": 20.0,
+          "w": 40.0,
+          "x": 1850.0,
+          "y": 1037.0
+        }
+      ],
+      "observation_ms": 0.012835,
+      "ocr_ms": 16.236118,
+      "original": "AUGAD",
+      "raw_original": "AUGAD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 86.21513366699219,
+          "rect": {
+            "h": 20.0,
+            "w": 40.0,
+            "x": 1850.0,
+            "y": 1037.0
+          },
+          "text": "AUGAD"
+        }
+      ],
+      "split": false,
+      "translation": "АУГАД",
+      "translation_source": "actual translation-engine response"
     }
   ],
-  "hits": 16,
-  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-9/original.png",
-  "measurement": "Qt: shared production helper, test IPC adapter",
-  "minimum_confidence": 30,
-  "ocr": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "latency_ms": 2603.8122660000004,
-    "lines": [
-      {
-        "confidence": 93.79596710205078,
-        "rect": {
-          "h": 96.0,
-          "w": 67.0,
-          "x": 833.0,
-          "y": 424.0
-        },
-        "text": "SPECTED BY ALL A"
-      },
-      {
-        "confidence": 56.101806640625,
-        "rect": {
-          "h": 37.0,
-          "w": 38.0,
-          "x": 1028.0,
-          "y": 488.0
-        },
-        "text": "R"
-      },
-      {
-        "confidence": 95.34507751464844,
-        "rect": {
-          "h": 155.0,
-          "w": 107.0,
-          "x": 518.0,
-          "y": 430.0
-        },
-        "text": "Y MY LIFE AND PRACTICE MIY"
-      },
-      {
-        "confidence": 91.62642669677734,
-        "rect": {
-          "h": 63.0,
-          "w": 387.0,
-          "x": 555.0,
-          "y": 602.0
-        },
-        "text": "RHODES ISL"
-      },
-      {
-        "confidence": 99.97920227050781,
-        "rect": {
-          "h": 26.0,
-          "w": 136.0,
-          "x": 1732.0,
-          "y": 700.0
-        },
-        "text": "First-time Hire"
-      },
-      {
-        "confidence": 99.64617919921875,
-        "rect": {
-          "h": 27.0,
-          "w": 27.0,
-          "x": 145.0,
-          "y": 716.0
-        },
-        "text": "4"
-      },
-      {
-        "confidence": 91.24866485595703,
-        "rect": {
-          "h": 128.0,
-          "w": 321.0,
-          "x": 943.0,
-          "y": 738.0
-        },
-        "text": "Myrrh"
-      },
-      {
-        "confidence": 92.08793640136719,
-        "rect": {
-          "h": 22.0,
-          "w": 21.0,
-          "x": 1840.0,
-          "y": 736.0
-        },
-        "text": "x"
-      },
-      {
-        "confidence": 87.95342254638672,
-        "rect": {
-          "h": 106.0,
-          "w": 329.0,
-          "x": 649.0,
-          "y": 749.0
-        },
-        "text": "MEDIC*"
-      },
-      {
-        "confidence": 98.71162414550781,
-        "rect": {
-          "h": 33.0,
-          "w": 206.0,
-          "x": 1664.0,
-          "y": 765.0
-        },
-        "text": "Distinction Certificate"
-      },
-      {
-        "confidence": 99.9695053100586,
-        "rect": {
-          "h": 41.0,
-          "w": 102.0,
-          "x": 851.0,
-          "y": 859.0
-        },
-        "text": "NEW"
-      },
-      {
-        "confidence": 98.78150939941406,
-        "rect": {
-          "h": 39.0,
-          "w": 1079.0,
-          "x": 358.0,
-          "y": 965.0
-        },
-        "text": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title... she said myrrh symboliz"
-      },
-      {
-        "confidence": 84.99272918701172,
-        "rect": {
-          "h": 43.0,
-          "w": 79.0,
-          "x": 1832.0,
-          "y": 1024.0
-        },
-        "text": "PLAUGAOUND"
-      }
-    ],
-    "text": "SPECTED BY ALL A\nR\nY MY LIFE AND PRACTICE MIY\nRHODES ISL\nFirst-time Hire\n4\nMyrrh\nx\nMEDIC*\nDistinction Certificate\nNEW\nUh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title... she said myrrh symboliz\nPLAUGAOUND"
-  },
-  "ocr_history": [],
   "ocr_scans": 1,
-  "peak_memory": "VmHWM:\t  389584 kB",
+  "peak_memory": "VmHWM:\t  145084 kB",
   "placed": [
     {
-      "alignment": "center",
-      "background": {
-        "color": "#623f41",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 1,
-      "block_type": "unknown",
-      "box": [
-        0.5515625,
-        0.2431712962962963,
-        0.24739583333333334,
-        0.09675925925925925
-      ],
-      "degraded": "beside-original",
-      "font_family": "PT Serif",
-      "font_px": 37.0,
-      "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.27403056621551514,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        4.0,
-        4.0,
-        4.0,
-        4.0
-      ],
-      "italic": true,
-      "key": "test:1",
-      "letter_spacing": 0.05714273452758789,
-      "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 1",
-      "outline": false,
-      "outline_color": "#020000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#c78580",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
       "alignment": "left",
       "background": {
-        "color": "#744b4a",
+        "color": "#52524c",
         "image": "",
         "mode": "adaptive_padding_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 4,
+      "block_id": 11,
       "block_type": "button",
       "box": [
-        0.6026041666666667,
-        0.475462962962963,
-        0.0359375,
-        0.058333333333333334
+        0.27875000635782876,
+        0.54833334463614,
+        0.1497916539510091,
+        0.07925923665364583
       ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "condensed",
-        "confidence": 0.19028973579406738,
-        "generic": false
-      },
-      "font_weight": 400,
-      "inner": [
-        9.0,
-        9.0,
-        9.0,
-        9.0
-      ],
-      "italic": true,
-      "key": "test:4",
-      "letter_spacing": -0.35490313172340393,
-      "line_height": 0.8999999761581421,
-      "max_lines": 4,
-      "original": "fixture 4",
-      "outline": false,
-      "outline_color": "#140000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#6a4849",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 5,
-      "block_type": "unknown",
-      "box": [
-        0.5735416412353516,
-        0.5603703816731771,
-        0.046666717529296874,
-        0.058888866283275464
-      ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "slab_serif",
-        "confidence": 0.2336592823266983,
-        "generic": false
-      },
-      "font_weight": 200,
-      "inner": [
-        7.800048828125,
-        7.79998779296875,
-        7.800048828125,
-        7.79998779296875
-      ],
-      "italic": false,
-      "key": "test:5",
-      "letter_spacing": 3.1560440063476562,
-      "line_height": 0.8999999761581421,
-      "max_lines": 4,
-      "original": "fixture 5",
-      "outline": false,
-      "outline_color": "#0a0000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#b09192",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "center",
-      "background": {
-        "color": "#5a4541",
-        "image": "",
-        "mode": "adaptive_padding_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 9,
-      "block_type": "button",
-      "box": [
-        0.47406250635782876,
-        0.6270370483398438,
-        0.03677082061767578,
-        0.07249998869719329
-      ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
+      "font_family": "Inter",
+      "font_px": 32.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.06322222203016281,
+        "confidence": 0.2770065367221832,
         "generic": false
       },
-      "font_weight": 200,
+      "font_weight": 900,
       "inner": [
-        19.79998779296875,
-        19.79998779296875,
-        19.79998779296875,
-        5.5
+        22.79998779296875,
+        22.79998779296875,
+        22.79998779296875,
+        22.79998779296875
       ],
       "italic": false,
-      "key": "test:9",
-      "letter_spacing": -0.35119205713272095,
+      "key": "test:11",
+      "layout_width": 240.0,
+      "letter_spacing": -1.2835845947265625,
       "line_height": 0.8999999761581421,
-      "max_lines": 5,
-      "original": "fixture 9",
+      "max_lines": 1,
+      "original": "RHODES ICI",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -810,164 +2761,51 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "РОДЕС ICI",
       "text_color": "#ffffff",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
-      "alignment": "left",
+      "alignment": "right",
       "background": {
-        "color": "#6f534e",
+        "color": "#0a0b07",
         "image": "",
-        "mode": "solid_fill",
+        "mode": "adaptive_padding_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 13,
-      "block_type": "unknown",
+      "block_id": 16,
+      "block_type": "button",
       "box": [
-        0.5172395706176758,
-        0.7399999547887731,
-        0.01291669209798177,
-        0.10907411928530093
+        0.8966666539510091,
+        0.6366666440610532,
+        0.08270835876464844,
+        0.04611115632233796
       ],
-      "expanded": true,
-      "font_family": "PT Serif",
-      "font_px": 8.0,
+      "font_family": "Roboto",
+      "font_px": 19.0,
       "font_selection": {
-        "category": "transitional_serif",
-        "confidence": 0.06898149102926254,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        3.9000244140625,
-        3.9000244140625,
-        3.9000244140625,
-        3.9000244140625
-      ],
-      "italic": true,
-      "key": "test:13",
-      "letter_spacing": -0.35479018092155457,
-      "line_height": 0.8500000238418579,
-      "max_lines": 11,
-      "original": "fixture 13",
-      "outline": false,
-      "outline_color": "#0f0000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#645451",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 14,
-      "block_type": "unknown",
-      "box": [
-        0.5704687754313151,
-        0.7612036810980902,
-        0.023645782470703126,
-        0.11333335593894676
-      ],
-      "expanded": true,
-      "font_family": "Roboto Condensed",
-      "font_px": 8.0,
-      "font_selection": {
-        "category": "condensed",
-        "confidence": 0.45896798372268677,
-        "generic": false
-      },
-      "font_weight": 700,
-      "inner": [
-        11.699951171875,
-        11.70001220703125,
-        11.699951171875,
-        11.70001220703125
-      ],
-      "italic": false,
-      "key": "test:14",
-      "letter_spacing": -0.34286946058273315,
-      "line_height": 0.8999999761581421,
-      "max_lines": 9,
-      "original": "fixture 14",
-      "outline": false,
-      "outline_color": "#040000",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        960.0,
-        540.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#ffffff",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#0f0e0e",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 15,
-      "block_type": "unknown",
-      "box": [
-        0.18338541984558104,
-        0.8880555329499421,
-        0.38739585876464844,
-        0.048888934100115744
-      ],
-      "font_family": "Roboto Condensed",
-      "font_px": 25.0,
-      "font_selection": {
-        "category": "condensed",
-        "confidence": 0.8344871997833252,
+        "category": "neo_grotesque_sans",
+        "confidence": 0.6379321217536926,
         "generic": false
       },
       "font_weight": 400,
       "inner": [
-        9.899993896484375,
-        9.9000244140625,
-        9.9000244140625,
-        9.9000244140625
+        11.4000244140625,
+        11.4000244140625,
+        11.4000244140625,
+        11.4000244140625
       ],
       "italic": false,
-      "key": "test:15",
-      "letter_spacing": -1.0091809034347534,
+      "key": "test:16",
+      "layout_width": 134.0,
+      "letter_spacing": -0.7845514416694641,
       "line_height": 0.8999999761581421,
       "max_lines": 1,
-      "original": "fixture 15",
+      "original": "First-time Hire",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -983,7 +2821,128 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Первый прокат",
+      "text_color": "#acaca8",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#18170b",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 24,
+      "block_type": "button",
+      "box": [
+        0.8626041412353516,
+        0.7029629742657697,
+        0.11489588419596354,
+        0.04129627369068287
+      ],
+      "font_family": "Source Serif 4",
+      "font_px": 16.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.6100955009460449,
+        "generic": false
+      },
+      "font_weight": 200,
+      "inner": [
+        10.800048828125,
+        10.79998779296875,
+        10.800048828125,
+        10.79998779296875
+      ],
+      "italic": false,
+      "key": "test:24",
+      "layout_width": 197.0,
+      "letter_spacing": -0.6550590991973877,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "Distinction Certificate",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Сертификат отрыва",
+      "text_color": "#ffffff",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#161514",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 30,
+      "block_type": "unknown",
+      "box": [
+        0.17661458651224773,
+        0.876018495912905,
+        0.3986458460489909,
+        0.06555560076678241
+      ],
+      "font_family": "Roboto Condensed",
+      "font_px": 34.0,
+      "font_selection": {
+        "category": "condensed",
+        "confidence": 0.7593833804130554,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        12.899993896484375,
+        12.9000244140625,
+        9.5,
+        12.9000244140625
+      ],
+      "italic": false,
+      "key": "test:30",
+      "layout_width": 741.0,
+      "letter_spacing": -1.0971429347991943,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title.",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Я Мирра, травник. Доктор. Кал'сит дал мне этот титул.",
       "text_color": "#dcdcdc",
       "text_opacity": 1.0,
       "wrap": "word"
@@ -991,40 +2950,42 @@
     {
       "alignment": "right",
       "background": {
-        "color": "#101010",
+        "color": "#181718",
         "image": "",
-        "mode": "solid_fill",
+        "mode": "adaptive_padding_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 16,
-      "block_type": "unknown",
+      "block_id": 31,
+      "block_type": "button",
       "box": [
-        0.5781770706176758,
-        0.8880555329499421,
-        0.17385419209798178,
-        0.048888934100115744
+        0.5752604166666667,
+        0.8724074187102141,
+        0.18453127543131512,
+        0.07370368109809028
       ],
       "font_family": "Roboto Condensed",
-      "font_px": 19.0,
+      "font_px": 22.0,
       "font_selection": {
         "category": "condensed",
-        "confidence": 0.8344871997833252,
+        "confidence": 0.7593833804130554,
         "generic": false
       },
       "font_weight": 400,
       "inner": [
-        9.9000244140625,
-        9.9000244140625,
-        9.9000244140625,
-        9.9000244140625
+        9.5,
+        19.79998779296875,
+        19.800048828125,
+        19.79998779296875
       ],
       "italic": false,
-      "key": "test:16",
-      "letter_spacing": -0.7879169583320618,
+      "key": "test:31",
+      "layout_width": 323.0,
+      "letter_spacing": -0.8917122483253479,
       "line_height": 0.8999999761581421,
       "max_lines": 1,
-      "original": "fixture 16",
+      "original": "she said myrrh symboliz",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#000000",
       "outline_width": 1.0,
@@ -1040,115 +3001,223 @@
         540.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Она сказала, что мирр символизирует",
       "text_color": "#dcdcdc",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#361213",
+        "image": "file:///home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-9/background-33.png",
+        "mode": "inpaint_blur",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 33,
+      "block_type": "unknown",
+      "box": [
+        0.9598958333333333,
+        0.9537037037037037,
+        0.028125,
+        0.03148148148148148
+      ],
+      "font_family": "Inter",
+      "font_px": 13.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.3620447814464569,
+        "generic": false
+      },
+      "font_weight": 500,
+      "inner": [
+        6.0,
+        6.0,
+        6.0,
+        6.0
+      ],
+      "italic": false,
+      "key": "test:33",
+      "layout_width": 40.0,
+      "letter_spacing": -0.5344110131263733,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "AUGAD",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "АУГАД",
+      "text_color": "#ffffff",
       "text_opacity": 1.0,
       "wrap": "word"
     }
   ],
-  "placement_ms": 2795.363264,
-  "repeat_frame_ms": 111.582864,
+  "placement_ms": 68.90132799999999,
+  "repeat_frame_ms": 23.868908,
+  "repeat_ocr_jobs": 0,
   "size": [
     1920,
     1080
   ],
   "timings_ms": [
     [
-      88.28006300000001,
-      69.355727,
-      0.669601
+      5.5687489999999995,
+      4.201148,
+      0.098447
     ],
     [
-      85.818111,
-      70.444813,
-      1.483926
+      4.613049,
+      3.638202,
+      0.73396
     ],
     [
-      85.85606299999999,
-      70.750784,
-      0.66416
+      5.071778,
+      3.306885,
+      0.111802
     ],
     [
-      85.902742,
-      71.99261999999999,
-      0.6465270000000001
+      4.3930419999999994,
+      3.7155080000000003,
+      0.6992349999999999
     ],
     [
-      101.844888,
-      79.626344,
-      0.626328
+      4.518280000000001,
+      3.4227239999999997,
+      0.098507
     ]
   ],
-  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
-  "render_ms": 287.47301700059325,
-  "update_ms": 2.3899349998828257,
+  "translation_cache_hits": 0,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 7,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 272.94702500012136,
+  "update_ms": 1.946027000030881,
   "layout_diagnostics": [
     {
-      "width": 467,
-      "height": 96.5,
-      "contentWidth": 466.296875,
-      "contentHeight": 94.99999761581421,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 51,
-      "height": 45,
-      "contentWidth": 42.109375,
-      "contentHeight": 37.899999022483826,
-      "lines": 4,
-      "truncated": false
-    },
-    {
-      "width": 74,
-      "height": 48,
-      "contentWidth": 70.46875,
-      "contentHeight": 37.899999022483826,
-      "lines": 4,
-      "truncated": false
-    },
-    {
-      "width": 31,
-      "height": 53,
-      "contentWidth": 30.53125,
-      "contentHeight": 47.79999876022339,
-      "lines": 5,
-      "truncated": false
-    },
-    {
-      "width": 17,
-      "height": 110.00000000000001,
-      "contentWidth": 16.875,
-      "contentHeight": 103.85000288486481,
-      "lines": 11,
-      "truncated": false
-    },
-    {
-      "width": 22,
-      "height": 99,
-      "contentWidth": 19.90625,
-      "contentHeight": 83.79999780654907,
-      "lines": 9,
-      "truncated": false
-    },
-    {
-      "width": 724.0000305175781,
-      "height": 33,
-      "contentWidth": 405.390625,
-      "contentHeight": 31.799999237060547,
+      "width": 240,
+      "height": 40,
+      "contentWidth": 151.765625,
+      "contentHeight": 38.09999907016754,
       "lines": 1,
       "truncated": false
     },
     {
-      "width": 314,
-      "height": 33,
-      "contentWidth": 307.265625,
-      "contentHeight": 23.59999942779541,
+      "width": 134,
+      "height": 27,
+      "contentWidth": 127.390625,
+      "contentHeight": 22.699999451637268,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 197,
+      "height": 23,
+      "contentWidth": 141.71875,
+      "contentHeight": 21.799999475479126,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 741,
+      "height": 45,
+      "contentWidth": 717.796875,
+      "contentHeight": 40.899999022483826,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 323,
+      "height": 40,
+      "contentWidth": 319.40625,
+      "contentHeight": 26.299999356269836,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 40,
+      "height": 22,
+      "contentWidth": 39.59375,
+      "contentHeight": 15.399999618530273,
       "lines": 1,
       "truncated": false
     }
   ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 7,
+    "rendered": 6,
+    "missing": [
+      {
+        "id": 18,
+        "original": "first-time Hire",
+        "confidence": 95.19115447998047,
+        "reason": "повторный OCR того же текста"
+      }
+    ],
+    "source_coverage": [
+      {
+        "id": 11,
+        "original": "RHODES ICI",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 16,
+        "original": "First-time Hire",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 18,
+        "original": "first-time Hire",
+        "rendered": false,
+        "plate_coverage": 0.0
+      },
+      {
+        "id": 24,
+        "original": "Distinction Certificate",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 30,
+        "original": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title.",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 31,
+        "original": "she said myrrh symboliz",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 33,
+        "original": "AUGAD",
+        "rendered": true,
+        "plate_coverage": 1.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "no failure in this diagnostic",
+    "uncovered_text_blocks": []
+  },
   "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-9.jpg",
-  "approved_reference": false,
-  "translation_service": "none: predefined deterministic test input"
+  "approved_reference": false
 }

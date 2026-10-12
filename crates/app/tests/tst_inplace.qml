@@ -88,6 +88,21 @@ TestCase {
         compare(child("inplaceText").style, data.mode === "transparent" ? Text.Outline : Text.Normal, "readable without a fill")
     }
 
+    function test_textReplacementPlacesThePatchWithoutAFill() {
+        inplace.entry = Object.assign({}, baseEntry, {
+            background: { mode: "reconstruct", color: "#203040", image: "file:///nonexistent.png", image_rect: [0.1, 0.2, 0.5, 0.25] } })
+        const patch = child("inplaceReconstruction")
+        compare(patch.visible, true)
+        compare(child("inplaceFill").visible, false, "no rectangle under a reconstructed field")
+        compare(child("inplaceBackdrop").visible, false)
+        fuzzyCompare(patch.x, 0.1 * inplace.width, 0.5)
+        fuzzyCompare(patch.y, 0.2 * inplace.height, 0.5)
+        fuzzyCompare(patch.width, 0.5 * inplace.width, 0.5)
+        fuzzyCompare(patch.height, 0.25 * inplace.height, 0.5)
+        inplace.entry = Object.assign({}, baseEntry, { background: { mode: "inpaint_blur", color: "#203040", image: "file:///nonexistent.png" } })
+        compare(child("inplaceReconstruction").visible, false, "other modes keep their own pictures")
+    }
+
     function test_overflowFallbackElides() {
         inplace.entry = Object.assign({}, baseEntry, { wrap: "elide", max_lines: 1, text: "очень ".repeat(50) })
         const t = child("inplaceText")

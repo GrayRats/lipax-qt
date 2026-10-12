@@ -158,8 +158,10 @@ pub struct InplaceEngine {
     missing_font_warned: HashSet<u64>,
     /// Content signatures of the fields handed out by the last `begin`, applied by `complete`.
     pending_signatures: HashMap<u64, Vec<u8>>,
+    pending_crops: HashMap<u64, Rect>,
     /// Where the OCR engine found fields glued together that the detector did not tell apart.
     cuts: Vec<CutMemory>,
+    pending_cuts: HashSet<u64>,
     /// When the last `begin` ran: the age of `cuts`.
     last_scan: Option<Instant>,
     /// What the detector found and left out in the latest frame.
@@ -177,6 +179,7 @@ pub struct InplaceEngine {
 struct CutMemory {
     parent: Rect,
     partitions: Vec<Rect>,
+    rows: Vec<Vec<Rect>>,
     seen: Instant,
 }
 
@@ -263,8 +266,8 @@ impl InplaceEngine {
     /// Встроенный реестр создаётся при первом выборе шрифта и кешируется на сеанс.
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
-            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new(),
-            cuts: Vec::new(), last_scan: None, detection: DetectionReport::default(), ocr_dirty: false, joins: Vec::new(),
+            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new(), pending_crops: HashMap::new(),
+            cuts: Vec::new(), pending_cuts: HashSet::new(), last_scan: None, detection: DetectionReport::default(), ocr_dirty: false, joins: Vec::new(),
             pending_joins: HashSet::new(), joined_aliases: HashMap::new(), recognition_policy: None }
     }
 
@@ -280,8 +283,10 @@ impl InplaceEngine {
     pub fn reset(&mut self) {
         self.tracker.reset();
         self.snapshot = None;
+        self.pending_crops.clear();
         self.published.clear();
         self.cuts.clear();
+        self.pending_cuts.clear();
         self.missing_font_warned.clear();
         self.ocr_dirty = false;
         self.joins.clear(); self.pending_joins.clear(); self.joined_aliases.clear();
@@ -312,6 +317,7 @@ impl InplaceEngine {
         let recognition_changed = self.recognition_policy.as_ref() != Some(&s.recognition);
         if recognition_changed { self.recognition_policy = Some(s.recognition.clone()); }
         self.pending_signatures.clear();
+        self.pending_crops.clear();
         let mut mask = BlockDetector::ink_mask(&image);
         self.detector.line_gap_factor = s.appearance.inplace.line_gap_factor;
         self.detector.max_blocks = s.appearance.inplace.max_blocks;
@@ -324,8 +330,9 @@ impl InplaceEngine {
         self.last_scan = Some(now);
         if frame_changed { self.joins.clear(); }
         self.pending_joins.clear();
+        self.pending_cuts.clear();
         self.joined_aliases.clear();
-        let detected = self.apply_cuts(detected, now, (image.width() as f32, image.height() as f32));
+        let detected = self.apply_cuts(detected, now, &image, &mut mask);
         let detected = self.apply_joins(detected, now);
         let assignments = self.tracker.update(&detected, now);
         for memory in &self.joins {
@@ -387,6 +394,7 @@ impl InplaceEngine {
             if force || frame_changed || recognition_changed || ocr_invalidated || empty_due || signature_changed(&signature, &t.content_signature) {
                 let (x, y, w, h) = d.rect.expand((0.25 * lh).max(3.0), fw, fh).pixels(image.width(), image.height());
                 jobs.push(OcrJob { id: a.id, rect: d.rect, origin: (x, y), image: DynamicImage::ImageRgba8(image::imageops::crop_imm(&image, x, y, w, h).to_image()) });
+                self.pending_crops.insert(a.id, Rect::new(x as f32, y as f32, w as f32, h as f32));
                 // Remembered only when the field is completed (see `complete`): a failed or cancelled
                 // recognition must leave the field due for the next scan.
                 self.pending_signatures.insert(a.id, signature);
@@ -444,7 +452,7 @@ impl InplaceEngine {
     /// Applies what the OCR engine showed earlier: a detected block that matches a remembered one is divided
     /// into the remembered parts, the types of all blocks are decided again, and the rest is as if the
     /// detector itself had found the parts.
-    fn apply_cuts(&mut self, detected: Vec<DetectedTextBlock>, now: Instant, frame: (f32, f32)) -> Vec<DetectedTextBlock> {
+    fn apply_cuts(&mut self, detected: Vec<DetectedTextBlock>, now: Instant, image: &RgbaImage, mask: &mut InkMask) -> Vec<DetectedTextBlock> {
         self.cuts.retain(|m| now.saturating_duration_since(m.seen) <= CUT_TTL);
         if self.cuts.is_empty() { return detected; }
         let mut changed = false;
@@ -452,17 +460,43 @@ impl InplaceEngine {
         for block in detected {
             let Some(memory) = self.cuts.iter_mut().find(|m| m.parent.iou(&block.rect) >= LINES_AGREE_IOU) else { out.push(block); continue };
             memory.seen = now;
-            let groups = super::split::split_by_partitions(block.lines.clone(), &memory.partitions);
+            let mut groups = super::split::split_by_partitions(block.lines.clone(), &memory.partitions);
+            // A connected poster/panel can be one detector "line" spanning
+            // several real OCR fields. Assigning that line to its nearest part
+            // cannot perform the requested cut. Use the validated OCR rows,
+            // retaining only actual detector glyphs supported by each row.
+            if groups.len() != memory.partitions.len() {
+                groups = memory.rows.iter().map(|rows| rows.iter().map(|&rect| {
+                    let (x, y, w, h) = rect.pixels(image.width(), image.height());
+                    let crop = image::imageops::crop_imm(image, x, y, w, h).to_image();
+                    // The full-frame threshold merged the panel instead of its
+                    // letters. Reuse the detector on the OCR-confirmed row,
+                    // whose local threshold separates foreground and background.
+                    let local = BlockDetector::ink_mask(&crop);
+                    let recovered = self.detector.detect_text_blocks(&crop, &local);
+                    let glyphs = recovered.iter().flat_map(|b| &b.lines).flat_map(|l| &l.glyphs)
+                        .map(|g| Rect::new(g.x + x as f32, g.y + y as f32, g.w, g.h)).collect();
+                    for ly in 0..h as usize { for lx in 0..w as usize {
+                        mask.ink[(y as usize + ly) * mask.w + x as usize + lx] = local.at(lx, ly);
+                    }}
+                    let ink_color = super::mean_color(&crop, &Rect::new(0.0, 0.0, w as f32, h as f32),
+                        |lx, ly| local.at(lx, ly)).unwrap_or(block.ink_color);
+                    super::block_detector::TextLine { rect, glyphs, ink_color }
+                }).collect()).collect();
+                tracing::debug!(target: "inplace.lines", parts = groups.len(),
+                    "detector components cross OCR partitions; use validated OCR rows");
+            }
             if groups.len() < 2 { out.push(block); continue; }
             changed = true;
             for lines in groups {
                 let rect = lines.iter().skip(1).fold(lines[0].rect, |u, l| u.union(&l.rect));
-                out.push(DetectedTextBlock { rect, lines, block_type: super::TextBlockType::Unknown, ink_color: block.ink_color });
+                let ink_color = lines[0].ink_color;
+                out.push(DetectedTextBlock { rect, lines, block_type: super::TextBlockType::Unknown, ink_color });
             }
         }
         if changed {
             out.sort_by(|a, b| (a.rect.y, a.rect.x).partial_cmp(&(b.rect.y, b.rect.x)).unwrap_or(std::cmp::Ordering::Equal));
-            super::block_detector::classify_blocks(&mut out, frame.0, frame.1);
+            super::block_detector::classify_blocks(&mut out, image.width() as f32, image.height() as f32);
         }
         out
     }
@@ -495,8 +529,8 @@ impl InplaceEngine {
     }
 
     /// A regrouped crop must be OCR-read again before it may supply a translation.
-    pub fn needs_rescan(&self) -> bool { !self.pending_joins.is_empty() }
-    pub(crate) fn is_regrouping(&self, id: u64) -> bool { self.pending_joins.contains(&id) }
+    pub fn needs_rescan(&self) -> bool { !self.pending_joins.is_empty() || !self.pending_cuts.is_empty() }
+    pub(crate) fn is_regrouping(&self, id: u64) -> bool { self.pending_joins.contains(&id) || self.pending_cuts.contains(&id) }
 
     fn request_join(&mut self, id: u64) -> bool {
         let Some(snapshot) = &self.snapshot else { return false };
@@ -561,6 +595,7 @@ impl InplaceEngine {
         let support = d.rect.expand(0.5 * cap.max(1.0), snapshot.image.width() as f32, snapshot.image.height() as f32);
         let spans: Vec<_> = result.lines.iter().filter_map(|line| {
             let rect = line.rect.in_frame(origin);
+            let rect = self.pending_crops.get(&id).map_or(rect, |crop| rect.clipped_to(crop));
             let center = rect.center();
             (line.confidence >= s.effective_minimum_confidence() as f32
                 && center.0 >= support.x && center.0 <= support.right()
@@ -568,11 +603,15 @@ impl InplaceEngine {
                 .then(|| super::ocr_geometry::OcrSpan::new(rect.clipped_to(&Rect::new(0.0, 0.0,
                     snapshot.image.width() as f32, snapshot.image.height() as f32)), &line.text, line.confidence)).flatten()
         }).collect();
-        let text = if spans.len() == result.lines.len() { crate::text::normalize(&result.text) }
-            else { spans.iter().map(|span| span.text()).collect::<Vec<_>>().join(" ") };
-        let field = super::ocr_geometry::OcrField::new(id, spans, cap);
+        let field = super::ocr_geometry::OcrField::new(id, spans, cap).map(|field| {
+            match self.pending_crops.get(&id) {
+                Some(&crop) => field.with_crop_bounds(crop),
+                None => field,
+            }
+        });
+        let text = field.as_ref().map(|field| field.text().to_owned()).unwrap_or_default();
         let lines = field.as_ref().map(|f| f.rows()).unwrap_or_default();
-        let verdict = self.observe_ocr_lines(id, &lines, s);
+        let verdict = self.observe_supported_ocr_lines(id, &lines, s, true);
         if let Some(t) = self.tracker.get_mut(id) {
             t.ocr_field = if verdict == LinesVerdict::Normal { field } else { None };
             t.ocr_detector_rect = t.ocr_field.as_ref().map(|_| detector_rect);
@@ -592,9 +631,38 @@ impl InplaceEngine {
         let Some(snapshot) = &self.snapshot else { return };
         let fields: Vec<_> = self.tracker.blocks().iter().filter(|t| t.misses <= 1 && !t.translated_text.is_empty())
             .filter_map(|t| t.ocr_field.clone()).collect();
+        // A crop can contain an independent speaker plus truncated dialogue rows.
+        // A second, complete reading of the same pixels establishes the boundary;
+        // re-read both parts instead of allowing the mixed crop to block the dialogue.
+        for field in &fields {
+            let rows = field.rows();
+            if rows.len() < 2 { continue; }
+            let supported: Vec<bool> = rows.iter().map(|row| fields.iter().any(|other| {
+                other.id() != field.id() && other.mean_confidence() + 5.0 >= field.mean_confidence()
+                    && other.rows().iter().any(|complete| complete.w > row.w * 1.1
+                        && row.intersection(complete) >= row.area() * 0.8)
+            })).collect();
+            if !supported.iter().any(|&x| x) || supported.iter().all(|&x| x) { continue; }
+            let Some(d) = snapshot.blocks.get(&field.id()) else { continue };
+            if self.cuts.iter().any(|cut| cut.parent.iou(&d.rect) >= LINES_AGREE_IOU) { continue; }
+            let mut groups: Vec<Vec<Rect>> = Vec::new();
+            for (i, &row) in rows.iter().enumerate() {
+                if i == 0 || supported[i] != supported[i-1] { groups.push(Vec::new()); }
+                groups.last_mut().unwrap().push(row);
+            }
+            let partitions = groups.iter().map(|rows| rows.iter().skip(1).fold(rows[0], |u, r| u.union(r))).collect();
+            self.cuts.push(CutMemory { parent: d.rect, partitions, rows: groups,
+                seen: self.last_scan.unwrap_or_else(Instant::now) });
+            self.pending_cuts.insert(field.id());
+        }
         let owners: Vec<Option<u64>> = fields.iter().map(|f| fields.iter().filter(|other| f.duplicate_of(other))
             .max_by_key(|other| (other.text().chars().count(), std::cmp::Reverse(other.id()))).map(|other| other.id())
             .or_else(|| self.joined_aliases.get(&f.id()).copied().filter(|id| fields.iter().any(|other| other.id()==*id)))).collect();
+        for (field, owner) in fields.iter().zip(&owners) {
+            tracing::debug!(target: "inplace.ownership", block_id = field.id(), owner = ?owner,
+                spans = field.spans().len(), bounds = ?field.bounds(), characters = field.text().chars().count(),
+                confidence = field.mean_confidence(), "validated OCR field ownership");
+        }
         let mut rects: Vec<Rect> = fields.iter().map(|f| {
             let r = f.bounds(); Rect::new(r.x-1.0,r.y-1.0,r.w+2.0,r.h+2.0)
         }).collect();
@@ -630,7 +698,11 @@ impl InplaceEngine {
                 t.ocr_bounds = Some(rect);
                 t.refined_rect = Some(rect);
                 t.ocr_lines = Some(rows);
-                if let Some(font) = &t.font_analysis {
+                if let Some(font) = &mut t.font_analysis {
+                    // A panel/portrait component cannot determine the cap height
+                    // of OCR-confirmed small text inside it.
+                    let max_row_height = t.ocr_lines.as_ref().unwrap().iter().map(|r| r.h).fold(0.0, f32::max);
+                    font.cap_height_px = font.cap_height_px.min(max_row_height);
                     t.typography = Some(TypographyEstimator.estimate_from(d, font, t.background.as_ref().unwrap().color,
                         snapshot.image.width() as f32, t.ocr_lines.as_deref()));
                 }
@@ -646,6 +718,10 @@ impl InplaceEngine {
     /// do not, the detector's lines stay and the inspector says why. No lines (an engine without
     /// geometry) changes nothing.
     pub fn observe_ocr_lines(&mut self, id: u64, lines: &[Rect], s: &Settings) -> LinesVerdict {
+        self.observe_supported_ocr_lines(id, lines, s, false)
+    }
+
+    fn observe_supported_ocr_lines(&mut self, id: u64, lines: &[Rect], s: &Settings, supported: bool) -> LinesVerdict {
         let normalized = super::typography::reconstructed_ocr_lines(lines);
         let lines = normalized.as_slice();
         if lines.is_empty() { return LinesVerdict::Normal; }
@@ -655,12 +731,20 @@ impl InplaceEngine {
         let agree = lines_agree(lines, &d.rect);
         // The same pitch rule as the detector's, on the engine's own lines: a gap the detector did not see.
         // Once per scene: a memory that matches this block means the parts did not appear (nothing to retry).
-        if agree {
-            let groups = super::split::split_rects(lines, super::split::text_angle(&d.lines), typical_glyph_height(d), s.appearance.inplace.line_gap_factor);
+        if agree || supported {
+            // A detector component may be the connected panel, not a glyph.
+            // Its cap height cannot enlarge the pitch threshold beyond the
+            // actual OCR row height and merge unrelated paragraphs.
+            let mut heights: Vec<_> = lines.iter().map(|r| r.h).collect();
+            heights.sort_by(f32::total_cmp);
+            let glyph = typical_glyph_height(d).min(heights[heights.len() / 2]);
+            let groups = super::split::split_rects(lines, super::split::text_angle(&d.lines), glyph, s.appearance.inplace.line_gap_factor);
             if groups.len() > 1 && !self.cuts.iter().any(|m| m.parent.iou(&d.rect) >= LINES_AGREE_IOU) {
                 let partitions: Vec<Rect> = groups.iter().map(|g| g.iter().skip(1).fold(lines[g[0]], |u, &i| u.union(&lines[i]))).collect();
                 tracing::info!(target: "inplace.lines", block_id = id, parts = partitions.len(), "OCR lines show several fields in one block: split on the next scan");
-                self.cuts.push(CutMemory { parent: d.rect, partitions, seen: self.last_scan.unwrap_or_else(Instant::now) });
+                let rows = groups.iter().map(|g| g.iter().map(|&i| lines[i]).collect()).collect();
+                self.cuts.push(CutMemory { parent: d.rect, partitions, rows, seen: self.last_scan.unwrap_or_else(Instant::now) });
+                self.pending_cuts.insert(id);
                 return LinesVerdict::Split;
             }
         }

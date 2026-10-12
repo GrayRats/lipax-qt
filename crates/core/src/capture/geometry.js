@@ -62,10 +62,11 @@ function screens() {
     return workspace.screens || [];
 }
 function reachable(g) {
-    const cx = g.x + g.width / 2, cy = g.y + g.height / 2;
     return screens().some(function(s) {
         const r = s.geometry;
-        return cx >= r.x && cx < r.x + r.width && cy >= r.y && cy < r.y + r.height;
+        // A partly off-screen frameless window can still be dragged from its visible body.
+        return Math.min(g.x + g.width, r.x + r.width) - Math.max(g.x, r.x) >= 24
+            && Math.min(g.y + g.height, r.y + r.height) - Math.max(g.y, r.y) >= 24;
     });
 }
 function reportFloating(window, reason) {
@@ -75,11 +76,17 @@ function reportFloating(window, reason) {
 }
 function adoptFloating(window) {
     window.keepAbove = true;
+    let userMoved = false;
+    let closed = false;
+    window.closed.connect(function() { closed = true; });
+    window.interactiveMoveResizeStarted.connect(function() { userMoved = true; });
     // Also consume the guard if KWin mapped the window without activating it. This prevents
     // a later manual task-manager click from being mistaken for the automatic show.
     restoreAutomaticFocus(window);
     if (window.windowShown) window.windowShown.connect(function() { restoreAutomaticFocus(window); });
     callDBus("__DESTINATION__", "/io/lipa/Geometry", "io.lipa.Geometry", "FloatingPlacement", function(json) {
+        // A delayed D-Bus answer must never override a gesture the user already started.
+        if (closed || userMoved) return;
         let p = null;
         try { p = JSON.parse(json); } catch (e) {}
         if (p) {
@@ -92,16 +99,13 @@ function adoptFloating(window) {
             if (!g) { reportFloating(window, "placed_by_kwin"); return; }
             let reason = "restore_geometry";
             if (!reachable(g)) {
-                // Monitor removed or layout changed: move just enough to be visible.
-                const s = window.output || screens()[0];
-                if (s) {
-                    g.x = s.geometry.x + Math.max(0, (s.geometry.width - g.width) / 2);
-                    g.y = s.geometry.y + Math.max(0, (s.geometry.height - g.height) / 2);
-                }
-                reason = "restore_geometry_sanitized";
+                // Monitor removed: keep KWin's usable initial placement, with no app anchoring.
+                reportFloating(window, "restore_geometry_rejected_unreachable");
+                return;
             }
             window.frameGeometry = g;
-            reportFloating(window, reason);
+            const actual = window.frameGeometry;
+            reportFloating(window, actual.x === g.x && actual.y === g.y ? reason : "restore_geometry_not_confirmed");
         }
     });
     window.interactiveMoveResizeFinished.connect(function() { reportFloating(window, "move_finished"); });

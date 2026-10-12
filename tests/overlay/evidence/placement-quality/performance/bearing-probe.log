@@ -1,0 +1,13 @@
+{'alignment': 'right', 'background': {'color': '#35332d', 'image': '', 'mode': 'adaptive_padding_fill', 'opacity': 1.0, 'radius': 4.0}, 'block_id': 30, 'block_type': 'button', 'box': [0.9421875, 0.30648148148148147, 0.051041666666666666, 0.15185185185185185], 'font_family': 'Source Serif 4', 'font_px': 9.0, 'font_selection': {'category': 'serif', 'confidence': 0.3522378206253052, 'generic': False}, 'font_weight': 200, 'inner': [28.0, 28.0, 28.0, 28.0], 'italic': True, 'key': 'test:30', 'layout_width': 40.0, 'letter_spacing': -0.38910049200057983, 'line_height': 0.8999999761581421, 'max_lines': 9, 'original': 'fixture 30', 'outcome': 'replaced', 'outline': False, 'outline_color': '#000000', 'outline_width': 1.0, 'rect': {'h': 1.0, 'w': 1.0, 'x': 0.0, 'y': 0.0}, 'region_id': 'test', 'screen_point': [960.0, 540.0], 'shadow': False, 'source_coverage': 1.0, 'text': 'Проверка переноса: длинная тестовая строка. Hello 日本語', 'text_color': '#ffffff', 'text_opacity': 1.0, 'wrap': 'word'}
+Qt_lines [{'text': 'Проверка ', 'natural': 39.65625, 'advance': 37.65625, 'ink_rect': [0.0, 39.65625]}, {'text': 'переноса: ', 'natural': 39.640625, 'advance': 38.640625, 'ink_rect': [0.0, 39.640625]}, {'text': 'длинная ', 'natural': 36.09375, 'advance': 34.09375, 'ink_rect': [0.0, 36.09375]}, {'text': 'тестовая ', 'natural': 36.40625, 'advance': 34.40625, 'ink_rect': [0.0, 36.40625]}, {'text': 'строка. ', 'natural': 28.796875, 'advance': 28.796875, 'ink_rect': [0.0, 28.796875]}, {'text': 'Hello 日', 'natural': 31.125, 'advance': 30.125, 'ink_rect': [0.0, 31.125]}, {'text': '本語', 'natural': 20.25, 'advance': 17.25, 'ink_rect': [0.0, 20.25]}]
+Fontbearings -2.1599999999999997 -2.07
+Bearing Проверка 0.0 -2.0 0.0 41.0 37.65625
+Bearing переноса: 0.0 -1.0 0.0 41.0 38.640625
+Bearing длинная 0.0 -2.0 -1.0 38.0 34.09375
+Bearing тестовая 0.0 -2.0 0.0 37.0 34.40625
+Bearing строка. 0.0 0.0 0.0 30.0 28.796875
+Bearing Hello 日 0.0 -2.0 0.0 31.5 30.125
+Bearing 本語 0.0 1.0 -1.0 22.0 17.25
+QML left [{'width': 40, 'height': 108, 'contentWidth': 39.65625, 'contentHeight': 82.89999783039093, 'lines': 7, 'truncated': False}]
+QML center [{'width': 40, 'height': 108, 'contentWidth': 40.15625, 'contentHeight': 82.89999783039093, 'lines': 7, 'truncated': False}]
+QML right [{'width': 40, 'height': 108, 'contentWidth': 41.640625, 'contentHeight': 82.89999783039093, 'lines': 7, 'truncated': False}]

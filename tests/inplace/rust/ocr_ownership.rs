@@ -431,6 +431,10 @@ fn replay_game(process: &str) -> lipa_core::layout::engine::InplaceFrame {
         &std::fs::read(fixtures.join(format!("{process}-rapidocr.json"))).unwrap(),
     )
     .unwrap();
+    let supplement_path = fixtures.join(format!("{process}-local-rapidocr.json"));
+    let supplement: serde_json::Value = if supplement_path.exists() {
+        serde_json::from_slice(&std::fs::read(supplement_path).unwrap()).unwrap()
+    } else { serde_json::json!({"ocr_history": []}) };
     let s = Settings::default();
     let mut e = InplaceEngine::new();
     let now = std::time::Instant::now();
@@ -448,11 +452,12 @@ fn replay_game(process: &str) -> lipa_core::layout::engine::InplaceFrame {
                 .as_array()
                 .unwrap()
                 .iter()
+                .chain(supplement["ocr_history"].as_array().unwrap())
                 .find(|r| {
                     let rect: Rect = serde_json::from_value(r["detector_rect"].clone()).unwrap();
                     r["scan"] == scan && rect.iou(&job.rect) >= 0.99
                 })
-                .expect("changed detector geometry needs a new observed OCR replay");
+                .unwrap_or_else(|| panic!("changed detector geometry needs a new observed OCR replay: {process}, scan={scan}, job={:?}", job.rect));
             let result = lipa_core::ocr::OcrResult {
                 text: record["raw_original"].as_str().unwrap().into(),
                 lines: record["spans"]

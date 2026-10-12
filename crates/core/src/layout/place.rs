@@ -34,6 +34,9 @@ pub struct PlacedBackground {
     pub radius: f32,
     /// URL подложки `InpaintBlur`; пусто, если картинка не нужна.
     pub image: String,
+    /// Where the image lies in the field (fractions of its width and height; may reach outside it).
+    /// A reconstructed patch is tied to the original text, not to the field it is shown in.
+    pub image_rect: [f32; 4],
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -68,6 +71,7 @@ pub struct Placed {
     pub alignment: &'static str,
     pub wrap: &'static str,
     pub max_lines: u32,
+    pub layout_width: f32,
     pub text_color: String,
     /// Без заливки текст читается за счёт обводки.
     pub outline: bool,
@@ -120,7 +124,7 @@ impl Outcome {
     pub fn classify(degraded: Option<&str>, source_coverage: f32) -> Self {
         match degraded {
             Some("beside-original") => Self::DegradedFallback,
-            Some("inside-original") | Some("elided") => Self::Partial,
+            Some("inside-original") | Some("elided") | Some("original-visible") => Self::Partial,
             _ if source_coverage < REPLACED_COVERAGE => Self::Partial,
             _ => Self::Replaced,
         }
@@ -321,6 +325,23 @@ fn fit_text(b: &InplaceBlock, text: &DesktopRect, map: &FrameToDesktop, measure:
     }, measure)
 }
 
+/// An elided field needs room for actual text, not only a clipped glyph or an
+/// ellipsis. This is measured in the chosen font, with the same Qt metrics as fitting.
+fn readable(b: &InplaceBlock, fit: &FitResult, text: &DesktopRect, measure: &dyn TextMeasure) -> bool {
+    if fit.max_lines == 0 { return false; }
+    if !fit.overflow { return true; }
+    let Some(first) = b.translation.chars().find(|c| !c.is_whitespace() && !c.is_control()) else { return false; };
+    let font = FontSpec { family: fit.family.clone(), weight: b.style.font_weight, italic: b.style.italic };
+    let prefix = measure.measure(&format!("{first}…"), &font, fit.font_px, fit.letter_spacing, f32::MAX, WrapMode::NoWrap);
+    prefix.width <= (text.w - 1.0).max(0.0)
+}
+
+/// `area` relative to `plate` as fractions of the plate's size.
+fn image_rect_in(plate: &DesktopRect, area: &DesktopRect) -> [f32; 4] {
+    let (w, h) = (plate.w.max(1.0), plate.h.max(1.0));
+    [(area.x - plate.x) / w, (area.y - plate.y) / h, area.w / w, area.h / h]
+}
+
 /// Space kept between a grown plate and the original text of another field.
 const EXPAND_GAP: f32 = 2.0;
 
@@ -441,7 +462,19 @@ fn placed_entry(region: &RegionInput, b: &InplaceBlock, fit: &FitResult, box_rec
     let st = &b.style;
     let transparent = b.background.mode == BackgroundRenderMode::Transparent;
     let bg = b.background.color;
-    let outline = settings.outline_color.manual().and_then(|v| parse_hex_color(v)).unwrap_or_else(|| outline_for(st.text_color, bg));
+    // Text replacement leaves the game's own picture under the translation, whatever it is: the text must
+    // stand out from it by itself. A colour too close to the background is replaced, and an outline in the
+    // opposite tone of the text keeps it legible on a light patch of a dark panel and the other way round.
+    let reconstruct = b.background.mode == BackgroundRenderMode::Reconstruct;
+    let around = b.background.analysis.mean;
+    let text_color = if reconstruct && settings.text_color.manual().is_none() && contrast_ratio(st.text_color, around) < 4.5 {
+        if contrast_ratio([255; 3], around) >= contrast_ratio([0; 3], around) { [255; 3] } else { [0; 3] }
+    } else { st.text_color };
+    let outline = settings.outline_color.manual().and_then(|v| parse_hex_color(v)).unwrap_or_else(|| {
+        if reconstruct {
+            if contrast_ratio(text_color, [0; 3]) >= contrast_ratio(text_color, [255; 3]) { [12; 3] } else { [244; 3] }
+        } else { outline_for(st.text_color, bg) }
+    });
     let fill = settings.fill_color.manual().and_then(|v| parse_hex_color(v)).unwrap_or(bg);
     Placed {
         key: format!("{}:{}", region.id, b.id),
@@ -462,8 +495,9 @@ fn placed_entry(region: &RegionInput, b: &InplaceBlock, fit: &FitResult, box_rec
         alignment: alignment_name(st.alignment),
         wrap: wrap_name(fit.wrap_mode),
         max_lines: fit.max_lines,
-        text_color: hex(st.text_color),
-        outline: transparent,
+        layout_width: fit.layout_width,
+        text_color: hex(text_color),
+        outline: transparent || reconstruct,
         outline_color: hex(outline),
         outline_width: settings.outline_width,
         shadow: settings.shadow,
@@ -471,9 +505,11 @@ fn placed_entry(region: &RegionInput, b: &InplaceBlock, fit: &FitResult, box_rec
         background: PlacedBackground {
             mode: b.background.mode,
             color: hex(fill),
-            opacity: settings.fill_opacity,
+            // A patch that only repaints the glyphs must hide them completely.
+            opacity: if b.background.mode == BackgroundRenderMode::Reconstruct { 1.0 } else { settings.fill_opacity },
             radius: settings.corner_radius,
             image: image.unwrap_or("").to_owned(),
+            image_rect: [0.0, 0.0, 1.0, 1.0],
         },
         font_selection: PlacedFont { category: b.font.category, generic: b.font.generic, confidence: b.font.confidence },
         screen_point: [0.0, 0.0],
@@ -620,7 +656,9 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
                 }
             };
             let image = images.get(&key).map(String::as_str).filter(|u| !u.is_empty());
-            let plain = boxes.clipped && b.background.image.is_some();
+            // A reconstructed patch is positioned by `image_rect`, so a cut plate needs no plain replacement.
+            let reconstruct = b.background.mode == BackgroundRenderMode::Reconstruct;
+            let plain = boxes.clipped && b.background.image.is_some() && !reconstruct;
             candidates.push(Candidate {
                 id: format!("{}:{}", region.id, b.id),
                 source_rect: source,
@@ -628,7 +666,7 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
                 background_rect: boxes.plate,
                 bounds,
                 effect_margin: if b.background.mode == BackgroundRenderMode::Transparent { effect_px(settings) } else { 0.0 },
-                image_background: b.background.image.is_some() && !plain,
+                image_background: b.background.image.is_some() && !plain && !reconstruct,
                 allow_text_shift: b.background.mode != BackgroundRenderMode::Transparent,
             });
             owners.push(Owner { region, block: b, key, map, fit, image, plain, expanded: false });
@@ -664,6 +702,11 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
         tracing::debug!(target: "inplace.fit", block = %candidates[i].id, grow = ?e.grow, complete = !owners[i].fit.overflow, "translation given more room next to the original");
     }
     let mut results = collision::resolve(&candidates);
+    for i in 0..results.len() {
+        if results[i].as_ref().is_some_and(|p| !readable(owners[i].block, &owners[i].fit, &p.text_rect, measure)) {
+            results[i] = None;
+        }
+    }
     // How each field ended up, and the fit of a label if it became one.
     let mut tiers: Vec<Option<&'static str>> = vec![None; owners.len()];
     let mut chip_fit: Vec<Option<FitResult>> = vec![None; owners.len()];
@@ -672,7 +715,8 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
         // 1. The same place with a plain plate.
         let mut trial = candidates.clone();
         trial[i] = plain_plate(&candidates[i]);
-        if let Some(after) = accepted(&trial, &results, i) {
+        if readable(owners[i].block, &owners[i].fit, &trial[i].text_rect, measure)
+            && let Some(after) = accepted(&trial, &results, i) {
             candidates = trial;
             results = after;
             tiers[i] = Some("plain-plate");
@@ -684,10 +728,12 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
         for side in [Beside::Below, Beside::Above] {
             let plate = slide_into(owner.map.rect(&chip_area(owner.block, side)), &bounds);
             let text = inset(&plate, [CHIP_PAD; 4]);
+            let fit = fit_text(owner.block, &text, &owner.map, measure);
+            if !readable(owner.block, &fit, &text, measure) { continue; }
             let mut trial = candidates.clone();
             trial[i] = Candidate { text_rect: text, background_rect: plate, effect_margin: 0.0, image_background: false, allow_text_shift: false, ..candidates[i].clone() };
             if let Some(after) = accepted(&trial, &results, i) {
-                chip_fit[i] = Some(fit_text(owner.block, &text, &owner.map, measure));
+                chip_fit[i] = Some(fit);
                 candidates = trial;
                 results = after;
                 tiers[i] = Some("beside-original");
@@ -698,10 +744,12 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
         // 3. The box of the original itself: the translation is cut to it (elided), whatever its length.
         let plate = candidates[i].source_rect.clipped_to(&bounds);
         let text = inset(&plate, [INSIDE_PAD; 4]);
+        let fit = fit_text(owner.block, &text, &owner.map, measure);
         let mut trial = candidates.clone();
         trial[i] = Candidate { text_rect: text, background_rect: plate, effect_margin: 0.0, image_background: false, allow_text_shift: false, ..candidates[i].clone() };
-        if let Some(after) = accepted(&trial, &results, i) {
-            chip_fit[i] = Some(fit_text(owner.block, &text, &owner.map, measure));
+        if readable(owner.block, &fit, &text, measure)
+            && let Some(after) = accepted(&trial, &results, i) {
+            chip_fit[i] = Some(fit);
             candidates = trial;
             results = after;
             tiers[i] = Some("inside-original");
@@ -713,23 +761,43 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
             // 4. Not even the box of the original is free (the same text read twice): the field is left out.
             tracing::warn!(target: "inplace.fallback", block = %candidates[i].id, "no room over the game: the field is not shown");
             dropped.push(DroppedText { region_id: owner.region.id.to_owned(), block_id: owner.block.id, text: owner.block.translation.clone(),
-                original: owner.block.original.clone(), reason: "для перевода нет места поверх игры" });
+                original: owner.block.original.clone(), reason: if owner.fit.max_lines == 0 {
+                    "нет места для полной строки перевода"
+                } else { "для перевода нет места поверх игры" } });
             continue;
         };
         // The window QML opens is the plate; a text moved a little to stay clear of a neighbour is still inside it.
         let plate = place.background_rect.union(&place.text_rect);
         let fit = chip_fit[i].as_ref().unwrap_or(&owner.fit);
-        let mut entry = placed_entry(owner.region, owner.block, fit, owner.map.fraction(&plate), inner_of(&plate, &place.text_rect), settings, owner.image);
+        if !readable(owner.block, fit, &place.text_rect, measure) {
+            let reason = if fit.max_lines == 0 { "нет места для полной строки перевода" }
+                else { "нет места для читаемого усечения перевода" };
+            tracing::warn!(target: "inplace.fallback", block = %candidates[i].id, reason, "field would contain no readable text");
+            dropped.push(DroppedText { region_id: owner.region.id.to_owned(), block_id: owner.block.id,
+                text: owner.block.translation.clone(), original: owner.block.original.clone(), reason });
+            continue;
+        }
+        // A reconstructed patch stays on the original text wherever the translation ends up (even beside it in
+        // a fallback), so its window reaches the patch as well; the rest of the window is transparent.
+        let reconstructed = owner.block.background.mode == BackgroundRenderMode::Reconstruct && owner.image.is_some();
+        let patch_area = owner.map.rect(&owner.block.background.rect).clipped_to(&candidates[i].bounds);
+        let window = if reconstructed && patch_area.w >= 1.0 && patch_area.h >= 1.0 { plate.union(&patch_area) } else { plate };
+        let mut entry = placed_entry(owner.region, owner.block, fit, owner.map.fraction(&window), inner_of(&window, &place.text_rect), settings, owner.image);
         entry.screen_point = { let c = candidates[i].bounds.center(); [c.0, c.1] };
         if let Some(tier) = tiers[i].or(owner.plain.then_some("plain-plate")) {
             tracing::info!(target: "inplace.fallback", block = %candidates[i].id, tier, "field shown in a simpler form");
-            // A plain plate carries the text itself: no restored picture, no outline halo.
             entry.degraded = Some(tier);
-            entry.background.mode = BackgroundRenderMode::SolidFill;
-            entry.background.image = String::new();
-            entry.outline = false;
+            // A plain plate carries the text itself: no restored picture, no outline halo. Text replacement
+            // never gets a plate: the patch stays and the text is outlined.
+            if !reconstructed {
+                entry.background.mode = BackgroundRenderMode::SolidFill;
+                entry.background.image = String::new();
+                entry.outline = false;
+            }
         } else if owner.expanded {
             entry.expanded = true;
+            // Beyond the patch the translation lies on the game's own background: keep it legible.
+            if owner.block.background.mode == BackgroundRenderMode::Reconstruct { entry.outline = true; }
             // The restored picture covers the original box only; stretched over the larger plate it would not
             // match the game. The fill of its colour does.
             if entry.background.mode == BackgroundRenderMode::InpaintBlur {
@@ -737,9 +805,16 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
                 entry.background.image = String::new();
             }
         }
+        if reconstructed && !entry.background.image.is_empty() {
+            entry.background.image_rect = image_rect_in(&window, &owner.map.rect(&owner.block.background.rect));
+        }
         if entry.degraded.is_none() && fit.overflow {
             tracing::info!(target: "inplace.fallback", block = %candidates[i].id, "no free space is large enough: the translation is cut with an ellipsis");
             entry.degraded = Some("elided");
+        }
+        if entry.degraded.is_none() && (entry.background.mode == BackgroundRenderMode::Transparent
+            || entry.background.opacity < 1.0) {
+            entry.degraded = Some("original-visible");
         }
         let source = candidates[i].source_rect;
         entry.source_coverage = if source.area() > 0.0 { (plate.intersection(&source) / source.area()).clamp(0.0, 1.0) } else { 0.0 };
@@ -1085,6 +1160,55 @@ mod tests {
         assert!(plate.bottom() <= 230.0 + 0.5, "stopped halfway to the neighbour: {plate:?}");
         assert_eq!(plate.intersection(&on_desktop(neighbour, WINDOW).0), 0.0);
         for p in &out.placed { assert_inside(p, WINDOW, DesktopRect::of_window(&WindowGeometry::from(WINDOW))); }
+    }
+
+    #[test]
+    fn a_reconstructed_patch_stays_on_the_original_when_the_field_grows() {
+        let mut frame = with_text(custom_frame(&[(Rect::new(100.0, 200.0, 200.0, 20.0), Rect::new(96.0, 196.0, 208.0, 28.0)),
+                                                 (Rect::new(100.0, 240.0, 200.0, 20.0), Rect::new(96.0, 236.0, 208.0, 28.0))]), 0, LONG, 14.0);
+        frame.blocks[0].background.mode = BackgroundRenderMode::Reconstruct;
+        frame.blocks[0].background.image = Some(std::sync::Arc::new(image::RgbaImage::new(2, 2)));
+        let region = RegionInput { id: "r", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
+        let images = HashMap::from([(("r".to_string(), 1u64), "file:///patch.png".to_string())]);
+        let out = place_regions(&[region], &Viewport::window(WindowGeometry::from(WINDOW)), &InplaceSettings::default(), &images, &ApproxMeasure, &mut PlacementCache::default());
+        let p = out.placed.iter().find(|p| p.block_id == 1).unwrap();
+        assert!(p.expanded && p.degraded.is_none(), "{:?}", p.degraded);
+        // Not a flat plate, and the picture is still where the original text was (96,196 208x28).
+        assert_eq!(p.background.mode, BackgroundRenderMode::Reconstruct);
+        assert_eq!(p.background.image, "file:///patch.png");
+        assert!(p.outline, "text beyond the patch lies on the game itself");
+        let (plate, _) = on_desktop(p, WINDOW);
+        let [fx, fy, fw, fh] = p.background.image_rect;
+        let (ix, iy) = (plate.x + fx * plate.w, plate.y + fy * plate.h);
+        assert!((ix - 96.0).abs() < 0.6 && (iy - 196.0).abs() < 0.6, "patch at {ix},{iy}");
+        assert!((fw * plate.w - 208.0).abs() < 0.6 && (fh * plate.h - 28.0).abs() < 0.6);
+        assert_eq!(p.background.opacity, 1.0);
+    }
+
+    #[test]
+    fn a_reconstructed_patch_survives_the_fallback_tiers_without_a_plate() {
+        // Two neighbours leave no room: the field falls back, yet text replacement never gets a plain plate.
+        let mut frame = custom_frame(&[(Rect::new(100.0, 100.0, 200.0, 20.0), Rect::new(100.0, 100.0, 500.0, 20.0)),
+                                       (Rect::new(420.0, 100.0, 100.0, 20.0), Rect::new(412.0, 92.0, 116.0, 36.0)),
+                                       (Rect::new(100.0, 124.0, 150.0, 20.0), Rect::new(96.0, 124.0, 158.0, 24.0)),
+                                       (Rect::new(100.0, 70.0, 150.0, 20.0), Rect::new(96.0, 66.0, 158.0, 28.0))]);
+        frame.blocks[0].style.padding_manual = true;
+        frame.blocks[0].style.padding = crate::layout::Padding::uniform(0.0);
+        frame.blocks[0].background.mode = BackgroundRenderMode::Reconstruct;
+        frame.blocks[0].background.image = Some(std::sync::Arc::new(image::RgbaImage::new(2, 2)));
+        let region = RegionInput { id: "r", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
+        let images = HashMap::from([(("r".to_string(), 1u64), "file:///patch.png".to_string())]);
+        let out = place_regions(&[region], &Viewport::window(WindowGeometry::from(WINDOW)), &InplaceSettings::default(), &images, &ApproxMeasure, &mut PlacementCache::default());
+        let p = out.placed.iter().find(|p| p.block_id == 1).unwrap();
+        assert!(p.degraded.is_some(), "the fallback is still reported");
+        assert_eq!(p.background.mode, BackgroundRenderMode::Reconstruct, "no plain plate");
+        assert_eq!(p.background.image, "file:///patch.png");
+        assert!(p.outline);
+        // The window reaches the patch wherever the text went.
+        let (plate, _) = on_desktop(p, WINDOW);
+        let [fx, fy, fw, fh] = p.background.image_rect;
+        let (ix, iy, iw, ih) = (plate.x + fx * plate.w, plate.y + fy * plate.h, fw * plate.w, fh * plate.h);
+        assert!(ix >= plate.x - 0.6 && iy >= plate.y - 0.6 && ix + iw <= plate.right() + 0.6 && iy + ih <= plate.bottom() + 0.6, "{plate:?} {ix},{iy} {iw}x{ih}");
     }
 
     #[test]

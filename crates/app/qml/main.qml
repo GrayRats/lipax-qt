@@ -233,7 +233,7 @@ ApplicationWindow {
             settings: settingsWin.current
             entry: root.inplaceEntries.find(e => e.key === modelData) || null
             gameGeometry: ctl.gameGeometry
-            visible: root.inplaceActive && ctl.inplaceVisible && ctl.overlayAllowed && !relocating && !!desktopRect && !!entry && entry.text.length > 0
+            visible: root.inplaceActive && ctl.inplaceVisible && ctl.overlayAllowed && !relocating && !!targetScreen && !!desktopRect && !!entry && entry.text.length > 0
             // MMB hides only the in-place translation; the translation window is untouched.
             onHideRequested: ctl.setInplaceVisibility(false, "mmb")
         }

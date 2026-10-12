@@ -248,9 +248,13 @@ fn local_glyph_like(c: &Component, frame_h: f32) -> bool {
 /// A line of glyphs in the local-contrast pass: enough glyphs, similar heights, a common baseline.
 /// Scenery edges rarely satisfy all three.
 fn text_like_line(l: &TextLine) -> bool {
+    text_like_line_min(l, LOCAL_MIN_GLYPHS)
+}
+
+fn text_like_line_min(l: &TextLine, minimum_glyphs: usize) -> bool {
     let n = l.glyphs.len();
     // Below 6 px a line is a fragment (half a word cut by the mask), not something worth reading or translating.
-    if n < LOCAL_MIN_GLYPHS || l.rect.w < 2.0 * l.rect.h || l.rect.h < LOCAL_MIN_LINE_HEIGHT { return false; }
+    if n < minimum_glyphs || l.rect.w < 2.0 * l.rect.h || l.rect.h < LOCAL_MIN_LINE_HEIGHT { return false; }
     let h = median(l.glyphs.iter().map(|g| g.h).collect());
     if h <= 0.0 { return false; }
     let base = median(l.glyphs.iter().map(|g| g.bottom()).collect());
@@ -349,23 +353,32 @@ impl BlockDetector {
         let (w, h) = (mask.w, mask.h);
         let (fw, fh) = (w as f32, h as f32);
         if w < 32 || h < 32 { return Vec::new(); }
-        let luma_plane: Vec<u8> = img.as_raw().as_chunks::<4>().0.iter().map(|p| luma(p)).collect();
+        // Brightness first; then the red and blue planes, in which tinted text on a glowing panel of another
+        // tint (blue on light blue) stands out far more than it does in brightness.
+        let pixels = img.as_raw().as_chunks::<4>().0;
+        let planes: [Vec<u8>; 3] = [pixels.iter().map(|p| luma(p)).collect(), pixels.iter().map(|p| p[0]).collect(), pixels.iter().map(|p| p[2]).collect()];
         let mut accepted: Vec<DetectedTextBlock> = Vec::new();
-        for local in super::local_ink::contrast_masks(&luma_plane, w, h) {
-            let covered = |r: &Rect, blocks: &[DetectedTextBlock]| {
-                let (cx, cy) = r.center();
-                blocks.iter().any(|b| {
-                    let m = 0.5 * b.line_height().max(4.0);
-                    cx >= b.rect.x - m && cx <= b.rect.right() + m && cy >= b.rect.y - m && cy <= b.rect.bottom() + m
-                })
+        for local in planes.iter().flat_map(|plane| super::local_ink::contrast_masks(plane, w, h)) {
+            let covered = |candidate: &DetectedTextBlock, blocks: &[DetectedTextBlock]| {
+                blocks.iter().any(|b| b.rect.expand(0.5 * b.line_height().max(4.0), fw, fh).contains(&candidate.rect))
+                    || candidate.lines.iter().all(|line| blocks.iter().flat_map(|b| &b.lines).any(|existing|
+                        existing.rect.expand(0.5 * existing.rect.h.max(4.0), fw, fh).contains(&line.rect)))
             };
             let comps: Vec<Component> = components(&local).into_iter()
                 .filter(|c| c.pixels >= 6 && local_glyph_like(c, fh))
-                .filter(|c| !covered(&c.rect, existing) && !covered(&c.rect, &accepted))
                 .collect();
             if comps.len() < LOCAL_MIN_GLYPHS { continue; }
-            let lines: Vec<TextLine> = self.lines_from(img, &local, comps, fw, 0).into_iter().filter(text_like_line).collect();
-            for block in self.blocks_from_lines(lines) {
+            // A paragraph may end with a short word. Keep a geometrically
+            // compatible short continuation only when the same block also
+            // contains a full text-like row; standalone noise stays rejected.
+            let lines: Vec<TextLine> = self.lines_from(img, &local, comps, fw, 0).into_iter()
+                .filter(|line| text_like_line_min(line, 3)).collect();
+            for block in self.blocks_from_lines_by_glyph_height(lines, true) {
+                if !block.lines.iter().any(text_like_line) { continue; }
+                // Deduplicate complete text candidates. Removing covered
+                // letters before line reconstruction perpetuated fragmented
+                // global detections and made complete OCR crops impossible.
+                if covered(&block, existing) || covered(&block, &accepted) { continue; }
                 if is_blob_pattern(&block, mask) { continue; }
                 let (x0, y0, bw, bh) = block.rect.pixels(w as u32, h as u32);
                 for y in y0 as usize..(y0 + bh) as usize {
@@ -470,7 +483,11 @@ impl BlockDetector {
         lines
     }
 
-    fn blocks_from_lines(&self, mut lines: Vec<TextLine>) -> Vec<DetectedTextBlock> {
+    fn blocks_from_lines(&self, lines: Vec<TextLine>) -> Vec<DetectedTextBlock> {
+        self.blocks_from_lines_by_glyph_height(lines, false)
+    }
+
+    fn blocks_from_lines_by_glyph_height(&self, mut lines: Vec<TextLine>, glyph_height: bool) -> Vec<DetectedTextBlock> {
         // Блоки: строка присоединяется к блоку, если она прямо под его последней строкой,
         // той же высоты, того же цвета и выровнена с ним.
         lines.sort_by(|a, b| a.rect.y.total_cmp(&b.rect.y));
@@ -481,7 +498,14 @@ impl BlockDetector {
                 let last = b.last().unwrap().rect;
                 let h = last.h.max(r.h);
                 let gap = r.y - last.bottom();
-                let same_height = last.h.max(r.h) / last.h.min(r.h).max(1.0) <= 1.45;
+                // Ascenders and descenders change row bounds, especially on a short
+                // final word. Compare the typical glyph size across both rows.
+                let previous_glyph_height = median(b.last().unwrap().glyphs.iter().map(|g| g.h).collect());
+                let current_glyph_height = median(line.glyphs.iter().map(|g| g.h).collect());
+                let same_height = if glyph_height {
+                    previous_glyph_height.max(current_glyph_height)
+                        / previous_glyph_height.min(current_glyph_height).max(1.0) <= 1.45
+                } else { last.h.max(r.h) / last.h.min(r.h).max(1.0) <= 1.45 };
                 let aligned = r.intersection(&Rect::new(last.x, r.y, last.w, r.h)) > 0.0
                     || (r.x - last.x).abs() <= 2.0 * h
                     || (r.center().0 - last.center().0).abs() <= 2.0 * h;

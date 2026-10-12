@@ -3,6 +3,7 @@
 #include <QTextLayout>
 #include <QTextOption>
 #include <QString>
+#include <QRectF>
 #include <algorithm>
 #include <cmath>
 
@@ -33,11 +34,16 @@ inline TextExtent measureText(const QString &text, const QFont &font, double wid
     QTextOption option;
     option.setWrapMode(wrap == 2 ? QTextOption::NoWrap : wrap == 1 ? QTextOption::WrapAnywhere
                                                           : QTextOption::WrapAtWordBoundaryOrAnywhere);
+    // QML contentWidth includes the union of positioned naturalTextRects.
+    // Right alignment gives the conservative width for differing line advances
+    // and italic overhangs, without an alignment argument in the Rust interface.
+    option.setAlignment(Qt::AlignRight);
     QString normalized = text;
     normalized.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
     normalized.replace(QChar('\r'), QChar('\n'));
     normalized.replace(QChar(0x2029), QChar('\n'));
     const auto paragraphs = normalized.split(QChar('\n'), Qt::KeepEmptyParts);
+    QRectF inkBounds;
     for (const auto &paragraph : paragraphs) {
         QTextLayout layout(paragraph, font);
         layout.setTextOption(option);
@@ -47,7 +53,7 @@ inline TextExtent measureText(const QString &text, const QFont &font, double wid
             auto line = layout.createLine();
             if (!line.isValid()) break;
             line.setLineWidth(wrap == 2 ? 1e7 : std::max(1.0, width));
-            result.width = std::max(result.width, line.naturalTextWidth());
+            inkBounds = inkBounds.united(line.naturalTextRect());
             result.height += line.height();
             result.spacing = std::max(result.spacing, line.height() + line.leading());
             ++count;
@@ -56,6 +62,9 @@ inline TextExtent measureText(const QString &text, const QFont &font, double wid
         if (!count) result.height += metrics.height();
         result.lines += std::max(1, count);
     }
+    // A union's extent remains finite even when NoWrap uses a large line width;
+    // returning an absolute aligned coordinate would break longest-word checks.
+    result.width = inkBounds.width();
     return result;
 }
 }

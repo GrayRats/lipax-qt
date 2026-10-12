@@ -123,8 +123,8 @@ Item {{
     return (time.perf_counter() - start) * 1000, update_ms, diagnostics
 
 
-def run_screenshot_pipeline(source, qt, translation=None, case=None, ocr_blocks=False, window=None, screens=None, translations=None):
-    executable = Path(os.environ.get("CARGO_TARGET_DIR", ROOT / "tmp/cargo-target")) / "debug/examples/inplace_bench"
+def run_screenshot_pipeline(source, qt, translation=None, case=None, ocr_blocks=False, window=None, screens=None, translations=None, translation_rules=None, unmapped_original=False, service_cache=None, translation_service="bergamot"):
+    executable = Path(os.environ.get("LIPAX_INPLACE_BENCH", Path(os.environ.get("CARGO_TARGET_DIR", ROOT / "tmp/cargo-target")) / "debug/examples/inplace_bench"))
     assert executable.exists(), "build cargo example inplace_bench first"
     directory = ARTIFACTS / source.stem
     if case:
@@ -139,12 +139,23 @@ def run_screenshot_pipeline(source, qt, translation=None, case=None, ocr_blocks=
     original.save(png)
     env = dict(os.environ, LIPAX_DIAGNOSTICS_DIR=str(directory))
     command = [str(executable), str(png)]
+    if not ocr_blocks and translation is None:
+        # Only a deliberately synthetic stress test, never a translation screenshot.
+        translation = "Проверка переноса: длинная тестовая строка. Hello 日本語"
     if translation is not None:
         command.append("--translation=" + translation)
     if translations is not None:
         command.append("--translations=" + str(translations))
+    if translation_rules is not None:
+        command.append("--translation-rules=" + str(translation_rules))
+    if unmapped_original:
+        command.append("--unmapped-original")
+    if service_cache is not None:
+        command.extend(["--service-cache=" + str(service_cache), "--service=" + translation_service])
     if ocr_blocks:
         command.append("--ocr-blocks")
+    if os.environ.get("LIPAX_BACKGROUND_MODE"):
+        command.append("--background-mode=" + os.environ["LIPAX_BACKGROUND_MODE"])
     if window:
         command.append("--window=" + ",".join(str(v) for v in window))
     if screens:
@@ -157,6 +168,7 @@ def run_screenshot_pipeline(source, qt, translation=None, case=None, ocr_blocks=
     entries = data["placed"]
     if ocr_blocks:
         assert data["block_ocr"]
+        assert all(block["engine"] == "rapidocr" for block in data["ocr_history"]), "unexpected OCR backend in image test"
         assert any(block["accepted"] for block in data["block_ocr"])
         assert all(not entry["original"].startswith("fixture ") for entry in entries)
         accepted = {block["id"] for block in data["block_ocr"] if block["accepted"]}
@@ -232,13 +244,13 @@ def run_screenshot_pipeline(source, qt, translation=None, case=None, ocr_blocks=
     outside.save(directory / "outside-difference.png")
     assert outside.getbbox() is None, "overlay changed pixels outside its allowed plates"
     if os.environ.get("LIPAX_SAVE_TRANSLATIONS") == "1":
+        assert ocr_blocks and service_cache is not None, "permanent translation screenshots require real OCR and actual translation-engine responses"
         # Explicit user-requested permanent deliverables; intermediate artifacts stay in tmp/.
         destination = ROOT / "docs/screenshots/test-game/translations"
         destination.mkdir(parents=True, exist_ok=True)
         name = source.stem + ("--" + case if case else "")
         rendered.save(destination / (name + ".png"))
-        report = dict(data, source=str(source), approved_reference=False,
-                      translation_service="none: predefined deterministic test input")
+        report = dict(data, source=str(source), approved_reference=False)
         (destination / (name + ".json")).write_text(json.dumps(report, indent=2, ensure_ascii=False))
         (destination / (name + ".txt")).write_text("\n\n".join(
             f"[{entry['block_id']}] {entry['original']}\n→ {entry['text']}"
@@ -271,14 +283,19 @@ def test_qt_fitting_difficult_translations(case, translation, qt):
 
 
 def test_recognized_blocks_drive_qt_overlay(qt):
+    if os.environ.get("LIPAX_TEST_OCR") != "1":
+        pytest.skip("NOT RUN: RapidOCR models not provisioned (LIPAX_TEST_OCR != 1)")
     if not os.environ.get("LIPAX_QT_MEASURE_SERVER"):
         pytest.skip("requires the shared production Qt measurement server")
     run_screenshot_pipeline(ROOT / "docs/screenshots/test-game/dialogue-en-13.png", qt,
-        case="recognized-blocks", ocr_blocks=True)
+        case="recognized-blocks", ocr_blocks=True,
+        translations=ROOT / "tests/inplace/fixtures/scene13-translations.json")
 
 
 @pytest.mark.parametrize("process", ["engine.exe", "CrossxMars.exe"])
 def test_recorded_game_capture_pipeline(process, qt):
+    if os.environ.get("LIPAX_TEST_OCR") != "1":
+        pytest.skip("NOT RUN: RapidOCR models not provisioned (LIPAX_TEST_OCR != 1)")
     manifest = Path(os.environ.get("LIPAX_LIVE_CAPTURE_MANIFEST", ROOT / "tests/inplace/fixtures/windows.json"))
     data = json.loads(manifest.read_text())
     window = next(w for w in data["windows"] if Path(w["capture"]).name.startswith(process + "-"))

@@ -1,11 +1,41 @@
-[1] fixture 1
-→ Перевод длиннее оригинала. Hello 日本語
+[1] Investigation Phase 9:00
+→ Этап расследования 9:00
 
-[5] fixture 5
-→ Перевод длиннее оригинала. Hello 日本語
+[2] YOu Are The Magistrate
+→ Вы Являетесь Магистратом
 
-[7] fixture 7
-→ Перевод длиннее оригинала. Hello 日本語
+[3] NIGHT: Buy film from the requisitioner in the police station
+→ НЬЯ: Купить фильм у реквизитера в полицейском участке
 
-[16] fixture 16
-→ Перевод длиннее оригинала. Hello 日本語
+[14] FFICE
+→ ФАЙС
+
+[16] If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis
+→ Если у вас закончились вещи, которые вы можете расследовать, поговорите с подозреваемыми в камерах, чтобы расследовать их алиби.
+
+[28] EROCTEO186
+→ ЭРОКТЕО186
+
+[38] POLICE STATION
+→ ПОЛИЦЕЯ
+
+[58] Hello Magistrate. I'm the Chief Constable here in Whitechapel and responsible for police matters. (1/4)
+→ Привет, Магистрат. Я главный констебль здесь, в Уайтчепеле, и несу ответственность за дело полиции. (1/4)
+
+[63] PLAVGA Deeks
+→ ПЛАВГА Дикс
+
+[64] EQUIPPED: Magnifying Glass
+→ ОБОРУДОВАНО: Увеличительное стекло
+
+[71] HNPEMEROKEKCB
+→ ХПЕМЕРОКЭКБ
+
+[73] Chief Constable
+→ Главный констебль
+
+[78] Next
+→ Далее
+
+[79] Lower Class
+→ Нижний класс

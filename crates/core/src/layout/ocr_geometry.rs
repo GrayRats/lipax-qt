@@ -49,6 +49,7 @@ pub struct OcrField {
     text: String,
     bounds: Rect,
     cap_height: f32,
+    crop_bounds: Option<Rect>,
 }
 
 fn words(text: &str) -> Vec<String> {
@@ -104,12 +105,16 @@ fn text_support(fragment: &str, owner: &str) -> f32 {
 
 /// Exact union coverage: overlapping parent spans must not count their pixels twice.
 fn covered_area(rect: Rect, spans: &[OcrSpan]) -> f32 {
+    covered_source_area(rect, spans, false)
+}
+
+fn covered_source_area(rect: Rect, spans: &[OcrSpan], clipped: bool) -> f32 {
     let overlaps: Vec<Rect> = spans
         .iter()
         .filter(|s| {
             let a = rect.h.min(s.rect.h);
             let b = rect.h.max(s.rect.h);
-            a >= b * 0.25 && (rect.center().1 - s.rect.center().1).abs() <= b * 0.3
+            clipped || (a >= b * 0.25 && (rect.center().1 - s.rect.center().1).abs() <= b * 0.3)
         })
         .map(|s| s.rect.clipped_to(&rect))
         .filter(|r| r.area() > 0.0)
@@ -168,16 +173,33 @@ impl OcrField {
             .map(|s| s.text.as_str())
             .collect::<Vec<_>>()
             .join(" ");
-        Some(Self {
+        let mut field = Self {
             id,
             spans,
             bounds,
             text,
             cap_height,
-        })
+            crop_bounds: None,
+        };
+        if matches!(super::Script::of_text(&field.text), super::Script::Latin | super::Script::Cyrillic | super::Script::Greek) {
+            let order = super::typography::ocr_reading_order(&field.spans.iter().map(|s| s.rect).collect::<Vec<_>>(), &field.rows());
+            field.spans = order.into_iter().map(|i| field.spans[i].clone()).collect();
+            field.text = field.spans.iter().map(|s| s.text.as_str()).collect::<Vec<_>>().join(" ");
+        }
+        Some(field)
     }
     pub fn id(&self) -> u64 {
         self.id
+    }
+    /// Preserve the actual OCR input crop in frame pixels. This distinguishes
+    /// glyph fragments cut by capture from independent, genuinely small labels.
+    #[must_use]
+    pub fn with_crop_bounds(mut self, crop: Rect) -> Self {
+        if [crop.x, crop.y, crop.w, crop.h, crop.right(), crop.bottom()].iter().all(|v| v.is_finite())
+            && crop.w > 0.0 && crop.h > 0.0 && crop.contains(&self.bounds) {
+            self.crop_bounds = Some(crop);
+        }
+        self
     }
     pub fn text(&self) -> &str {
         &self.text
@@ -219,6 +241,7 @@ impl OcrField {
         }
         self.bounds.x += dx;
         self.bounds.y += dy;
+        if let Some(crop) = &mut self.crop_bounds { crop.x += dx; crop.y += dy; }
     }
 
     /// Related overlapping crops which must be read again together: neither reading owns all
@@ -273,15 +296,21 @@ impl OcrField {
         if self.bounds.intersection(&owner.bounds) < 0.7 * self.bounds.area() {
             return false;
         }
+        let cut_at_input = self.crop_bounds.is_some_and(|crop| {
+            self.bounds.x - crop.x <= 1.0 || self.bounds.y - crop.y <= 1.0
+                || crop.right() - self.bounds.right() <= 1.0 || crop.bottom() - self.bounds.bottom() <= 1.0
+        });
         let clipped_glyph = n <= 2
             && self.spans.len() == 1
-            && self.cap_height > 2.0 * self.spans[0].rect.h
+            && (self.cap_height > 2.0 * self.spans[0].rect.h || cut_at_input)
             && owner.bounds.area() > 20.0 * self.bounds.area();
         if !clipped_glyph && text_support(&self.text, &owner.text) < 0.8 {
             return false;
         }
+        // OCR rectangles are integer pixel bounds. A one-pixel border distance
+        // is their rounding allowance, not a relaxation of source ownership.
         self.spans
             .iter()
-            .all(|s| covered_area(s.rect, &owner.spans) >= 0.8 * s.rect.area())
+            .all(|s| covered_source_area(s.rect, &owner.spans, cut_at_input) >= 0.8 * s.rect.area())
     }
 }

@@ -25,6 +25,21 @@ Item {
             cache: false
             opacity: content.bg.opacity === undefined ? 1 : content.bg.opacity
         }
+        // Text replacement: a full-resolution patch, opaque only under the old glyphs. It keeps the
+        // pixel scale of the capture and is placed by `image_rect`, so no rectangle is ever drawn.
+        Image {
+            objectName: "inplaceReconstruction"
+            readonly property var place: content.bg.image_rect || [0, 0, 1, 1]
+            x: place[0] * parent.width
+            y: place[1] * parent.height
+            width: place[2] * parent.width
+            height: place[3] * parent.height
+            visible: content.bg.mode === "reconstruct" && source.toString().length > 0
+            source: content.bg.image || ""
+            fillMode: Image.Stretch
+            smooth: true
+            cache: false
+        }
         // Solid / adaptive padding fill: the colour sampled around the original glyphs.
         Rectangle {
             objectName: "inplaceFill"
@@ -91,7 +106,9 @@ Item {
         readonly property var inner: content.entry ? content.entry.inner : [0, 0, 0, 0]
         x: inner[0]
         y: inner[1]
-        width: Math.max(1, parent.width - inner[0] - inner[2])
+        width: Math.max(1, Math.min(parent.width - inner[0] - inner[2],
+            content.entry && content.entry.layout_width !== undefined
+                ? content.entry.layout_width : parent.width - inner[0] - inner[2]))
         height: Math.max(1, parent.height - inner[1] - inner[3])
         text: content.entry ? content.entry.text : ""
         textFormat: Text.PlainText

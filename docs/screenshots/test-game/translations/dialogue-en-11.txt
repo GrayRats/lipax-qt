@@ -1,23 +1,38 @@
-[1] fixture 1
-→ Перевод длиннее оригинала. Hello 日本語
+[1] You Are the Magistrate
+→ Вы являетесь магистратом
 
-[2] fixture 2
-→ Перевод длиннее оригинала. Hello 日本語
+[2] Investigation Phase 0:25
+→ Фаза расследования 0:25
 
-[3] fixture 3
-→ Перевод длиннее оригинала. Hello 日本語
+[3] NIGHT: 1 Buy film from the requisitioner in the police station
+→ НОчь: 1 Купить фильм у реквизитера в полицейском участке
 
-[4] fixture 4
-→ Перевод длиннее оригинала. Hello 日本語
+[6] If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis
+→ Если у вас закончились вещи, которые вы можете расследовать, поговорите с подозреваемыми в камерах, чтобы расследовать их алиби.
 
-[5] fixture 5
-→ Перевод длиннее оригинала. Hello 日本語
+[25] DUTFIELD'S YARD
+→ ДВОР ДАТФИЛДА
 
-[7] fixture 7
-→ Перевод длиннее оригинала. Hello 日本語
+[27] Industrial
+→ Промышленный
 
-[8] fixture 8
-→ Перевод длиннее оригинала. Hello 日本語
+[28] Upper Class
+→ Верхний класс
 
-[16] fixture 16
-→ Перевод длиннее оригинала. Hello 日本語
+[44] 200
+→ 200
+
+[48] POB
+→ POB
+
+[56] EQUIPPED: Truncheon LMB SHOW TRUNCHEON RMB INSPECT QDROP
+→ ОСНАЩЕН: Дракхен LMB ПОКАЗЫВАЮТ ДУГОНОВЫЕ ЮАНИ ИНСПЕКТА ДРОП
+
+[62] TabiMAP
+→ ТабиМАп
+
+[63] Lower Class
+→ Нижний класс
+
+[64] Deeks
+→ Дикс

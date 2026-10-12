@@ -1,0 +1,2663 @@
+{
+  "block_ocr": [],
+  "blocks": [
+    {
+      "cap_height": 51.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 51.0,
+        "w": 493.0,
+        "x": 6.0,
+        "y": 15.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Serif",
+      "confidence": 0.7894445061683655,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 63.0,
+        "w": 275.0,
+        "x": 21.0,
+        "y": 77.0
+      }
+    },
+    {
+      "cap_height": 130.0,
+      "category": "Unknown",
+      "confidence": 0.03270513191819191,
+      "font": "Inter",
+      "rect": {
+        "h": 130.0,
+        "w": 64.0,
+        "x": 424.0,
+        "y": 85.0
+      }
+    },
+    {
+      "cap_height": 54.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 55.0,
+        "w": 83.0,
+        "x": 1814.0,
+        "y": 111.0
+      }
+    },
+    {
+      "cap_height": 102.0,
+      "category": "Serif",
+      "confidence": 0.5942067503929138,
+      "font": "Literata",
+      "rect": {
+        "h": 643.0,
+        "w": 259.0,
+        "x": 636.0,
+        "y": 113.0
+      }
+    },
+    {
+      "cap_height": 19.0,
+      "category": "SansSerif",
+      "confidence": 0.34766700863838196,
+      "font": "Inter",
+      "rect": {
+        "h": 103.0,
+        "w": 200.0,
+        "x": 1016.0,
+        "y": 116.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "Serif",
+      "confidence": 0.4325067400932312,
+      "font": "Literata",
+      "rect": {
+        "h": 68.0,
+        "w": 64.0,
+        "x": 1267.0,
+        "y": 120.0
+      }
+    },
+    {
+      "cap_height": 44.0,
+      "category": "SansSerif",
+      "confidence": 0.23859502375125885,
+      "font": "Inter",
+      "rect": {
+        "h": 91.0,
+        "w": 109.0,
+        "x": 381.0,
+        "y": 135.0
+      }
+    },
+    {
+      "cap_height": 38.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 38.0,
+        "w": 70.0,
+        "x": 1402.0,
+        "y": 140.0
+      }
+    },
+    {
+      "cap_height": 46.0,
+      "category": "Serif",
+      "confidence": 0.28488889336586,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 78.0,
+        "w": 105.0,
+        "x": 517.0,
+        "y": 144.0
+      }
+    },
+    {
+      "cap_height": 10.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 10.0,
+        "w": 287.0,
+        "x": 27.0,
+        "y": 151.0
+      }
+    },
+    {
+      "cap_height": 130.0,
+      "category": "Serif",
+      "confidence": 0.5839900374412537,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 162.0,
+        "w": 397.0,
+        "x": 1319.0,
+        "y": 169.0
+      }
+    },
+    {
+      "cap_height": 30.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 30.0,
+        "w": 93.0,
+        "x": 1539.0,
+        "y": 169.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "Serif",
+      "confidence": 0.7812778949737549,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 57.0,
+        "w": 278.0,
+        "x": 21.0,
+        "y": 171.0
+      }
+    },
+    {
+      "cap_height": 9.0,
+      "category": "SansSerif",
+      "confidence": 0.3186947703361511,
+      "font": "Inter",
+      "rect": {
+        "h": 27.0,
+        "w": 101.0,
+        "x": 1316.0,
+        "y": 176.0
+      }
+    },
+    {
+      "cap_height": 72.0,
+      "category": "Condensed",
+      "confidence": 0.6355592012405396,
+      "font": "Roboto Condensed",
+      "rect": {
+        "h": 243.0,
+        "w": 429.0,
+        "x": 962.0,
+        "y": 178.0
+      }
+    },
+    {
+      "cap_height": 25.0,
+      "category": "Serif",
+      "confidence": 0.32013335824012756,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 68.0,
+        "w": 59.0,
+        "x": 1288.0,
+        "y": 180.0
+      }
+    },
+    {
+      "cap_height": 31.0,
+      "category": "SansSerif",
+      "confidence": 0.4984421730041504,
+      "font": "Inter",
+      "rect": {
+        "h": 44.0,
+        "w": 148.0,
+        "x": 1233.0,
+        "y": 195.0
+      }
+    },
+    {
+      "cap_height": 82.0,
+      "category": "SansSerif",
+      "confidence": 0.2028057724237442,
+      "font": "Inter",
+      "rect": {
+        "h": 199.0,
+        "w": 216.0,
+        "x": 408.0,
+        "y": 203.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "Serif",
+      "confidence": 0.4753000736236572,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 24.0,
+        "w": 101.0,
+        "x": 20.0,
+        "y": 204.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "Serif",
+      "confidence": 0.7921667695045471,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 31.0,
+        "w": 270.0,
+        "x": 20.0,
+        "y": 218.0
+      }
+    },
+    {
+      "cap_height": 21.0,
+      "category": "Condensed",
+      "confidence": 0.7549389004707336,
+      "font": "Roboto Condensed",
+      "rect": {
+        "h": 126.0,
+        "w": 321.0,
+        "x": 1415.0,
+        "y": 219.0
+      }
+    },
+    {
+      "cap_height": 51.0,
+      "category": "Serif",
+      "confidence": 0.2587135136127472,
+      "font": "Literata",
+      "rect": {
+        "h": 87.0,
+        "w": 49.0,
+        "x": 814.0,
+        "y": 223.0
+      }
+    },
+    {
+      "cap_height": 63.0,
+      "category": "Serif",
+      "confidence": 0.3610599935054779,
+      "font": "PT Serif",
+      "rect": {
+        "h": 64.0,
+        "w": 78.0,
+        "x": 864.0,
+        "y": 241.0
+      }
+    },
+    {
+      "cap_height": 36.0,
+      "category": "Serif",
+      "confidence": 0.6542407274246216,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 135.0,
+        "w": 169.0,
+        "x": 1273.0,
+        "y": 326.0
+      }
+    },
+    {
+      "cap_height": 108.0,
+      "category": "Unknown",
+      "confidence": 0.030672838911414146,
+      "font": "Inter",
+      "rect": {
+        "h": 108.0,
+        "w": 42.0,
+        "x": 1837.0,
+        "y": 359.0
+      }
+    },
+    {
+      "cap_height": 19.0,
+      "category": "Serif",
+      "confidence": 0.5660101771354675,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 60.0,
+        "w": 43.0,
+        "x": 1394.0,
+        "y": 360.0
+      }
+    },
+    {
+      "cap_height": 85.0,
+      "category": "Unknown",
+      "confidence": 0.03285294398665428,
+      "font": "Inter",
+      "rect": {
+        "h": 85.0,
+        "w": 73.0,
+        "x": 960.0,
+        "y": 386.0
+      }
+    },
+    {
+      "cap_height": 620.0,
+      "category": "Serif",
+      "confidence": 0.22643719613552094,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 620.0,
+        "w": 186.0,
+        "x": 901.0,
+        "y": 390.0
+      }
+    },
+    {
+      "cap_height": 125.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 125.0,
+        "w": 143.0,
+        "x": 374.0,
+        "y": 405.0
+      }
+    },
+    {
+      "cap_height": 15.0,
+      "category": "SansSerif",
+      "confidence": 0.6436389088630676,
+      "font": "Inter",
+      "rect": {
+        "h": 38.0,
+        "w": 270.0,
+        "x": 1138.0,
+        "y": 460.0
+      }
+    },
+    {
+      "cap_height": 18.0,
+      "category": "Serif",
+      "confidence": 0.24956683814525604,
+      "font": "Literata",
+      "rect": {
+        "h": 33.0,
+        "w": 72.0,
+        "x": 950.0,
+        "y": 463.0
+      }
+    },
+    {
+      "cap_height": 70.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 106.0,
+        "w": 172.0,
+        "x": 450.0,
+        "y": 523.0
+      }
+    },
+    {
+      "cap_height": 42.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 42.0,
+        "w": 66.0,
+        "x": 1854.0,
+        "y": 530.0
+      }
+    },
+    {
+      "cap_height": 114.0,
+      "category": "Serif",
+      "confidence": 0.2852192223072052,
+      "font": "Literata",
+      "rect": {
+        "h": 157.0,
+        "w": 525.0,
+        "x": 1342.0,
+        "y": 534.0
+      }
+    },
+    {
+      "cap_height": 23.0,
+      "category": "SansSerif",
+      "confidence": 0.2897225320339203,
+      "font": "Inter",
+      "rect": {
+        "h": 51.0,
+        "w": 157.0,
+        "x": 1100.0,
+        "y": 538.0
+      }
+    },
+    {
+      "cap_height": 30.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 75.0,
+        "w": 242.0,
+        "x": 225.0,
+        "y": 547.0
+      }
+    },
+    {
+      "cap_height": 21.0,
+      "category": "Unknown",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
+      "rect": {
+        "h": 53.0,
+        "w": 95.0,
+        "x": 1708.0,
+        "y": 548.0
+      }
+    },
+    {
+      "cap_height": 144.0,
+      "category": "Serif",
+      "confidence": 0.4357515871524811,
+      "font": "Literata",
+      "rect": {
+        "h": 153.0,
+        "w": 253.0,
+        "x": 1115.0,
+        "y": 568.0
+      }
+    },
+    {
+      "cap_height": 8.0,
+      "category": "SansSerif",
+      "confidence": 0.43458378314971924,
+      "font": "Inter",
+      "rect": {
+        "h": 45.0,
+        "w": 118.0,
+        "x": 1290.0,
+        "y": 612.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "Serif",
+      "confidence": 0.32087165117263794,
+      "font": "Literata",
+      "rect": {
+        "h": 29.0,
+        "w": 97.0,
+        "x": 1245.0,
+        "y": 622.0
+      }
+    },
+    {
+      "cap_height": 51.0,
+      "category": "Serif",
+      "confidence": 0.596177339553833,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 154.0,
+        "w": 136.0,
+        "x": 803.0,
+        "y": 689.0
+      }
+    },
+    {
+      "cap_height": 252.0,
+      "category": "Unknown",
+      "confidence": 0.033674608916044235,
+      "font": "Inter",
+      "rect": {
+        "h": 252.0,
+        "w": 206.0,
+        "x": 1358.0,
+        "y": 695.0
+      }
+    },
+    {
+      "cap_height": 39.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 39.0,
+        "w": 291.0,
+        "x": 1621.0,
+        "y": 700.0
+      }
+    },
+    {
+      "cap_height": 311.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 311.0,
+        "w": 324.0,
+        "x": 1387.0,
+        "y": 719.0
+      }
+    },
+    {
+      "cap_height": 54.0,
+      "category": "SansSerif",
+      "confidence": 0.5459403395652771,
+      "font": "Roboto",
+      "rect": {
+        "h": 100.0,
+        "w": 105.0,
+        "x": 700.0,
+        "y": 736.0
+      }
+    },
+    {
+      "cap_height": 69.0,
+      "category": "Serif",
+      "confidence": 0.6404323577880859,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 108.0,
+        "w": 137.0,
+        "x": 827.0,
+        "y": 737.0
+      }
+    },
+    {
+      "cap_height": 19.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 19.0,
+        "w": 100.0,
+        "x": 1820.0,
+        "y": 744.0
+      }
+    },
+    {
+      "cap_height": 19.0,
+      "category": "Condensed",
+      "confidence": 0.6036524772644043,
+      "font": "Oswald",
+      "rect": {
+        "h": 100.0,
+        "w": 44.0,
+        "x": 847.0,
+        "y": 745.0
+      }
+    },
+    {
+      "cap_height": 20.0,
+      "category": "Condensed",
+      "confidence": 0.5139679908752441,
+      "font": "Oswald",
+      "rect": {
+        "h": 80.0,
+        "w": 23.0,
+        "x": 797.0,
+        "y": 751.0
+      }
+    },
+    {
+      "cap_height": 19.0,
+      "category": "SansSerif",
+      "confidence": 0.23177802562713623,
+      "font": "Inter",
+      "rect": {
+        "h": 68.0,
+        "w": 60.0,
+        "x": 1442.0,
+        "y": 751.0
+      }
+    },
+    {
+      "cap_height": 91.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 91.0,
+        "w": 160.0,
+        "x": 1131.0,
+        "y": 752.0
+      }
+    },
+    {
+      "cap_height": 43.0,
+      "category": "Serif",
+      "confidence": 0.22643719613552094,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 82.0,
+        "w": 99.0,
+        "x": 848.0,
+        "y": 756.0
+      }
+    },
+    {
+      "cap_height": 122.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 122.0,
+        "w": 245.0,
+        "x": 515.0,
+        "y": 757.0
+      }
+    },
+    {
+      "cap_height": 38.0,
+      "category": "Serif",
+      "confidence": 0.25263577699661255,
+      "font": "Literata",
+      "rect": {
+        "h": 42.0,
+        "w": 71.0,
+        "x": 1471.0,
+        "y": 757.0
+      }
+    },
+    {
+      "cap_height": 39.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 39.0,
+        "w": 48.0,
+        "x": 1501.0,
+        "y": 770.0
+      }
+    },
+    {
+      "cap_height": 8.0,
+      "category": "Serif",
+      "confidence": 0.3565240502357483,
+      "font": "Literata",
+      "rect": {
+        "h": 28.0,
+        "w": 114.0,
+        "x": 1195.0,
+        "y": 795.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Serif",
+      "confidence": 0.8139445781707764,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 49.0,
+        "w": 767.0,
+        "x": 574.0,
+        "y": 854.0
+      }
+    },
+    {
+      "cap_height": 70.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 70.0,
+        "w": 259.0,
+        "x": 538.0,
+        "y": 906.0
+      }
+    },
+    {
+      "cap_height": 62.0,
+      "category": "Monospace",
+      "confidence": 0.8551645874977112,
+      "font": "JetBrains Mono",
+      "rect": {
+        "h": 68.0,
+        "w": 529.0,
+        "x": 2.0,
+        "y": 974.0
+      }
+    },
+    {
+      "cap_height": 26.0,
+      "category": "Serif",
+      "confidence": 0.6276355981826782,
+      "font": "Literata",
+      "rect": {
+        "h": 41.0,
+        "w": 119.0,
+        "x": 1629.0,
+        "y": 985.0
+      }
+    },
+    {
+      "cap_height": 26.0,
+      "category": "Serif",
+      "confidence": 0.36552685499191284,
+      "font": "Source Serif 4",
+      "rect": {
+        "h": 38.0,
+        "w": 88.0,
+        "x": 1375.0,
+        "y": 1011.0
+      }
+    },
+    {
+      "cap_height": 16.0,
+      "category": "Serif",
+      "confidence": 0.7603167295455933,
+      "font": "Literata",
+      "rect": {
+        "h": 20.0,
+        "w": 277.0,
+        "x": 5.0,
+        "y": 1051.0
+      }
+    },
+    {
+      "cap_height": 23.0,
+      "category": "Unknown",
+      "confidence": 0.030500004068017006,
+      "font": "Inter",
+      "rect": {
+        "h": 23.0,
+        "w": 103.0,
+        "x": 1608.0,
+        "y": 1057.0
+      }
+    }
+  ],
+  "cached_placement_ms": 2655.818159,
+  "dropped": 54,
+  "dropped_details": [
+    {
+      "block_id": 4,
+      "original": "fixture 4",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 6,
+      "original": "fixture 6",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 7,
+      "original": "fixture 7",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 8,
+      "original": "fixture 8",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 9,
+      "original": "fixture 9",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 10,
+      "original": "fixture 10",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 11,
+      "original": "fixture 11",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 12,
+      "original": "fixture 12",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 13,
+      "original": "fixture 13",
+      "reason": "нет места для полной строки перевода",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 14,
+      "original": "fixture 14",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 15,
+      "original": "fixture 15",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 17,
+      "original": "fixture 17",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 18,
+      "original": "fixture 18",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 19,
+      "original": "fixture 19",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 20,
+      "original": "fixture 20",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 21,
+      "original": "fixture 21",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 22,
+      "original": "fixture 22",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 23,
+      "original": "fixture 23",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 24,
+      "original": "fixture 24",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 25,
+      "original": "fixture 25",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 26,
+      "original": "fixture 26",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 27,
+      "original": "fixture 27",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 28,
+      "original": "fixture 28",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 29,
+      "original": "fixture 29",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 31,
+      "original": "fixture 31",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 32,
+      "original": "fixture 32",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 33,
+      "original": "fixture 33",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 34,
+      "original": "fixture 34",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 35,
+      "original": "fixture 35",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 36,
+      "original": "fixture 36",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 37,
+      "original": "fixture 37",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 38,
+      "original": "fixture 38",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 39,
+      "original": "fixture 39",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 40,
+      "original": "fixture 40",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 41,
+      "original": "fixture 41",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 42,
+      "original": "fixture 42",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 43,
+      "original": "fixture 43",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 44,
+      "original": "fixture 44",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 45,
+      "original": "fixture 45",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 46,
+      "original": "fixture 46",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 47,
+      "original": "fixture 47",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 48,
+      "original": "fixture 48",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 49,
+      "original": "fixture 49",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 50,
+      "original": "fixture 50",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 51,
+      "original": "fixture 51",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 52,
+      "original": "fixture 52",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 53,
+      "original": "fixture 53",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 54,
+      "original": "fixture 54",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 55,
+      "original": "fixture 55",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 56,
+      "original": "fixture 56",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 57,
+      "original": "fixture 57",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 58,
+      "original": "fixture 58",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 61,
+      "original": "fixture 61",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    },
+    {
+      "block_id": 62,
+      "original": "fixture 62",
+      "reason": "для перевода нет места поверх игры",
+      "region_id": "test",
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語"
+    }
+  ],
+  "finish_ms": [
+    0.12859399999999999
+  ],
+  "first_frame_ms": 2779.28531,
+  "fits": 64,
+  "frame_blocks": [
+    {
+      "cap_height_px": 51.0,
+      "id": 1,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 51.0,
+        "w": 493.0,
+        "x": 6.0,
+        "y": 15.0
+      }
+    },
+    {
+      "cap_height_px": 20.0,
+      "id": 2,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 24.0,
+        "w": 363.0,
+        "x": 1549.0,
+        "y": 20.0
+      }
+    },
+    {
+      "cap_height_px": 16.0,
+      "id": 3,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 63.0,
+        "w": 275.0,
+        "x": 21.0,
+        "y": 77.0
+      }
+    },
+    {
+      "cap_height_px": 130.0,
+      "id": 4,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 130.0,
+        "w": 64.0,
+        "x": 424.0,
+        "y": 85.0
+      }
+    },
+    {
+      "cap_height_px": 54.0,
+      "id": 5,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 55.0,
+        "w": 83.0,
+        "x": 1814.0,
+        "y": 111.0
+      }
+    },
+    {
+      "cap_height_px": 102.0,
+      "id": 6,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 643.0,
+        "w": 259.0,
+        "x": 636.0,
+        "y": 113.0
+      }
+    },
+    {
+      "cap_height_px": 14.0,
+      "id": 7,
+      "lines_note": "",
+      "source_lines": 7,
+      "text_rect": {
+        "h": 128.0,
+        "w": 244.0,
+        "x": 1229.0,
+        "y": 114.0
+      }
+    },
+    {
+      "cap_height_px": 19.0,
+      "id": 8,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 103.0,
+        "w": 200.0,
+        "x": 1016.0,
+        "y": 116.0
+      }
+    },
+    {
+      "cap_height_px": 15.0,
+      "id": 9,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 68.0,
+        "w": 64.0,
+        "x": 1267.0,
+        "y": 120.0
+      }
+    },
+    {
+      "cap_height_px": 44.0,
+      "id": 10,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 91.0,
+        "w": 109.0,
+        "x": 381.0,
+        "y": 135.0
+      }
+    },
+    {
+      "cap_height_px": 38.0,
+      "id": 11,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 38.0,
+        "w": 70.0,
+        "x": 1402.0,
+        "y": 140.0
+      }
+    },
+    {
+      "cap_height_px": 46.0,
+      "id": 12,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 78.0,
+        "w": 105.0,
+        "x": 517.0,
+        "y": 144.0
+      }
+    },
+    {
+      "cap_height_px": 10.0,
+      "id": 13,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 10.0,
+        "w": 287.0,
+        "x": 27.0,
+        "y": 151.0
+      }
+    },
+    {
+      "cap_height_px": 130.0,
+      "id": 14,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 162.0,
+        "w": 397.0,
+        "x": 1319.0,
+        "y": 169.0
+      }
+    },
+    {
+      "cap_height_px": 30.0,
+      "id": 15,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 30.0,
+        "w": 93.0,
+        "x": 1539.0,
+        "y": 169.0
+      }
+    },
+    {
+      "cap_height_px": 15.0,
+      "id": 16,
+      "lines_note": "",
+      "source_lines": 4,
+      "text_rect": {
+        "h": 78.0,
+        "w": 279.0,
+        "x": 20.0,
+        "y": 171.0
+      }
+    },
+    {
+      "cap_height_px": 15.0,
+      "id": 17,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 57.0,
+        "w": 278.0,
+        "x": 21.0,
+        "y": 171.0
+      }
+    },
+    {
+      "cap_height_px": 9.0,
+      "id": 18,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 27.0,
+        "w": 101.0,
+        "x": 1316.0,
+        "y": 176.0
+      }
+    },
+    {
+      "cap_height_px": 72.0,
+      "id": 19,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 243.0,
+        "w": 429.0,
+        "x": 962.0,
+        "y": 178.0
+      }
+    },
+    {
+      "cap_height_px": 25.0,
+      "id": 20,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 68.0,
+        "w": 59.0,
+        "x": 1288.0,
+        "y": 180.0
+      }
+    },
+    {
+      "cap_height_px": 31.0,
+      "id": 21,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 44.0,
+        "w": 148.0,
+        "x": 1233.0,
+        "y": 195.0
+      }
+    },
+    {
+      "cap_height_px": 82.0,
+      "id": 22,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 199.0,
+        "w": 216.0,
+        "x": 408.0,
+        "y": 203.0
+      }
+    },
+    {
+      "cap_height_px": 15.0,
+      "id": 23,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 24.0,
+        "w": 101.0,
+        "x": 20.0,
+        "y": 204.0
+      }
+    },
+    {
+      "cap_height_px": 15.0,
+      "id": 24,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 31.0,
+        "w": 270.0,
+        "x": 20.0,
+        "y": 218.0
+      }
+    },
+    {
+      "cap_height_px": 21.0,
+      "id": 25,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 126.0,
+        "w": 321.0,
+        "x": 1415.0,
+        "y": 219.0
+      }
+    },
+    {
+      "cap_height_px": 51.0,
+      "id": 26,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 87.0,
+        "w": 49.0,
+        "x": 814.0,
+        "y": 223.0
+      }
+    },
+    {
+      "cap_height_px": 63.0,
+      "id": 27,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 64.0,
+        "w": 78.0,
+        "x": 864.0,
+        "y": 241.0
+      }
+    },
+    {
+      "cap_height_px": 36.0,
+      "id": 28,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 135.0,
+        "w": 169.0,
+        "x": 1273.0,
+        "y": 326.0
+      }
+    },
+    {
+      "cap_height_px": 23.0,
+      "id": 29,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 185.0,
+        "w": 596.0,
+        "x": 1136.0,
+        "y": 355.0
+      }
+    },
+    {
+      "cap_height_px": 108.0,
+      "id": 30,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 108.0,
+        "w": 42.0,
+        "x": 1837.0,
+        "y": 359.0
+      }
+    },
+    {
+      "cap_height_px": 19.0,
+      "id": 31,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 60.0,
+        "w": 43.0,
+        "x": 1394.0,
+        "y": 360.0
+      }
+    },
+    {
+      "cap_height_px": 85.0,
+      "id": 32,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 85.0,
+        "w": 73.0,
+        "x": 960.0,
+        "y": 386.0
+      }
+    },
+    {
+      "cap_height_px": 620.0,
+      "id": 33,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 620.0,
+        "w": 186.0,
+        "x": 901.0,
+        "y": 390.0
+      }
+    },
+    {
+      "cap_height_px": 125.0,
+      "id": 34,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 125.0,
+        "w": 143.0,
+        "x": 374.0,
+        "y": 405.0
+      }
+    },
+    {
+      "cap_height_px": 15.0,
+      "id": 35,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 38.0,
+        "w": 270.0,
+        "x": 1138.0,
+        "y": 460.0
+      }
+    },
+    {
+      "cap_height_px": 70.0,
+      "id": 36,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 106.0,
+        "w": 172.0,
+        "x": 450.0,
+        "y": 523.0
+      }
+    },
+    {
+      "cap_height_px": 42.0,
+      "id": 37,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 42.0,
+        "w": 66.0,
+        "x": 1854.0,
+        "y": 530.0
+      }
+    },
+    {
+      "cap_height_px": 114.0,
+      "id": 38,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 157.0,
+        "w": 525.0,
+        "x": 1342.0,
+        "y": 534.0
+      }
+    },
+    {
+      "cap_height_px": 23.0,
+      "id": 39,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 51.0,
+        "w": 157.0,
+        "x": 1100.0,
+        "y": 538.0
+      }
+    },
+    {
+      "cap_height_px": 30.0,
+      "id": 40,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 75.0,
+        "w": 242.0,
+        "x": 225.0,
+        "y": 547.0
+      }
+    },
+    {
+      "cap_height_px": 21.0,
+      "id": 41,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 53.0,
+        "w": 95.0,
+        "x": 1708.0,
+        "y": 548.0
+      }
+    },
+    {
+      "cap_height_px": 144.0,
+      "id": 42,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 153.0,
+        "w": 253.0,
+        "x": 1115.0,
+        "y": 568.0
+      }
+    },
+    {
+      "cap_height_px": 8.0,
+      "id": 43,
+      "lines_note": "",
+      "source_lines": 4,
+      "text_rect": {
+        "h": 45.0,
+        "w": 118.0,
+        "x": 1290.0,
+        "y": 612.0
+      }
+    },
+    {
+      "cap_height_px": 20.0,
+      "id": 44,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 29.0,
+        "w": 97.0,
+        "x": 1245.0,
+        "y": 622.0
+      }
+    },
+    {
+      "cap_height_px": 51.0,
+      "id": 45,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 154.0,
+        "w": 136.0,
+        "x": 803.0,
+        "y": 689.0
+      }
+    },
+    {
+      "cap_height_px": 252.0,
+      "id": 46,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 252.0,
+        "w": 206.0,
+        "x": 1358.0,
+        "y": 695.0
+      }
+    },
+    {
+      "cap_height_px": 39.0,
+      "id": 47,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 39.0,
+        "w": 291.0,
+        "x": 1621.0,
+        "y": 700.0
+      }
+    },
+    {
+      "cap_height_px": 311.0,
+      "id": 48,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 311.0,
+        "w": 324.0,
+        "x": 1387.0,
+        "y": 719.0
+      }
+    },
+    {
+      "cap_height_px": 54.0,
+      "id": 49,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 100.0,
+        "w": 105.0,
+        "x": 700.0,
+        "y": 736.0
+      }
+    },
+    {
+      "cap_height_px": 69.0,
+      "id": 50,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 108.0,
+        "w": 137.0,
+        "x": 827.0,
+        "y": 737.0
+      }
+    },
+    {
+      "cap_height_px": 19.0,
+      "id": 51,
+      "lines_note": "",
+      "source_lines": 5,
+      "text_rect": {
+        "h": 100.0,
+        "w": 44.0,
+        "x": 847.0,
+        "y": 745.0
+      }
+    },
+    {
+      "cap_height_px": 19.0,
+      "id": 52,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 68.0,
+        "w": 60.0,
+        "x": 1442.0,
+        "y": 751.0
+      }
+    },
+    {
+      "cap_height_px": 91.0,
+      "id": 53,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 91.0,
+        "w": 160.0,
+        "x": 1131.0,
+        "y": 752.0
+      }
+    },
+    {
+      "cap_height_px": 43.0,
+      "id": 54,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 82.0,
+        "w": 99.0,
+        "x": 848.0,
+        "y": 756.0
+      }
+    },
+    {
+      "cap_height_px": 122.0,
+      "id": 55,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 122.0,
+        "w": 245.0,
+        "x": 515.0,
+        "y": 757.0
+      }
+    },
+    {
+      "cap_height_px": 38.0,
+      "id": 56,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 42.0,
+        "w": 71.0,
+        "x": 1471.0,
+        "y": 757.0
+      }
+    },
+    {
+      "cap_height_px": 8.0,
+      "id": 57,
+      "lines_note": "",
+      "source_lines": 3,
+      "text_rect": {
+        "h": 28.0,
+        "w": 114.0,
+        "x": 1195.0,
+        "y": 795.0
+      }
+    },
+    {
+      "cap_height_px": 16.0,
+      "id": 58,
+      "lines_note": "",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 49.0,
+        "w": 767.0,
+        "x": 574.0,
+        "y": 854.0
+      }
+    },
+    {
+      "cap_height_px": 70.0,
+      "id": 59,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 70.0,
+        "w": 259.0,
+        "x": 538.0,
+        "y": 906.0
+      }
+    },
+    {
+      "cap_height_px": 62.0,
+      "id": 60,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 68.0,
+        "w": 529.0,
+        "x": 2.0,
+        "y": 974.0
+      }
+    },
+    {
+      "cap_height_px": 26.0,
+      "id": 61,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 41.0,
+        "w": 119.0,
+        "x": 1629.0,
+        "y": 985.0
+      }
+    },
+    {
+      "cap_height_px": 26.0,
+      "id": 62,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 38.0,
+        "w": 88.0,
+        "x": 1375.0,
+        "y": 1011.0
+      }
+    },
+    {
+      "cap_height_px": 40.0,
+      "id": 63,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 40.0,
+        "w": 108.0,
+        "x": 1812.0,
+        "y": 1040.0
+      }
+    },
+    {
+      "cap_height_px": 16.0,
+      "id": 64,
+      "lines_note": "",
+      "source_lines": 1,
+      "text_rect": {
+        "h": 20.0,
+        "w": 277.0,
+        "x": 5.0,
+        "y": 1051.0
+      }
+    }
+  ],
+  "hits": 64,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-10/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 30,
+  "ocr": null,
+  "ocr_history": [],
+  "ocr_scans": 1,
+  "peak_memory": "VmHWM:\t   68732 kB",
+  "placed": [
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#070809",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 1,
+      "block_type": "button",
+      "box": [
+        0.0,
+        0.0,
+        0.27447916666666666,
+        0.06620370370370371
+      ],
+      "font_family": "Literata",
+      "font_px": 17.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.16559113562107086,
+        "generic": false
+      },
+      "font_weight": 200,
+      "inner": [
+        6.0,
+        15.0,
+        28.0,
+        5.5
+      ],
+      "italic": false,
+      "key": "test:1",
+      "layout_width": 491.0,
+      "letter_spacing": 5.164285659790039,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 1",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#d3c7b3",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#12110d",
+        "image": "file:///home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-10/background-2.png",
+        "mode": "inpaint_blur",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 2,
+      "block_type": "button",
+      "box": [
+        0.8030208587646485,
+        0.011851851145426433,
+        0.19656244913736978,
+        0.03555555696840639
+      ],
+      "font_family": "Literata",
+      "font_px": 13.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.6219733953475952,
+        "generic": false
+      },
+      "font_weight": 400,
+      "inner": [
+        7.199951171875,
+        7.200000762939453,
+        7.199951171875,
+        7.200000762939453
+      ],
+      "italic": false,
+      "key": "test:2",
+      "layout_width": 361.0,
+      "letter_spacing": -0.543908953666687,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "fixture 2",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#ffffff",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#080809",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 3,
+      "block_type": "unknown",
+      "box": [
+        0.0078125,
+        0.06620370370370371,
+        0.14947916666666666,
+        0.06851851851851852
+      ],
+      "font_family": "Source Serif 4",
+      "font_px": 21.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.7894445061683655,
+        "generic": false
+      },
+      "font_weight": 600,
+      "inner": [
+        6.0,
+        5.5,
+        6.0,
+        5.5
+      ],
+      "italic": false,
+      "key": "test:3",
+      "layout_width": 273.0,
+      "letter_spacing": -0.844035804271698,
+      "line_height": 0.8500000238418579,
+      "max_lines": 2,
+      "original": "fixture 3",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#cac5b8",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#050505",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 5,
+      "block_type": "button",
+      "box": [
+        0.9302083333333333,
+        0.07685185185185185,
+        0.06979166666666667,
+        0.10277777777777777
+      ],
+      "font_family": "Literata",
+      "font_px": 8.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.16559113562107086,
+        "generic": false
+      },
+      "font_weight": 300,
+      "inner": [
+        28.0,
+        28.0,
+        23.0,
+        28.0
+      ],
+      "italic": true,
+      "key": "test:5",
+      "layout_width": 81.0,
+      "letter_spacing": -0.3538593351840973,
+      "line_height": 0.8999999761581421,
+      "max_lines": 4,
+      "original": "fixture 5",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#c6c0b1",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#0c0a0c",
+        "image": "",
+        "mode": "solid_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 16,
+      "block_type": "unknown",
+      "box": [
+        0.010416666666666666,
+        0.23506944444444444,
+        0.1453125,
+        0.07222222222222222
+      ],
+      "degraded": "beside-original",
+      "font_family": "Source Serif 4",
+      "font_px": 21.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.7921667695045471,
+        "generic": false
+      },
+      "font_weight": 700,
+      "inner": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "italic": false,
+      "key": "test:16",
+      "layout_width": 269.0,
+      "letter_spacing": -0.841791033744812,
+      "line_height": 0.8500000238418579,
+      "max_lines": 2,
+      "original": "fixture 16",
+      "outcome": "degraded-fallback",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 0.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#c3bdb1",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#35332d",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 30,
+      "block_type": "button",
+      "box": [
+        0.9421875,
+        0.30648148148148147,
+        0.051041666666666666,
+        0.15185185185185185
+      ],
+      "font_family": "Source Serif 4",
+      "font_px": 9.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.3522378206253052,
+        "generic": false
+      },
+      "font_weight": 200,
+      "inner": [
+        28.0,
+        28.0,
+        28.0,
+        28.0
+      ],
+      "italic": true,
+      "key": "test:30",
+      "layout_width": 40.0,
+      "letter_spacing": -0.38910049200057983,
+      "line_height": 0.8999999761581421,
+      "max_lines": 9,
+      "original": "fixture 30",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#ffffff",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#0b0f13",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 59,
+      "block_type": "button",
+      "box": [
+        0.27838541666666666,
+        0.8375,
+        0.15130208333333334,
+        0.09212962962962963
+      ],
+      "font_family": "Inter",
+      "font_px": 19.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.030500004068017006,
+        "generic": false
+      },
+      "font_weight": 300,
+      "inner": [
+        3.5,
+        1.5,
+        28.0,
+        28.0
+      ],
+      "italic": false,
+      "key": "test:59",
+      "layout_width": 257.0,
+      "letter_spacing": -0.7685204148292542,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 59",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#edddc7",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#050607",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 60,
+      "block_type": "button",
+      "box": [
+        0.0,
+        0.8759259259259259,
+        0.27838541666666666,
+        0.09305555555555556
+      ],
+      "font_family": "JetBrains Mono",
+      "font_px": 26.0,
+      "font_selection": {
+        "category": "monospace",
+        "confidence": 0.8551645874977112,
+        "generic": false
+      },
+      "font_weight": 100,
+      "inner": [
+        2.0,
+        28.0,
+        3.5,
+        4.5
+      ],
+      "italic": false,
+      "key": "test:60",
+      "layout_width": 527.0,
+      "letter_spacing": -1.048474907875061,
+      "line_height": 0.8999999761581421,
+      "max_lines": 2,
+      "original": "fixture 60",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#aba69b",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "right",
+      "background": {
+        "color": "#010101",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 63,
+      "block_type": "button",
+      "box": [
+        0.93125,
+        0.9407407407407408,
+        0.06875,
+        0.05925925925925926
+      ],
+      "font_family": "Inter",
+      "font_px": 10.0,
+      "font_selection": {
+        "category": "neo_grotesque_sans",
+        "confidence": 0.030500004068017006,
+        "generic": false
+      },
+      "font_weight": 100,
+      "inner": [
+        24.0,
+        24.0,
+        0.0,
+        0.0
+      ],
+      "italic": false,
+      "key": "test:63",
+      "layout_width": 106.0,
+      "letter_spacing": -0.41375085711479187,
+      "line_height": 0.8999999761581421,
+      "max_lines": 3,
+      "original": "fixture 63",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#ffffff",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    },
+    {
+      "alignment": "left",
+      "background": {
+        "color": "#010101",
+        "image": "",
+        "mode": "adaptive_padding_fill",
+        "opacity": 1.0,
+        "radius": 4.0
+      },
+      "block_id": 64,
+      "block_type": "button",
+      "box": [
+        0.0,
+        0.9689814814814814,
+        0.153125,
+        0.031018518518518518
+      ],
+      "font_family": "Literata",
+      "font_px": 10.0,
+      "font_selection": {
+        "category": "serif",
+        "confidence": 0.7603167295455933,
+        "generic": false
+      },
+      "font_weight": 700,
+      "inner": [
+        5.0,
+        4.5,
+        12.0,
+        9.0
+      ],
+      "italic": false,
+      "key": "test:64",
+      "layout_width": 275.0,
+      "letter_spacing": -0.4351271390914917,
+      "line_height": 0.8999999761581421,
+      "max_lines": 1,
+      "original": "fixture 64",
+      "outcome": "replaced",
+      "outline": false,
+      "outline_color": "#000000",
+      "outline_width": 1.0,
+      "rect": {
+        "h": 1.0,
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "region_id": "test",
+      "screen_point": [
+        960.0,
+        540.0
+      ],
+      "shadow": false,
+      "source_coverage": 1.0,
+      "text": "Проверка переноса: длинная тестовая строка. Hello 日本語",
+      "text_color": "#cbc6ba",
+      "text_opacity": 1.0,
+      "wrap": "word"
+    }
+  ],
+  "placement_ms": 6651.247463,
+  "repeat_frame_ms": 1619.091269,
+  "repeat_ocr_jobs": 0,
+  "size": [
+    1920,
+    1080
+  ],
+  "timings_ms": [
+    [
+      406.542664,
+      637.8091179999999,
+      2.274452
+    ],
+    [
+      395.908752,
+      625.757269,
+      2.403267
+    ],
+    [
+      394.441021,
+      616.972395,
+      3.150283
+    ],
+    [
+      394.285076,
+      615.726674,
+      2.304389
+    ],
+    [
+      396.050452,
+      611.456628,
+      2.299009
+    ]
+  ],
+  "translation_cache_hits": 0,
+  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
+  "translation_requests": 0,
+  "translation_service": "none: deterministic test input",
+  "render_ms": 518.162363999636,
+  "update_ms": 3.4365249998700165,
+  "layout_diagnostics": [
+    {
+      "width": 491,
+      "height": 51,
+      "contentWidth": 383.078125,
+      "contentHeight": 48.79999876022339,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 361,
+      "height": 24,
+      "contentWidth": 351.9375,
+      "contentHeight": 19.999999523162842,
+      "lines": 1,
+      "truncated": false
+    },
+    {
+      "width": 273,
+      "height": 63,
+      "contentWidth": 267.046875,
+      "contentHeight": 53.30000138282776,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 81,
+      "height": 55,
+      "contentWidth": 77.078125,
+      "contentHeight": 33.399999141693115,
+      "lines": 3,
+      "truncated": false
+    },
+    {
+      "width": 269,
+      "height": 69.99999999999999,
+      "contentWidth": 267.453125,
+      "contentHeight": 53.30000138282776,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 40,
+      "height": 108,
+      "contentWidth": 41.640625,
+      "contentHeight": 82.89999783039093,
+      "lines": 7,
+      "truncated": false
+    },
+    {
+      "width": 257,
+      "height": 70,
+      "contentWidth": 254.203125,
+      "contentHeight": 45.19999885559082,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 527,
+      "height": 68,
+      "contentWidth": 509.140625,
+      "contentHeight": 65.99999833106995,
+      "lines": 2,
+      "truncated": false
+    },
+    {
+      "width": 106,
+      "height": 40,
+      "contentWidth": 93.390625,
+      "contentHeight": 36.09999907016754,
+      "lines": 3,
+      "truncated": false
+    },
+    {
+      "width": 275,
+      "height": 20,
+      "contentWidth": 270.890625,
+      "contentHeight": 14.499999642372131,
+      "lines": 1,
+      "truncated": false
+    }
+  ]
+}

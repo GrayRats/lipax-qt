@@ -1,47 +1,68 @@
-[1] fixture 1
-→ Перевод длиннее оригинала. Hello 日本語
+[5] Tasks
+→ Задачи
 
-[2] fixture 2
-→ Перевод длиннее оригинала. Hello 日本語
+[8] KEY
+→ КЛЮК
 
-[3] fixture 3
-→ Перевод длиннее оригинала. Hello 日本語
+[9] Extra Damage
+→ Дополнительными повреждениями
 
-[4] fixture 4
-→ Перевод длиннее оригинала. Hello 日本語
+[10] Damage Multiplier:
+→ Множественные повреждения:
 
-[5] fixture 5
-→ Перевод длиннее оригинала. Hello 日本語
+[11] 100%
+→ 100%
 
-[6] fixture 6
-→ Перевод длиннее оригинала. Hello 日本語
+[12] Attack Speed
+→ Скорость атаки
 
-[7] fixture 7
-→ Перевод длиннее оригинала. Hello 日本語
+[13] These are your equipment slots, picking up an equippable item will automatically equip that item if a slot is empty. Some items, like Helmets, can not be equipped more
+→ Это ваши слоты для оборудования, сбор обустраиваемого элемента автоматически оснастит этот элемент, если слот пуст. Некоторые предметы, такие как шлемы, не могут быть оборудованы больше
 
-[8] fixture 8
-→ Перевод длиннее оригинала. Hello 日本語
+[15] Reload Speed
+→ Скорость перезагрузки
 
-[9] fixture 9
-→ Перевод длиннее оригинала. Hello 日本語
+[16] Kills: 3
+→ Убийства: 3
 
-[10] fixture 10
-→ Перевод длиннее оригинала. Hello 日本語
+[17] Weapon Range
+→ Дальность действия воорео
 
-[11] fixture 11
-→ Перевод длиннее оригинала. Hello 日本語
+[18] Support Range
+→ Диапазон поддержки
 
-[12] fixture 12
-→ Перевод длиннее оригинала. Hello 日本語
+[19] Critical Chance
+→ Критический шанс
 
-[13] fixture 13
-→ Перевод длиннее оригинала. Hello 日本語
+[21] Critical Damage
+→ Критический ущерб
 
-[14] fixture 14
-→ Перевод длиннее оригинала. Hello 日本語
+[22] 200%
+→ 200%
 
-[15] fixture 15
-→ Перевод длиннее оригинала. Hello 日本語
+[24] Knockback
+→ Нокбэк
 
-[16] fixture 16
-→ Перевод длиннее оригинала. Hello 日本語
+[26] (click this to dismiss)
+→ (щейкните, чтобы уволить)
+
+[27] Spell Haste
+→ Спелл Спеша
+
+[29] Dodge Chance
+→ Dodge Шанс
+
+[30] Block Chance
+→ Блок Шанс
+
+[32] Damage Reduction:
+→ Снижение Повреждений:
+
+[33] Move Speed:
+→ Скорость движения:
+
+[34] 0%
+→ 0%
+
+[38] New Expertise Available!
+→ Новый Опыт Доступен!

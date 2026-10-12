@@ -770,7 +770,10 @@ impl cxx_qt::Initialize for qobject::Controller {
                     }
                     other => other,
                 };
-                let _ = qt.queue(move |mut o| match ev {
+                let _ = qt.queue(move |mut o| {
+                    // Settings can change after the worker queues an event but before Qt delivers it.
+                    if generation != o.rust().shared.generation.load(std::sync::atomic::Ordering::SeqCst) { return; }
+                    match ev {
                     Event::Status(s) => {
                         if o.rust().faults.is_empty() {
                             o.as_mut().set_status(QString::from(s.as_str()));
@@ -800,6 +803,7 @@ impl cxx_qt::Initialize for qobject::Controller {
                         o.as_mut().publish_faults();
                     },
                     Event::Inplace { region_id, region_name, frame } => {
+                        tracing::debug!(target: "inplace.delivery", region = %region_id, generation, blocks = frame.blocks.len(), "Event::Inplace delivered on GUI thread");
                         let settings = o.rust().shared.settings.borrow().clone();
                         if !settings.capture_regions().iter().any(|r| r.id == region_id) { return; }
                         o.as_mut().rust_mut().faults.remove(&region_id);
@@ -857,6 +861,7 @@ impl cxx_qt::Initialize for qobject::Controller {
                         o.as_mut().set_status_kind(QString::from("info"));
                         o.as_mut().publish_faults();
                     }
+                    }
                 });
             }
         });
@@ -891,15 +896,6 @@ impl qobject::Controller {
         // Cancel an automatic show that was superseded before KWin saw the floating surface.
         if pinned { lipa_core::capture::clear_floating_focus_restore(); }
         self.rust().shared.update(|s| {
-            if pinned {
-                // Закреплённое окно — на месте свободного, на том же выходе.
-                if let Some(g) = s.translation_window.floating_geometry.clone() {
-                    s.translation_window.screen = g.output.clone();
-                    s.translation_window.position = g.relative();
-                    tracing::debug!(target: "translation_window.geometry", reason = "pin_transition", screen = %g.output,
-                        x = s.translation_window.position.0, y = s.translation_window.position.1, "pinned placement from floating geometry");
-                }
-            }
             s.translation_window.mode = lipa_core::settings::TranslationWindowMode::from_pinned(pinned);
         });
         tracing::debug!(target: "translation_window.state", pinned, floating = !pinned,
@@ -1009,6 +1005,7 @@ impl qobject::Controller {
         let s = self.rust().shared.settings.borrow().clone();
         let capabilities = capabilities_json(&s);
         if self.capture_capabilities().to_string() != capabilities {
+            tracing::debug!(target: "capture.capabilities", capabilities = %capabilities, "capture feature availability updated");
             self.as_mut().set_capture_capabilities(QString::from(capabilities.as_str()));
         }
         self.as_mut().set_settings_state(QString::from(serde_json::to_string(&s).unwrap().as_str()));
@@ -1084,6 +1081,15 @@ impl qobject::Controller {
         tracing::debug!(target: "inplace.render", geometry = window.is_some(), regions = frames.len(), placed = placed.placed.len(),
             dropped = placed.dropped.len(), degraded = placed.placed.iter().filter(|p| p.degraded.is_some()).count(), "in-place fields published");
         let fallback = fallback_json(&placed, &regions);
+        for field in &placed.dropped {
+            tracing::warn!(target: "inplace.render", region = %field.region_id, block_id = field.block_id, reason = field.reason, stage = "placement", "inplace field cannot be rendered");
+        }
+        for field in &placed.placed {
+            tracing::debug!(target: "inplace.render", region = %field.region_id, block_id = field.block_id, outcome = ?field.outcome, coordinate_space = "desktop_logical", "inplace placement accepted; awaiting GUI rendering");
+        }
+        if window.is_none() && !self.rust().region_inplace.is_empty() {
+            tracing::warn!(target: "inplace.render", reason = "client_geometry_unavailable", "inplace frames received without a usable client viewport");
+        }
         if self.inplace_fallback_json().to_string() != fallback {
             self.as_mut().set_inplace_fallback_json(QString::from(fallback.as_str()));
         }
@@ -1523,18 +1529,18 @@ fn publish_preview(shared: &Shared, region_id: String, region_name: String, prev
 fn store_floating_geometry(shared: &Shared, g: lipa_core::settings::FloatingGeometry, reason: &str) {
     tracing::debug!(target: "translation_window.geometry", reason, x = g.x, y = g.y, width = g.w, height = g.h, screen = %g.output, "floating geometry");
     // With "remember window geometry" off the saved geometry is left untouched.
+    if !shared.settings.borrow().general.remember_window_geometry { return; }
     shared.update(|s| if s.general.remember_window_geometry { s.translation_window.floating_geometry = Some(g) });
 }
 
 /// JSON для скрипта KWin: где поставить свободное окно при появлении. Сначала — где его
-/// оставили, иначе — там, где стоит закреплённое; `null` — пусть место выберет KWin.
+/// оставили; без сохранённой геометрии `null` — пусть место выберет KWin.
 fn floating_placement(s: &Settings) -> String {
     match s.translation_window.floating_geometry.as_ref().filter(|_| s.general.remember_window_geometry) {
         Some(g) => {
             let (rx, ry) = g.relative();
             serde_json::json!({ "x": g.x, "y": g.y, "output": g.output, "rx": rx, "ry": ry }).to_string()
         }
-        None if !s.translation_window.screen.is_empty() => serde_json::json!({ "output": s.translation_window.screen, "rx": s.translation_window.position.0, "ry": s.translation_window.position.1 }).to_string(),
         None => "null".into(),
     }
 }
@@ -1884,11 +1890,12 @@ mod display_tests {
         assert_eq!(floating_placement(&s), "null", "first start: KWin chooses");
         s.translation_window.screen = "DP-1".into();
         s.translation_window.position = (40, 50);
-        let p: serde_json::Value = serde_json::from_str(&floating_placement(&s)).unwrap();
-        assert_eq!((p["output"].as_str(), p["rx"].as_i64(), p["ry"].as_i64()), (Some("DP-1"), Some(40), Some(50)), "where the pinned one was");
+        assert_eq!(floating_placement(&s), "null", "pinned placement must never constrain floating placement");
         s.translation_window.floating_geometry = Some(FloatingGeometry { x: 2140.0, y: 382.0, w: 740.0, h: 240.0, output: "DP-2".into(), output_x: 2560.0, output_y: -200.0 });
         let p: serde_json::Value = serde_json::from_str(&floating_placement(&s)).unwrap();
         assert_eq!((p["x"].as_f64(), p["y"].as_f64(), p["output"].as_str()), (Some(2140.0), Some(382.0), Some("DP-2")));
         assert_eq!((p["rx"].as_i64(), p["ry"].as_i64()), (Some(-420), Some(582)), "negative layout offsets are kept");
+        s.general.remember_window_geometry = false;
+        assert_eq!(floating_placement(&s), "null", "disabled persistence leaves placement to KWin");
     }
 }

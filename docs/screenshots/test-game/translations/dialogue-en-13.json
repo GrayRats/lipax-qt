@@ -1,11 +1,408 @@
 {
-  "block_ocr": [],
+  "block_ocr": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        916,
+        329
+      ],
+      "detector_rect": {
+        "h": 93.0,
+        "w": 209.0,
+        "x": 940.0,
+        "y": 353.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 130.71897299999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        55,
+        395
+      ],
+      "detector_rect": {
+        "h": 104.0,
+        "w": 440.0,
+        "x": 81.0,
+        "y": 421.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 12.880209,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        81,
+        781
+      ],
+      "detector_rect": {
+        "h": 29.0,
+        "w": 136.0,
+        "x": 89.0,
+        "y": 789.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.120321,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1449,
+        797
+      ],
+      "detector_rect": {
+        "h": 61.0,
+        "w": 331.0,
+        "x": 1465.0,
+        "y": 813.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 6.431894,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.17347717285156,
+      "crop_origin": [
+        365,
+        827
+      ],
+      "detector_rect": {
+        "h": 124.0,
+        "w": 951.0,
+        "x": 375.0,
+        "y": 837.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 43.0,
+          "w": 944.0,
+          "x": 372.0,
+          "y": 831.0
+        },
+        {
+          "h": 44.0,
+          "w": 952.0,
+          "x": 372.0,
+          "y": 875.0
+        },
+        {
+          "h": 49.0,
+          "w": 904.0,
+          "x": 369.0,
+          "y": 916.0
+        }
+      ],
+      "observation_ms": 12.387185,
+      "ocr_ms": 152.349827,
+      "original": "But my sisters were always with me. I felt bad for bothering them and for all the worry I caused them, but I was really happy that I wasn't left alone.",
+      "raw_original": "But my sisters were always with me. I felt bad for bothering them and for all the worry I caused them, but I was really happy that I wasn't left alone.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.93218231201172,
+          "rect": {
+            "h": 43.0,
+            "w": 944.0,
+            "x": 372.0,
+            "y": 831.0
+          },
+          "text": "But my sisters were always with me. I felt bad for"
+        },
+        {
+          "confidence": 98.85814666748047,
+          "rect": {
+            "h": 44.0,
+            "w": 952.0,
+            "x": 372.0,
+            "y": 875.0
+          },
+          "text": "bothering them and for all the worry I caused them,"
+        },
+        {
+          "confidence": 99.75985717773438,
+          "rect": {
+            "h": 49.0,
+            "w": 904.0,
+            "x": 369.0,
+            "y": 916.0
+          },
+          "text": "but I was really happy that I wasn't left alone."
+        }
+      ],
+      "split": false,
+      "translation": "Но мои сестры всегда были со мной. Я чувствовал себя плохо из-за того, что беспокоил их, и, если все беспокоятся, я причинил им, но я был очень счастлив, что меня не оставили в покое.",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        108,
+        866
+      ],
+      "detector_rect": {
+        "h": 32.0,
+        "w": 139.0,
+        "x": 116.0,
+        "y": 874.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.149115,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.39525604248047,
+      "crop_origin": [
+        1438,
+        866
+      ],
+      "detector_rect": {
+        "h": 105.0,
+        "w": 331.0,
+        "x": 1465.0,
+        "y": 893.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [
+        {
+          "h": 64.0,
+          "w": 71.0,
+          "x": 1502.0,
+          "y": 898.0
+        },
+        {
+          "h": 58.0,
+          "w": 65.0,
+          "x": 1684.0,
+          "y": 901.0
+        },
+        {
+          "h": 50.0,
+          "w": 119.0,
+          "x": 1482.0,
+          "y": 954.0
+        },
+        {
+          "h": 52.0,
+          "w": 125.0,
+          "x": 1658.0,
+          "y": 952.0
+        }
+      ],
+      "observation_ms": 0.92943,
+      "ocr_ms": 58.306717,
+      "original": "Q Q SAVE LOAD",
+      "raw_original": "Q Q SAVE LOAD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.86351013183594,
+          "rect": {
+            "h": 64.0,
+            "w": 71.0,
+            "x": 1502.0,
+            "y": 898.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 96.78988647460938,
+          "rect": {
+            "h": 58.0,
+            "w": 65.0,
+            "x": 1684.0,
+            "y": 901.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 99.74623107910156,
+          "rect": {
+            "h": 50.0,
+            "w": 119.0,
+            "x": 1482.0,
+            "y": 954.0
+          },
+          "text": "SAVE"
+        },
+        {
+          "confidence": 99.82855987548828,
+          "rect": {
+            "h": 52.0,
+            "w": 125.0,
+            "x": 1658.0,
+            "y": 952.0
+          },
+          "text": "LOAD"
+        }
+      ],
+      "split": false,
+      "translation": "Q Q СЭКОНОМОЧЬ",
+      "translation_source": "actual translation-engine response"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        137,
+        1010
+      ],
+      "detector_rect": {
+        "h": 17.0,
+        "w": 37.0,
+        "x": 142.0,
+        "y": 1015.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.439491,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        198,
+        1013
+      ],
+      "detector_rect": {
+        "h": 15.0,
+        "w": 32.0,
+        "x": 202.0,
+        "y": 1017.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.8457860000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    },
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        260,
+        1018
+      ],
+      "detector_rect": {
+        "h": 11.0,
+        "w": 25.0,
+        "x": 263.0,
+        "y": 1021.0
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.962091,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
+    }
+  ],
   "blocks": [
     {
       "cap_height": 93.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 93.0,
         "w": 209.0,
@@ -16,8 +413,8 @@
     {
       "cap_height": 104.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 104.0,
         "w": 440.0,
@@ -28,8 +425,8 @@
     {
       "cap_height": 29.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 29.0,
         "w": 136.0,
@@ -40,8 +437,8 @@
     {
       "cap_height": 61.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 61.0,
         "w": 331.0,
@@ -50,24 +447,12 @@
       }
     },
     {
-      "cap_height": 36.0,
-      "category": "Monospace",
-      "confidence": 0.6887361407279968,
-      "font": "Source Code Pro",
-      "rect": {
-        "h": 149.0,
-        "w": 254.0,
-        "x": 58.0,
-        "y": 816.0
-      }
-    },
-    {
-      "cap_height": 35.0,
+      "cap_height": 33.0,
       "category": "SansSerif",
-      "confidence": 0.5680833458900452,
+      "confidence": 0.482870876789093,
       "font": "Inter",
       "rect": {
-        "h": 141.0,
+        "h": 124.0,
         "w": 951.0,
         "x": 375.0,
         "y": 837.0
@@ -76,7 +461,7 @@
     {
       "cap_height": 32.0,
       "category": "Unknown",
-      "confidence": 0.06548397988080978,
+      "confidence": 0.03274198994040489,
       "font": "Roboto Slab",
       "rect": {
         "h": 32.0,
@@ -88,8 +473,8 @@
     {
       "cap_height": 105.0,
       "category": "Unknown",
-      "confidence": 0.059166669845581055,
-      "font": "Noto Sans CJK SC",
+      "confidence": 0.029583334922790527,
+      "font": "Noto Serif CJK SC",
       "rect": {
         "h": 105.0,
         "w": 331.0,
@@ -98,21 +483,9 @@
       }
     },
     {
-      "cap_height": 34.0,
-      "category": "SansSerif",
-      "confidence": 0.3408500552177429,
-      "font": "Inter",
-      "rect": {
-        "h": 73.0,
-        "w": 224.0,
-        "x": 143.0,
-        "y": 959.0
-      }
-    },
-    {
       "cap_height": 17.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 17.0,
@@ -124,7 +497,7 @@
     {
       "cap_height": 15.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 15.0,
@@ -136,7 +509,7 @@
     {
       "cap_height": 11.0,
       "category": "Unknown",
-      "confidence": 0.06100000813603401,
+      "confidence": 0.030500004068017006,
       "font": "Inter",
       "rect": {
         "h": 11.0,
@@ -146,633 +519,485 @@
       }
     }
   ],
-  "cached_placement_ms": 3.121072,
-  "dropped": 6,
-  "dropped_details": [
-    {
-      "block_id": 5,
-      "original": "fixture 5",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 7,
-      "original": "fixture 7",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 9,
-      "original": "fixture 9",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 10,
-      "original": "fixture 10",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 11,
-      "original": "fixture 11",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    },
-    {
-      "block_id": 12,
-      "original": "fixture 12",
-      "reason": "для перевода нет места поверх игры",
-      "region_id": "test",
-      "text": "Перевод длиннее оригинала. Hello 日本語"
-    }
-  ],
+  "cached_placement_ms": 0.010570000000000001,
+  "dropped": 0,
+  "dropped_details": [],
   "finish_ms": [
-    0.085453
+    0.014648
   ],
-  "first_frame_ms": 513.45722,
-  "fits": 12,
+  "first_frame_ms": 52.397974,
+  "fits": 2,
   "frame_blocks": [
     {
-      "id": 1,
-      "lines_note": "",
-      "source_lines": 1,
+      "cap_height_px": 33.0,
+      "id": 5,
+      "lines_note": "строк: 3 (OCR и детектор согласны); граница блока по OCR",
+      "source_lines": 3,
       "text_rect": {
+        "h": 136.0,
+        "w": 957.0,
+        "x": 368.0,
+        "y": 830.0
+      }
+    },
+    {
+      "cap_height_px": 105.0,
+      "id": 7,
+      "lines_note": "строк: 2 по OCR, детектор насчитал 1; граница блока по OCR",
+      "source_lines": 2,
+      "text_rect": {
+        "h": 108.0,
+        "w": 303.0,
+        "x": 1481.0,
+        "y": 897.0
+      }
+    }
+  ],
+  "hits": 2,
+  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-13/original.png",
+  "measurement": "Qt: shared production helper, test IPC adapter",
+  "minimum_confidence": 50,
+  "ocr": null,
+  "ocr_history": [
+    {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        916,
+        329
+      ],
+      "detector_rect": {
         "h": 93.0,
         "w": 209.0,
         "x": 940.0,
         "y": 353.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 1,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 130.71897299999998,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 2,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        55,
+        395
+      ],
+      "detector_rect": {
         "h": 104.0,
         "w": 440.0,
         "x": 81.0,
         "y": 421.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 2,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 12.880209,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 3,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        81,
+        781
+      ],
+      "detector_rect": {
         "h": 29.0,
         "w": 136.0,
         "x": 89.0,
         "y": 789.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 3,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.120321,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 4,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        1449,
+        797
+      ],
+      "detector_rect": {
         "h": 61.0,
         "w": 331.0,
         "x": 1465.0,
         "y": 813.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 4,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 6.431894,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 5,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
-        "h": 149.0,
-        "w": 254.0,
-        "x": 58.0,
-        "y": 816.0
-      }
-    },
-    {
-      "id": 6,
-      "lines_note": "",
-      "source_lines": 3,
-      "text_rect": {
-        "h": 141.0,
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.17347717285156,
+      "crop_origin": [
+        365,
+        827
+      ],
+      "detector_rect": {
+        "h": 124.0,
         "w": 951.0,
         "x": 375.0,
         "y": 837.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 5,
+      "lines": [
+        {
+          "h": 43.0,
+          "w": 944.0,
+          "x": 372.0,
+          "y": 831.0
+        },
+        {
+          "h": 44.0,
+          "w": 952.0,
+          "x": 372.0,
+          "y": 875.0
+        },
+        {
+          "h": 49.0,
+          "w": 904.0,
+          "x": 369.0,
+          "y": 916.0
+        }
+      ],
+      "observation_ms": 12.387185,
+      "ocr_ms": 152.349827,
+      "original": "But my sisters were always with me. I felt bad for bothering them and for all the worry I caused them, but I was really happy that I wasn't left alone.",
+      "raw_original": "But my sisters were always with me. I felt bad for bothering them and for all the worry I caused them, but I was really happy that I wasn't left alone.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.93218231201172,
+          "rect": {
+            "h": 43.0,
+            "w": 944.0,
+            "x": 372.0,
+            "y": 831.0
+          },
+          "text": "But my sisters were always with me. I felt bad for"
+        },
+        {
+          "confidence": 98.85814666748047,
+          "rect": {
+            "h": 44.0,
+            "w": 952.0,
+            "x": 372.0,
+            "y": 875.0
+          },
+          "text": "bothering them and for all the worry I caused them,"
+        },
+        {
+          "confidence": 99.75985717773438,
+          "rect": {
+            "h": 49.0,
+            "w": 904.0,
+            "x": 369.0,
+            "y": 916.0
+          },
+          "text": "but I was really happy that I wasn't left alone."
+        }
+      ],
+      "split": false,
+      "translation": "Но мои сестры всегда были со мной. Я чувствовал себя плохо из-за того, что беспокоил их, и, если все беспокоятся, я причинил им, но я был очень счастлив, что меня не оставили в покое.",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 7,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        108,
+        866
+      ],
+      "detector_rect": {
         "h": 32.0,
         "w": 139.0,
         "x": 116.0,
         "y": 874.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 6,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 3.149115,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 8,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": true,
+      "automatic_filters": false,
+      "confidence": 99.39525604248047,
+      "crop_origin": [
+        1438,
+        866
+      ],
+      "detector_rect": {
         "h": 105.0,
         "w": 331.0,
         "x": 1465.0,
         "y": 893.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 7,
+      "lines": [
+        {
+          "h": 64.0,
+          "w": 71.0,
+          "x": 1502.0,
+          "y": 898.0
+        },
+        {
+          "h": 58.0,
+          "w": 65.0,
+          "x": 1684.0,
+          "y": 901.0
+        },
+        {
+          "h": 50.0,
+          "w": 119.0,
+          "x": 1482.0,
+          "y": 954.0
+        },
+        {
+          "h": 52.0,
+          "w": 125.0,
+          "x": 1658.0,
+          "y": 952.0
+        }
+      ],
+      "observation_ms": 0.92943,
+      "ocr_ms": 58.306717,
+      "original": "Q Q SAVE LOAD",
+      "raw_original": "Q Q SAVE LOAD",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.86351013183594,
+          "rect": {
+            "h": 64.0,
+            "w": 71.0,
+            "x": 1502.0,
+            "y": 898.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 96.78988647460938,
+          "rect": {
+            "h": 58.0,
+            "w": 65.0,
+            "x": 1684.0,
+            "y": 901.0
+          },
+          "text": "Q"
+        },
+        {
+          "confidence": 99.74623107910156,
+          "rect": {
+            "h": 50.0,
+            "w": 119.0,
+            "x": 1482.0,
+            "y": 954.0
+          },
+          "text": "SAVE"
+        },
+        {
+          "confidence": 99.82855987548828,
+          "rect": {
+            "h": 52.0,
+            "w": 125.0,
+            "x": 1658.0,
+            "y": 952.0
+          },
+          "text": "LOAD"
+        }
+      ],
+      "split": false,
+      "translation": "Q Q СЭКОНОМОЧЬ",
+      "translation_source": "actual translation-engine response"
     },
     {
-      "id": 9,
-      "lines_note": "",
-      "source_lines": 2,
-      "text_rect": {
-        "h": 73.0,
-        "w": 224.0,
-        "x": 143.0,
-        "y": 959.0
-      }
-    },
-    {
-      "id": 10,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        137,
+        1010
+      ],
+      "detector_rect": {
         "h": 17.0,
         "w": 37.0,
         "x": 142.0,
         "y": 1015.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 8,
+      "lines": [],
+      "observation_ms": 2.9999999999999997e-05,
+      "ocr_ms": 2.439491,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 11,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        198,
+        1013
+      ],
+      "detector_rect": {
         "h": 15.0,
         "w": 32.0,
         "x": 202.0,
         "y": 1017.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 9,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 1.8457860000000001,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     },
     {
-      "id": 12,
-      "lines_note": "",
-      "source_lines": 1,
-      "text_rect": {
+      "accepted": false,
+      "automatic_filters": false,
+      "confidence": null,
+      "crop_origin": [
+        260,
+        1018
+      ],
+      "detector_rect": {
         "h": 11.0,
         "w": 25.0,
         "x": 263.0,
         "y": 1021.0
-      }
+      },
+      "engine": "rapidocr",
+      "filters": "Preprocess { auto_invert: false, contrast: 0, sharpen: false, binarize: false }",
+      "id": 10,
+      "lines": [],
+      "observation_ms": 2e-05,
+      "ocr_ms": 2.962091,
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": [],
+      "split": false,
+      "translation": null,
+      "translation_source": "none"
     }
   ],
-  "hits": 12,
-  "image": "/home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-13/original.png",
-  "measurement": "Qt: shared production helper, test IPC adapter",
-  "minimum_confidence": 30,
-  "ocr": {
-    "engine": "rapidocr",
-    "language": "eng",
-    "latency_ms": 2754.18915,
-    "lines": [
-      {
-        "confidence": 37.27354431152344,
-        "rect": {
-          "h": 40.0,
-          "w": 26.0,
-          "x": 1115.0,
-          "y": 599.0
-        },
-        "text": "X"
-      },
-      {
-        "confidence": 97.45745086669922,
-        "rect": {
-          "h": 47.0,
-          "w": 948.0,
-          "x": 369.0,
-          "y": 829.0
-        },
-        "text": "But my sisters were always with me. I felt bad for"
-      },
-      {
-        "confidence": 98.76641845703125,
-        "rect": {
-          "h": 31.0,
-          "w": 31.0,
-          "x": 1623.0,
-          "y": 829.0
-        },
-        "text": ")"
-      },
-      {
-        "confidence": 99.99616241455078,
-        "rect": {
-          "h": 41.0,
-          "w": 184.0,
-          "x": 372.0,
-          "y": 876.0
-        },
-        "text": "bothering"
-      },
-      {
-        "confidence": 99.61311340332031,
-        "rect": {
-          "h": 48.0,
-          "w": 674.0,
-          "x": 553.0,
-          "y": 873.0
-        },
-        "text": "them and for all the worry I caused"
-      },
-      {
-        "confidence": 87.61348724365234,
-        "rect": {
-          "h": 42.0,
-          "w": 104.0,
-          "x": 1225.0,
-          "y": 877.0
-        },
-        "text": "them,"
-      },
-      {
-        "confidence": 99.91012573242188,
-        "rect": {
-          "h": 39.0,
-          "w": 69.0,
-          "x": 372.0,
-          "y": 920.0
-        },
-        "text": "but"
-      },
-      {
-        "confidence": 98.67920684814453,
-        "rect": {
-          "h": 37.0,
-          "w": 204.0,
-          "x": 478.0,
-          "y": 922.0
-        },
-        "text": "was really"
-      },
-      {
-        "confidence": 99.9779052734375,
-        "rect": {
-          "h": 38.0,
-          "w": 111.0,
-          "x": 685.0,
-          "y": 923.0
-        },
-        "text": "happy"
-      },
-      {
-        "confidence": 94.95391845703125,
-        "rect": {
-          "h": 41.0,
-          "w": 149.0,
-          "x": 795.0,
-          "y": 921.0
-        },
-        "text": "that I"
-      },
-      {
-        "confidence": 99.91667175292969,
-        "rect": {
-          "h": 43.0,
-          "w": 230.0,
-          "x": 923.0,
-          "y": 919.0
-        },
-        "text": "wasn't left"
-      },
-      {
-        "confidence": 94.7574462890625,
-        "rect": {
-          "h": 24.0,
-          "w": 23.0,
-          "x": 451.0,
-          "y": 929.0
-        },
-        "text": "I"
-      },
-      {
-        "confidence": 55.948001861572266,
-        "rect": {
-          "h": 26.0,
-          "w": 29.0,
-          "x": 782.0,
-          "y": 929.0
-        },
-        "text": "2"
-      },
-      {
-        "confidence": 99.81114959716797,
-        "rect": {
-          "h": 41.0,
-          "w": 138.0,
-          "x": 1131.0,
-          "y": 919.0
-        },
-        "text": "t alone."
-      },
-      {
-        "confidence": 99.75181579589844,
-        "rect": {
-          "h": 51.0,
-          "w": 119.0,
-          "x": 1482.0,
-          "y": 953.0
-        },
-        "text": "SAVE"
-      },
-      {
-        "confidence": 99.8670425415039,
-        "rect": {
-          "h": 53.0,
-          "w": 126.0,
-          "x": 1657.0,
-          "y": 951.0
-        },
-        "text": "LOAD"
-      }
-    ],
-    "text": "X\nBut my sisters were always with me. I felt bad for\n)\nbothering\nthem and for all the worry I caused\nthem,\nbut\nwas really\nhappy\nthat I\nwasn't left\nI\n2\nt alone.\nSAVE\nLOAD"
-  },
-  "ocr_history": [],
   "ocr_scans": 1,
-  "peak_memory": "VmHWM:\t  412024 kB",
+  "peak_memory": "VmHWM:\t  206536 kB",
   "placed": [
     {
       "alignment": "left",
       "background": {
-        "color": "#54a5f2",
-        "image": "",
-        "mode": "solid_fill",
+        "color": "#00a9e9",
+        "image": "file:///home/art/DEV/LipaX-QT/tmp/visual/dialogue-en-13/background-5.png",
+        "mode": "inpaint_blur",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 1,
-      "block_type": "unknown",
-      "box": [
-        0.5074135090609555,
-        0.32655038759689925,
-        0.13234486545853927,
-        0.12112403100775193
-      ],
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 21.0,
-      "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
-        "generic": false
-      },
-      "font_weight": 900,
-      "inner": [
-        16.0,
-        16.0,
-        16.0,
-        16.0
-      ],
-      "italic": false,
-      "key": "test:1",
-      "letter_spacing": -0.8697605133056641,
-      "line_height": 0.8999999761581421,
-      "max_lines": 3,
-      "original": "fixture 1",
-      "outline": false,
-      "outline_color": "#b4ffff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        910.5,
-        516.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#000000",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#3d97ef",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 2,
-      "block_type": "unknown",
-      "box": [
-        0.0356946732564525,
-        0.39244186046511625,
-        0.2591982427237781,
-        0.13178294573643412
-      ],
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 37.0,
-      "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
-        "generic": false
-      },
-      "font_weight": 900,
-      "inner": [
-        16.0,
-        16.0,
-        16.0,
-        16.0
-      ],
-      "italic": false,
-      "key": "test:2",
-      "letter_spacing": -1.5179201364517212,
-      "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 2",
-      "outline": false,
-      "outline_color": "#9df7ff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        910.5,
-        516.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#000000",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#09b7ee",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 3,
-      "block_type": "unknown",
-      "box": [
-        0.04887424492037342,
-        0.6956879963246427,
-        0.15925315760571115,
-        0.061821693597837936
-      ],
-      "degraded": "beside-original",
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 18.0,
-      "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
-        "generic": false
-      },
-      "font_weight": 900,
-      "inner": [
-        4.0,
-        4.0,
-        4.0,
-        4.0
-      ],
-      "italic": false,
-      "key": "test:3",
-      "letter_spacing": -0.7531939744949341,
-      "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 3",
-      "outline": false,
-      "outline_color": "#69ffff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        910.5,
-        516.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#000000",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "right",
-      "background": {
-        "color": "#16b7ee",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 4,
-      "block_type": "unknown",
-      "box": [
-        0.7957166392092258,
-        0.7722868217054264,
-        0.19934102141680396,
-        0.08381782945736434
-      ],
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 21.0,
-      "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
-        "generic": false
-      },
-      "font_weight": 200,
-      "inner": [
-        16.0,
-        16.0,
-        16.0,
-        9.5
-      ],
-      "italic": false,
-      "key": "test:4",
-      "letter_spacing": -0.853330135345459,
-      "line_height": 0.8999999761581421,
-      "max_lines": 2,
-      "original": "fixture 4",
-      "outline": false,
-      "outline_color": "#76ffff",
-      "outline_width": 1.0,
-      "rect": {
-        "h": 1.0,
-        "w": 1.0,
-        "x": 0.0,
-        "y": 0.0
-      },
-      "region_id": "test",
-      "screen_point": [
-        910.5,
-        516.0
-      ],
-      "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
-      "text_color": "#000000",
-      "text_opacity": 1.0,
-      "wrap": "word"
-    },
-    {
-      "alignment": "left",
-      "background": {
-        "color": "#00a7e9",
-        "image": "",
-        "mode": "solid_fill",
-        "opacity": 1.0,
-        "radius": 4.0
-      },
-      "block_id": 6,
+      "block_id": 5,
       "block_type": "dialogue",
       "box": [
-        0.20373421197144426,
-        0.7999999763429627,
-        0.5306974324075028,
-        0.15872097754663275
+        0.1958264723248301,
+        0.7932170306065286,
+        0.5380560399934788,
+        0.15387601630632267
       ],
       "font_family": "Inter",
-      "font_px": 48.0,
+      "font_px": 29.0,
       "font_selection": {
         "category": "neo_grotesque_sans",
-        "confidence": 0.5680833458900452,
+        "confidence": 0.482870876789093,
         "generic": false
       },
       "font_weight": 400,
       "inner": [
-        4.0,
+        11.399993896484375,
         11.4000244140625,
         11.4000244140625,
         11.4000244140625
       ],
       "italic": false,
-      "key": "test:6",
-      "letter_spacing": 6.75,
+      "key": "test:5",
+      "layout_width": 955.0,
+      "letter_spacing": 4.689175128936768,
       "line_height": 0.8500000238418579,
-      "max_lines": 2,
-      "original": "fixture 6",
+      "max_lines": 4,
+      "original": "But my sisters were always with me. I felt bad for bothering them and for all the worry I caused them, but I was really happy that I wasn't left alone.",
+      "outcome": "replaced",
       "outline": false,
       "outline_color": "#60ffff",
       "outline_width": 1.0,
@@ -788,50 +1013,53 @@
         516.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Но мои сестры всегда были со мной. Я чувствовал себя плохо из-за того, что беспокоил их, и, если все беспокоятся, я причинил им, но я был очень счастлив, что меня не оставили в покое.",
       "text_color": "#000000",
       "text_opacity": 1.0,
       "wrap": "word"
     },
     {
-      "alignment": "right",
+      "alignment": "center",
       "background": {
-        "color": "#0ab1ee",
+        "color": "#0cb3f0",
         "image": "",
         "mode": "solid_fill",
         "opacity": 1.0,
         "radius": 4.0
       },
-      "block_id": 8,
+      "block_id": 7,
       "block_type": "unknown",
       "box": [
-        0.7957166392092258,
-        0.8561046511627907,
-        0.19934102141680396,
-        0.12645348837209303
+        0.8045030203185063,
+        0.8536821705426356,
+        0.18396485447556288,
+        0.13565891472868216
       ],
-      "font_family": "Noto Sans CJK SC",
-      "font_px": 29.0,
+      "font_family": "Noto Serif CJK SC",
+      "font_px": 37.0,
       "font_selection": {
-        "category": "cjk_sans",
-        "confidence": 0.059166669845581055,
+        "category": "cjk_serif",
+        "confidence": 0.029583334922790527,
         "generic": false
       },
       "font_weight": 400,
       "inner": [
         16.0,
-        9.5,
+        16.0,
         16.0,
         16.0
       ],
       "italic": false,
-      "key": "test:8",
-      "letter_spacing": -1.1851147413253784,
-      "line_height": 0.8999999761581421,
+      "key": "test:7",
+      "layout_width": 301.0,
+      "letter_spacing": -1.5179201364517212,
+      "line_height": 0.8500000238418579,
       "max_lines": 2,
-      "original": "fixture 8",
+      "original": "Q Q SAVE LOAD",
+      "outcome": "replaced",
       "outline": false,
-      "outline_color": "#6affff",
+      "outline_color": "#6cffff",
       "outline_width": 1.0,
       "rect": {
         "h": 1.0,
@@ -845,99 +1073,94 @@
         516.0
       ],
       "shadow": false,
-      "text": "Перевод длиннее оригинала. Hello 日本語",
+      "source_coverage": 1.0,
+      "text": "Q Q СЭКОНОМОЧЬ",
       "text_color": "#000000",
       "text_opacity": 1.0,
       "wrap": "word"
     }
   ],
-  "placement_ms": 562.206091,
-  "repeat_frame_ms": 151.593899,
+  "placement_ms": 60.575544,
+  "repeat_frame_ms": 20.203329999999998,
+  "repeat_ocr_jobs": 0,
   "size": [
     1821,
     1032
   ],
   "timings_ms": [
     [
-      85.82199,
-      175.63572299999998,
-      0.572998
+      5.8925719999999995,
+      13.27706,
+      0.046969
     ],
     [
-      82.99857200000001,
-      187.649016,
-      0.577776
+      4.106178,
+      13.936810000000001,
+      0.043863000000000006
     ],
     [
-      83.746421,
-      187.863432,
-      0.542079
+      5.560593,
+      13.832061,
+      0.045647
     ],
     [
-      93.348741,
-      186.42201699999998,
-      0.66976
+      4.221136,
+      14.724802,
+      0.24759899999999999
     ],
     [
-      85.39806499999999,
-      185.209266,
-      0.544082
+      4.437235,
+      13.684071000000001,
+      0.045877
     ]
   ],
-  "translation_input": "deterministic translation of every detection candidate; candidates can include scenery",
-  "render_ms": 293.53850000006787,
-  "update_ms": 3.7515679996431572,
+  "translation_cache_hits": 0,
+  "translation_input": "deterministic translation of accepted real OCR blocks",
+  "translation_requests": 2,
+  "translation_service": "bergamot en→ru: actual HttpTranslate implementation",
+  "render_ms": 284.32710500010216,
+  "update_ms": 1.5437939996445493,
   "layout_diagnostics": [
     {
-      "width": 209,
-      "height": 93,
-      "contentWidth": 197.703125,
-      "contentHeight": 86.69999778270721,
-      "lines": 3,
+      "width": 955,
+      "height": 136,
+      "contentWidth": 950.34375,
+      "contentHeight": 127.40000343322754,
+      "lines": 4,
       "truncated": false
     },
     {
-      "width": 439.99999999999994,
-      "height": 104,
-      "contentWidth": 419.34375,
-      "contentHeight": 102.19999742507935,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 282,
-      "height": 55.79998779296875,
-      "contentWidth": 260.890625,
-      "contentHeight": 50.59999871253967,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 331,
-      "height": 61,
-      "contentWidth": 313.734375,
-      "contentHeight": 58.79999852180481,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 951.0000000000001,
-      "height": 141,
-      "contentWidth": 866.890625,
-      "contentHeight": 110.00000286102295,
-      "lines": 2,
-      "truncated": false
-    },
-    {
-      "width": 331,
-      "height": 105,
-      "contentWidth": 309.25,
-      "contentHeight": 79.59999799728394,
+      "width": 301,
+      "height": 108,
+      "contentWidth": 261.796875,
+      "contentHeight": 99.80000257492065,
       "lines": 2,
       "truncated": false
     }
   ],
+  "overlay_quality": {
+    "status": "diagnostic; OCR geometry is not independently annotated ground truth",
+    "accepted": 2,
+    "rendered": 2,
+    "missing": [],
+    "source_coverage": [
+      {
+        "id": 5,
+        "original": "But my sisters were always with me. I felt bad for bothering them and for all the worry I caused them, but I was really happy that I wasn't left alone.",
+        "rendered": true,
+        "plate_coverage": 1.0
+      },
+      {
+        "id": 7,
+        "original": "Q Q SAVE LOAD",
+        "rendered": true,
+        "plate_coverage": 1.0
+      }
+    ],
+    "fallbacks": [],
+    "placement_diagnostic": "no failure in this diagnostic",
+    "uncovered_text_blocks": []
+  },
   "source": "/home/art/DEV/LipaX-QT/docs/screenshots/test-game/dialogue-en-13.png",
-  "approved_reference": false,
-  "translation_service": "none: predefined deterministic test input"
+  "approved_reference": false
 }

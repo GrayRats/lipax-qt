@@ -1,26 +1,20 @@
-[1] fixture 1
-→ Перевод длиннее оригинала. Hello 日本語
+[1] 7
+→ 7
 
-[2] fixture 2
-→ Перевод длиннее оригинала. Hello 日本語
+[2] 76
+→ 76
 
-[3] fixture 3
-→ Перевод длиннее оригинала. Hello 日本語
+[3] AWORKBENCH OUTFIT UPGRADES
+→ РАБОЧИЕ ФОРУСЫ МОДЕРНИЗАЦИИ
 
-[4] fixture 4
-→ Перевод длиннее оригинала. Hello 日本語
+[9] Well-worn armor made with repurposed technology from an ancient lab. After losing its power source, it was modified to augment ranged combat.
+→ Хорошо изношенная броня сделана с перепрофилированной технологией из древней лаборатории. После потери источника питания он был модифицирован для усиления дальной борьбы.
 
-[6] fixture 6
-→ Перевод длиннее оригинала. Hello 日本語
+[24] LEVEL 2 UPGRADE
+→ ОБОБРАЩЕНА УРОВЕНЬ 2
 
-[9] fixture 9
-→ Перевод длиннее оригинала. Hello 日本語
+[28] Increases Resistances Ix Skill Improvement
+→ Повышает Сопротивление Ix Улучшение Умений
 
-[10] fixture 10
-→ Перевод длиннее оригинала. Hello 日本語
-
-[12] fixture 12
-→ Перевод длиннее оригинала. Hello 日本語
-
-[16] fixture 16
-→ Перевод длиннее оригинала. Hello 日本語
+[46] Esc Close
+→ Esc Закрыть
