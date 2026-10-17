@@ -12,6 +12,12 @@
 //! - `SolidFill`: цвет фона по кольцу;
 //! - `AdaptivePaddingFill`: то же, с расширенными полями;
 //! - `Transparent`: оригинал не стирается, перевод читается за счёт обводки и контраста.
+//!
+//! Замена только глифов не должна оставлять «призрак» оригинала: после `Reconstruct` считается доля пикселей
+//! поля, которые всё ещё ближе к цвету букв, чем к фону (`ghost_residual`). Если она выше `GHOST_LIMIT`, маска
+//! учитывает все «чернила» поля, а не только цвет основного текста (выделенное слово другого цвета), и
+//! расширяется. Только в явном режиме «Подмена текста»: `Auto` выбирает режим как раньше (заливка или размытая
+//! плашка), потому что на живых кадрах (диалог поверх картинки) перерисовка под буквами в `Auto` не всегда лучше.
 
 use super::{InkMask, Rect, TextBlockType, luma};
 use crate::settings::{InplaceBackgroundMode, InplaceSettings};
@@ -32,6 +38,36 @@ pub struct BackgroundAnalysis {
     pub reliable: bool,
 }
 
+/// Доля пикселей поля, которым разрешено остаться похожими на старый текст после замены. Предел взят из
+/// Kizurium: его карточка остаётся не менее чем на 98,5 % непрозрачной, потому что при 10 % просвета 170
+/// уровней серого оригинала дают ~17 уровней призрака, а при 1,5 % — меньше 3. Здесь тот же порядок: 1,5 %.
+const GHOST_LIMIT: f32 = 0.015;
+/// Насколько пиксель должен сдвинуться от цвета фона к цвету букв (доля пути), чтобы считаться призраком.
+const GHOST_REACH: f32 = 0.35;
+/// Если буквы и фон различаются меньше, призрак всё равно не виден: метрика ничего не говорит.
+const GHOST_MIN_CONTRAST: f32 = 40.0;
+/// На сколько px маска букв расширяется на последней повторной попытке и предел расширения.
+const GHOST_GROW: usize = 3;
+const MAX_DILATION: usize = 9;
+/// Пиксель маски чернил, отличающийся от фона хотя бы на столько по какому-либо каналу, считается буквой
+/// при повторной попытке (любой цвет, а не только цвет основного текста).
+const ANY_INK_DISTANCE: i32 = 40;
+/// The most a retry may enlarge the repainted (opaque) area of the patch and still be believed.
+const MAX_GROWTH: f32 = 1.6;
+/// Largest area (px) of a field that still gets the exemplar search.
+const EXEMPLAR_MAX_AREA: usize = 150_000;
+/// Up to this area the candidates are searched at every second pixel; above it at every fourth (4× less work).
+const EXEMPLAR_FINE_AREA: usize = 12_000;
+
+/// How `reconstruct_patch` decides what is a letter: the first attempt takes the colour of the main text only.
+#[derive(Debug, Clone, Copy)]
+struct Retry { any_colour: bool, grow: usize }
+impl Retry {
+    const FIRST: Self = Self { any_colour: false, grow: 0 };
+    const ANY_COLOUR: Self = Self { any_colour: true, grow: 0 };
+    const WIDEST: Self = Self { any_colour: true, grow: GHOST_GROW };
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct BackgroundResult {
     /// Режим, которым фон построен (`Auto` уже разрешён).
@@ -43,6 +79,9 @@ pub struct BackgroundResult {
     /// Область заливки, px кадра (поле с полями).
     pub rect: Rect,
     pub analysis: BackgroundAnalysis,
+    /// Доля пикселей поля, оставшихся похожими на буквы оригинала после `Reconstruct` (0 для других режимов
+    /// и когда буквы не отличить от фона).
+    pub ghost: f32,
 }
 
 #[derive(Default)]
@@ -166,12 +205,18 @@ impl BackgroundInpainter {
         let x0 = (rect.x - px).max(0.0);
         let y0 = (rect.y - py).max(0.0);
         let area = Rect::new(x0, y0, (rect.right() + px).min(fw) - x0, (rect.bottom() + py).min(fh) - y0);
+        let mut ghost = 0.0;
         let image = match mode {
             BackgroundRenderMode::InpaintBlur => Some(std::sync::Arc::new(inpaint_blur(img, mask, &area, analysis.median))),
-            BackgroundRenderMode::Reconstruct => Some(std::sync::Arc::new(reconstruct_patch(img, mask, rect, &area, line_height, &analysis))),
+            BackgroundRenderMode::Reconstruct => {
+                let (patch, left) = reconstruct_without_ghost(img, mask, rect, &area, line_height, &analysis);
+                ghost = left;
+                if left > GHOST_LIMIT { tracing::warn!(target: "inplace.background", ghost = left, "text replacement leaves traces of the old text"); }
+                Some(std::sync::Arc::new(patch))
+            }
             _ => None,
         };
-        BackgroundResult { mode, color: analysis.median, image, rect: area, analysis }
+        BackgroundResult { mode, color: analysis.median, image, rect: area, analysis, ghost }
     }
 }
 
@@ -227,7 +272,7 @@ fn inpaint_blur(img: &RgbaImage, mask: &InkMask, area: &Rect, fallback: [u8; 3])
 /// Exemplar fill: the hole is filled from its border inwards. Each border pixel takes the colour of the
 /// clean pixel (outside the original hole) whose surroundings best match the known surroundings of the
 /// target, searched within `reach` pixels in steps of two. Whatever finds no match is left to diffusion.
-fn copy_similar(px: &mut [[f32; 3]], hole: &mut [bool], original_hole: &[bool], w: usize, h: usize, reach: i32) {
+fn copy_similar(px: &mut [[f32; 3]], hole: &mut [bool], original_hole: &[bool], w: usize, h: usize, reach: i32, stride: i32) {
     const R: i32 = 2;
     /// Largest mean squared colour difference (summed over the channels) per compared pixel.
     const MAX_MATCH: f32 = 900.0;
@@ -260,9 +305,9 @@ fn copy_similar(px: &mut [[f32; 3]], hole: &mut [bool], original_hole: &[bool], 
                         }
                         if best.is_none_or(|(c, _)| cost < c) { best = Some((cost, px[at(qx, qy)])); }
                     }
-                    qx += 2;
+                    qx += stride;
                 }
-                qy += 2;
+                qy += stride;
             }
             // A poor match (complex artwork, no repeating structure) would smear a foreign fragment into the
             // hole; such pixels are left to the diffusion, which at least continues the surrounding colour.
@@ -277,9 +322,27 @@ fn copy_similar(px: &mut [[f32; 3]], hole: &mut [bool], original_hole: &[bool], 
 /// and hiding that would wipe parts of the picture. Here only pixels inside the field, whose colour is that
 /// of the text itself (the most common colour among mask pixels of the field), count; the outline and
 /// anti-aliasing around them are covered by the dilation of the caller.
-fn glyph_pixels<'a>(img: &'a RgbaImage, mask: &'a InkMask, text: &Rect, dilation: usize) -> impl Fn(usize, usize) -> bool + 'a {
+///
+/// With `any_colour` (a retry after a ghost was found) every mask pixel of the field that differs from the
+/// background counts: a keyword set in another colour is text as well.
+fn glyph_pixels<'a>(img: &'a RgbaImage, mask: &'a InkMask, text: &Rect, dilation: usize, any_colour: Option<[u8; 3]>) -> impl Fn(usize, usize) -> bool + 'a {
     let (x0, y0, w, h) = text.expand(dilation as f32, img.width() as f32, img.height() as f32).pixels(img.width(), img.height());
     let inside = move |x: usize, y: usize| x >= x0 as usize && x < (x0 + w) as usize && y >= y0 as usize && y < (y0 + h) as usize;
+    let ink = text_ink(img, mask, text, dilation);
+    move |x, y| {
+        if !inside(x, y) || !mask.at(x, y) { return false; }
+        let p = img.get_pixel(x as u32, y as u32).0;
+        let Some(ink) = ink else { return true };
+        // The retry only adds to the first pass: whatever the first pass repainted stays repainted.
+        (0..3).all(|c| (p[c] as i32 - ink[c]).abs() <= 56)
+            || any_colour.is_some_and(|bg| (0..3).any(|c| (p[c] as i32 - bg[c] as i32).abs() >= ANY_INK_DISTANCE))
+    }
+}
+
+/// The colour of the text itself: the heaviest colour bin among the mask pixels of the field, together with its
+/// neighbouring bins. `None` if the field has no mask pixels.
+fn text_ink(img: &RgbaImage, mask: &InkMask, text: &Rect, dilation: usize) -> Option<[i32; 3]> {
+    let (x0, y0, w, h) = text.expand(dilation as f32, img.width() as f32, img.height() as f32).pixels(img.width(), img.height());
     let mut bins: std::collections::HashMap<(u8, u8, u8), (u32, [u32; 3])> = std::collections::HashMap::new();
     for y in y0..y0 + h {
         for x in x0..x0 + w {
@@ -292,7 +355,7 @@ fn glyph_pixels<'a>(img: &'a RgbaImage, mask: &'a InkMask, text: &Rect, dilation
     }
     // The text colour: the heaviest bin together with its neighbours (anti-aliasing spreads a colour over several).
     let heaviest = bins.iter().max_by_key(|(_, v)| v.0).map(|(k, _)| *k);
-    let ink = heaviest.map(|k| {
+    heaviest.map(|k| {
         let (mut n, mut sum) = (0u32, [0u32; 3]);
         for (b, v) in &bins {
             if (b.0 as i32 - k.0 as i32).abs() <= 1 && (b.1 as i32 - k.1 as i32).abs() <= 1 && (b.2 as i32 - k.2 as i32).abs() <= 1 {
@@ -301,27 +364,21 @@ fn glyph_pixels<'a>(img: &'a RgbaImage, mask: &'a InkMask, text: &Rect, dilation
             }
         }
         sum.map(|v| (v / n.max(1)) as i32)
-    });
-    move |x, y| {
-        if !inside(x, y) || !mask.at(x, y) { return false; }
-        let Some(ink) = ink else { return true };
-        let p = img.get_pixel(x as u32, y as u32).0;
-        (0..3).all(|c| (p[c] as i32 - ink[c]).abs() <= 56)
-    }
+    })
 }
 
 /// A full-resolution patch of `area` for "text replacement". The glyphs (grown by a fraction of the
 /// line height, so outlines and anti-aliasing go too) are repainted from the surrounding background;
 /// only those pixels are opaque, so the game's own background stays visible everywhere else and the
 /// patch has no rectangular edge. A pixel next to the hole is half-transparent to hide the seam.
-fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis) -> RgbaImage {
+fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis, retry: Retry) -> RgbaImage {
     let fallback = analysis.median;
     let (x0, y0, w, h) = area.pixels(img.width(), img.height());
     let (wu, hu) = (w as usize, h as usize);
-    let r = (line_height * 0.12).round().clamp(2.0, 6.0) as usize;
+    let r = ((line_height * 0.12).round().clamp(2.0, 6.0) as usize + retry.grow).min(MAX_DILATION);
     let (pw, ph) = (wu + 2 * r, hu + 2 * r);
     // The mask over the area plus a margin of `r`, so that glyphs just outside still reach the edge.
-    let glyphs = glyph_pixels(img, mask, text, r);
+    let glyphs = glyph_pixels(img, mask, text, r, retry.any_colour.then_some(fallback));
     let mut grid = vec![false; pw * ph];
     for y in 0..ph {
         for x in 0..pw {
@@ -350,8 +407,13 @@ fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, 
     let mut px = original.clone();
     // A patterned background (checks, halftone, clouds) is continued by copying the best-matching
     // clean pixel nearby; a smooth one or a gradient is better served by the diffusion below.
-    let textured = analysis.reliable && analysis.texture >= 12.0;
-    if textured { copy_similar(&mut px, &mut hole, &opaque, wu, hu, (line_height * 2.0).round().clamp(16.0, 40.0) as i32); }
+    // The exemplar search costs ~20 µs per pixel of the area at stride 2 (2 s for a dialogue block) and runs in the OCR
+    // tick, before the new translation can appear: a big field is searched at a coarser stride, a huge one not at all.
+    let textured = analysis.reliable && analysis.texture >= 12.0 && wu * hu <= EXEMPLAR_MAX_AREA;
+    if textured {
+        let stride = if wu * hu <= EXEMPLAR_FINE_AREA { 2 } else { 4 };
+        copy_similar(&mut px, &mut hole, &opaque, wu, hu, (line_height * 2.0).round().clamp(16.0, 40.0) as i32, stride);
+    }
     // Peel the hole from its border inwards: each pixel takes the mean of its known neighbours.
     for _ in 0..(4 * r + 24) {
         let mut filled = Vec::new();
@@ -385,6 +447,63 @@ fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, 
         out.put_pixel(x as u32, y as u32, image::Rgba([c[0] as u8, c[1] as u8, c[2] as u8, alpha]));
     }
     out
+}
+
+/// How much of the old text still shows through `patch`. The patch is laid over the frame as QML does (alpha
+/// blending); a pixel of the text rectangle counts as a ghost when it lies at least `GHOST_REACH` of the colour
+/// distance between the letters and the background away from the background (whatever the direction: a letter
+/// of another colour than the main text ghosts as well). The same share among the pixels around the text
+/// (background that merely looks like the letters, e.g. white clouds behind white text) is not charged.
+fn ghost_residual(img: &RgbaImage, patch: &RgbaImage, area: &Rect, text: &Rect, ink: [i32; 3], background: [u8; 3]) -> f32 {
+    let contrast2: f32 = (0..3).map(|c| ((ink[c] - background[c] as i32) as f32).powi(2)).sum();
+    if contrast2 < GHOST_MIN_CONTRAST * GHOST_MIN_CONTRAST { return 0.0; }
+    let reach2 = GHOST_REACH * GHOST_REACH * contrast2;
+    let (ax, ay, aw, ah) = area.pixels(img.width(), img.height());
+    let (tx, ty, tw, th) = text.pixels(img.width(), img.height());
+    let share = |inside_text: bool| -> f32 {
+        let (mut ghost, mut total) = (0u32, 0u32);
+        for y in ay..ay + ah {
+            for x in ax..ax + aw {
+                let in_text = x >= tx && x < tx + tw && y >= ty && y < ty + th;
+                if in_text != inside_text { continue; }
+                let o = img.get_pixel(x, y).0;
+                let q = patch.get_pixel(x - ax, y - ay).0;
+                let a = q[3] as f32 / 255.0;
+                let away2: f32 = (0..3).map(|c| (o[c] as f32 * (1.0 - a) + q[c] as f32 * a - background[c] as f32).powi(2)).sum();
+                total += 1;
+                if away2 >= reach2 { ghost += 1; }
+            }
+        }
+        if total == 0 { 0.0 } else { ghost as f32 / total as f32 }
+    };
+    (share(true) - share(false)).max(0.0)
+}
+
+/// Pixels of the patch that replace the picture completely.
+fn repainted(patch: &RgbaImage) -> usize { patch.pixels().filter(|p| p.0[3] == 255).count() }
+
+/// `reconstruct_patch` and its ghost. While the ghost is above the limit the patch is built again, at most twice (once on a patterned background):
+/// first counting every ink pixel of the field as a letter (a keyword in another colour), then also with a
+/// wider mask (the outline or the soft edge of the letters was wider than the first dilation).
+fn reconstruct_without_ghost(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis) -> (RgbaImage, f32) {
+    let ink = text_ink(img, mask, text, 0);
+    let measure = |patch: &RgbaImage| ink.map_or(0.0, |ink| ghost_residual(img, patch, area, text, ink, analysis.median));
+    let mut patch = reconstruct_patch(img, mask, text, area, line_height, analysis, Retry::FIRST);
+    let mut ghost = measure(&patch);
+    // On a patterned background every attempt runs the costly exemplar search (`copy_similar`): one retry, the
+    // widest, instead of two.
+    let textured = analysis.reliable && analysis.texture >= 12.0 && area.w * area.h <= EXEMPLAR_MAX_AREA as f32;
+    let retries: &[Retry] = if textured { &[Retry::WIDEST] } else { &[Retry::ANY_COLOUR, Retry::WIDEST] };
+    for &retry in retries {
+        if ghost <= GHOST_LIMIT { break; }
+        let retry = reconstruct_patch(img, mask, text, area, line_height, analysis, retry);
+        let left = measure(&retry);
+        // A retry that repaints more can also repaint scenery (and pull the colours of its neighbours into the
+        // hole): it is kept only if it clearly removes the ghost and does not grow the repainted area much.
+        // A keyword in another colour adds a part of the text; scenery taken for letters adds far more.
+        if left < ghost * 0.5 && repainted(&retry) as f32 <= MAX_GROWTH * repainted(&patch).max(1) as f32 { (patch, ghost) = (retry, left); }
+    }
+    (patch, ghost)
 }
 
 #[cfg(test)]
@@ -422,6 +541,80 @@ mod tests {
         assert_eq!(BackgroundInpainter::resolve_mode(InplaceBackgroundMode::Auto, TextBlockType::Button, &a), BackgroundRenderMode::AdaptivePaddingFill);
     }
 
+    /// The frame the engine sees, with `patch` laid over it the way QML does.
+    fn composite(img: &RgbaImage, r: &BackgroundResult) -> RgbaImage {
+        let patch = r.image.as_ref().expect("a patch");
+        let (ax, ay, _, _) = r.rect.pixels(img.width(), img.height());
+        let mut out = img.clone();
+        for (x, y, q) in patch.enumerate_pixels() {
+            let o = out.get_pixel_mut(ax + x, ay + y);
+            let a = q.0[3] as f32 / 255.0;
+            for c in 0..3 { o.0[c] = (o.0[c] as f32 * (1.0 - a) + q.0[c] as f32 * a).round() as u8; }
+        }
+        out
+    }
+
+    /// A small checkerboard: the exemplar search of the repaint is slow in a debug build.
+    fn checks() -> RgbaImage {
+        let mut img = canvas(260, 90, [0, 0, 0]);
+        for y in 0..90 { for x in 0..260 { let v = ((x / 6 + y / 6) % 2 * 90 + 40) as u8; img.put_pixel(x, y, Rgba([v, v / 2, 30, 255])); } }
+        img
+    }
+
+    #[test]
+    fn the_ghost_is_measured_where_the_old_text_stays_visible() {
+        let mut img = canvas(800, 200, [30, 40, 60]);
+        draw_line(&mut img, 100, 80, 30, 14, 4, 22, 3, [255, 255, 255], false);
+        let (mask, rect, lh) = setup(&img);
+        let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, BackgroundAnalyzer::margin(lh));
+        let area = rect.expand(6.0, 800.0, 200.0);
+        let ink = text_ink(&img, &mask, &rect, 0).expect("the letters have a colour");
+        assert!(ink.iter().all(|&v| v > 240), "{ink:?}");
+        let (aw, ah) = { let (_, _, w, h) = area.pixels(800, 200); (w, h) };
+        // A patch that repaints nothing leaves every glyph pixel: a clearly visible ghost.
+        let nothing = RgbaImage::new(aw, ah);
+        assert!(ghost_residual(&img, &nothing, &area, &rect, ink, a.median) > 0.1);
+        // The true background (what the frame looked like before the text) leaves none.
+        let (ax, ay, _, _) = area.pixels(800, 200);
+        let clean = RgbaImage::from_fn(aw, ah, |_, _| Rgba([30, 40, 60, 255]));
+        assert_eq!(ghost_residual(&img, &clean, &area, &rect, ink, a.median), 0.0);
+        let _ = (ax, ay);
+        // Letters that barely differ from the background cannot ghost.
+        assert_eq!(ghost_residual(&img, &nothing, &area, &rect, [40, 50, 70], a.median), 0.0);
+    }
+
+    /// Two words of one line: white and yellow, the second the smaller part of the ink.
+    fn white_and_yellow(img: &mut RgbaImage) {
+        let end = draw_line(img, 100, 80, 30, 14, 4, 22, 3, [255, 255, 255], false);
+        draw_line(img, end + 12, 80, 10, 14, 4, 22, 3, [255, 220, 0], false);
+    }
+
+    #[test]
+    fn a_keyword_of_another_colour_is_repainted_too() {
+        let mut img = canvas(900, 200, [20, 24, 40]);
+        white_and_yellow(&mut img);
+        let (mask, rect, lh) = setup(&img);
+        let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, BackgroundAnalyzer::margin(lh));
+        let ink = text_ink(&img, &mask, &rect, 0).unwrap();
+        assert!(ink.iter().all(|&v| v > 200), "the white text is the main ink: {ink:?}");
+        let area = rect.expand(BackgroundAnalyzer::margin(lh), 900.0, 200.0);
+        let first = reconstruct_patch(&img, &mask, &rect, &area, lh, &a, Retry::FIRST);
+        let before = ghost_residual(&img, &first, &area, &rect, ink, a.median);
+        let (_, after) = reconstruct_without_ghost(&img, &mask, &rect, &area, lh, &a);
+        eprintln!("yellow word ghost: first {before:.4}, after the retry {after:.4}");
+        assert!(before > GHOST_LIMIT, "the scene must defeat the first pass: {before}");
+        assert!(after <= GHOST_LIMIT, "{after} vs {before}");
+        // End to end, through the explicit mode.
+        let s = InplaceSettings { background_mode: InplaceBackgroundMode::TextReplacement, ..Default::default() };
+        let r = BackgroundInpainter.render(&img, &mask, &rect, lh, a, &s, TextBlockType::Dialogue);
+        assert_eq!(r.mode, BackgroundRenderMode::Reconstruct);
+        assert!(r.ghost <= GHOST_LIMIT, "{}", r.ghost);
+        let shown = composite(&img, &r);
+        let (tx, ty, tw, th) = rect.pixels(img.width(), img.height());
+        let yellow_left = (ty..ty + th).flat_map(|y| (tx..tx + tw).map(move |x| (x, y))).filter(|&(x, y)| { let p = shown.get_pixel(x, y).0; p[0] > 200 && p[1] > 160 && p[2] < 80 }).count();
+        assert_eq!(yellow_left, 0, "no yellow pixel of the old text remains");
+    }
+
     #[test]
     fn textured_scene_is_inpainted_without_the_old_letters() {
         let mut img = canvas(800, 200, [0, 0, 0]);
@@ -438,6 +631,23 @@ mod tests {
             let brightest = small.pixels().map(|p| luma(&p.0)).max().unwrap();
             assert!(brightest < 200, "{block:?}: brightest {brightest}");
         }
+    }
+
+    #[test]
+    fn explicit_text_replacement_repaints_a_textured_scene_under_the_glyphs_without_a_plate() {
+        let mut img = checks();
+        draw_line(&mut img, 30, 30, 8, 14, 4, 22, 3, [255, 255, 255], false);
+        let (mask, rect, lh) = setup(&img);
+        let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, BackgroundAnalyzer::margin(lh));
+        let s = InplaceSettings { background_mode: InplaceBackgroundMode::TextReplacement, ..Default::default() };
+        let r = BackgroundInpainter.render(&img, &mask, &rect, lh, a, &s, TextBlockType::Unknown);
+        assert_eq!(r.mode, BackgroundRenderMode::Reconstruct);
+        assert!(r.ghost <= GHOST_LIMIT, "ghost {}", r.ghost);
+        let shown = composite(&img, &r);
+        let (tx, ty, tw, th) = rect.pixels(img.width(), img.height());
+        let brightest = (ty..ty + th).flat_map(|y| (tx..tx + tw).map(move |x| (x, y))).map(|(x, y)| luma(&shown.get_pixel(x, y).0)).max().unwrap();
+        // The checkerboard has no white square: whatever is that bright is the old text.
+        assert!(brightest < 160, "brightest pixel of the field {brightest}");
     }
 
     #[test]

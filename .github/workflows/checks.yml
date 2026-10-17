@@ -17,7 +17,7 @@ jobs:
     container: archlinux:base-devel
     steps:
       - name: Install system dependencies
-        run: pacman -Syu --noconfirm git rust qt6-base qt6-declarative qt6-svg qt6-wayland python python-pytest python-pillow pyside6 pkgconf xz
+        run: pacman -Syu --noconfirm git rust qt6-base qt6-declarative qt6-svg qt6-wayland layer-shell-qt kwindowsystem python python-pytest python-pillow pyside6 pkgconf xz
       - uses: actions/checkout@v7
         with:
           persist-credentials: false

@@ -757,3 +757,21 @@ fn a_negative_cache_entry_lives_until_its_deadline_and_a_frame_without_text_cost
     let mut fresh = InplaceEngine::new();
     for i in 0..5 { assert!(fresh.begin(blank.clone(), &s, t + ms(100 * i), false).is_empty()); }
 }
+
+#[test]
+fn a_dialogue_line_cut_in_two_by_the_detector_is_joined_and_not_left_as_overlapping_parts() {
+    // Recorded on CrossxMars.exe (tests/inplace/fixtures/CrossxMars.exe-live-d1): the detector took the right part of
+    // the first line as one block and the left part of both lines as another, so that the words "now that was a
+    // creative way to" are read twice, from the same pixels, by two fields that overlap.
+    let right = field(6, &[(184., 31., 1249., 45., "now that was a creative way to tell me I'm being rude! So did you figure")], 28.);
+    let left = field(7, &[
+        (43., 32., 156., 39., "Whoa -r"),
+        (180., 35., 549., 39., "now that was a creative way to"),
+        (41., 84., 645., 47., "out how I should spend my time-off?"),
+    ], 28.);
+    assert!(!left.duplicate_of(&right) && !right.duplicate_of(&left), "neither owns the other: each has text the other lacks");
+    assert!(left.needs_join(&right) && right.needs_join(&left), "the shared row asks for one combined reading");
+    // Independent texts that merely touch are not joined.
+    let other = field(8, &[(41., 84., 645., 47., "Open the door and take the key"), (41., 130., 400., 40., "Then leave quickly")], 28.);
+    assert!(!other.needs_join(&right));
+}

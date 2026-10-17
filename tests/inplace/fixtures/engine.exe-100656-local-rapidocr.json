@@ -1,0 +1,5 @@
+{
+  "ocr_history": [],
+  "provenance": "Real production RapidOCR readings (with the second chances for faint crops) of the jobs that the replay needed after the colour-plane local-contrast detector change; replay input, NOT manually annotated ground truth.",
+  "source": "engine.exe-100656"
+}

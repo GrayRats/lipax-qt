@@ -47,6 +47,21 @@ unverified. A physical pointer is required for native Wayland movement and
 resizing validation. `QT_SCALE_FACTOR` exercises Qt coordinate arithmetic only;
 it does not validate compositor fractional scaling or multiple physical outputs.
 
+## Dialogue change replay (CrossxMars.exe)
+
+- `rust/dialogue_change.rs` (`inplace_dialogue_change`, registered in
+  `crates/core/Cargo.toml`): replays the live-recorded frames
+  `fixtures/CrossxMars.exe-live-{mika,d1,d2,d3}.png` with their recorded RapidOCR
+  readings through one engine. Checks name and dialogue replacement, no overlaps,
+  fields inside the region, and withdrawal of the old translation. `LIPAX_TEST_TRACE=1`
+  prints per-scan traces.
+- `crates/core/examples/record_dialogues.rs`: maintainer recorder for such a sequence
+  (`cargo run -p lipa-core --example record_dialogues CrossxMars.exe-live-d1 ...`). It
+  writes `fixtures/<fixture>-local-rapidocr.json`, replacing the previous readings.
+  `crates/core/examples/record_replay.rs` is the older single-frame recorder.
+- `rust/ocr_ownership.rs`: `a_dialogue_line_cut_in_two_by_the_detector_is_joined_and_not_left_as_overlapping_parts`
+  (shared-row join, recorded on the d1 frame).
+
 ## Existing offline suite
 
 All new task-specific tests live here. Existing application and Kizurium tests

@@ -2,6 +2,7 @@
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.."
 export TMPDIR="$PWD/tmp" TMP="$PWD/tmp" TEMP="$PWD/tmp"
+export LIPAX_RUNTIME_DIR="$PWD/tmp/xdg-runtime"
 export XDG_CACHE_HOME="$PWD/tmp/xdg-cache" PYTHONPYCACHEPREFIX="$PWD/tmp/python-bytecode"
 export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$PWD/tmp/cargo-target}"
 # CI fetches dependencies in a separate step; local runs remain offline.

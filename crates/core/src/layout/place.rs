@@ -783,6 +783,13 @@ pub fn place_regions(regions: &[RegionInput], view: &Viewport, settings: &Inplac
         let patch_area = owner.map.rect(&owner.block.background.rect).clipped_to(&candidates[i].bounds);
         let window = if reconstructed && patch_area.w >= 1.0 && patch_area.h >= 1.0 { plate.union(&patch_area) } else { plate };
         let mut entry = placed_entry(owner.region, owner.block, fit, owner.map.fraction(&window), inner_of(&window, &place.text_rect), settings, owner.image);
+        // A patch that has no picture (it could not be written) hides nothing: the field gets the plain fill of
+        // the background colour instead of showing the translation over the untouched original.
+        if entry.background.mode == BackgroundRenderMode::Reconstruct && entry.background.image.is_empty() {
+            entry.background.mode = BackgroundRenderMode::SolidFill;
+            entry.background.opacity = settings.fill_opacity;
+            entry.outline = false;
+        }
         entry.screen_point = { let c = candidates[i].bounds.center(); [c.0, c.1] };
         if let Some(tier) = tiers[i].or(owner.plain.then_some("plain-plate")) {
             tracing::info!(target: "inplace.fallback", block = %candidates[i].id, tier, "field shown in a simpler form");

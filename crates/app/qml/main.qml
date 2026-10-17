@@ -216,6 +216,9 @@ ApplicationWindow {
     readonly property string screensGeometry: JSON.stringify(Qt.application.screens.map(s => [s.virtualX, s.virtualY, s.width, s.height]))
     onScreensGeometryChanged: ctl.reportScreens(screensGeometry)
     Component.onCompleted: {
+        // The platform Qt really runs on (wayland or xcb/XWayland), for logs and live tests: a requested platform
+        // that Qt silently replaced must be visible.
+        console.info("qt platform=" + Qt.platform.pluginName)
         ctl.reportPortalMonitorGeometry(portalMonitorGeometry)
         ctl.reportScreens(screensGeometry)
         reducedMotion = ctl.reducedMotion()

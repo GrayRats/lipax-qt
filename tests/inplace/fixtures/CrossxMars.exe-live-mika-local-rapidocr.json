@@ -1,0 +1,369 @@
+{
+  "ocr_history": [
+    {
+      "confidence": 93.02130126953125,
+      "detector_rect": {
+        "h": 63.0,
+        "w": 169.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "original": "MuKa It's a sh",
+      "raw_original": "MuKa It's a sh",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 77.64818572998047,
+          "rect": {
+            "h": 23.0,
+            "w": 104.0,
+            "x": 60.0,
+            "y": 0.0
+          },
+          "text": "MuKa"
+        },
+        {
+          "confidence": 99.85380554199219,
+          "rect": {
+            "h": 39.0,
+            "w": 139.0,
+            "x": 45.0,
+            "y": 33.0
+          },
+          "text": "It's a sh"
+        }
+      ]
+    },
+    {
+      "confidence": 88.96148681640625,
+      "detector_rect": {
+        "h": 32.0,
+        "w": 204.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "original": "Muka",
+      "raw_original": "Muka",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 88.96148681640625,
+          "rect": {
+            "h": 25.0,
+            "w": 147.0,
+            "x": 24.0,
+            "y": 0.0
+          },
+          "text": "Muka"
+        }
+      ]
+    },
+    {
+      "confidence": null,
+      "detector_rect": {
+        "h": 14.0,
+        "w": 65.0,
+        "x": 1333.0,
+        "y": 24.0
+      },
+      "engine": "rapidocr",
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": []
+    },
+    {
+      "confidence": 98.63417053222656,
+      "detector_rect": {
+        "h": 88.0,
+        "w": 780.0,
+        "x": 690.0,
+        "y": 39.0
+      },
+      "engine": "rapidocr",
+      "original": "'s true, I don't have many friends or relatives ended up in this position.",
+      "raw_original": "'s true, I don't have many friends or relatives ended up in this position.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.16226196289062,
+          "rect": {
+            "h": 50.0,
+            "w": 770.0,
+            "x": 681.0,
+            "y": 30.0
+          },
+          "text": "'s true, I don't have many friends or relatives"
+        },
+        {
+          "confidence": 97.67955780029297,
+          "rect": {
+            "h": 47.0,
+            "w": 439.0,
+            "x": 686.0,
+            "y": 85.0
+          },
+          "text": "ended up in this position."
+        }
+      ]
+    },
+    {
+      "confidence": 98.3985366821289,
+      "detector_rect": {
+        "h": 34.0,
+        "w": 1394.0,
+        "x": 51.0,
+        "y": 40.0
+      },
+      "engine": "rapidocr",
+      "original": "It's a shame you can't figure it out. It's true, I don't have many friends or relatives",
+      "raw_original": "It's a shame you can't figure it out. It's true, I don't have many friends or relatives",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 98.3985366821289,
+          "rect": {
+            "h": 45.0,
+            "w": 1410.0,
+            "x": 42.0,
+            "y": 32.0
+          },
+          "text": "It's a shame you can't figure it out. It's true, I don't have many friends or relatives"
+        }
+      ]
+    },
+    {
+      "confidence": 94.58196258544922,
+      "detector_rect": {
+        "h": 156.0,
+        "w": 1106.0,
+        "x": 4.0,
+        "y": 93.0
+      },
+      "engine": "rapidocr",
+      "original": "It S a snawe youcan t wgure it out. its true, t aon tnave many that care. I sometimes wonder how I ended up in this position.",
+      "raw_original": "It S a snawe youcan t wgure it out. its true, t aon tnave many that care. I sometimes wonder how I ended up in this position.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 89.58064270019531,
+          "rect": {
+            "h": 21.0,
+            "w": 1061.0,
+            "x": 48.0,
+            "y": 54.0
+          },
+          "text": "It S a snawe youcan t wgure it out. its true, t aon tnave many"
+        },
+        {
+          "confidence": 99.58328247070312,
+          "rect": {
+            "h": 47.0,
+            "w": 1084.0,
+            "x": 41.0,
+            "y": 84.0
+          },
+          "text": "that care. I sometimes wonder how I ended up in this position."
+        }
+      ]
+    },
+    {
+      "confidence": 94.8116226196289,
+      "detector_rect": {
+        "h": 129.0,
+        "w": 200.0,
+        "x": 48.0,
+        "y": 120.0
+      },
+      "engine": "rapidocr",
+      "original": "that care. so",
+      "raw_original": "that care. so",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.55204010009766,
+          "rect": {
+            "h": 36.0,
+            "w": 170.0,
+            "x": 44.0,
+            "y": 90.0
+          },
+          "text": "that care."
+        },
+        {
+          "confidence": 71.10954284667969,
+          "rect": {
+            "h": 29.0,
+            "w": 41.0,
+            "x": 239.0,
+            "y": 95.0
+          },
+          "text": "so"
+        }
+      ]
+    },
+    {
+      "confidence": 99.62216186523438,
+      "detector_rect": {
+        "h": 129.0,
+        "w": 247.0,
+        "x": 405.0,
+        "y": 120.0
+      },
+      "engine": "rapidocr",
+      "original": "nes wonder how I",
+      "raw_original": "nes wonder how I",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.62216186523438,
+          "rect": {
+            "h": 42.0,
+            "w": 308.0,
+            "x": 372.0,
+            "y": 87.0
+          },
+          "text": "nes wonder how I"
+        }
+      ]
+    },
+    {
+      "confidence": null,
+      "detector_rect": {
+        "h": 58.0,
+        "w": 167.0,
+        "x": 1389.0,
+        "y": 191.0
+      },
+      "engine": "rapidocr",
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": []
+    },
+    {
+      "confidence": 86.6196517944336,
+      "detector_rect": {
+        "h": 63.0,
+        "w": 204.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "original": "IMIuKa It's a shan",
+      "raw_original": "IMIuKa It's a shan",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 68.51309204101562,
+          "rect": {
+            "h": 23.0,
+            "w": 120.0,
+            "x": 46.0,
+            "y": 0.0
+          },
+          "text": "IMIuKa"
+        },
+        {
+          "confidence": 96.49595642089844,
+          "rect": {
+            "h": 45.0,
+            "w": 175.0,
+            "x": 44.0,
+            "y": 32.0
+          },
+          "text": "It's a shan"
+        }
+      ]
+    },
+    {
+      "confidence": 99.08158111572266,
+      "detector_rect": {
+        "h": 210.0,
+        "w": 1466.0,
+        "x": 4.0,
+        "y": 39.0
+      },
+      "engine": "rapidocr",
+      "original": "It's a shame you can't figure it out. It's true, I don't have many friends or relatives that care. I sometimes wonder how I ended up in this position.",
+      "raw_original": "It's a shame you can't figure it out. It's true, I don't have many friends or relatives that care. I sometimes wonder how I ended up in this position.",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 98.90935516357422,
+          "rect": {
+            "h": 46.0,
+            "w": 1407.0,
+            "x": 43.0,
+            "y": 32.0
+          },
+          "text": "It's a shame you can't figure it out. It's true, I don't have many friends or relatives"
+        },
+        {
+          "confidence": 99.3232650756836,
+          "rect": {
+            "h": 48.0,
+            "w": 1085.0,
+            "x": 40.0,
+            "y": 83.0
+          },
+          "text": "that care. I sometimes wonder how I ended up in this position."
+        }
+      ]
+    },
+    {
+      "confidence": 90.37893676757812,
+      "detector_rect": {
+        "h": 23.0,
+        "w": 120.0,
+        "x": 46.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "original": "Muka",
+      "raw_original": "Muka",
+      "scan": 2,
+      "spans": [
+        {
+          "confidence": 90.37893676757812,
+          "rect": {
+            "h": 27.0,
+            "w": 119.0,
+            "x": 49.0,
+            "y": 0.0
+          },
+          "text": "Muka"
+        }
+      ]
+    },
+    {
+      "confidence": 99.78443145751953,
+      "detector_rect": {
+        "h": 45.0,
+        "w": 175.0,
+        "x": 44.0,
+        "y": 32.0
+      },
+      "engine": "rapidocr",
+      "original": "It's a sham",
+      "raw_original": "It's a sham",
+      "scan": 2,
+      "spans": [
+        {
+          "confidence": 99.78443145751953,
+          "rect": {
+            "h": 41.0,
+            "w": 186.0,
+            "x": 44.0,
+            "y": 32.0
+          },
+          "text": "It's a sham"
+        }
+      ]
+    }
+  ],
+  "provenance": "Real production RapidOCR readings recorded by `record_dialogues` for the jobs the replay of a dialogue sequence needs; replay input, NOT manually annotated ground truth.",
+  "source": "CrossxMars.exe-live-mika"
+}

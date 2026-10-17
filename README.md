@@ -92,7 +92,7 @@ The cache reduces repeated requests. In the translation window you can enable "t
 
 LipaX uses KWin ScreenShot2, with capture through the Portal as the fallback. Overlaying the original text needs the window geometry from KWin. **With Portal capture the translation is shown in a separate window.**
 
-A middle click on the translation window toggles pinning. In overlay mode it hides the translation; a switch in the main window brings it back. Display over a fullscreen game and placement across monitors with different scales depend on your desktop environment.
+A middle click on the translation window toggles pinning. In overlay mode a middle click on a field hides the translation; the switch "Показывать поверх исходного текста" in the main window or the hotkey "Показать / скрыть перевод" (default Ctrl+Alt+H) brings it back. An optional setting, "Пропускать клики сквозь перевод" (off by default, in the appearance tab), lets clicks pass through to the game; then the middle click does not hide the overlay. Display over a fullscreen game and placement across monitors with different scales depend on your desktop environment.
 
 <a id="quick-start"></a>
 ## Quick start
@@ -110,10 +110,10 @@ If no translation appears, open "OCR view" and check whether the original is rea
 
 ### Arch Linux package
 
-If you have a package file, for example `lipax-1.3.9-1-x86_64.pkg.tar.zst`, install it with:
+If you have a package file, for example `lipax-1.4.1-1-x86_64.pkg.tar.zst`, install it with:
 
 ```bash
-sudo pacman -U ./lipax-1.3.9-1-x86_64.pkg.tar.zst
+sudo pacman -U ./lipax-1.4.1-1-x86_64.pkg.tar.zst
 ```
 
 The package installs the `lipax` command, the application launcher, the bundled fonts and the Bergamot engine. Translation and OCR models are downloaded separately, from the settings. After an update, quit LipaX from the tray menu and start it again.
@@ -135,7 +135,7 @@ To build the current project files, including local changes, use the script:
 
 ```bash
 ./packaging/build-local.sh -s
-sudo pacman -U dist/lipax-1.3.9-1-x86_64.pkg.tar.zst
+sudo pacman -U dist/lipax-1.4.1-1-x86_64.pkg.tar.zst
 ```
 
 Additional components are installed as needed:

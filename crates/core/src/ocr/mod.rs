@@ -2,6 +2,7 @@
 //! без временных файлов и гонок между запусками.
 
 pub mod filter;
+pub mod lookalike;
 pub mod meiki;
 pub mod paddle;
 pub mod paddle_env;

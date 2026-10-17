@@ -55,6 +55,11 @@ pub struct TrackedTextBlock {
     pub background_for: Rect,
     /// Уменьшенная яркость содержимого: по ней видно, менялся ли текст поля.
     pub content_signature: Vec<u8>,
+    /// Where the glyphs of the text this field was translated from were (`ink_signature`).
+    pub(crate) ink_signature: Vec<bool>,
+    /// The letters under the field are no longer the ones it was translated from: it is not drawn until the new
+    /// text is read (a late translation of the previous dialogue must not stay over the next one).
+    pub(crate) stale: bool,
     /// Средний цвет кольца вокруг поля: по нему видно, менялся ли фон.
     pub background_signature: Option<[u8; 3]>,
     /// Прямоугольник, по которому оценена типографика: пересчёт при заметной смене размера.
@@ -98,6 +103,8 @@ impl TrackedTextBlock {
             background: None,
             background_for: Rect::default(),
             content_signature: Vec::new(),
+            ink_signature: Vec::new(),
+            stale: false,
             background_signature: None,
             typography_rect: Rect::default(),
             misses: 0,

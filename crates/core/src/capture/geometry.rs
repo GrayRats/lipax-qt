@@ -150,8 +150,7 @@ impl ClientGeometry {
         // KWin's run method does not propagate JavaScript evaluation exceptions over D-Bus.
         // Report the exact failure through the existing geometry service instead of a timeout.
         let script = format!("try {{\n{script}\n}} catch (error) {{\ncallDBus(\"{destination}\", \"/io/lipa/Geometry\", \"io.lipa.Geometry\", \"ScriptFailed\", String(error) + \" line=\" + error.lineNumber);\n}}");
-        let path = dirs::runtime_dir()
-            .unwrap_or_else(std::env::temp_dir)
+        let path = crate::runtime_dir()
             .join(format!("{plugin}.js"));
         // Unique bus name, exclusive creation and owner-only access.
         {

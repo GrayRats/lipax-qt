@@ -332,6 +332,8 @@ impl Capture for KwinCapture {
     async fn grab(&self, window: &WindowKey, rect: NormRect) -> Result<DynamicImage, CaptureError> {
         let full = self.grab_window(&window.uuid).await?;
         let (x, y, w, h) = rect_px(rect, full.width(), full.height());
+        // A region that is the whole window needs no second copy of the frame.
+        if (x, y, w, h) == (0, 0, full.width(), full.height()) { return Ok(full); }
         Ok(full.crop_imm(x, y, w, h))
     }
 }

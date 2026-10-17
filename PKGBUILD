@@ -1,6 +1,6 @@
 pkgname=lipax
-pkgver=1.3.9
-pkgrel=2
+pkgver=1.4.1
+pkgrel=1
 pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')
 url="https://github.com/GrayRats/lipax-qt"

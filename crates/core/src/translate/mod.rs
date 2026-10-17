@@ -1,6 +1,7 @@
 //! Движки перевода: Google, Yandex, свой API, DeepL, Microsoft и локальный Bergamot.
 
 pub mod bergamot;
+pub mod guard;
 pub mod models;
 
 use crate::settings::{Settings, TranslationService};
@@ -23,6 +24,8 @@ pub enum TranslateError {
     EngineUnavailable(String),
     #[error("локальный перевод: {0}")]
     Local(String),
+    #[error("ответ переводчика отклонён: {0}")]
+    Rejected(String),
 }
 
 impl TranslateError {
@@ -67,6 +70,22 @@ pub trait Translate: Send + Sync {
         src: &str,
         dst: &str,
     ) -> impl std::future::Future<Output = Result<String, TranslateError>> + Send;
+
+    /// Several texts at once; one result per text, in order. The default is one `translate` per text,
+    /// in sequence. An engine that can take a batch in one go overrides it.
+    fn translate_many(
+        &self,
+        settings: &Settings,
+        texts: &[String],
+        src: &str,
+        dst: &str,
+    ) -> impl std::future::Future<Output = Vec<Result<String, TranslateError>>> + Send {
+        async move {
+            let mut out = Vec::with_capacity(texts.len());
+            for text in texts { out.push(self.translate(settings, text, src, dst).await); }
+            out
+        }
+    }
 }
 
 /// Рабочая реализация: движок выбирается из настроек на каждый вызов.
@@ -116,6 +135,51 @@ impl Translate for HttpTranslate {
             self.cooldowns.lock().unwrap().insert(key, until);
         }
         result
+    }
+
+    /// Bergamot: the whole batch in one process. A wrong number of output lines falls back to
+    /// per-text calls. Other services use the default (one request per text).
+    async fn translate_many(&self, s: &Settings, texts: &[String], src: &str, dst: &str) -> Vec<Result<String, TranslateError>> {
+        let one_by_one = async || {
+            let mut out = Vec::with_capacity(texts.len());
+            for text in texts { out.push(self.translate(s, text, src, dst).await); }
+            out
+        };
+        let Translator::Bergamot { binary, models_dir, model_paths } = Translator::from_settings(s) else { return one_by_one().await };
+        if texts.len() < 2 { return one_by_one().await; }
+        let cooldown = {
+            let mut cooldowns = self.cooldowns.lock().unwrap();
+            let now = Instant::now();
+            cooldowns.retain(|_, until| *until > now);
+            cooldowns.get("bergamot").is_some()
+        };
+        if cooldown { return one_by_one().await; }
+        let path = match models::pair(src, dst) {
+            Ok(pair) => model_paths.get(&pair).cloned().unwrap_or(models_dir),
+            Err(_) => return one_by_one().await,
+        };
+        tracing::debug!(texts = texts.len(), "Пакетный запрос перевода Bergamot");
+        match bergamot::translate_many(&binary, &path, texts, src, dst).await {
+            Ok(lines) => lines.into_iter().zip(texts).map(|(line, text)| {
+                // An empty input has nothing to translate; any other empty answer is a failure, as for one text.
+                if line.is_empty() && !text.trim().is_empty() { Err(TranslateError::Local("Bergamot вернул пустой перевод".into())) } else { Ok(line) }
+            }).collect(),
+            Err(error) if bergamot::is_line_mismatch(&error) => {
+                tracing::warn!(%error, "Пакетный ответ Bergamot не сошёлся по строкам, перевод по одному");
+                one_by_one().await
+            }
+            Err(error) => {
+                // One failed process fails every text of the batch, with the same error.
+                let copy = |e: &TranslateError| match e {
+                    TranslateError::EngineUnavailable(m) => TranslateError::EngineUnavailable(m.clone()),
+                    TranslateError::Local(m) => TranslateError::Local(m.clone()),
+                    other => TranslateError::Local(other.to_string()),
+                };
+                let mut out: Vec<_> = (1..texts.len()).map(|_| Err(copy(&error))).collect();
+                out.insert(0, Err(error));
+                out
+            }
+        }
     }
 }
 

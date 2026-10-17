@@ -400,6 +400,9 @@ struct RegionState {
     field_ocr: HashMap<u64, String>,
     /// How many OCR runs in a row were dropped because the picture changed under them.
     stale: u8,
+    /// Confidence the text of each field was accepted with: a solid earlier reading is not replaced by a weak
+    /// look-alike flip (`ocr::lookalike`).
+    field_confidence: HashMap<u64, f32>,
     /// Inspector: the lines of each field's last reading and the corner of the crop they are relative to.
     field_lines: HashMap<u64, ((u32, u32), Vec<crate::ocr::OcrLine>)>,
     /// Inspector: fields whose text was ignored as unsure, with when; shown for a few seconds.
@@ -659,7 +662,15 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                 let (translator, settings, cache) = (self.translator.clone(), s.clone(), self.cache.clone());
                 let (text, src, dst) = (text.to_owned(), src.to_owned(), dst.to_owned());
                 let request = async move {
-                    match translator.translate(&settings, &text, &src, &dst).await {
+                    // An answer that fails the structural check is an error like any other: not cached, and
+                    // for DeepL/Microsoft it goes to the Google fallback below.
+                    let first = translator.translate(&settings, &text, &src, &dst).await.and_then(|translated| {
+                        crate::translate::guard::check(&text, &translated, &src, &dst).map(|()| translated).map_err(|reason| {
+                            tracing::warn!(service = ?settings.translation.service, %reason, "Ответ переводчика отклонён");
+                            TranslateError::Rejected(reason.to_string())
+                        })
+                    });
+                    match first {
                         Ok(translated) => {
                             cache.lock().unwrap().put(&cache_source(&settings, &src), &dst, &text, translated.clone());
                             Ok(translated)
@@ -673,6 +684,10 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                             let cached = cache.lock().unwrap().get(&fallback_src, &dst, &text);
                             if let Some(translated) = cached { return Ok(translated); }
                             let translated = translator.translate(&fallback, &text, &src, &dst).await.map_err(Arc::new)?;
+                            if let Err(reason) = crate::translate::guard::check(&text, &translated, &src, &dst) {
+                                tracing::warn!(%reason, "Ответ запасного переводчика отклонён");
+                                return Err(Arc::new(TranslateError::Rejected(reason.to_string())));
+                            }
                             cache.lock().unwrap().put(&fallback_src, &dst, &text, translated.clone());
                             Ok(translated)
                         }
@@ -692,6 +707,60 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             }
         };
         pending.await
+    }
+
+    /// Translate distinct texts, one entry per text. With the local Bergamot engine and more than one text that is not
+    /// cached, they go to the engine as ONE batch (one process start instead of one per text, see
+    /// [`Io::translate_batch_shared`]); every other case is [`Io::translate_shared`] per text, `FIELD_CONCURRENCY` at a time.
+    async fn translate_texts(&self, s: &Settings, texts: Vec<&str>, src: &str, dst: &str) -> HashMap<String, Result<String, Arc<TranslateError>>> {
+        let batch = matches!(s.translation.service, crate::settings::TranslationService::Bergamot)
+            && texts.iter().filter(|t| self.cached(s, src, dst, t).is_none()).collect::<std::collections::HashSet<_>>().len() > 1;
+        if batch { return self.translate_batch_shared(s, &texts, src, dst).await; }
+        bounded(texts, FIELD_CONCURRENCY, |text| async move { (text.to_owned(), self.translate_shared(s, text, src, dst).await) })
+            .await.into_iter().collect()
+    }
+
+    /// The texts that are not cached are translated by one `translate_many` call; the rest come from the cache. Each answer
+    /// passes the same structural check as in [`Io::translate_shared`]: a rejected one is an error and is not cached. Like a
+    /// shared request, the batch is carried by its own task, so a cancelled tick does not lose the answers: they land in the cache.
+    async fn translate_batch_shared(&self, s: &Settings, texts: &[&str], src: &str, dst: &str) -> HashMap<String, Result<String, Arc<TranslateError>>> {
+        let mut out: HashMap<String, Result<String, Arc<TranslateError>>> = HashMap::new();
+        let mut missing: Vec<String> = Vec::new();
+        for &text in texts {
+            if out.contains_key(text) || missing.iter().any(|m| m == text) { continue; }
+            match self.cached(s, src, dst, text) {
+                Some(t) => { out.insert(text.to_owned(), Ok(t)); }
+                None => missing.push(text.to_owned()),
+            }
+        }
+        if missing.is_empty() { return out; }
+        let (translator, settings, cache) = (self.translator.clone(), s.clone(), self.cache.clone());
+        let (src, dst) = (src.to_owned(), dst.to_owned());
+        let sent = missing.clone();
+        let task = tokio::spawn(async move {
+            let answers = match tokio::time::timeout(ORPHAN_REQUEST_LIMIT, translator.translate_many(&settings, &sent, &src, &dst)).await {
+                Ok(answers) => answers,
+                Err(_) => return sent.iter().map(|_| Err(Arc::new(TranslateError::Local("пакетный перевод не ответил вовремя".into())))).collect::<Vec<_>>(),
+            };
+            let mut answers = answers.into_iter();
+            sent.iter().map(|text| {
+                let answer = answers.next().unwrap_or(Err(TranslateError::BadResponse));
+                answer.and_then(|translated| {
+                    crate::translate::guard::check(text, &translated, &src, &dst).map(|()| translated).map_err(|reason| {
+                        tracing::warn!(service = ?settings.translation.service, %reason, "Ответ переводчика отклонён");
+                        TranslateError::Rejected(reason.to_string())
+                    })
+                }).inspect(|translated| {
+                    cache.lock().unwrap().put(&cache_source(&settings, &src), &dst, text, translated.clone());
+                }).map_err(Arc::new)
+            }).collect::<Vec<_>>()
+        });
+        let results = match task.await {
+            Ok(results) => results,
+            Err(e) => { let e = Arc::new(TranslateError::Local(e.to_string())); missing.iter().map(|_| Err(e.clone())).collect() }
+        };
+        out.extend(missing.into_iter().zip(results));
+        out
     }
 
     /// Awaits `work` (OCR of `frame`) but gives it up as soon as the window shows another picture: a result
@@ -737,13 +806,18 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     /// header, a button that stays) comes from the cache and only the new paragraphs are sent. Joined with `\n`.
     async fn translate_changes(&self, s: &Settings, parts: &[String], src: &str, dst: &str) -> Result<String, Arc<TranslateError>> {
         let sent = parts.iter().filter(|p| self.cached(s, src, dst, p).is_none()).count();
-        let all = parts.iter().map(|part| async move {
-            match self.cached(s, src, dst, part) {
-                Some(t) => Ok(t),
-                None => self.translate_shared(s, part, src, dst).await,
-            }
-        });
-        let done = futures_util::future::join_all(all).await;
+        let done: Vec<Result<String, Arc<TranslateError>>> = if matches!(s.translation.service, crate::settings::TranslationService::Bergamot) && sent > 1 {
+            let answers = self.translate_texts(s, parts.iter().map(String::as_str).collect(), src, dst).await;
+            parts.iter().map(|part| answers.get(part.as_str()).cloned().unwrap_or_else(|| Err(Arc::new(TranslateError::BadResponse)))).collect::<Vec<_>>()
+        } else {
+            let all = parts.iter().map(|part| async move {
+                match self.cached(s, src, dst, part) {
+                    Some(t) => Ok(t),
+                    None => self.translate_shared(s, part, src, dst).await,
+                }
+            });
+            futures_util::future::join_all(all).await
+        };
         tracing::debug!(target: "pipeline.translate", paragraphs = parts.len(), sent, "translate changes only");
         done.into_iter().collect::<Result<Vec<_>, _>>().map(|t| t.join("\n"))
     }
@@ -994,6 +1068,16 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                         continue;
                     }
                     state.ignored.remove(&id);
+                    // A short label that only changed a look-alike glyph (15 → is) on a weak reading is the same
+                    // label: the solid reading stays, nothing is translated or redrawn again. Decided before the
+                    // lines are observed: observing them renews the field and would redraw it.
+                    if let Some(before) = engine.field_text(id)
+                        && crate::ocr::lookalike::keeps_earlier(before, state.field_confidence.get(&id).copied(), &original, result.confidence) {
+                        tracing::debug!(target: "pipeline.ocr", region = %region.id, field = id, kept = before, ignored = %original, "OCR flip of look-alike glyphs ignored: the earlier reading was solid");
+                        state.field_ocr.insert(id, format!("OCR ({}): «{original}» — похожие символы, оставлено «{before}»", result.engine));
+                        engine.reject_ocr(id, s);
+                        continue;
+                    }
                     // The lines the engine found describe the structure of the field better than the picture does.
                     let observation = engine.observe_ocr_result(id, &result, origin, s);
                     original = observation.text;
@@ -1010,6 +1094,13 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                     };
                     state.field_ocr.insert(id, match filters_note(&result) { Some(note) => format!("{read}; {note}"), None => read });
                     if !text::is_meaningful(&original) { engine.reject_ocr(id, s); continue; }
+                    match result.confidence {
+                        Some(c) => {
+                            if state.field_confidence.len() >= 256 { state.field_confidence.clear(); }
+                            state.field_confidence.insert(id, c);
+                        }
+                        None => { state.field_confidence.remove(&id); }
+                    }
                     match engine.cached_translation(id, &original).or_else(|| self.cached(s, &src, &s.translation.target_language, &original)) {
                         Some(t) => engine.complete(id, Some((original, t)), s),
                         None => pending.push((id, original)),
@@ -1030,9 +1121,9 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             distinct.dedup();
             let io = &*self;
             let (src_ref, target) = (src.as_str(), s.translation.target_language.as_str());
-            let all = bounded(distinct, FIELD_CONCURRENCY, |text| async move { (text, io.translate_shared(s, text, src_ref, target).await) });
+            let all = io.translate_texts(s, distinct, src_ref, target);
             let translated: HashMap<String, Result<String, Arc<TranslateError>>> = match tokio::time::timeout_at(deadline, all).await {
-                Ok(done) => { self.timings.record("translate", translating.elapsed()); done.into_iter().map(|(t, r)| (t.to_owned(), r)).collect() },
+                Ok(done) => { self.timings.record("translate", translating.elapsed()); done },
                 Err(_) => { failure.get_or_insert(("Ошибка перевода: нет ответа за 60 с".into(), true)); HashMap::new() }
             };
             let engine = state.inplace.get_or_insert_with(Default::default);
@@ -1654,6 +1745,91 @@ mod tests {
         assert_eq!(calls.load(Ordering::SeqCst), 2);
     }
 
+    /// Answers a batch in one call: counts `translate_many` and `translate` calls separately; "Echo" is returned as is.
+    struct BatchTr { many: Arc<AtomicUsize>, single: Arc<AtomicUsize>, sent: Arc<Mutex<Vec<Vec<String>>>> }
+    impl Translate for BatchTr {
+        async fn translate(&self, _: &Settings, t: &str, _: &str, _: &str) -> Result<String, TranslateError> {
+            self.single.fetch_add(1, Ordering::SeqCst);
+            Ok(format!("RU:{t}"))
+        }
+        async fn translate_many(&self, _: &Settings, texts: &[String], _: &str, _: &str) -> Vec<Result<String, TranslateError>> {
+            self.many.fetch_add(1, Ordering::SeqCst);
+            self.sent.lock().unwrap().push(texts.to_vec());
+            texts.iter().map(|t| Ok(if t == "Echo the source text" { t.clone() } else { format!("RU:{t}") })).collect()
+        }
+    }
+
+    type SentBatches = Arc<Mutex<Vec<Vec<String>>>>;
+    type BatchPipeline = Pipeline<Arc<MockCapture>, MockOcr, BatchTr>;
+    fn batch_pipeline() -> (BatchPipeline, Arc<AtomicUsize>, Arc<AtomicUsize>, SentBatches) {
+        let (many, single, sent) = (Arc::new(AtomicUsize::new(0)), Arc::new(AtomicUsize::new(0)), Arc::new(Mutex::new(Vec::new())));
+        let p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))), MockOcr(Mutex::new(String::new()), Arc::new(AtomicUsize::new(0))),
+            BatchTr { many: many.clone(), single: single.clone(), sent: sent.clone() });
+        (p, many, single, sent)
+    }
+
+    #[tokio::test]
+    async fn bergamot_gets_all_pending_texts_in_one_batch_call() {
+        let (p, many, single, sent) = batch_pipeline();
+        let mut s = settings();
+        s.translation.service = crate::settings::TranslationService::Bergamot;
+        let texts = vec!["Start game", "Where are you going?", "Hello there"];
+        let out = p.io.translate_texts(&s, texts.clone(), "en", "ru").await;
+        assert_eq!((many.load(Ordering::SeqCst), single.load(Ordering::SeqCst)), (1, 0));
+        for t in texts { assert_eq!(out[t].as_ref().unwrap(), &format!("RU:{t}")); }
+        assert_eq!(sent.lock().unwrap()[0], ["Start game", "Where are you going?", "Hello there"], "order is kept");
+        // Everything is cached now: no further call.
+        let again = p.io.translate_texts(&s, vec!["Start game", "Hello there"], "en", "ru").await;
+        assert_eq!(again["Hello there"].as_ref().unwrap(), "RU:Hello there");
+        assert_eq!(many.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn cached_texts_are_left_out_of_the_batch_and_a_rejected_one_is_not_cached() {
+        let (p, many, single, sent) = batch_pipeline();
+        let mut s = settings();
+        s.translation.service = crate::settings::TranslationService::Bergamot;
+        p.io.cache.lock().unwrap().put(&cache_source(&s, "en"), "ru", "Known line", "Известная".into());
+        let out = p.io.translate_batch_shared(&s, &["Known line", "Echo the source text", "Open the door", "Open the door"], "en", "ru").await;
+        assert_eq!(many.load(Ordering::SeqCst), 1);
+        assert_eq!(sent.lock().unwrap()[0], ["Echo the source text", "Open the door"]);
+        assert_eq!(out["Known line"].as_ref().unwrap(), "Известная");
+        assert_eq!(out["Open the door"].as_ref().unwrap(), "RU:Open the door");
+        assert!(matches!(&out["Echo the source text"], Err(e) if matches!(**e, TranslateError::Rejected(_))), "{:?}", out["Echo the source text"]);
+        assert_eq!(out.len(), 3);
+        assert!(p.io.cached(&s, "en", "ru", "Echo the source text").is_none());
+        assert!(p.io.cached(&s, "en", "ru", "Open the door").is_some());
+        assert_eq!(single.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn other_services_and_single_texts_keep_one_request_per_text() {
+        let (p, many, single, _) = batch_pipeline();
+        let s = settings();
+        assert_ne!(s.translation.service, crate::settings::TranslationService::Bergamot);
+        let out = p.io.translate_texts(&s, vec!["One", "Two", "Three"], "en", "ru").await;
+        assert_eq!((many.load(Ordering::SeqCst), single.load(Ordering::SeqCst)), (0, 3));
+        assert_eq!(out["Two"].as_ref().unwrap(), "RU:Two");
+        let mut s = s;
+        s.translation.service = crate::settings::TranslationService::Bergamot;
+        p.io.translate_texts(&s, vec!["Lonely"], "en", "ru").await;
+        assert_eq!((many.load(Ordering::SeqCst), single.load(Ordering::SeqCst)), (0, 4), "one text is not a batch");
+        // Only one text is missing: the cached one does not make a batch of it.
+        p.io.translate_texts(&s, vec!["Lonely", "Another"], "en", "ru").await;
+        assert_eq!((many.load(Ordering::SeqCst), single.load(Ordering::SeqCst)), (0, 5));
+    }
+
+    #[tokio::test]
+    async fn translate_changes_sends_new_paragraphs_to_bergamot_as_one_batch() {
+        let (p, many, single, _) = batch_pipeline();
+        let mut s = settings();
+        s.translation.service = crate::settings::TranslationService::Bergamot;
+        let parts: Vec<String> = ["Header", "New line", "Header"].map(String::from).to_vec();
+        let text = p.io.translate_changes(&s, &parts, "en", "ru").await.unwrap();
+        assert_eq!(text, "RU:Header\nRU:New line\nRU:Header");
+        assert_eq!((many.load(Ordering::SeqCst), single.load(Ordering::SeqCst)), (1, 0));
+    }
+
     #[test]
     fn several_errors_of_one_scene_are_all_reported_up_to_three() {
         let notes: Vec<String> = ["a", "b", "c", "d", "e"].map(String::from).to_vec();
@@ -1709,6 +1885,26 @@ mod tests {
         p.tick(&s, true, Instant::now(), &tx).await;
         let message = drain(&mut rx).into_iter().find_map(|e| match e { Event::Error { message, .. } => Some(message), _ => None }).expect("an error");
         assert!(message.contains("Google Translate, «Hello there»") && message.contains("HTTP 429"), "service, phrase and the reason: {message}");
+    }
+
+    #[tokio::test]
+    async fn a_rejected_translation_is_not_cached_and_is_asked_again() {
+        /// Echoes the source the first time, translates afterwards.
+        struct Echoing(AtomicUsize);
+        impl Translate for Echoing {
+            async fn translate(&self, _: &Settings, t: &str, _: &str, _: &str) -> Result<String, TranslateError> {
+                Ok(if self.0.fetch_add(1, Ordering::SeqCst) == 0 { t.to_owned() } else { format!("RU:{t}") })
+            }
+        }
+        let p = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))), MockOcr(Mutex::new(String::new()), Arc::new(AtomicUsize::new(0))), Echoing(AtomicUsize::new(0)));
+        let s = settings();
+        let error = p.io.translate_shared(&s, "Where are you going?", "en", "ru").await.unwrap_err();
+        assert!(matches!(&*error, TranslateError::Rejected(_)) && !error.stops_automatic_retries(), "{error}");
+        assert_eq!(p.io.cached(&s, "en", "ru", "Where are you going?"), None, "a rejected answer must not be cached");
+        // Let the finished request leave the in-flight table, as the next tick would find it.
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(p.io.translate_shared(&s, "Where are you going?", "en", "ru").await.unwrap(), "RU:Where are you going?");
+        assert_eq!(p.io.cached(&s, "en", "ru", "Where are you going?").as_deref(), Some("RU:Where are you going?"));
     }
 
     #[tokio::test]
@@ -1972,6 +2168,44 @@ mod tests {
         p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
         assert!(matches!(drain(&mut rx).as_slice(), [Event::Translation { text, .. }] if text == "RU:Hello there"),
             "the whole region is translated for the translation window, no fields are searched");
+    }
+
+    /// An engine whose reading and confidence the test changes between ticks.
+    struct FlipOcr(Mutex<(String, f32)>);
+    impl Ocr for FlipOcr {
+        async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok(self.0.lock().unwrap().0.clone()) }
+        async fn recognize_detailed(&self, img: &DynamicImage, _: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
+            let (text, confidence) = self.0.lock().unwrap().clone();
+            let lines = vec![crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(5.0, 5.0, img.width() as f32 - 10.0, 15.0), text: text.clone(), confidence }];
+            Ok(crate::ocr::OcrResult { text, lines, confidence: Some(confidence), engine: "mock", ..Default::default() })
+        }
+    }
+
+    #[tokio::test]
+    async fn a_weak_lookalike_flip_of_a_solid_label_is_neither_translated_nor_drawn() {
+        let cap = Arc::new(MockCapture(Mutex::new(10)));
+        let tr_n = Arc::new(AtomicUsize::new(0));
+        let mut p = Pipeline::new(cap, FlipOcr(Mutex::new(("Level 15".into(), 92.0))), MockTr(tr_n.clone()));
+        let s = { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value };
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let t0 = Instant::now();
+        p.tick(&s, false, t0, &tx).await;
+        p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
+        let shown = |events: Vec<Event>| events.into_iter().find_map(|e| match e { Event::Inplace { frame, .. } => frame.blocks.first().map(|b| b.translation.clone()), _ => None });
+        assert_eq!(shown(drain(&mut rx)).as_deref(), Some("RU:Level 15"));
+
+        // The picture is read again and the engine now sees "is" instead of "15", unsure of it: the same label.
+        *p.io.ocr.0.lock().unwrap() = ("Level is".into(), 55.0);
+        p.tick(&s, true, t0 + Duration::from_millis(300), &tx).await;
+        assert_eq!(shown(drain(&mut rx)), None, "nothing is redrawn");
+        assert_eq!(tr_n.load(Ordering::SeqCst), 1, "and nothing is sent to the translator");
+        assert!(p.states["subtitles"].field_ocr.values().any(|d| d.contains("похожие символы")), "the inspector says why");
+
+        // Sure of the new reading, the engine is believed.
+        *p.io.ocr.0.lock().unwrap() = ("Level is".into(), 91.0);
+        p.tick(&s, true, t0 + Duration::from_millis(450), &tx).await;
+        assert_eq!(shown(drain(&mut rx)).as_deref(), Some("RU:Level is"));
+        assert_eq!(tr_n.load(Ordering::SeqCst), 2);
     }
 
     #[tokio::test]

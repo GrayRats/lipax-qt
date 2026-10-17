@@ -80,6 +80,24 @@ fn word_similarity(word: &str, other: &str) -> f32 {
         .fold(full, f32::max)
 }
 
+/// Share of a row's pixels another reading must cover, and of its words it must repeat, for the two to be one text.
+/// The words must match exactly (case aside): the fuzzy `text_support` also credits `but` for `ut`, which would
+/// join a garbled fragment to the line it was clipped from.
+const SHARED_ROW: f32 = 0.5;
+const SHARED_ROW_TEXT: f32 = 0.9;
+/// Share of the whole readings that may be repeated by the other one before it counts as a duplicate or a fragment.
+const SHARED_WHOLE_TEXT: f32 = 0.8;
+
+/// Share of the letters of `fragment` that are in words `owner` has too, word for word.
+fn exact_support(fragment: &str, owner: &str) -> f32 {
+    let target: Vec<String> = words(owner).iter().map(|w| w.to_lowercase()).collect();
+    let source = words(fragment);
+    let total: usize = source.iter().map(|w| w.chars().count()).sum();
+    if total == 0 { return 0.0; }
+    let matched: usize = source.iter().filter(|w| target.contains(&w.to_lowercase())).map(|w| w.chars().count()).sum();
+    matched as f32 / total as f32
+}
+
 /// Partial crops can read a suffix/prefix of a word and occasional OCR substitutions.
 /// Score whole word evidence, not a character subsequence of an arbitrarily long paragraph.
 fn text_support(fragment: &str, owner: &str) -> f32 {
@@ -244,6 +262,12 @@ impl OcrField {
         if let Some(crop) = &mut self.crop_bounds { crop.x += dx; crop.y += dy; }
     }
 
+    /// Share of the words of this reading that `other` repeats (0..=1), by fuzzy word match.
+    #[must_use]
+    pub fn text_supported_by(&self, other: &Self) -> f32 {
+        text_support(self.text(), other.text())
+    }
+
     /// Related overlapping crops which must be read again together: neither reading owns all
     /// the source pixels. The detector must independently confirm overlapping source support.
     #[must_use]
@@ -275,7 +299,19 @@ impl OcrField {
                 <= 0.3 * self.bounds.h.max(other.bounds.h)
             && self.bounds.intersection(&other.bounds)
                 >= 0.4 * self.bounds.area().min(other.bounds.area());
-        similar_text || single_word
+        // One row of the smaller reading lies on the pixels of the bigger one and says the same words there: the
+        // detector cut a line of the dialogue in two and one half also took the neighbouring row. The union has to
+        // be read again; the parts alone overlap and are both refused for lack of room.
+        let shares_row = |a: &Self, b: &Self| a.spans.iter().any(|row| {
+            row.rect.area() > 0.0
+                && covered_area(row.rect, &b.spans) >= SHARED_ROW * row.rect.area()
+                && exact_support(&row.text, b.text()) >= SHARED_ROW_TEXT
+        });
+        // Each reading has words the other lacks; one that the other repeats almost entirely is a duplicate or a
+        // fragment (`duplicate_of`, the cuts), not half of a line.
+        let shared_row = (shares_row(small, big) || shares_row(big, small))
+            && small.text_supported_by(big) < SHARED_WHOLE_TEXT && big.text_supported_by(small) < SHARED_WHOLE_TEXT;
+        similar_text || single_word || shared_row
     }
 
     /// Both text evidence and shared source pixels are required. Short, severely clipped glyph

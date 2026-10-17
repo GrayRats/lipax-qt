@@ -1,0 +1,225 @@
+{
+  "ocr_history": [
+    {
+      "confidence": 99.81253814697266,
+      "detector_rect": {
+        "h": 24.0,
+        "w": 81.0,
+        "x": 2.0,
+        "y": 0.0
+      },
+      "engine": "rapidocr",
+      "original": "5",
+      "raw_original": "5",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.81253814697266,
+          "rect": {
+            "h": 21.0,
+            "w": 32.0,
+            "x": 52.0,
+            "y": 1.0
+          },
+          "text": "5"
+        }
+      ]
+    },
+    {
+      "confidence": null,
+      "detector_rect": {
+        "h": 5.0,
+        "w": 42.0,
+        "x": 634.0,
+        "y": 4.0
+      },
+      "engine": "rapidocr",
+      "original": "",
+      "raw_original": "",
+      "scan": 0,
+      "spans": []
+    },
+    {
+      "confidence": 99.54236602783203,
+      "detector_rect": {
+        "h": 80.0,
+        "w": 1011.0,
+        "x": 50.0,
+        "y": 39.0
+      },
+      "engine": "rapidocr",
+      "original": "On-average, an employee makes fifty complains each year made only one.",
+      "raw_original": "On-average, an employee makes fifty complains each year made only one.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.43700408935547,
+          "rect": {
+            "h": 49.0,
+            "w": 1029.0,
+            "x": 42.0,
+            "y": 30.0
+          },
+          "text": "On-average, an employee makes fifty complains each year"
+        },
+        {
+          "confidence": 99.9562759399414,
+          "rect": {
+            "h": 33.0,
+            "w": 267.0,
+            "x": 43.0,
+            "y": 92.0
+          },
+          "text": "made only one."
+        }
+      ]
+    },
+    {
+      "confidence": 99.82048797607422,
+      "detector_rect": {
+        "h": 34.0,
+        "w": 315.0,
+        "x": 1118.0,
+        "y": 39.0
+      },
+      "engine": "rapidocr",
+      "original": "this year you have",
+      "raw_original": "this year you have",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 99.82048797607422,
+          "rect": {
+            "h": 39.0,
+            "w": 325.0,
+            "x": 1113.0,
+            "y": 34.0
+          },
+          "text": "this year you have"
+        }
+      ]
+    },
+    {
+      "confidence": 95.71627044677734,
+      "detector_rect": {
+        "h": 157.0,
+        "w": 295.0,
+        "x": 3.0,
+        "y": 92.0
+      },
+      "engine": "rapidocr",
+      "original": "On-average, am made only one.",
+      "raw_original": "On-average, am made only one.",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 91.45240020751953,
+          "rect": {
+            "h": 19.0,
+            "w": 280.0,
+            "x": 54.0,
+            "y": 52.0
+          },
+          "text": "On-average, am"
+        },
+        {
+          "confidence": 99.98013305664062,
+          "rect": {
+            "h": 34.0,
+            "w": 266.0,
+            "x": 44.0,
+            "y": 92.0
+          },
+          "text": "made only one."
+        }
+      ]
+    },
+    {
+      "confidence": 22.675485610961914,
+      "detector_rect": {
+        "h": 149.0,
+        "w": 198.0,
+        "x": 455.0,
+        "y": 100.0
+      },
+      "engine": "rapidocr",
+      "original": "I",
+      "raw_original": "I",
+      "scan": 0,
+      "spans": [
+        {
+          "confidence": 22.675485610961914,
+          "rect": {
+            "h": 168.0,
+            "w": 182.0,
+            "x": 439.0,
+            "y": 80.0
+          },
+          "text": "I"
+        }
+      ]
+    },
+    {
+      "confidence": 98.34520721435547,
+      "detector_rect": {
+        "h": 19.0,
+        "w": 280.0,
+        "x": 54.0,
+        "y": 52.0
+      },
+      "engine": "rapidocr",
+      "original": "On-average, ane",
+      "raw_original": "On-average, ane",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 98.05497741699219,
+          "rect": {
+            "h": 28.0,
+            "w": 235.0,
+            "x": 49.0,
+            "y": 47.0
+          },
+          "text": "On-average,"
+        },
+        {
+          "confidence": 99.50617218017578,
+          "rect": {
+            "h": 23.0,
+            "w": 67.0,
+            "x": 271.0,
+            "y": 47.0
+          },
+          "text": "ane"
+        }
+      ]
+    },
+    {
+      "confidence": 99.98321533203125,
+      "detector_rect": {
+        "h": 34.0,
+        "w": 266.0,
+        "x": 44.0,
+        "y": 92.0
+      },
+      "engine": "rapidocr",
+      "original": "made only one.",
+      "raw_original": "made only one.",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.98321533203125,
+          "rect": {
+            "h": 37.0,
+            "w": 268.0,
+            "x": 44.0,
+            "y": 89.0
+          },
+          "text": "made only one."
+        }
+      ]
+    }
+  ],
+  "provenance": "Real production RapidOCR readings recorded by `record_dialogues` for the jobs the replay of a dialogue sequence needs; replay input, NOT manually annotated ground truth.",
+  "source": "CrossxMars.exe-live-d3"
+}

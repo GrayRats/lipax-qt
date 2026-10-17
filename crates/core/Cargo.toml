@@ -59,5 +59,9 @@ name = "inplace_stress"
 path = "../../tests/inplace/rust/stress.rs"
 
 [[test]]
+name = "inplace_dialogue_change"
+path = "../../tests/inplace/rust/dialogue_change.rs"
+
+[[test]]
 name = "inplace_placement_quality"
 path = "../../tests/inplace/rust/placement_quality.rs"

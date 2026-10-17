@@ -97,6 +97,101 @@
           "text": "active"
         }
       ]
+    },
+    {
+      "confidence": 99.062744140625,
+      "detector_rect": {
+        "h": 137.0,
+        "w": 606.0,
+        "x": 59.0,
+        "y": 841.0
+      },
+      "engine": "rapidocr",
+      "original": "and-forth gets tiresome and, quite fr but I have the right to be angry!",
+      "raw_original": "and-forth gets tiresome and, quite fr but I have the right to be angry!",
+      "scan": 1,
+      "spans": [
+        {
+          "confidence": 99.29624938964844,
+          "rect": {
+            "h": 42.0,
+            "w": 633.0,
+            "x": 58.0,
+            "y": 814.0
+          },
+          "text": "and-forth gets tiresome and, quite fr"
+        },
+        {
+          "confidence": 98.80091857910156,
+          "rect": {
+            "h": 42.0,
+            "w": 553.0,
+            "x": 58.0,
+            "y": 867.0
+          },
+          "text": "but I have the right to be angry!"
+        }
+      ]
+    },
+    {
+      "confidence": 99.8389663696289,
+      "detector_rect": {
+        "h": 42.0,
+        "w": 633.0,
+        "x": 58.0,
+        "y": 814.0
+      },
+      "engine": "rapidocr",
+      "original": "and-forth gets tiresome and, quite fra",
+      "raw_original": "and-forth gets tiresome and, quite fra",
+      "scan": 2,
+      "spans": [
+        {
+          "confidence": 99.8052749633789,
+          "rect": {
+            "h": 33.0,
+            "w": 496.0,
+            "x": 59.0,
+            "y": 819.0
+          },
+          "text": "and-forth gets tiresome and,"
+        },
+        {
+          "confidence": 99.9438018798828,
+          "rect": {
+            "h": 48.0,
+            "w": 144.0,
+            "x": 557.0,
+            "y": 811.0
+          },
+          "text": "quite fra"
+        }
+      ]
+    },
+    {
+      "confidence": 98.48554229736328,
+      "detector_rect": {
+        "h": 42.0,
+        "w": 553.0,
+        "x": 58.0,
+        "y": 867.0
+      },
+      "engine": "rapidocr",
+      "original": "but I have the right to be angry!",
+      "raw_original": "but I have the right to be angry!",
+      "scan": 2,
+      "spans": [
+        {
+          "confidence": 98.48554229736328,
+          "rect": {
+            "h": 41.0,
+            "w": 550.0,
+            "x": 59.0,
+            "y": 868.0
+          },
+          "text": "but I have the right to be angry!"
+        }
+      ]
     }
   ],
   "provenance": "Real production RapidOCR readings (with the second chances for faint crops) of the jobs that the replay needed after the colour-plane local-contrast detector change; replay input, NOT manually annotated ground truth.",

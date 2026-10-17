@@ -6,6 +6,8 @@ use std::{path::{Path, PathBuf}, process::Stdio, time::Duration};
 use tokio::{io::AsyncWriteExt, process::Command};
 
 const TRANSLATE_TIMEOUT: Duration = Duration::from_secs(45);
+/// Added to the timeout of a batch for every started group of 8 texts.
+const BATCH_EXTRA_PER_8: Duration = Duration::from_secs(2);
 
 /// Resolve before changing the child's working directory to the model directory.
 /// A package contains its own engine; an explicit setting still takes precedence.
@@ -43,7 +45,10 @@ fn language_code(code: &str) -> Result<String, TranslateError> {
     Ok(code.to_ascii_lowercase())
 }
 
-pub async fn translate(binary: &str, models_dir: &str, text: &str, src: &str, dst: &str) -> Result<String, TranslateError> {
+/// A resolved engine invocation: executable plus model config (its directory is the child's cwd).
+struct Engine { executable: PathBuf, config: PathBuf }
+
+async fn engine(binary: &str, models_dir: &str, src: &str, dst: &str) -> Result<Engine, TranslateError> {
     let executable = executable(binary)?;
     let source = language_code(src)?;
     let target = language_code(dst)?;
@@ -56,27 +61,77 @@ pub async fn translate(binary: &str, models_dir: &str, text: &str, src: &str, ds
     }).await.map_err(|e| TranslateError::Local(e.to_string()))?
         .map_err(TranslateError::Local)?;
     let config = config.canonicalize().map_err(|e| TranslateError::Local(e.to_string()))?;
-    let child = Command::new(&executable)
-        .arg("--model-config-paths").arg(&config)
+    Ok(Engine { executable, config })
+}
+
+/// One process: `input` on stdin, UTF-8 stdout back (not trimmed).
+async fn run(engine: &Engine, input: &str, timeout: Duration) -> Result<String, TranslateError> {
+    let child = Command::new(&engine.executable)
+        .arg("--model-config-paths").arg(&engine.config)
         .arg("--cpu-threads").arg("2")
-        .current_dir(config.parent().expect("model config has parent"))
+        .current_dir(engine.config.parent().expect("model config has parent"))
         .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped())
         .kill_on_drop(true).spawn()
-        .map_err(|e| unavailable(&executable.display().to_string(), &e.to_string()))?;
-    let output = tokio::time::timeout(TRANSLATE_TIMEOUT, exchange(child, text)).await
-        .map_err(|_| TranslateError::Local("Bergamot не ответил за 45 с".into()))?
+        .map_err(|e| unavailable(&engine.executable.display().to_string(), &e.to_string()))?;
+    let output = tokio::time::timeout(timeout, exchange(child, input)).await
+        .map_err(|_| TranslateError::Local(format!("Bergamot не ответил за {} с", timeout.as_secs())))?
         .map_err(|e| TranslateError::Local(format!("обмен с Bergamot: {e}")))?;
     if !output.status.success() {
         let detail: String = String::from_utf8_lossy(&output.stderr).split_whitespace().collect::<Vec<_>>().join(" ").chars().take(300).collect();
         return Err(TranslateError::Local(format!("Bergamot завершился с {}: {detail}", output.status)));
     }
-    let translated = String::from_utf8(output.stdout)
-        .map_err(|_| TranslateError::Local("Bergamot вернул текст не в UTF-8".into()))?;
+    String::from_utf8(output.stdout).map_err(|_| TranslateError::Local("Bergamot вернул текст не в UTF-8".into()))
+}
+
+pub async fn translate(binary: &str, models_dir: &str, text: &str, src: &str, dst: &str) -> Result<String, TranslateError> {
+    let engine = engine(binary, models_dir, src, dst).await?;
+    let translated = run(&engine, text, TRANSLATE_TIMEOUT).await?;
     let translated = translated.trim_end_matches(['\r', '\n']);
     if translated.is_empty() { return Err(TranslateError::Local("Bergamot вернул пустой перевод".into())); }
     Ok(translated.to_owned())
 }
 
+/// Timeout of a batch: `TRANSLATE_TIMEOUT` plus `BATCH_EXTRA_PER_8` for every started group of 8 texts.
+/// (The model is loaded once per process, so a batch costs far less than `n` single calls; this only
+/// leaves room for the sentences themselves.)
+fn batch_timeout(texts: usize) -> Duration {
+    TRANSLATE_TIMEOUT + BATCH_EXTRA_PER_8 * texts.div_ceil(8) as u32
+}
+
+/// Translate several texts with ONE process start. The engine is line-oriented (N input lines give
+/// N output lines, an empty line stays empty), so each text is flattened to one line. The result has
+/// one entry per input text, in order; texts that are empty after flattening give an empty string.
+/// A different number of output lines is an error, see [`is_line_mismatch`]; the caller falls back.
+pub async fn translate_many(binary: &str, models_dir: &str, texts: &[String], src: &str, dst: &str) -> Result<Vec<String>, TranslateError> {
+    let lines: Vec<String> = texts.iter().map(|t| flatten(t)).collect();
+    if lines.iter().all(String::is_empty) { return Ok(lines); }
+    let engine = engine(binary, models_dir, src, dst).await?;
+    let stdout = run(&engine, &lines.join("\n"), batch_timeout(texts.len())).await?;
+    split_lines(&stdout, lines.len())
+}
+
+/// A text as a single line: line breaks become spaces, ends are trimmed.
+fn flatten(text: &str) -> String {
+    text.replace(['\r', '\n'], " ").trim().to_owned()
+}
+
+const MISMATCH: &str = "число строк ответа Bergamot не совпало с числом строк запроса";
+
+/// The error of [`split_lines`] when the engine returned another number of lines.
+pub fn is_line_mismatch(error: &TranslateError) -> bool {
+    matches!(error, TranslateError::Local(m) if m.starts_with(MISMATCH))
+}
+
+/// Split stdout into exactly `expected` lines (one trailing `\r` per line is dropped; a single
+/// final line break is tolerated).
+fn split_lines(stdout: &str, expected: usize) -> Result<Vec<String>, TranslateError> {
+    let mut lines: Vec<&str> = stdout.split('\n').collect();
+    if lines.len() == expected + 1 && lines.last() == Some(&"") { lines.pop(); }
+    if lines.len() != expected {
+        return Err(TranslateError::Local(format!("{MISMATCH}: ожидалось {expected}, получено {}", lines.len())));
+    }
+    Ok(lines.into_iter().map(|l| l.strip_suffix('\r').unwrap_or(l).to_owned()).collect())
+}
 
 async fn exchange(mut child: tokio::process::Child, text: &str) -> std::io::Result<std::process::Output> {
     let mut input = child.stdin.take().expect("piped stdin");
@@ -104,6 +159,38 @@ mod tests {
             .await.expect("child must receive EOF").unwrap();
         assert!(output.status.success());
         assert_eq!(output.stdout, b"text without newline");
+    }
+
+    #[test]
+    fn texts_are_flattened_to_single_lines_and_joined() {
+        assert_eq!(flatten("a\r\nb\nc "), "a  b c");
+        assert_eq!(flatten(" \n "), "");
+        let lines: Vec<String> = ["Hello\nthere", "", "Start game"].iter().map(|t| flatten(t)).collect();
+        assert_eq!(lines.join("\n"), "Hello there\n\nStart game");
+    }
+
+    #[test]
+    fn output_is_split_back_into_the_same_number_of_lines() {
+        assert_eq!(split_lines("Привет\n\nИгра", 3).unwrap(), ["Привет", "", "Игра"]);
+        assert_eq!(split_lines("а\r\nб\r\n", 2).unwrap(), ["а", "б"], "CRLF and a final break");
+        assert_eq!(split_lines("", 1).unwrap(), [""]);
+        let error = split_lines("а\nб", 3).unwrap_err();
+        assert!(is_line_mismatch(&error), "{error}");
+        assert!(is_line_mismatch(&split_lines("а\nб\nв\n\n", 3).unwrap_err()));
+        assert!(!is_line_mismatch(&TranslateError::Local("другое".into())));
+    }
+
+    #[test]
+    fn batch_timeout_grows_modestly() {
+        assert_eq!(batch_timeout(1), Duration::from_secs(47));
+        assert_eq!(batch_timeout(8), Duration::from_secs(47));
+        assert_eq!(batch_timeout(9), Duration::from_secs(49));
+    }
+
+    #[tokio::test]
+    async fn an_all_empty_batch_needs_no_process() {
+        let out = translate_many("/nonexistent", "/nonexistent", &[" ".into(), "\n".into()], "en", "ru").await.unwrap();
+        assert_eq!(out, ["", ""]);
     }
 
     #[test]

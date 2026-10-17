@@ -158,6 +158,7 @@ pub struct InplaceEngine {
     missing_font_warned: HashSet<u64>,
     /// Content signatures of the fields handed out by the last `begin`, applied by `complete`.
     pending_signatures: HashMap<u64, Vec<u8>>,
+    pending_ink: HashMap<u64, Vec<bool>>,
     pending_crops: HashMap<u64, Rect>,
     /// Where the OCR engine found fields glued together that the detector did not tell apart.
     cuts: Vec<CutMemory>,
@@ -232,6 +233,33 @@ fn content_signature(img: &RgbaImage, r: &Rect) -> Vec<u8> {
     small.pixels().map(|p| luma(&p.0)).collect()
 }
 
+/// A coarse picture of where the letters of a field are: the ink mask of its rectangle on a 48×12 grid. Unlike the
+/// luma `content_signature` it does not move with the game's background, only with the text itself.
+fn ink_signature(mask: &InkMask, r: &Rect) -> Vec<bool> {
+    const GX: usize = 48; const GY: usize = 12;
+    let (x0, y0, w, h) = r.pixels(mask.w as u32, mask.h as u32);
+    let (x0, y0, w, h) = (x0 as usize, y0 as usize, w as usize, h as usize);
+    let mut count = vec![0u32; GX * GY];
+    let mut total = vec![0u32; GX * GY];
+    for dy in 0..h { for dx in 0..w {
+        let cell = (dy * GY / h) * GX + dx * GX / w;
+        total[cell] += 1;
+        if mask.at(x0 + dx, y0 + dy) { count[cell] += 1; }
+    } }
+    count.iter().zip(&total).map(|(c, t)| *t > 0 && *c as f32 > 0.12 * *t as f32).collect()
+}
+
+/// Share of the cells that hold ink in either picture and in only one of them.
+fn ink_distance(a: &[bool], b: &[bool]) -> f32 {
+    if a.len() != b.len() { return 1.0; }
+    let either = a.iter().zip(b).filter(|(x, y)| **x || **y).count();
+    if either == 0 { return 0.0; }
+    a.iter().zip(b).filter(|(x, y)| x != y).count() as f32 / either as f32
+}
+
+/// Beyond this distance the text under a field is another text.
+const INK_STALE: f32 = 0.4;
+
 fn signature_changed(a: &[u8], b: &[u8]) -> bool {
     if a.len() != b.len() || a.is_empty() { return true; }
     let mad = a.iter().zip(b).map(|(x, y)| x.abs_diff(*y) as u32).sum::<u32>() as f32 / a.len() as f32;
@@ -266,7 +294,7 @@ impl InplaceEngine {
     /// Встроенный реестр создаётся при первом выборе шрифта и кешируется на сеанс.
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
-            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new(), pending_crops: HashMap::new(),
+            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new(), pending_ink: HashMap::new(), pending_crops: HashMap::new(),
             cuts: Vec::new(), pending_cuts: HashSet::new(), last_scan: None, detection: DetectionReport::default(), ocr_dirty: false, joins: Vec::new(),
             pending_joins: HashSet::new(), joined_aliases: HashMap::new(), recognition_policy: None }
     }
@@ -317,6 +345,7 @@ impl InplaceEngine {
         let recognition_changed = self.recognition_policy.as_ref() != Some(&s.recognition);
         if recognition_changed { self.recognition_policy = Some(s.recognition.clone()); }
         self.pending_signatures.clear();
+        self.pending_ink.clear();
         self.pending_crops.clear();
         let mut mask = BlockDetector::ink_mask(&image);
         self.detector.line_gap_factor = s.appearance.inplace.line_gap_factor;
@@ -353,6 +382,16 @@ impl InplaceEngine {
             let Some(t) = self.tracker.get_mut(a.id) else { continue };
             let lh = d.line_height();
             let signature = content_signature(&image, &d.rect);
+            // The text under a translated field changed (a new dialogue): the old translation goes at once, not
+            // when the new one is ready.
+            let ink = ink_signature(&mask, &d.rect);
+            if !t.translated_text.is_empty() && !t.stale && !t.ink_signature.is_empty() && ink_distance(&ink, &t.ink_signature) > INK_STALE {
+                tracing::debug!(target: "inplace.stale", block_id = a.id, distance = ink_distance(&ink, &t.ink_signature), "the text under the field changed: its translation is withdrawn until the new text is read");
+                t.stale = true;
+                t.revision += 1;
+                self.ocr_dirty = true;
+            }
+            self.pending_ink.insert(a.id, ink);
             let mut ocr_invalidated = false;
             if let Some(old) = t.ocr_detector_rect {
                 // A union can retain the old track id and almost the same sampled signature.
@@ -634,15 +673,28 @@ impl InplaceEngine {
         // A crop can contain an independent speaker plus truncated dialogue rows.
         // A second, complete reading of the same pixels establishes the boundary;
         // re-read both parts instead of allowing the mixed crop to block the dialogue.
+        // A field each of whose rows another, more complete reading covers (the right halves of two dialogue
+        // lines the detector grouped across them) is a repeated reading of those pixels: it is not drawn.
+        let mut covered: HashMap<u64, u64> = HashMap::new();
         for field in &fields {
             let rows = field.rows();
-            if rows.len() < 2 { continue; }
-            let supported: Vec<bool> = rows.iter().map(|row| fields.iter().any(|other| {
+            if rows.is_empty() { continue; }
+            let supporters: Vec<Option<&super::ocr_geometry::OcrField>> = rows.iter().map(|row| fields.iter().filter(|other| {
                 other.id() != field.id() && other.mean_confidence() + 5.0 >= field.mean_confidence()
                     && other.rows().iter().any(|complete| complete.w > row.w * 1.1
                         && row.intersection(complete) >= row.area() * 0.8)
-            })).collect();
-            if !supported.iter().any(|&x| x) || supported.iter().all(|&x| x) { continue; }
+            }).max_by_key(|other| (other.text().chars().count(), std::cmp::Reverse(other.id())))).collect();
+            if supporters.iter().all(Option::is_some) {
+                // Same words, not only the same place: the previous dialogue still lingers there for a scan.
+                if let Some(owner) = supporters.iter().flatten().filter(|o| field.text_supported_by(o) >= 0.8)
+                    .max_by_key(|o| (o.text().chars().count(), std::cmp::Reverse(o.id()))) {
+                    covered.insert(field.id(), owner.id());
+                    continue;
+                }
+            }
+            if rows.len() < 2 { continue; }
+            let supported: Vec<bool> = supporters.iter().map(Option::is_some).collect();
+            if !supported.iter().any(|&x| x) { continue; }
             let Some(d) = snapshot.blocks.get(&field.id()) else { continue };
             if self.cuts.iter().any(|cut| cut.parent.iou(&d.rect) >= LINES_AGREE_IOU) { continue; }
             let mut groups: Vec<Vec<Rect>> = Vec::new();
@@ -657,7 +709,16 @@ impl InplaceEngine {
         }
         let owners: Vec<Option<u64>> = fields.iter().map(|f| fields.iter().filter(|other| f.duplicate_of(other))
             .max_by_key(|other| (other.text().chars().count(), std::cmp::Reverse(other.id()))).map(|other| other.id())
-            .or_else(|| self.joined_aliases.get(&f.id()).copied().filter(|id| fields.iter().any(|other| other.id()==*id)))).collect();
+            .or_else(|| self.joined_aliases.get(&f.id()).copied().filter(|id| fields.iter().any(|other| other.id()==*id)))
+            .or_else(|| covered.get(&f.id()).copied())
+            // Two readings of the same pixels that say the same words: the fuller one stays. Without this both would
+            // overlap and both be refused for lack of room, and the dialogue would stay untranslated.
+            .or_else(|| fields.iter().filter(|o| o.id() != f.id()
+                && o.mean_confidence() + 5.0 >= f.mean_confidence()
+                && o.text().chars().count() > f.text().chars().count()
+                && f.bounds().intersection(&o.bounds()) >= 0.5 * f.bounds().area().min(o.bounds().area())
+                && f.text_supported_by(o) >= 0.8)
+                .max_by_key(|o| (o.text().chars().count(), std::cmp::Reverse(o.id()))).map(|o| o.id()))).collect();
         for (field, owner) in fields.iter().zip(&owners) {
             tracing::debug!(target: "inplace.ownership", block_id = field.id(), owner = ?owner,
                 spans = field.spans().len(), bounds = ?field.bounds(), characters = field.text().chars().count(),
@@ -815,6 +876,11 @@ impl InplaceEngine {
         t.revision += 1;
     }
 
+    /// Распознанный текст поля, как он принят в прошлый раз (пусто, пока поле не прочитано).
+    pub fn field_text(&self, id: u64) -> Option<&str> {
+        self.tracker.get(id).map(|t| t.original_text.as_str()).filter(|t| !t.is_empty())
+    }
+
     /// Перевод, уже известный для поля: если распознан тот же текст, повторный перевод не нужен.
     pub fn cached_translation(&self, id: u64, original: &str) -> Option<String> {
         let t = self.tracker.get(id)?;
@@ -827,7 +893,14 @@ impl InplaceEngine {
         let Some(t) = self.tracker.get_mut(id) else { return };
         // The field was handled (recognised, or recognised as empty): remember what it looked like.
         if let Some(signature) = self.pending_signatures.remove(&id) { t.content_signature = signature; }
-        let Some((original, translation)) = result else { return };
+        let ink = self.pending_ink.get(&id).cloned();
+        let Some((original, translation)) = result else {
+            // Nothing readable is under the field any more, and what it showed belongs to other letters.
+            if t.stale { t.translated_text.clear(); t.original_text.clear(); t.stale = false; t.revision += 1; self.ocr_dirty = true; }
+            return;
+        };
+        if let Some(ink) = ink { t.ink_signature = ink; }
+        if t.stale { t.stale = false; t.revision += 1; }
         t.rejected_ocr_at = None;
         if original != t.original_text || translation != t.translated_text {
             if translation != t.translated_text { self.new_translations.push((original.clone(), translation.clone())); }
@@ -857,9 +930,16 @@ impl InplaceEngine {
         let snap = self.snapshot.as_ref()?;
         let mut blocks = Vec::new();
         let mut undrawable = Vec::new();
+        // Fields found in this scan, translated or not yet: a field that was not found (a cut parent, the previous line
+        // of dialogue) gives way to them at once instead of lingering over the new text for the grace scan.
+        let fresh: Vec<Rect> = self.tracker.blocks().iter().filter(|t| t.misses == 0).map(|t| t.text_rect()).collect();
         for t in self.tracker.blocks() {
             // Пропуск одного кадра не гасит поле: короткие сбои распознавания не мигают.
-            if t.misses > 1 || t.translated_text.is_empty() { continue; }
+            if t.misses > 1 || t.translated_text.is_empty() || t.stale { continue; }
+            if t.misses > 0 {
+                let old = t.text_rect();
+                if fresh.iter().any(|f| f.intersection(&old) >= 0.3 * old.area().min(f.area())) { continue; }
+            }
             if self.pending_joins.contains(&t.id) {
                 undrawable.push(UndrawableField { id:t.id, original:t.original_text.clone(), translation:t.translated_text.clone(),
                     reason:"объединение OCR-полей; требуется повторное распознавание" });

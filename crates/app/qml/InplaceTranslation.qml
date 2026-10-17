@@ -16,9 +16,9 @@ Window {
     // Element of Controller.inplaceJson.
     property var entry: null
     property string gameGeometry: ""
+    signal hideRequested()
     property bool relocating: false
     property bool framePending: true
-    signal hideRequested()
     LoggingCategory { id: logSurface; name: "inplace.surface"; defaultLogLevel: LoggingCategory.Debug }
     function diagnose(stage) {
         console.debug(logSurface, "stage=" + stage + " key=" + (entry ? entry.key : "?")
@@ -56,7 +56,13 @@ Window {
     }
 
     color: "transparent"
+    // Middle button hides the overlay (MouseArea below). With `click_through` the field takes no pointer input at
+    // all: Qt turns the flag into an empty input region on Wayland (as RegionFrame does) and into an empty XShape
+    // input region on X11, so clicks reach the game widget under the translation. Then only the hotkey and the
+    // switch in the main window hide the overlay.
+    readonly property bool clickThrough: !!(settings && settings.appearance && settings.appearance.inplace && settings.appearance.inplace.click_through)
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus
+           | (clickThrough ? Qt.WindowTransparentForInput : 0)
     // Edges are rounded, not the size: rounding x and the width separately could grow the window by a
     // pixel past the edge Rust kept it to. Rust fits the text with a pixel to spare for this rounding.
     readonly property var pixelRect: desktopRect ? [Math.round(desktopRect[0]), Math.round(desktopRect[1]),
@@ -82,6 +88,7 @@ Window {
         objectName: "inplaceMouse"
         anchors.fill: parent
         acceptedButtons: Qt.MiddleButton
+        enabled: !win.clickThrough
         onPressed: (mouse) => { if (mouse.button === Qt.MiddleButton) win.hideRequested() }
     }
 }

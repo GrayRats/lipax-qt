@@ -1318,8 +1318,7 @@ impl qobject::Controller {
                 let img = shared.capture.grab_full(&window).await.map_err(|e| e.to_string())?;
                 // A header bar drawn by the application itself is part of the frame: only a hint can be given.
                 let title_bar = lipa_core::capture::title_bar::detect(&img).unwrap_or(0) as i32;
-                let dir = dirs::runtime_dir()
-                    .unwrap_or_else(std::env::temp_dir)
+                let dir = lipa_core::runtime_dir()
                     .join("lipa");
                 std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
                 let path = dir.join(format!("preview-{}.png", std::process::id()));
@@ -1449,7 +1448,7 @@ impl qobject::Controller {
 
 fn backdrop_path(region_id: &str, block: u64) -> std::path::PathBuf {
     let name: String = region_id.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-').collect();
-    dirs::runtime_dir().unwrap_or_else(std::env::temp_dir).join("lipa").join(format!("inplace-{}-{name}-{block}.png", std::process::id()))
+    lipa_core::runtime_dir().join("lipa").join(format!("inplace-{}-{name}-{block}.png", std::process::id()))
 }
 
 /// Размытая подложка поля рядом с превью окна; ревизия в URL заставляет QML перечитать файл.
@@ -1460,7 +1459,7 @@ fn save_backdrop(region_id: &str, block: u64, revision: u64, img: &image::RgbaIm
     Some(format!("file://{}?r={revision}", path.display()))
 }
 
-fn preview_dir() -> std::path::PathBuf { dirs::runtime_dir().unwrap_or_else(std::env::temp_dir).join("lipa") }
+fn preview_dir() -> std::path::PathBuf { lipa_core::runtime_dir().join("lipa") }
 
 fn preview_prefix() -> String { format!("ocr-{}-", std::process::id()) }
 

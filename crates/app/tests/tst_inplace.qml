@@ -14,7 +14,6 @@ TestCase {
         line_height: 1.25, letter_spacing: 1.5, alignment: "left", wrap: "word", max_lines: 2,
         text_color: "#ffe066", outline: false, outline_color: "#000000",
         background: { mode: "solid_fill", color: "#203040", image: "" } })
-    property int hides: 0
     Lipa.InplaceTranslation {
         id: inplace
         visible: true
@@ -22,6 +21,7 @@ TestCase {
         entry: baseEntry
         onHideRequested: hides++
     }
+    property int hides: 0
     function child(name) { return findChild(inplace.contentItem, name) }
     function init() { inplace.entry = baseEntry; inplace.gameGeometry = "[100,50,1000,500]"; wait(20) }
 
@@ -120,8 +120,18 @@ TestCase {
 
     function test_middleButtonRequestsHide() {
         hides = 0
+        verify(!(inplace.flags & Qt.WindowTransparentForInput), "by default the field takes the pointer, as before")
         mouseClick(child("inplaceMouse"), 20, 20, Qt.MiddleButton)
         compare(hides, 1)
+    }
+
+    function test_clickThroughLetsTheClicksReachTheGame() {
+        const click = Object.assign({}, inplace.settings, { appearance: { window: {}, inplace: { click_through: true } } })
+        inplace.settings = click
+        verify(inplace.flags & Qt.WindowTransparentForInput, "no input region: clicks go to the widget under the field")
+        compare(child("inplaceMouse").enabled, false, "so the middle button no longer hides it")
+        inplace.settings = ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
+        verify(!(inplace.flags & Qt.WindowTransparentForInput))
     }
 
     function test_transparentOutlineAndShadowSettings() {

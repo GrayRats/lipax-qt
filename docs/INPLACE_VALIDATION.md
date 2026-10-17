@@ -221,11 +221,13 @@ diagnostics, not representative live-game FPS or a complete application memory p
 ## 7. Remaining limitations
 
 - Live KWin/Wayland/XWayland capture, physical multi-monitor transitions,
-  fractional-DPR compositor screenshots and real translation services: NOT RUN.
+  fractional-DPR compositor screenshots and real translation services: NOT RUN,
+  except the single-machine dialogue-change check in section 8.
   Geometry/lifecycle/cancellation are covered by automated synthetic/API tests.
 - Exact baselines, word-level font identities, rotation and difficult low-contrast
   text are not solved. Global Otsu segmentation can still detect scenery or miss
-  text; the 16-block budget remains. Giant legitimate decorative glyphs above
+  text; the block budget remains (default 64, `DEFAULT_MAX_BLOCKS` in `block_detector.rs`, settable as
+  `appearance.inplace.max_blocks` from 4 to 256). Giant legitimate decorative glyphs above
   the scenery limit can be rejected. No labeled OCR/font-quality scores exist.
 - Font width/category matching remains heuristic; unsupported scripts may require
   installed Qt fallback fonts. Bundled CJK serif is absent.
@@ -240,3 +242,34 @@ item of the original broad definition of done as complete.
 All new test sources remain in `tests/inplace/`; the runner uses only `tmp/` for
 artifacts. `git diff --check` passed and `tmp/` is ignored. No new font
 extraction occurred in the source tree during the task.
+
+## 8. Dialogue change on CrossxMars.exe
+
+Covers the changes in `layout/engine.rs` (stale translation under changed ink,
+withdrawal of a field missing from the scan, ownership of repeated and overlapping
+readings), `layout/ocr_geometry.rs` (shared-row join), `layout/background.rs`
+(exemplar search limited by field area) and `translate/guard.rs` (lost-tail rule).
+
+Automated:
+
+- `tests/inplace/rust/dialogue_change.rs` (`inplace_dialogue_change`) replays four
+  live-recorded frames (`CrossxMars.exe-live-{mika,d1,d2,d3}.png` with the
+  `-local-rapidocr.json` readings recorded by `crates/core/examples/record_dialogues.rs`
+  using real RapidOCR). It checks that the name and the dialogue are replaced, that a
+  new dialogue replaces the old one in the same engine, that no fields overlap, that
+  all fields stay inside the region, and that the old translation is withdrawn when the
+  new text appears. `LIPAX_TEST_TRACE=1` prints per-scan traces.
+- `tests/inplace/rust/ocr_ownership.rs`:
+  `a_dialogue_line_cut_in_two_by_the_detector_is_joined_and_not_left_as_overlapping_parts`
+  covers the shared-row join.
+- Exemplar search (`copy_similar`), offline on saved frames of live dialogue crops
+  (release, idle machine): 2.7 s → ≈1.0 s per frame.
+
+Live check (manual, not automated): KWin Wayland, Wine, CrossxMars.exe. Space was
+pressed through a uinput keyboard, only while the game window was active. The first
+overlay update came 0.26 s after the key in two of three transitions and 2.1 s in the
+third. The previous translation no longer stayed over the next dialogue. Control
+screenshots: `docs/screenshots/test-game/translations/crossxmars-live-*.png`.
+
+This is one machine and one game. No other game, window manager, or GPU was tested,
+and no latency distribution is claimed.
