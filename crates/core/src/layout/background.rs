@@ -98,6 +98,9 @@ pub struct BackgroundResult {
     /// Доля пикселей поля, оставшихся похожими на буквы оригинала после `Reconstruct` (0 для других режимов
     /// и когда буквы не отличить от фона).
     pub ghost: f32,
+    /// Это быстрый патч (`render_quick`): фон узорный, и поиск образца, который его улучшил бы, пропущен. Полный
+    /// результат считается отдельно (`render`) и подменяет этот.
+    pub refinable: bool,
 }
 
 #[derive(Default)]
@@ -222,6 +225,18 @@ impl BackgroundInpainter {
 
     #[allow(clippy::too_many_arguments)] // One field's immutable frame/analysis/configuration inputs.
     pub fn render(&self, img: &RgbaImage, mask: &InkMask, rect: &Rect, line_height: f32, analysis: BackgroundAnalysis, settings: &InplaceSettings, block: TextBlockType) -> BackgroundResult {
+        self.render_with(img, mask, rect, line_height, analysis, settings, block, false)
+    }
+
+    /// The same, without the exemplar search (see `exemplar_worthy`): a smooth fill in a few milliseconds that stands
+    /// in until the full one is ready. `refinable` says whether a full one is any different.
+    #[allow(clippy::too_many_arguments)]
+    pub fn render_quick(&self, img: &RgbaImage, mask: &InkMask, rect: &Rect, line_height: f32, analysis: BackgroundAnalysis, settings: &InplaceSettings, block: TextBlockType) -> BackgroundResult {
+        self.render_with(img, mask, rect, line_height, analysis, settings, block, true)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn render_with(&self, img: &RgbaImage, mask: &InkMask, rect: &Rect, line_height: f32, analysis: BackgroundAnalysis, settings: &InplaceSettings, block: TextBlockType, quick: bool) -> BackgroundResult {
         let mode = Self::resolve_mode(settings.background_mode, block, &analysis);
         let (fw, fh) = (img.width() as f32, img.height() as f32);
         let base_pad = (0.3 * line_height).clamp(2.0, 16.0);
@@ -232,17 +247,19 @@ impl BackgroundInpainter {
         let y0 = (rect.y - py).max(0.0);
         let area = Rect::new(x0, y0, (rect.right() + px).min(fw) - x0, (rect.bottom() + py).min(fh) - y0);
         let mut ghost = 0.0;
+        let mut refinable = false;
         let image = match mode {
             BackgroundRenderMode::InpaintBlur => Some(std::sync::Arc::new(inpaint_blur(img, mask, &area, analysis.median))),
             BackgroundRenderMode::Reconstruct => {
-                let (patch, left) = reconstruct_without_ghost(img, mask, rect, &area, line_height, &analysis);
+                refinable = quick && exemplar_worthy(&analysis, (area.w * area.h) as usize);
+                let (patch, left) = reconstruct_without_ghost(img, mask, rect, &area, line_height, &analysis, !quick);
                 ghost = left;
                 if left > GHOST_LIMIT { tracing::warn!(target: "inplace.background", ghost = left, "text replacement leaves traces of the old text"); }
                 Some(std::sync::Arc::new(patch))
             }
             _ => None,
         };
-        BackgroundResult { mode, color: analysis.median, image, rect: area, analysis, ghost }
+        BackgroundResult { mode, color: analysis.median, image, rect: area, analysis, ghost, refinable }
     }
 }
 
@@ -438,7 +455,8 @@ fn text_ink(img: &RgbaImage, mask: &InkMask, text: &Rect, dilation: usize) -> Op
 /// line height, so outlines and anti-aliasing go too) are repainted from the surrounding background;
 /// only those pixels are opaque, so the game's own background stays visible everywhere else and the
 /// patch has no rectangular edge. A pixel next to the hole is half-transparent to hide the seam.
-fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis, retry: Retry) -> RgbaImage {
+#[allow(clippy::too_many_arguments)] // One field's frame, mask, rectangles and the two switches of the attempt.
+fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis, retry: Retry, exemplar: bool) -> RgbaImage {
     let fallback = analysis.median;
     let (x0, y0, w, h) = area.pixels(img.width(), img.height());
     let (wu, hu) = (w as usize, h as usize);
@@ -490,7 +508,7 @@ fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, 
     // clean pixel nearby; a smooth one or a gradient is better served by the diffusion below.
     // The exemplar search costs ~20 µs per pixel of the area at stride 2 (2 s for a dialogue block) and runs in the OCR
     // tick, before the new translation can appear: a big field is searched at a coarser stride, a huge one not at all.
-    if exemplar_worthy(analysis, wu * hu) {
+    if exemplar && exemplar_worthy(analysis, wu * hu) {
         let stride = if wu * hu <= EXEMPLAR_FINE_AREA { 2 } else { 4 };
         copy_similar(&mut px, &mut hole, &opaque, wu, hu, (line_height * 2.0).round().clamp(16.0, 40.0) as i32, stride);
     }
@@ -568,18 +586,18 @@ fn repainted(patch: &RgbaImage) -> usize { patch.pixels().filter(|p| p.0[3] == 2
 /// `reconstruct_patch` and its ghost. While the ghost is above the limit the patch is built again, at most twice (once on a patterned background):
 /// first counting every ink pixel of the field as a letter (a keyword in another colour), then also with a
 /// wider mask (the outline or the soft edge of the letters was wider than the first dilation).
-fn reconstruct_without_ghost(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis) -> (RgbaImage, f32) {
+fn reconstruct_without_ghost(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis, exemplar: bool) -> (RgbaImage, f32) {
     let ink = text_ink(img, mask, text, 0);
     let measure = |patch: &RgbaImage| ink.map_or(0.0, |ink| ghost_residual(img, patch, area, text, ink, analysis.median));
-    let mut patch = reconstruct_patch(img, mask, text, area, line_height, analysis, Retry::FIRST);
+    let mut patch = reconstruct_patch(img, mask, text, area, line_height, analysis, Retry::FIRST, exemplar);
     let mut ghost = measure(&patch);
     // On a patterned background every attempt runs the costly exemplar search (`copy_similar`): one retry, the
     // widest, instead of two.
-    let textured = exemplar_worthy(analysis, (area.w * area.h) as usize);
+    let textured = exemplar && exemplar_worthy(analysis, (area.w * area.h) as usize);
     let retries: &[Retry] = if textured { &[Retry::WIDEST] } else { &[Retry::ANY_COLOUR, Retry::WIDEST] };
     for &retry in retries {
         if ghost <= GHOST_LIMIT { break; }
-        let retry = reconstruct_patch(img, mask, text, area, line_height, analysis, retry);
+        let retry = reconstruct_patch(img, mask, text, area, line_height, analysis, retry, exemplar);
         let left = measure(&retry);
         // A retry that repaints more can also repaint scenery (and pull the colours of its neighbours into the
         // hole): it is kept only if it clearly removes the ghost and does not grow the repainted area much.
@@ -681,9 +699,9 @@ mod tests {
         let ink = text_ink(&img, &mask, &rect, 0).unwrap();
         assert!(ink.iter().all(|&v| v > 200), "the white text is the main ink: {ink:?}");
         let area = rect.expand(BackgroundAnalyzer::margin(lh), 900.0, 200.0);
-        let first = reconstruct_patch(&img, &mask, &rect, &area, lh, &a, Retry::FIRST);
+        let first = reconstruct_patch(&img, &mask, &rect, &area, lh, &a, Retry::FIRST, true);
         let before = ghost_residual(&img, &first, &area, &rect, ink, a.median);
-        let (_, after) = reconstruct_without_ghost(&img, &mask, &rect, &area, lh, &a);
+        let (_, after) = reconstruct_without_ghost(&img, &mask, &rect, &area, lh, &a, true);
         eprintln!("yellow word ghost: first {before:.4}, after the retry {after:.4}");
         assert!(before > GHOST_LIMIT, "the scene must defeat the first pass: {before}");
         assert!(after <= GHOST_LIMIT, "{after} vs {before}");

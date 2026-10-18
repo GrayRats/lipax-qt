@@ -11,7 +11,7 @@
 //! - то же поле, подвижный фон — только фон;
 //! - новое поле — всё; оформление повторно проверяется с гистерезисом каждые 500 мс.
 
-use super::background::{BackgroundAnalyzer, BackgroundInpainter};
+use super::background::{BackgroundAnalyzer, BackgroundInpainter, BackgroundResult};
 use super::block_detector::{BlockDetector, DetectedTextBlock, DetectionReport};
 use super::font_classifier::{FontAnalysis, FontClassifier};
 use super::font_database::InstalledFontDatabase;
@@ -159,6 +159,12 @@ pub struct InplaceEngine {
     /// The pipeline gave up waiting for the frame to settle (it kept changing past `MAX_UNSTABLE`): a field whose text is
     /// still growing is then not read yet. Set before `begin` for that tick only.
     unsettled: bool,
+    /// Full backgrounds being computed on their own threads for fields that got the quick one (by field id: the glyph
+    /// rectangle they are for, and where the result arrives).
+    refinements: HashMap<u64, (Rect, std::sync::mpsc::Receiver<BackgroundResult>)>,
+    /// Threads computing a full background right now, also those whose field has moved on and whose result will be
+    /// thrown away: they are what `MAX_REFINEMENTS` limits.
+    refining_threads: std::sync::Arc<std::sync::atomic::AtomicUsize>,
     /// Where the time of the last `begin` went, stage by stage (summed over the fields for the per-field stages).
     timings: Vec<(&'static str, std::time::Duration)>,
     /// Content signatures of the fields handed out by the last `begin`, applied by `complete`.
@@ -261,6 +267,17 @@ fn ink_area(mask: &InkMask, r: &Rect) -> u32 {
     (0..h as usize).map(|dy| (0..w as usize).filter(|dx| mask.at(x0 as usize + dx, y0 as usize + dy)).count() as u32).sum()
 }
 
+/// Full backgrounds computed beside the frames at most at once (each takes a thread and a copy of the frame).
+const MAX_REFINEMENTS: usize = 4;
+
+/// Counts a running background thread: it leaves the count when the thread ends or could not start.
+struct RefiningThread(std::sync::Arc<std::sync::atomic::AtomicUsize>);
+impl Drop for RefiningThread {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+    }
+}
+
 /// A field still being typed is read this long after its ink last grew, at most `TYPING_MAX` from the first growth.
 const TYPING_MAX: std::time::Duration = std::time::Duration::from_secs(8);
 
@@ -309,7 +326,7 @@ impl InplaceEngine {
     /// Встроенный реестр создаётся при первом выборе шрифта и кешируется на сеанс.
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
-            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), unsettled: false, timings: Vec::new(), pending_signatures: HashMap::new(), pending_ink: HashMap::new(), pending_crops: HashMap::new(),
+            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), unsettled: false, refinements: HashMap::new(), refining_threads: Default::default(), timings: Vec::new(), pending_signatures: HashMap::new(), pending_ink: HashMap::new(), pending_crops: HashMap::new(),
             cuts: Vec::new(), pending_cuts: HashSet::new(), last_scan: None, detection: DetectionReport::default(), ocr_dirty: false, joins: Vec::new(),
             pending_joins: HashSet::new(), joined_aliases: HashMap::new(), recognition_policy: None }
     }
@@ -351,6 +368,38 @@ impl InplaceEngine {
         &self.tracker
     }
 
+    /// Takes in the full backgrounds that were being computed beside the frames (`BackgroundInpainter::render_quick`):
+    /// the quick fill of a field is replaced when its full one is ready and the field is still what it was computed for.
+    /// `true` if some field changed (the layout is to be published again).
+    pub fn poll_refinements(&mut self) -> bool {
+        use std::sync::mpsc::TryRecvError;
+        let mut changed = false;
+        let ids: Vec<u64> = self.refinements.keys().copied().collect();
+        for id in ids {
+            let Some((rect, receiver)) = self.refinements.get(&id) else { continue };
+            let rect = *rect;
+            match receiver.try_recv() {
+                Err(TryRecvError::Empty) => continue,
+                Ok(result) => {
+                    self.refinements.remove(&id);
+                    if let Some(t) = self.tracker.get_mut(id)
+                        && t.background_for == rect && t.background.as_ref().is_some_and(|b| b.refinable) {
+                        t.background = Some(result);
+                        t.revision += 1;
+                        changed = true;
+                    }
+                }
+                Err(TryRecvError::Disconnected) => { self.refinements.remove(&id); }
+            }
+        }
+        changed
+    }
+
+    /// Whether any full background is still being computed.
+    pub fn refining(&self) -> bool {
+        !self.refinements.is_empty()
+    }
+
     /// The stages of the last `begin` and what each took (for the log and for profiling).
     pub fn timings(&self) -> &[(&'static str, std::time::Duration)] {
         &self.timings
@@ -366,6 +415,7 @@ impl InplaceEngine {
     pub fn begin(&mut self, frame: DynamicImage, s: &Settings, now: Instant, force: bool) -> Vec<OcrJob> {
         // For this frame only: a later `begin` that was not told otherwise is of a settled frame.
         let unsettled = std::mem::take(&mut self.unsettled);
+        self.poll_refinements();
         // The frame is moved in: an RGBA8 capture is kept as is, with no copy.
         let image = frame.into_rgba8();
         let frame_changed = self.snapshot.as_ref().is_some_and(|old| old.image.dimensions() != image.dimensions());
@@ -397,8 +447,13 @@ impl InplaceEngine {
         let detected = self.apply_cuts(detected, now, &image, &mut mask);
         let mut detected = self.apply_joins(detected, now);
         // The interface of the game, if the user asked to leave it alone: such blocks never become fields.
-        if s.appearance.inplace.skip_controls {
-            detected.retain(|d| !matches!(d.block_type, super::TextBlockType::Button | super::TextBlockType::MenuItem));
+        let inplace = &s.appearance.inplace;
+        if inplace.skip_controls || inplace.skip_names {
+            detected.retain(|d| match d.block_type {
+                super::TextBlockType::Button | super::TextBlockType::MenuItem => !inplace.skip_controls,
+                super::TextBlockType::CharacterName => !inplace.skip_names,
+                _ => true,
+            });
         }
         let assignments = self.tracker.update(&detected, now);
         lap("cuts, joins, tracking", &mut timings);
@@ -516,7 +571,27 @@ impl InplaceEngine {
             if t.background.is_none() || bg_changed || moved || reshaped || t.background_signature.is_none_or(|old| color_distance(old, bg_sig) > 18.0) {
                 let started = Instant::now();
                 let analysis = BackgroundAnalyzer.analyze(&image, &mask, &rect, margin);
-                t.background = Some(BackgroundInpainter.render(&image, &mask, &rect, lh, analysis, &s.appearance.inplace, d.block_type));
+                // On a patterned background the full fill (an exemplar search, up to a few hundred ms) is computed on
+                // its own thread; the quick one is drawn meanwhile and replaced when it is ready.
+                let quick = BackgroundInpainter.render_quick(&image, &mask, &rect, lh, analysis.clone(), &s.appearance.inplace, d.block_type);
+                use std::sync::atomic::Ordering::SeqCst;
+                if quick.refinable && self.refining_threads.load(SeqCst) < MAX_REFINEMENTS {
+                    let (frame, ink, settings, block) = (image.clone(), mask.clone(), s.appearance.inplace.clone(), d.block_type);
+                    let (sender, receiver) = std::sync::mpsc::channel();
+                    let running = self.refining_threads.clone();
+                    running.fetch_add(1, SeqCst);
+                    let guard = RefiningThread(running.clone());
+                    let spawned = std::thread::Builder::new().name("lipax-background".into()).spawn(move || {
+                        let _guard = guard;
+                        let _ = sender.send(BackgroundInpainter.render(&frame, &ink, &rect, lh, analysis, &settings, block));
+                    });
+                    // A thread that could not be started has dropped its guard with the closure: the count is right.
+                    if spawned.is_ok() { self.refinements.insert(a.id, (rect, receiver)); }
+                }
+                let mut quick = quick;
+                // No thread to finish it (too many at once, or none could be started): the quick fill is final.
+                if !self.refinements.contains_key(&a.id) { quick.refinable = false; }
+                t.background = Some(quick);
                 per_field[3] += started.elapsed();
                 t.background_for = rect;
                 t.background_signature = Some(bg_sig);
@@ -1050,7 +1125,8 @@ impl InplaceEngine {
 
     /// Настройки поменялись без нового кадра: перестроить то, что от них зависит.
     pub fn restyle(&mut self, s: &Settings) -> Option<InplaceFrame> {
-        if self.applied == Fingerprints::of(s) || self.snapshot.is_none() { return None; }
+        let refined = self.poll_refinements();
+        if self.snapshot.is_none() || (!refined && self.applied == Fingerprints::of(s)) { return None; }
         self.finish(s)
     }
 
@@ -1566,6 +1642,69 @@ mod tests {
         let frame = e.finish(&on).expect("the dialogue is published");
         assert_eq!(frame.blocks.len(), 2, "nothing is drawn over the buttons");
         assert!(frame.blocks.iter().all(|b| !matches!(b.block_type, TextBlockType::Button | TextBlockType::MenuItem)));
+    }
+
+    #[test]
+    fn the_name_of_the_speaker_is_left_alone_only_when_the_user_asked() {
+        let t0 = Instant::now();
+        let mut on = settings();
+        on.appearance.inplace.skip_names = true;
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        assert_eq!(e.begin(dialogue_with_buttons(), &settings(), t0, false).len(), 4, "name, dialogue, two buttons");
+        // The name goes, the dialogue and the buttons stay.
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let jobs = e.begin(dialogue_with_buttons(), &on, t0, false);
+        assert_eq!(jobs.len(), 3, "dialogue and two buttons");
+        for j in jobs { e.complete(j.id, Some((format!("text {}", j.id), format!("перевод {}", j.id))), &on); }
+        let frame = e.finish(&on).expect("published");
+        assert!(frame.blocks.iter().all(|b| b.block_type != TextBlockType::CharacterName), "nothing is drawn over the name");
+        // Both options together leave only the dialogue.
+        on.appearance.inplace.skip_controls = true;
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        assert_eq!(e.begin(dialogue_with_buttons(), &on, t0, false).len(), 1);
+    }
+
+    /// A line of text over small checks (a pattern the exemplar search can copy).
+    fn checks_with_text() -> DynamicImage {
+        let mut img = canvas(800, 240, [0, 0, 0]);
+        for y in 0..240 { for x in 0..800 { let v = ((x / 6 + y / 6) % 2 * 40 + 50) as u8; img.put_pixel(x, y, image::Rgba([v, v, 110, 255])); } }
+        draw_line(&mut img, 100, 100, 34, 14, 4, 26, 4, [255, 255, 255], false);
+        dynamic(img)
+    }
+
+    #[test]
+    fn a_patterned_background_is_filled_quickly_and_refined_beside_the_frames() {
+        let mut s = settings();
+        s.appearance.inplace.background_mode = InplaceBackgroundMode::TextReplacement;
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let (ids, first) = read_all(&mut e, checks_with_text(), &s, Instant::now());
+        assert!(!ids.is_empty(), "the text is found");
+        let first = first.expect("the field is drawn at once, with the quick fill");
+        assert!(first.blocks.iter().any(|b| b.background.refinable), "the exemplar search was left for later");
+        assert!(e.refining());
+        // The full fill arrives on its own: the layout is published again without a new frame.
+        let deadline = Instant::now() + Duration::from_secs(60);
+        let mut refined = None;
+        while Instant::now() < deadline {
+            if let Some(frame) = e.restyle(&s) { refined = Some(frame); break; }
+            std::thread::sleep(Duration::from_millis(25));
+        }
+        let refined = refined.expect("the refined background was published");
+        assert!(refined.blocks.iter().all(|b| !b.background.refinable), "nothing is left to refine");
+        assert!(refined.blocks.iter().zip(&first.blocks).any(|(a, b)| a.revision > b.revision), "the field has a new revision");
+        assert!(!e.refining());
+        // And once nothing is pending there is nothing to publish.
+        assert!(e.restyle(&s).is_none());
+    }
+
+    #[test]
+    fn a_smooth_background_is_final_at_once() {
+        let mut s = settings();
+        s.appearance.inplace.background_mode = InplaceBackgroundMode::TextReplacement;
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let (_, frame) = read_all(&mut e, dialogue_with_buttons(), &s, Instant::now());
+        assert!(frame.unwrap().blocks.iter().all(|b| !b.background.refinable), "a flat background needs no second pass");
+        assert!(!e.refining());
     }
 
     #[test]

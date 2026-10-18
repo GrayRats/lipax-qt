@@ -217,6 +217,7 @@ impl Script {
 }
 
 /// Маска «чернил» кадра: текст — меньший по площади класс яркости после порога Оцу.
+#[derive(Clone)]
 pub struct InkMask {
     pub w: usize,
     pub h: usize,

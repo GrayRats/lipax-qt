@@ -2931,6 +2931,17 @@ ApplicationWindow {
                         onToggled: win.setInplace("skip_controls", checked)
                     }
                     FieldLabel {
+                        helpText: "Имя говорящего над репликой остаётся как есть: его не читают и не переводят, поверх него ничего не рисуется. По умолчанию выключено: имя часто нужно перевести или записать по-русски. Включите, если крупное имя из игры остаётся под мелким переводом или обрезано краем области и читается как бессмыслица."
+                        text: "Не переводить имена персонажей"
+                        helpControl: skipNamesSwitch
+                    }
+                    Switch {
+                        id: skipNamesSwitch
+                        objectName: "skipNames"
+                        checked: !!win.inplace().skip_names
+                        onToggled: win.setInplace("skip_names", checked)
+                    }
+                    FieldLabel {
                         text: "Фон под переводом"
                         helpText: "Выбирает способ закрыть исходный текст: восстановление фона, заливка или прозрачный фон с обводкой. Авто учитывает изображение игры; пример использует условную однотонную сцену."
                     }

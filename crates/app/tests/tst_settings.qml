@@ -1005,6 +1005,12 @@ TestCase {
         controls.toggled()
         compare(settings.current.appearance.inplace.skip_controls, true)
         settings.set("appearance.inplace.skip_controls", false)
+        const names = findChild(settings, "skipNames")
+        verify(names !== null && !names.checked, "names are translated by default")
+        names.checked = true
+        names.toggled()
+        compare(settings.current.appearance.inplace.skip_names, true)
+        settings.set("appearance.inplace.skip_names", false)
         const changes = findChild(settings, "changesOnly")
         verify(changes !== null && !changes.checked)
         changes.checked = true

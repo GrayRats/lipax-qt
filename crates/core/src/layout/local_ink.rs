@@ -57,16 +57,45 @@ fn local_mean(luma: &[u8], w: usize, h: usize, r: usize) -> Vec<u8> {
 }
 
 /// Ink of one polarity: brighter (`bright`) or darker than the local mean by more than `CONTRAST`.
+///
+/// The frame is cut into bands of rows that are computed on separate threads. A band needs the rows `window_radius`
+/// above and below it for its means; with them the means of its own rows are exactly those of the whole frame (the
+/// window of a row never reaches further). The threads are shared with the three planes the detector searches at
+/// once, so a plane gets its share of half the cores: the game keeps the rest.
 pub(super) fn contrast_masks(luma: &[u8], w: usize, h: usize) -> [InkMask; 2] {
-    let mean = local_mean(luma, w, h, window_radius(w, h));
-    let make = |bright: bool| {
-        let ink = luma.iter().zip(&mean).map(|(&l, &m)| {
-            let d = l as i32 - m as i32;
-            if bright { d > CONTRAST } else { -d > CONTRAST }
-        }).collect();
-        InkMask { w, h, ink, ink_is_dark: !bright }
+    let cores = std::thread::available_parallelism().map_or(1, |n| n.get());
+    contrast_masks_in_bands(luma, w, h, ((cores / 2) / 3).clamp(1, 4))
+}
+
+pub(super) fn contrast_masks_in_bands(luma: &[u8], w: usize, h: usize, bands: usize) -> [InkMask; 2] {
+    let r = window_radius(w, h);
+    // A band of fewer than 128 rows is not worth a thread.
+    let bands = bands.min(h / 128).max(1);
+    let rows_per_band = h.div_ceil(bands);
+    let band = |y0: usize, y1: usize| -> (Vec<bool>, Vec<bool>) {
+        let (top, bottom) = (y0.saturating_sub(r), (y1 + r).min(h));
+        let plane = &luma[top * w..bottom * w];
+        let mean = local_mean(plane, w, bottom - top, r);
+        // Two plain passes over the band: the compiler turns each of them into vector code.
+        let (rows, band_mean) = (&luma[y0 * w..y1 * w], &mean[(y0 - top) * w..(y1 - top) * w]);
+        let bright: Vec<bool> = rows.iter().zip(band_mean).map(|(&l, &m)| l as i32 - m as i32 > CONTRAST).collect();
+        let dark: Vec<bool> = rows.iter().zip(band_mean).map(|(&l, &m)| (m as i32 - l as i32) > CONTRAST).collect();
+        (bright, dark)
     };
-    [make(true), make(false)]
+    let pieces: Vec<(Vec<bool>, Vec<bool>)> = if bands == 1 {
+        vec![band(0, h)]
+    } else {
+        std::thread::scope(|scope| {
+            let band = &band;
+            let workers: Vec<_> = (0..bands).map(|i| (i * rows_per_band, ((i + 1) * rows_per_band).min(h)))
+                .filter(|(y0, y1)| y0 < y1)
+                .map(|(y0, y1)| scope.spawn(move || band(y0, y1))).collect();
+            workers.into_iter().map(|worker| worker.join().expect("local-contrast band panicked")).collect()
+        })
+    };
+    let (mut bright, mut dark) = (Vec::with_capacity(w * h), Vec::with_capacity(w * h));
+    for (b, d) in pieces { bright.extend(b); dark.extend(d); }
+    [InkMask { w, h, ink: bright, ink_is_dark: false }, InkMask { w, h, ink: dark, ink_is_dark: true }]
 }
 
 #[cfg(test)]
@@ -112,6 +141,19 @@ mod tests {
         for value in [0u8, 255] {
             let flat = vec![value; 300 * 200];
             assert_eq!(local_mean(&flat, 300, 200, 20), vec![value; 300 * 200]);
+        }
+    }
+
+    #[test]
+    fn bands_of_rows_give_the_same_masks_as_the_whole_frame() {
+        // Frames that cut into bands unevenly, thin ones, and the size the detector really sees.
+        for (w, h) in [(200, 80), (300, 300), (333, 517), (640, 1031), (1920, 1080)] {
+            let plane = noise(w, h, (w + 7 * h) as u32);
+            let whole = contrast_masks_in_bands(&plane, w, h, 1);
+            for bands in [2, 3, 4, 7] {
+                let cut = contrast_masks_in_bands(&plane, w, h, bands);
+                assert!(cut[0].ink == whole[0].ink && cut[1].ink == whole[1].ink, "{w}×{h} in {bands} bands");
+            }
         }
     }
 

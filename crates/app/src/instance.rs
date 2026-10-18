@@ -204,6 +204,7 @@ pub fn acquire(action: Option<Action>) -> Startup {
                 let _ = tx.send(Request { action, activation_token: activation_token_from_env() });
             }
             let _ = PRIMARY.set(Primary { _connection: connection, requests: Mutex::new(Some(rx)) });
+            quit_on_termination(tx);
             Startup::Primary
         }
         Ok(None) => match crate::bridge::rt().block_on(forward(&name, action)) {
@@ -219,6 +220,25 @@ pub fn acquire(action: Option<Action>) -> Startup {
             if action == Some(Action::Quit) { Startup::NothingToDo } else { Startup::Primary }
         }
     }
+}
+
+/// SIGTERM, SIGINT and SIGHUP (the end of the session, `kill`, Ctrl+C in the terminal) quit the way `lipax --quit` does:
+/// through `quitApp()` of the QML, so that settings are saved and the backend shuts down, and above all so that the
+/// KWin script is unloaded. A process ended by the signal itself would leave the script in KWin until KWin restarts.
+fn quit_on_termination(requests: mpsc::UnboundedSender<Request>) {
+    use tokio::signal::unix::{SignalKind, signal};
+    crate::bridge::rt().spawn(async move {
+        let (Ok(mut terminate), Ok(mut interrupt), Ok(mut hangup)) =
+            (signal(SignalKind::terminate()), signal(SignalKind::interrupt()), signal(SignalKind::hangup())) else { return };
+        tokio::select! { _ = terminate.recv() => {}, _ = interrupt.recv() => {}, _ = hangup.recv() => {} }
+        tracing::info!(target: "instance", "получен сигнал завершения: выход как по `lipax --quit`");
+        let _ = requests.send(Request { action: Action::Quit, activation_token: String::new() });
+        // The handlers stay installed, so a second signal would be swallowed: while the first one is being handled it ends
+        // the process at once (for a quit that hangs).
+        tokio::select! { _ = terminate.recv() => {}, _ = interrupt.recv() => {}, _ = hangup.recv() => {} }
+        tracing::warn!(target: "instance", "повторный сигнал завершения: немедленный выход");
+        std::process::exit(1);
+    });
 }
 
 /// Токен xdg-activation, который оболочка передаёт запущенному `Exec` процессу.
