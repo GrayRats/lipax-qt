@@ -15,3 +15,7 @@ lipa-*.tar.gz
 # Task-specific builds, caches and diagnostics
 /tmp/
 /project/
+
+# graphify generated output (not stored in the repository)
+graphify-out/graph.html
+graphify-out/cache/
