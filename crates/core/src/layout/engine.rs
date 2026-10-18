@@ -156,6 +156,11 @@ pub struct InplaceEngine {
     published: Vec<(u64, u64)>,
     new_translations: Vec<(String, String)>,
     missing_font_warned: HashSet<u64>,
+    /// The pipeline gave up waiting for the frame to settle (it kept changing past `MAX_UNSTABLE`): a field whose text is
+    /// still growing is then not read yet. Set before `begin` for that tick only.
+    unsettled: bool,
+    /// Where the time of the last `begin` went, stage by stage (summed over the fields for the per-field stages).
+    timings: Vec<(&'static str, std::time::Duration)>,
     /// Content signatures of the fields handed out by the last `begin`, applied by `complete`.
     pending_signatures: HashMap<u64, Vec<u8>>,
     pending_ink: HashMap<u64, Vec<bool>>,
@@ -249,6 +254,16 @@ fn ink_signature(mask: &InkMask, r: &Rect) -> Vec<bool> {
     count.iter().zip(&total).map(|(c, t)| *t > 0 && *c as f32 > 0.12 * *t as f32).collect()
 }
 
+/// Pixels of ink in the rectangle: unlike the grid of `ink_signature` it does not depend on the size of the rectangle,
+/// so it can be compared between frames while the text (and its block) grows.
+fn ink_area(mask: &InkMask, r: &Rect) -> u32 {
+    let (x0, y0, w, h) = r.pixels(mask.w as u32, mask.h as u32);
+    (0..h as usize).map(|dy| (0..w as usize).filter(|dx| mask.at(x0 as usize + dx, y0 as usize + dy)).count() as u32).sum()
+}
+
+/// A field still being typed is read this long after its ink last grew, at most `TYPING_MAX` from the first growth.
+const TYPING_MAX: std::time::Duration = std::time::Duration::from_secs(8);
+
 /// Share of the cells that hold ink in either picture and in only one of them.
 fn ink_distance(a: &[bool], b: &[bool]) -> f32 {
     if a.len() != b.len() { return 1.0; }
@@ -294,7 +309,7 @@ impl InplaceEngine {
     /// Встроенный реестр создаётся при первом выборе шрифта и кешируется на сеанс.
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
-            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), pending_signatures: HashMap::new(), pending_ink: HashMap::new(), pending_crops: HashMap::new(),
+            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), unsettled: false, timings: Vec::new(), pending_signatures: HashMap::new(), pending_ink: HashMap::new(), pending_crops: HashMap::new(),
             cuts: Vec::new(), pending_cuts: HashSet::new(), last_scan: None, detection: DetectionReport::default(), ocr_dirty: false, joins: Vec::new(),
             pending_joins: HashSet::new(), joined_aliases: HashMap::new(), recognition_policy: None }
     }
@@ -336,9 +351,21 @@ impl InplaceEngine {
         &self.tracker
     }
 
+    /// The stages of the last `begin` and what each took (for the log and for profiling).
+    pub fn timings(&self) -> &[(&'static str, std::time::Duration)] {
+        &self.timings
+    }
+
+    /// The next `begin` is of a frame the pipeline stopped waiting for: fields whose text is still growing are held back.
+    pub fn set_unsettled(&mut self, unsettled: bool) {
+        self.unsettled = unsettled;
+    }
+
     /// Кадр: поиск и сопоставление полей, анализ шрифта новых полей, фон и типографика там,
     /// где они изменились. Возвращает задания OCR для полей с изменившимся содержимым.
     pub fn begin(&mut self, frame: DynamicImage, s: &Settings, now: Instant, force: bool) -> Vec<OcrJob> {
+        // For this frame only: a later `begin` that was not told otherwise is of a settled frame.
+        let unsettled = std::mem::take(&mut self.unsettled);
         // The frame is moved in: an RGBA8 capture is kept as is, with no copy.
         let image = frame.into_rgba8();
         let frame_changed = self.snapshot.as_ref().is_some_and(|old| old.image.dimensions() != image.dimensions());
@@ -347,10 +374,16 @@ impl InplaceEngine {
         self.pending_signatures.clear();
         self.pending_ink.clear();
         self.pending_crops.clear();
+        let begun = Instant::now();
+        let mut stage = Instant::now();
+        let mut lap = |name: &'static str, timings: &mut Vec<(&'static str, std::time::Duration)>| { timings.push((name, stage.elapsed())); stage = Instant::now(); };
+        let mut timings: Vec<(&'static str, std::time::Duration)> = Vec::new();
         let mut mask = BlockDetector::ink_mask(&image);
+        lap("ink mask", &mut timings);
         self.detector.line_gap_factor = s.appearance.inplace.line_gap_factor;
         self.detector.max_blocks = s.appearance.inplace.max_blocks;
         let (detected, report) = self.detector.detect_with_local(&image, &mut mask);
+        lap("detect blocks", &mut timings);
         if !report.dropped.is_empty() {
             tracing::warn!(target: "inplace.detect", candidates = report.candidates, dropped = report.dropped.len(), limit = self.detector.max_blocks,
                 "more text blocks than appearance.inplace.max_blocks: the smallest are not read");
@@ -362,8 +395,14 @@ impl InplaceEngine {
         self.pending_cuts.clear();
         self.joined_aliases.clear();
         let detected = self.apply_cuts(detected, now, &image, &mut mask);
-        let detected = self.apply_joins(detected, now);
+        let mut detected = self.apply_joins(detected, now);
+        // The interface of the game, if the user asked to leave it alone: such blocks never become fields.
+        if s.appearance.inplace.skip_controls {
+            detected.retain(|d| !matches!(d.block_type, super::TextBlockType::Button | super::TextBlockType::MenuItem));
+        }
         let assignments = self.tracker.update(&detected, now);
+        lap("cuts, joins, tracking", &mut timings);
+        let mut per_field = [std::time::Duration::ZERO; 5];
         for memory in &self.joins {
             let union = memory.members.iter().skip(1).fold(memory.members[0], |r,m| r.union(m));
             if let Some(owner) = assignments.iter().find(|a| detected[a.detection].rect.iou(&union) >= 0.8) {
@@ -381,10 +420,14 @@ impl InplaceEngine {
             let d = &detected[a.detection];
             let Some(t) = self.tracker.get_mut(a.id) else { continue };
             let lh = d.line_height();
+            let started = Instant::now();
             let signature = content_signature(&image, &d.rect);
+            per_field[0] += started.elapsed();
             // The text under a translated field changed (a new dialogue): the old translation goes at once, not
             // when the new one is ready.
+            let started = Instant::now();
             let ink = ink_signature(&mask, &d.rect);
+            per_field[0] += started.elapsed();
             if !t.translated_text.is_empty() && !t.stale && !t.ink_signature.is_empty() && ink_distance(&ink, &t.ink_signature) > INK_STALE {
                 tracing::debug!(target: "inplace.stale", block_id = a.id, distance = ink_distance(&ink, &t.ink_signature), "the text under the field changed: its translation is withdrawn until the new text is read");
                 t.stale = true;
@@ -392,6 +435,15 @@ impl InplaceEngine {
                 self.ocr_dirty = true;
             }
             self.pending_ink.insert(a.id, ink);
+            // A field seen for the first time on a frame that never settled may be half printed: it waits one frame to
+            // show whether it grows.
+            let unseen = t.typing.unseen();
+            let started = Instant::now();
+            t.typing.observe(ink_area(&mask, &d.rect), now);
+            per_field[0] += started.elapsed();
+            let settle = std::time::Duration::from_millis(s.recognition.debounce_ms.max(300));
+            let holding = t.typing.holding(now, settle, TYPING_MAX);
+            let typing = unsettled && !force && (unseen || holding);
             let mut ocr_invalidated = false;
             if let Some(old) = t.ocr_detector_rect {
                 // A union can retain the old track id and almost the same sampled signature.
@@ -430,31 +482,42 @@ impl InplaceEngine {
             t.refined_rect = (rect != d.rect).then_some(rect);
             let empty_due = t.rejected_ocr_at.map_or_else(|| t.original_text.is_empty(), |last|
                 now.saturating_duration_since(last) >= REJECTED_OCR_TTL);
-            if force || frame_changed || recognition_changed || ocr_invalidated || empty_due || signature_changed(&signature, &t.content_signature) {
+            let due = force || frame_changed || recognition_changed || ocr_invalidated || empty_due || signature_changed(&signature, &t.content_signature);
+            if due && typing {
+                tracing::debug!(target: "inplace.typing", block_id = a.id, "the text under the field is still being typed: it is read when it stops growing");
+            } else if due {
+                let started = Instant::now();
                 let (x, y, w, h) = d.rect.expand((0.25 * lh).max(3.0), fw, fh).pixels(image.width(), image.height());
                 jobs.push(OcrJob { id: a.id, rect: d.rect, origin: (x, y), image: DynamicImage::ImageRgba8(image::imageops::crop_imm(&image, x, y, w, h).to_image()) });
                 self.pending_crops.insert(a.id, Rect::new(x as f32, y as f32, w as f32, h as f32));
                 // Remembered only when the field is completed (see `complete`): a failed or cancelled
                 // recognition must leave the field due for the next scan.
                 self.pending_signatures.insert(a.id, signature);
+                per_field[1] += started.elapsed();
             }
             // Probe appearance periodically even when OCR reads identical text. Keep the family
             // stable until two confident probes agree; expensive classification is not per frame.
             if t.font_analysis.is_none() || t.last_font_probe.is_none_or(|last|
                 now.saturating_duration_since(last) >= std::time::Duration::from_millis(500)) {
+                let started = Instant::now();
                 t.observe_font(FontClassifier.classify(&image, &mask, d), now);
+                per_field[2] += started.elapsed();
             }
             // Фон — только если он заметно изменился (подвижная сцена) или сменили режим.
             let margin = BackgroundAnalyzer::margin(lh);
+            let started = Instant::now();
             let bg_sig = BackgroundAnalyzer::signature(&image, &rect, margin);
+            per_field[3] += started.elapsed();
             let moved = (t.previous_rect.x - t.current_rect.x).abs() > 3.0 || (t.previous_rect.y - t.current_rect.y).abs() > 3.0;
             // A field that grew, shrank or was divided in place needs a plate of its new size, even if it did not move
             // and its surroundings look the same.
             let reshaped = [(t.background_for.x, rect.x), (t.background_for.y, rect.y), (t.background_for.w, rect.w), (t.background_for.h, rect.h)]
                 .iter().any(|(old, new)| (old - new).abs() > 3.0);
             if t.background.is_none() || bg_changed || moved || reshaped || t.background_signature.is_none_or(|old| color_distance(old, bg_sig) > 18.0) {
+                let started = Instant::now();
                 let analysis = BackgroundAnalyzer.analyze(&image, &mask, &rect, margin);
                 t.background = Some(BackgroundInpainter.render(&image, &mask, &rect, lh, analysis, &s.appearance.inplace, d.block_type));
+                per_field[3] += started.elapsed();
                 t.background_for = rect;
                 t.background_signature = Some(bg_sig);
                 t.revision += 1;
@@ -471,13 +534,17 @@ impl InplaceEngine {
             let expected_lines = t.ocr_lines.as_ref().map_or(d.lines.len(), Vec::len);
             let relined = t.typography.as_ref().is_some_and(|e| e.lines as usize != expected_lines);
             if t.typography.is_none() || resized || relined {
+                let started = Instant::now();
                 let bg = t.background.as_ref().map(|b| b.color).unwrap_or([0; 3]);
                 t.typography = Some(TypographyEstimator.estimate_from(d, t.font_analysis.as_ref().unwrap(), bg, fw, t.ocr_lines.as_deref()));
                 t.typography_rect = d.rect;
                 t.revision += 1;
+                per_field[4] += started.elapsed();
             }
             blocks.insert(a.id, d.clone());
         }
+        for (name, took) in ["signatures and ink", "OCR crops", "font probe", "background", "typography"].into_iter().zip(per_field) { timings.push((name, took)); }
+        lap("fields (all)", &mut timings);
         if bg_changed { self.applied.background = Fingerprints::of(s).background; }
         // Поле уже распознано, но шрифт сброшен (явный запрос): выбрать сразу, без нового OCR.
         let pending: Vec<u64> = self.tracker.blocks().iter()
@@ -485,6 +552,9 @@ impl InplaceEngine {
             .map(|t| t.id).collect();
         for id in pending { self.lock_font(id, s); }
         self.snapshot = Some(Snapshot { image, mask, blocks });
+        lap("fonts and snapshot", &mut timings);
+        timings.push(("begin (whole)", begun.elapsed()));
+        self.timings = timings;
         jobs
     }
 
@@ -1345,6 +1415,7 @@ mod tests {
         for j in e.begin(dynamic_frame.clone(), &s, t0, false) { e.complete(j.id, Some(("a".into(), "б".into())), &s); }
         let mut i = 0u64;
         time("begin (stable, whole)", 20, Box::new(|| { i += 1; e.begin(dynamic_frame.clone(), &s, t0 + Duration::from_millis(100 * i), false); }));
+        for (name, took) in e.timings() { println!("  {name:<26} {:>9.3} ms", took.as_secs_f64() * 1000.0); }
     }
 
     /// cargo test --release -p lipa-core layout::engine::tests::speed -- --ignored --nocapture
@@ -1436,6 +1507,84 @@ mod tests {
         // Completing it (even as 'nothing recognised') settles it.
         for j in again { e.complete(j.id, None, &s); }
         assert!(e.begin(changed, &s, t0 + Duration::from_millis(600), false).is_empty());
+    }
+
+    /// A line a game prints letter by letter, `chars` letters of it so far.
+    fn typed(chars: usize) -> DynamicImage {
+        let mut img = canvas(1200, 300, [25, 30, 40]);
+        draw_prose_line(&mut img, 100, 120, chars, 14, 4, 32, 3, [240, 240, 240]);
+        dynamic(img)
+    }
+
+    #[test]
+    fn a_line_still_being_typed_is_not_read_until_it_stops() {
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let s = settings();
+        let t0 = Instant::now();
+        let ms = Duration::from_millis;
+        // The frame never settled (the pipeline stopped waiting): the first look and every growth are held back.
+        for (k, chars) in [6usize, 12, 18, 24, 30].into_iter().enumerate() {
+            e.set_unsettled(true);
+            let jobs = e.begin(typed(chars), &s, t0 + ms(500 * k as u64), false);
+            assert!(jobs.is_empty(), "{chars} letters of a line that is still growing were handed to OCR");
+        }
+        // The text stopped growing: after the settling time it is read, once, whole.
+        e.set_unsettled(true);
+        let jobs = e.begin(typed(30), &s, t0 + ms(500 * 5), false);
+        assert_eq!(jobs.len(), 1, "a finished line is read");
+        for j in jobs { e.complete(j.id, Some(("text".into(), "перевод".into())), &s); }
+        e.set_unsettled(true);
+        assert!(e.begin(typed(30), &s, t0 + ms(500 * 6), false).is_empty(), "and not again");
+    }
+
+    /// A dialogue with its name, and two buttons in one row below it.
+    fn dialogue_with_buttons() -> DynamicImage {
+        let mut img = canvas(1200, 500, [25, 30, 40]);
+        draw_line(&mut img, 100, 100, 8, 14, 4, 22, 3, [255, 200, 60], false);
+        draw_line(&mut img, 100, 140, 40, 14, 4, 22, 3, [240, 240, 240], false);
+        draw_line(&mut img, 100, 172, 30, 14, 4, 22, 3, [240, 240, 240], false);
+        draw_line(&mut img, 300, 380, 7, 14, 4, 22, 3, [240, 240, 240], false);
+        draw_line(&mut img, 700, 380, 6, 14, 4, 22, 3, [240, 240, 240], false);
+        dynamic(img)
+    }
+
+    #[test]
+    fn the_interface_of_the_game_is_left_alone_only_when_the_user_asked() {
+        let t0 = Instant::now();
+        let all = settings();
+        let mut on = settings();
+        on.appearance.inplace.skip_controls = true;
+        // By default the name, the dialogue and both buttons are fields.
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let jobs = e.begin(dialogue_with_buttons(), &all, t0, false);
+        assert_eq!(jobs.len(), 4, "name, dialogue, two buttons");
+        // With the option the two buttons never become fields: not read, not translated, not drawn.
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        let jobs = e.begin(dialogue_with_buttons(), &on, t0, false);
+        assert_eq!(jobs.len(), 2, "only the name and the dialogue");
+        for j in jobs { e.complete(j.id, Some((format!("text {}", j.id), format!("перевод {}", j.id))), &on); }
+        let frame = e.finish(&on).expect("the dialogue is published");
+        assert_eq!(frame.blocks.len(), 2, "nothing is drawn over the buttons");
+        assert!(frame.blocks.iter().all(|b| !matches!(b.block_type, TextBlockType::Button | TextBlockType::MenuItem)));
+    }
+
+    #[test]
+    fn a_settled_frame_and_a_forced_read_are_never_held() {
+        let s = settings();
+        let t0 = Instant::now();
+        // The pipeline waited for the frame to settle: the first look reads at once, as it always did.
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        assert_eq!(e.begin(typed(30), &s, t0, false).len(), 1);
+        // An unsettled frame whose text does not grow (an animated background) is read one frame later.
+        let mut still = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        still.set_unsettled(true);
+        assert!(still.begin(typed(30), &s, t0, false).is_empty(), "the first look waits one frame");
+        still.set_unsettled(true);
+        assert_eq!(still.begin(typed(30), &s, t0 + Duration::from_millis(500), false).len(), 1, "text that does not grow is read");
+        // A read the user asked for is not held.
+        let mut forced = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        forced.set_unsettled(true);
+        assert_eq!(forced.begin(typed(30), &s, t0, true).len(), 1);
     }
 
     #[test]

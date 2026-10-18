@@ -1,6 +1,8 @@
 //! Text for the tests that read rendered frames: the bundled fonts drawn by a pure Rust rasterizer (no Python).
 #![allow(dead_code)]
 
+pub mod reference;
+
 use ab_glyph::{Font, FontVec, PxScale, ScaleFont, point};
 use image::RgbImage;
 use std::path::{Path, PathBuf};

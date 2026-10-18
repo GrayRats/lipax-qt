@@ -132,6 +132,9 @@ pub struct InplaceSettings {
     /// The field windows do not take the mouse: clicks go to the game widgets under the translation. The middle
     /// button then no longer hides the overlay (the hotkey and the switch in the main window still do).
     pub click_through: bool,
+    /// Buttons and menu items of the game's interface ("SAVE", "LOAD", "Options") are left as they are: not read, not
+    /// translated, nothing drawn over them. Off by default: the answers to choose from in a dialogue look like buttons too.
+    pub skip_controls: bool,
 }
 
 impl Default for InplaceSettings {
@@ -167,6 +170,7 @@ impl Default for InplaceSettings {
             max_blocks: crate::layout::block_detector::DEFAULT_MAX_BLOCKS,
             only_when_active: false,
             click_through: false,
+            skip_controls: false,
         }
     }
 }
@@ -498,7 +502,7 @@ pub const REACTIONS: &[(&str, Reaction)] = &{
         ("recognition.minimum_confidence", Pipeline), ("recognition.binarize", Pipeline), ("recognition.auto_invert", Pipeline), ("recognition.contrast", Pipeline), ("recognition.sharpen", Pipeline), ("recognition.filter_noise", Pipeline), ("recognition.auto_filters", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
         ("translation.custom_url", Pipeline), ("capture.portal_fills_monitor", Pipeline), ("translation.custom_api_key", Pipeline), ("translation.deepl_api_key", Pipeline), ("translation.microsoft_api_key", Pipeline), ("translation.microsoft_region", Pipeline), ("translation.bergamot_binary", Pipeline), ("translation.bergamot_models_dir", Pipeline), ("translation.bergamot_model_paths", Pipeline), ("recognition.interval_ms", Pipeline), ("recognition.sensitivity", Pipeline),
         ("recognition.debounce_ms", Pipeline), ("display_mode", Pipeline), ("capture.regions", Pipeline),
-        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.max_blocks", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("appearance.inplace.click_through", Immediate), ("general.theme", ApplicationStyle), ("general.ui_text_scale", Immediate), ("general.autostart", Immediate), ("general.remember_window_geometry", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
+        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.max_blocks", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("appearance.inplace.click_through", Immediate), ("appearance.inplace.skip_controls", Pipeline), ("general.theme", ApplicationStyle), ("general.ui_text_scale", Immediate), ("general.autostart", Immediate), ("general.remember_window_geometry", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
         ("hotkeys.toggle", Hotkeys), ("hotkeys.select_region", Hotkeys), ("hotkeys.translate_once", Hotkeys), ("hotkeys.toggle_translation", Hotkeys), ("hotkeys.toggle_pin", Hotkeys),
         // The backend is chosen by the window key at selection time.
         ("capture.source", Reselect),
@@ -1202,10 +1206,17 @@ impl Settings {
     }
 
     /// Key of the selected game: its window class. Portal windows have no class of their own.
+    /// Proton gives every game the same generic class (`steam_app_default`, `steam_app_<id>`),
+    /// so there the normalised caption joins the key: `steam_app_default|cross x mars`.
     pub fn game_key(&self) -> Option<String> {
         let window = self.capture.window.as_ref().filter(|w| !crate::capture::portal::is_portal_window(w))?;
         let class = window.resource_class.trim().to_lowercase();
-        (!class.is_empty()).then_some(class)
+        if class.is_empty() { return None; }
+        if class.starts_with("steam_app_") {
+            let caption = window.caption.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase();
+            if !caption.is_empty() { return Some(format!("{class}|{caption}")); }
+        }
+        Some(class)
     }
 
     fn game_profile(&self, caption: &str) -> GameProfile {
@@ -1504,6 +1515,60 @@ overlay_size = [800, 200]
         s.game_profiles_enabled = true;
         s.remember_game();
         assert!(s.game_profiles.is_empty(), "no class, no key");
+    }
+
+    fn proton(class: &str, caption: &str) -> Option<WindowKey> {
+        Some(WindowKey { uuid: "u".into(), resource_class: class.into(), caption: caption.into() })
+    }
+
+    #[test]
+    fn proton_windows_with_a_generic_class_get_keys_by_caption() {
+        let mut s = Settings::default();
+        s.capture.window = proton("steam_app_default", "Cross x Mars");
+        let a = s.game_key().unwrap();
+        assert_eq!(a, "steam_app_default|cross x mars");
+        s.capture.window = proton("steam_app_default", "Hold Me Tight All Night, Onii-chan!");
+        assert_ne!(s.game_key().unwrap(), a);
+        s.capture.window = proton("Steam_App_1234", "  Cross \t x   Mars ");
+        assert_eq!(s.game_key().unwrap(), "steam_app_1234|cross x mars");
+    }
+
+    #[test]
+    fn a_normal_class_keeps_its_old_key_and_an_empty_caption_falls_back_to_the_class() {
+        let mut s = Settings::default();
+        s.capture.window = game("CrossxMars.exe", "u1");
+        assert_eq!(s.game_key().unwrap(), "crossxmars.exe");
+        s.capture.window = proton("Inversion", "Some caption");
+        assert_eq!(s.game_key().unwrap(), "inversion");
+        s.capture.window = proton("steam_app_default", "");
+        assert_eq!(s.game_key().unwrap(), "steam_app_default");
+        s.capture.window = proton("steam_app_default", "  \t ");
+        assert_eq!(s.game_key().unwrap(), "steam_app_default");
+    }
+
+    #[test]
+    fn a_proton_profile_is_not_applied_to_another_proton_game_and_survives_toml() {
+        let mut s = Settings::default();
+        s.capture.window = proton("steam_app_default", "Cross x Mars");
+        s.recognition.language = "jpn".into();
+        s.remember_game();
+        s.capture.window = proton("steam_app_default", "Hold Me Tight All Night, Onii-chan!");
+        s.recognition.language = "eng".into();
+        assert!(!s.apply_game_profile(), "the other Proton game is new");
+        assert_eq!(s.recognition.language, "eng");
+        s.capture.window = proton("steam_app_default", "Игра ёлка");
+        s.remember_game();
+        assert_eq!(s.game_profiles.len(), 2);
+
+        let saved = toml::to_string_pretty(&s).unwrap();
+        let mut back = Settings::from_toml(&saved);
+        assert_eq!(back.game_profiles, s.game_profiles);
+        assert!(back.game_profiles.contains_key("steam_app_default|cross x mars"));
+        assert!(back.game_profiles.contains_key("steam_app_default|игра ёлка"));
+        back.capture.window = proton("steam_app_default", "cross X mars");
+        back.recognition.language = "eng".into();
+        assert!(back.apply_game_profile());
+        assert_eq!(back.recognition.language, "jpn");
     }
 
     #[test]

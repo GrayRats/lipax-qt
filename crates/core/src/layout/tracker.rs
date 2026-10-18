@@ -57,6 +57,8 @@ pub struct TrackedTextBlock {
     pub content_signature: Vec<u8>,
     /// Where the glyphs of the text this field was translated from were (`ink_signature`).
     pub(crate) ink_signature: Vec<bool>,
+    /// Whether the text under the field is still being typed out (a game that prints its lines letter by letter).
+    pub(crate) typing: Typing,
     /// The letters under the field are no longer the ones it was translated from: it is not drawn until the new
     /// text is read (a late translation of the previous dialogue must not stay over the next one).
     pub(crate) stale: bool,
@@ -104,6 +106,7 @@ impl TrackedTextBlock {
             background_for: Rect::default(),
             content_signature: Vec::new(),
             ink_signature: Vec::new(),
+            typing: Typing::default(),
             stale: false,
             background_signature: None,
             typography_rect: Rect::default(),
@@ -303,10 +306,85 @@ impl TextBlockTracker {
     }
 }
 
+/// A game that prints its lines letter by letter: the amount of ink under a field grows from frame to frame. Reading
+/// a half-printed line gives a half translation, so while the text is growing the reading waits for it to stop.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct Typing {
+    area: u32,
+    grew_at: Option<Instant>,
+    since: Option<Instant>,
+}
+
+impl Typing {
+    /// The field has not been looked at yet: whether its text is still growing is not known.
+    pub(crate) fn unseen(&self) -> bool {
+        self.area == 0
+    }
+
+    /// Notes the ink area of this frame (pixels of ink in the field); `true` when the text has grown since the last one.
+    pub(crate) fn observe(&mut self, area: u32, now: Instant) -> bool {
+        let grew = self.area > 0 && area > self.area + (self.area / 50).max(8);
+        if grew {
+            self.grew_at = Some(now);
+            self.since.get_or_insert(now);
+        }
+        self.area = area;
+        grew
+    }
+
+    /// The text grew less than `settle` ago and has been growing for less than `max` (after that it is read as it is:
+    /// an animated background must not keep a field unread for ever).
+    pub(crate) fn holding(&mut self, now: Instant, settle: std::time::Duration, max: std::time::Duration) -> bool {
+        let (Some(grew), Some(since)) = (self.grew_at, self.since) else { return false };
+        if now.saturating_duration_since(grew) >= settle {
+            self.grew_at = None;
+            self.since = None;
+            return false;
+        }
+        now.saturating_duration_since(since) < max
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::layout::block_detector::TextLine;
+
+    #[test]
+    fn typed_text_is_held_while_it_grows_and_released_when_it_stops() {
+        let t0 = Instant::now();
+        let ms = Duration::from_millis;
+        let mut typing = Typing::default();
+        assert!(typing.unseen());
+        assert!(!typing.observe(400, t0), "the first look has nothing to compare with");
+        assert!(!typing.holding(t0, ms(400), ms(8000)));
+        assert!(typing.observe(480, t0 + ms(500)), "20 % more ink is growth");
+        assert!(typing.holding(t0 + ms(500), ms(400), ms(8000)));
+        assert!(!typing.observe(482, t0 + ms(1000)), "a few pixels of noise are not growth");
+        // 500 ms after the last growth the text has stopped: it is read.
+        assert!(!typing.holding(t0 + ms(1000), ms(400), ms(8000)));
+        // Growth again after a pause starts a new wait.
+        assert!(typing.observe(560, t0 + ms(1500)));
+        assert!(typing.holding(t0 + ms(1600), ms(400), ms(8000)));
+    }
+
+    #[test]
+    fn a_text_that_never_stops_growing_is_read_after_the_limit() {
+        let t0 = Instant::now();
+        let ms = Duration::from_millis;
+        let mut typing = Typing::default();
+        typing.observe(100, t0);
+        let mut area = 100;
+        let mut held_until = None;
+        for step in 1..=40u64 {
+            area += 40;
+            let now = t0 + ms(500 * step);
+            typing.observe(area, now);
+            if typing.holding(now, ms(400), ms(8000)) { held_until = Some(500 * step); }
+        }
+        let held = held_until.expect("held at first");
+        assert!((7000..=8000).contains(&held), "held for the limit and not longer: {held} ms");
+    }
 
     fn block(x: f32, y: f32, w: f32, h: f32, lines: usize) -> DetectedTextBlock {
         let lh = h / lines as f32;

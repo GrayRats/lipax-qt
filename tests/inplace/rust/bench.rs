@@ -177,7 +177,9 @@ async fn main() {
                         target = Some(original.clone()); translation_source = "untranslated diagnostic input";
                     }
                 }
-                if !accepted {
+                // A field with nothing to show (not meaningful, or no translation in this fixture set) is a
+                // confirmed empty reading, as the pipeline treats it; `complete(None)` would leave it due on every scan.
+                if !accepted || (!split && target.is_none()) {
                     engine.reject_ocr(job.id, &settings);
                 } else {
                     engine.complete(

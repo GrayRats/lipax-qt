@@ -16,26 +16,42 @@ pub(super) fn window_radius(w: usize, h: usize) -> usize {
 /// Minimum luma difference from the local mean for a pixel to count as ink.
 pub(super) const CONTRAST: i32 = 22;
 
-/// Box mean of a luma plane with edge clamping, through an integral image.
+/// Box mean of a luma plane with edge clamping: the window shrinks at the edges and the sum is divided by its real
+/// area. Two sliding sums (along the rows, then down the columns) in `u32`: the old integral image of `u64` was 22 MB for
+/// a 2560×1080 frame and its divisions took most of the time of the detector. The values are the same, bit for bit.
 fn local_mean(luma: &[u8], w: usize, h: usize, r: usize) -> Vec<u8> {
-    let stride = w + 1;
-    let mut integral = vec![0u64; stride * (h + 1)];
+    if w == 0 || h == 0 { return Vec::new(); }
+    // Sums along the rows: the window [x − r, x + r] of every pixel.
+    let mut rows = vec![0u32; w * h];
     for y in 0..h {
-        let mut row = 0u64;
+        let row = &luma[y * w..(y + 1) * w];
+        let out = &mut rows[y * w..(y + 1) * w];
+        let mut sum: u32 = row[..(r + 1).min(w)].iter().map(|&v| v as u32).sum();
         for x in 0..w {
-            row += luma[y * w + x] as u64;
-            integral[(y + 1) * stride + x + 1] = integral[y * stride + x + 1] + row;
+            out[x] = sum;
+            if x + r + 1 < w { sum += row[x + r + 1] as u32; }
+            if x >= r { sum -= row[x - r] as u32; }
         }
     }
+    // Interior pixels share one divisor: `n / d` as a multiplication (exact: n < 2^20, d < 2^12, 2^40 / d > n).
+    let interior = 2 * r + 1;
+    let magic = (1u64 << 40).div_ceil((interior * interior) as u64);
+    let width_of = |x: usize| (x + r + 1).min(w) - x.saturating_sub(r);
+    let mut columns: Vec<u32> = (0..w).map(|x| (0..(r + 1).min(h)).map(|y| rows[y * w + x]).sum()).collect();
     let mut out = vec![0u8; w * h];
     for y in 0..h {
-        let (y0, y1) = (y.saturating_sub(r), (y + r + 1).min(h));
-        for x in 0..w {
-            let (x0, x1) = (x.saturating_sub(r), (x + r + 1).min(w));
-            let sum = integral[y1 * stride + x1] + integral[y0 * stride + x0]
-                - integral[y0 * stride + x1] - integral[y1 * stride + x0];
-            out[y * w + x] = (sum / ((x1 - x0) * (y1 - y0)) as u64) as u8;
+        let height = (y + r + 1).min(h) - y.saturating_sub(r);
+        let line = &mut out[y * w..(y + 1) * w];
+        if height == interior && w > 2 * r {
+            for x in 0..r { line[x] = (columns[x] / (width_of(x) * height) as u32) as u8; }
+            for x in r..w - r { line[x] = ((columns[x] as u64 * magic) >> 40) as u8; }
+            for x in w - r..w { line[x] = (columns[x] / (width_of(x) * height) as u32) as u8; }
+        } else {
+            for x in 0..w { line[x] = (columns[x] / (width_of(x) * height) as u32) as u8; }
         }
+        // Down one row: the row entering the window is added, the one leaving it taken off.
+        if y + r + 1 < h { for x in 0..w { columns[x] += rows[(y + r + 1) * w + x]; } }
+        if y >= r { for x in 0..w { columns[x] -= rows[(y - r) * w + x]; } }
     }
     out
 }
@@ -51,4 +67,61 @@ pub(super) fn contrast_masks(luma: &[u8], w: usize, h: usize) -> [InkMask; 2] {
         InkMask { w, h, ink, ink_is_dark: !bright }
     };
     [make(true), make(false)]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The integral-image version this replaced: the reference for the exact values.
+    fn reference(luma: &[u8], w: usize, h: usize, r: usize) -> Vec<u8> {
+        let stride = w + 1;
+        let mut integral = vec![0u64; stride * (h + 1)];
+        for y in 0..h {
+            let mut row = 0u64;
+            for x in 0..w {
+                row += luma[y * w + x] as u64;
+                integral[(y + 1) * stride + x + 1] = integral[y * stride + x + 1] + row;
+            }
+        }
+        let mut out = vec![0u8; w * h];
+        for y in 0..h {
+            let (y0, y1) = (y.saturating_sub(r), (y + r + 1).min(h));
+            for x in 0..w {
+                let (x0, x1) = (x.saturating_sub(r), (x + r + 1).min(w));
+                let sum = integral[y1 * stride + x1] + integral[y0 * stride + x0] - integral[y0 * stride + x1] - integral[y1 * stride + x0];
+                out[y * w + x] = (sum / ((x1 - x0) * (y1 - y0)) as u64) as u8;
+            }
+        }
+        out
+    }
+
+    fn noise(w: usize, h: usize, seed: u32) -> Vec<u8> {
+        let mut state = seed;
+        (0..w * h).map(|_| { state = state.wrapping_mul(1664525).wrapping_add(1013904223); (state >> 24) as u8 }).collect()
+    }
+
+    #[test]
+    fn the_sliding_box_mean_equals_the_integral_image_one_bit_for_bit() {
+        // Frames smaller than the window, thin ones, odd sizes and the sizes the detector really uses.
+        for (w, h, r) in [(1, 1, 6), (5, 9, 6), (13, 40, 6), (64, 64, 7), (101, 77, 20), (200, 31, 6), (333, 255, 20), (1920, 1080, 12), (40, 300, 6)] {
+            let luma = noise(w, h, (w * 31 + h) as u32);
+            assert_eq!(local_mean(&luma, w, h, r), reference(&luma, w, h, r), "{w}×{h} r={r}");
+        }
+        // The extremes: all black and all white (the largest sums).
+        for value in [0u8, 255] {
+            let flat = vec![value; 300 * 200];
+            assert_eq!(local_mean(&flat, 300, 200, 20), vec![value; 300 * 200]);
+        }
+    }
+
+    #[test]
+    fn ink_is_what_differs_from_its_neighbourhood() {
+        let (w, h) = (200, 80);
+        let mut plane = vec![60u8; w * h];
+        for y in 30..40 { for x in 50..150 { plane[y * w + x] = 200; } }
+        let [bright, dark] = contrast_masks(&plane, w, h);
+        assert!(bright.at(100, 35) && !dark.at(100, 35));
+        assert!(!bright.at(10, 10) && !dark.at(10, 10));
+    }
 }

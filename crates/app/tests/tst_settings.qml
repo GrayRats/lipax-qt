@@ -998,6 +998,13 @@ TestCase {
         active.toggled()
         compare(settings.current.appearance.inplace.only_when_active, true)
         settings.set("appearance.inplace.only_when_active", false)
+        // The interface of the game is translated unless the user says otherwise.
+        const controls = findChild(settings, "skipControls")
+        verify(controls !== null && !controls.checked, "buttons and menu items are translated by default")
+        controls.checked = true
+        controls.toggled()
+        compare(settings.current.appearance.inplace.skip_controls, true)
+        settings.set("appearance.inplace.skip_controls", false)
         const changes = findChild(settings, "changesOnly")
         verify(changes !== null && !changes.checked)
         changes.checked = true

@@ -19,6 +19,8 @@ pub struct KwinCapture {
     geometry: tokio::sync::OnceCell<super::geometry::ClientGeometry>,
     /// Failed script loads are retried at most every `GEOMETRY_RETRY`, not on every frame.
     geometry_failed: std::sync::Mutex<Option<std::time::Instant>>,
+    /// Chosen window uuid -> the uuid of the same program after a restart of the game.
+    aliases: std::sync::Mutex<HashMap<String, String>>,
 }
 
 const GEOMETRY_RETRY: std::time::Duration = std::time::Duration::from_secs(30);
@@ -125,7 +127,7 @@ impl KwinCapture {
     pub async fn connect() -> Result<Self, CaptureError> {
         tracing::debug!("Подключение к KWin через сессионную D-Bus");
         let conn = zbus::Connection::session().await.map_err(unavailable)?;
-        Ok(Self { conn, geometry: tokio::sync::OnceCell::new(), geometry_failed: Default::default() })
+        Ok(Self { conn, geometry: tokio::sync::OnceCell::new(), geometry_failed: Default::default(), aliases: Default::default() })
     }
 
     /// Пользователь кликает по окну; возвращает его ключ. Отмена (Esc) даёт `None`.
@@ -172,8 +174,36 @@ impl KwinCapture {
         }
     }
 
+    /// The uuid KWin knows the chosen window by now (it changes when the game is restarted).
+    fn resolve(&self, uuid: &str) -> String {
+        self.aliases.lock().unwrap().get(uuid).cloned().unwrap_or_else(|| uuid.to_owned())
+    }
+
+    /// The chosen window has gone: find the same program again by class and title and use its uuid from now on.
+    /// `None` when there is no such single window (or the KWin script is not available).
+    pub async fn rebind(&self, window: &WindowKey) -> Option<String> {
+        let current = self.resolve(&window.uuid);
+        let found = self.tracker().await?.find(&window.resource_class, &window.caption, &current)?;
+        tracing::info!(target: "capture.kwin", class = %window.resource_class, caption = %window.caption, "Окно игры найдено заново после перезапуска");
+        self.aliases.lock().unwrap().insert(window.uuid.clone(), found.clone());
+        Some(found)
+    }
+
+    /// Кадр выбранного окна; если окно пропало (игру перезапустили) — один раз ищет его заново.
+    pub async fn grab_window_of(&self, window: &WindowKey) -> Result<DynamicImage, CaptureError> {
+        match self.grab_window(&window.uuid).await {
+            Err(CaptureError::WindowGone) => match self.rebind(window).await {
+                Some(_) => self.grab_window(&window.uuid).await,
+                None => Err(CaptureError::WindowGone),
+            },
+            other => other,
+        }
+    }
+
     /// Окно ещё существует (KWin знает его uuid)?
     pub async fn window_exists(&self, uuid: &str) -> bool {
+        let uuid = self.resolve(uuid);
+        let uuid = uuid.as_str();
         match self
             .conn
             .call_method(Some("org.kde.KWin"), "/KWin", Some("org.kde.KWin"), "getWindowInfo", &(uuid,))
@@ -209,7 +239,7 @@ impl KwinCapture {
     /// Прямоугольники окна (логические координаты KWin), если окно существует.
     pub async fn window_frames(&self, uuid: &str) -> Option<WindowFrames> {
         // Без скрипта рамку по геометрии с декорацией не рисуем: она была бы неверной.
-        self.tracker().await?.get(uuid)
+        self.tracker().await?.get(&self.resolve(uuid))
     }
 
     /// Свободное окно перевода: куда его поставить при появлении (JSON для скрипта KWin).
@@ -228,7 +258,7 @@ impl KwinCapture {
 
     /// Окно видно и в фокусе (или в фокусе окно самого LipaX); `None` — KWin не знает такого окна или скрипт недоступен.
     pub async fn window_active(&self, uuid: &str) -> Option<bool> {
-        self.tracker().await?.is_active(uuid)
+        self.tracker().await?.is_active(&self.resolve(uuid))
     }
 
     /// Клиентская область окна на рабочем столе (без рамки и заголовка KWin).
@@ -238,6 +268,8 @@ impl KwinCapture {
 
     /// Кадр клиентской области окна: без рамки, заголовка, кнопок и теней.
     pub async fn grab_window(&self, uuid: &str) -> Result<DynamicImage, CaptureError> {
+        let uuid = self.resolve(uuid);
+        let uuid = uuid.as_str();
         let img = self.capture_window(uuid).await?;
         tracing::trace!(width = img.width(), height = img.height(), "Получен кадр KWin ScreenShot2");
         Ok(match self.window_frames(uuid).await.and_then(|f| client_crop(img.width(), img.height(), &f)) {
@@ -330,7 +362,7 @@ impl Capture for KwinCapture {
     fn capabilities(&self, _: &WindowKey, _: &Settings) -> super::CaptureCapabilities { super::CaptureCapabilities::KWIN }
 
     async fn grab(&self, window: &WindowKey, rect: NormRect) -> Result<DynamicImage, CaptureError> {
-        let full = self.grab_window(&window.uuid).await?;
+        let full = self.grab_window_of(window).await?;
         let (x, y, w, h) = rect_px(rect, full.width(), full.height());
         // A region that is the whole window needs no second copy of the frame.
         if (x, y, w, h) == (0, 0, full.width(), full.height()) { return Ok(full); }

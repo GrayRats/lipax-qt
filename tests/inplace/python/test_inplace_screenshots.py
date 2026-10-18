@@ -202,9 +202,13 @@ def run_screenshot_pipeline(source, qt, translation=None, case=None, ocr_blocks=
             "missing": [dict(id=block["id"], original=block["original"],
                 confidence=block["confidence"], reason=dropped.get(block["id"], {}).get("reason", "not published"))
                 for block in data["block_ocr"] if block["accepted"] and block["id"] not in drawn],
+            # A block is covered by its own plate or, when it is a fragment of a field another plate already hides
+            # (a half-read line, a repeated reading), by the best of the drawn plates.
             "source_coverage": [dict(id=block["id"], original=block["original"],
-                rendered=block["id"] in drawn, plate_coverage=source_coverage(block["lines"],
-                    drawn[block["id"]]["box"] if block["id"] in drawn else [0, 0, 0, 0], original.width, original.height))
+                rendered=block["id"] in drawn, plate_coverage=max(
+                    [source_coverage(block["lines"], drawn[block["id"]]["box"], original.width, original.height) or 0]
+                    if block["id"] in drawn else
+                    [source_coverage(block["lines"], other["box"], original.width, original.height) or 0 for other in entries] or [0]))
                 for block in data["block_ocr"] if block["accepted"]],
             "fallbacks": [dict(id=entry["block_id"], mode=entry["degraded"])
                 for entry in entries if entry.get("degraded")],

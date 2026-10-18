@@ -36,6 +36,9 @@ pub struct BackgroundAnalysis {
     pub gradient: f32,
     /// Пикселей фона хватило для оценки.
     pub reliable: bool,
+    /// Средний перепад яркости между соседними пикселями кольца вокруг поля (0–255). Облако или градиент неба — большая
+    /// `texture`, но малый `detail` рядом с ней; клетка и точки — заметная доля `texture`. Только такое стоит копировать.
+    pub detail: f32,
 }
 
 /// Доля пикселей поля, которым разрешено остаться похожими на старый текст после замены. Предел взят из
@@ -58,6 +61,19 @@ const MAX_GROWTH: f32 = 1.6;
 const EXEMPLAR_MAX_AREA: usize = 150_000;
 /// Up to this area the candidates are searched at every second pixel; above it at every fourth (4× less work).
 const EXEMPLAR_FINE_AREA: usize = 12_000;
+/// Sweeps of the smoothing after the peeling diffusion (see `relax`).
+const RELAX_SWEEPS: usize = 80;
+/// The exemplar search needs a pattern to copy (checks, dots): much of the brightness variation of the ring is in the
+/// steps between neighbouring pixels, `detail / texture`. Measured on game frames: checks 0.066, a cloud 0.025, a sky
+/// gradient 0.015. Copying from clouds and gradients pastes light pieces of cloud into the sky, because a context of
+/// a few pixels cannot tell where on a smooth picture a fragment came from.
+const EXEMPLAR_MIN_DETAIL_RATIO: f32 = 0.04;
+
+/// Whether the hole of a field of `area` pixels is filled by copying from its surroundings (a repeating pattern) and
+/// not by diffusion alone.
+fn exemplar_worthy(analysis: &BackgroundAnalysis, area: usize) -> bool {
+    analysis.reliable && analysis.texture >= 12.0 && analysis.detail >= EXEMPLAR_MIN_DETAIL_RATIO * analysis.texture && area <= EXEMPLAR_MAX_AREA
+}
 
 /// How `reconstruct_patch` decides what is a letter: the first attempt takes the colour of the main text only.
 #[derive(Debug, Clone, Copy)]
@@ -113,10 +129,12 @@ impl BackgroundAnalyzer {
         let (mut rs, mut gs, mut bs, mut ls) = (Vec::new(), Vec::new(), Vec::new(), Vec::new());
         let (mut top, mut bottom) = ((0.0f64, 0u32), (0.0f64, 0u32));
         let mut edges = 0u32;
+        let (mut steps, mut step_n) = (0.0f64, 0u32);
         let cy = rect.center().1;
+        let in_rect = |x: u32, y: u32| (x as f32) >= rect.x && (x as f32) < rect.right() && (y as f32) >= rect.y && (y as f32) < rect.bottom();
         for y in y0..y0 + h {
             for x in x0..x0 + w {
-                let inside = (x as f32) >= rect.x && (x as f32) < rect.right() && (y as f32) >= rect.y && (y as f32) < rect.bottom();
+                let inside = in_rect(x, y);
                 // Фон оценивается по кольцу и по просветам между глифами, но не по самим глифам.
                 if mask.at(x as usize, y as usize) || (inside && margin > 0.0 && near_ink(mask, x as usize, y as usize)) { continue; }
                 let p = img.get_pixel(x, y).0;
@@ -127,6 +145,13 @@ impl BackgroundAnalyzer {
                 if x + 1 < x0 + w {
                     let q = luma(&img.get_pixel(x + 1, y).0);
                     if l.abs_diff(q) > 40 { edges += 1; }
+                    // Only pairs in the ring around the field count: it holds no text, and the ink mask also takes the
+                    // squares of a pattern for ink, which would hide exactly the patterns that are worth copying.
+                    if !inside && !in_rect(x + 1, y) { steps += l.abs_diff(q) as f64; step_n += 1; }
+                }
+                if y + 1 < y0 + h && !inside && !in_rect(x, y + 1) {
+                    steps += l.abs_diff(luma(&img.get_pixel(x, y + 1).0)) as f64;
+                    step_n += 1;
                 }
             }
         }
@@ -144,6 +169,7 @@ impl BackgroundAnalyzer {
             edge_density: edges as f32 / n,
             gradient: half_mean(bottom) - half_mean(top),
             reliable: ls.len() >= 16,
+            detail: (steps / step_n.max(1) as f64) as f32,
         }
     }
 
@@ -269,6 +295,13 @@ fn inpaint_blur(img: &RgbaImage, mask: &InkMask, area: &Rect, fallback: [u8; 3])
     image::imageops::blur(&small.to_rgba8(), 1.2)
 }
 
+/// Threads for `items` independent jobs: half of the cores (the game keeps the rest) and at least 64 jobs each, so a
+/// small field does not pay for starting threads.
+fn workers_for(items: usize) -> usize {
+    let cores = std::thread::available_parallelism().map_or(1, |n| n.get());
+    (cores / 2).clamp(1, 8).min(items / 64).max(1)
+}
+
 /// Exemplar fill: the hole is filled from its border inwards. Each border pixel takes the colour of the
 /// clean pixel (outside the original hole) whose surroundings best match the known surroundings of the
 /// target, searched within `reach` pixels in steps of two. Whatever finds no match is left to diffusion.
@@ -287,8 +320,11 @@ fn copy_similar(px: &mut [[f32; 3]], hole: &mut [bool], original_hole: &[bool], 
             .filter(|&(x, y)| hole[at(x, y)] && [(-1, 0), (1, 0), (0, -1), (0, 1)].iter().any(|(dx, dy)| inside(x + dx, y + dy) && !hole[at(x + dx, y + dy)]))
             .collect();
         if front.is_empty() || rounds > 64 { break; }
-        let mut filled = Vec::with_capacity(front.len());
-        for &(x, y) in &front {
+        // Every pixel of the front is solved against the picture as it was before the round, so the pixels are
+        // independent: the front is cut into pieces for several threads (the order of the results is that of the front).
+        let current: &[[f32; 3]] = px;
+        let solve = |&(x, y): &(i32, i32)| -> Option<(usize, [f32; 3])> {
+            let px = current;
             let known: Vec<(i32, i32)> = (-R..=R).flat_map(|dy| (-R..=R).map(move |dx| (dx, dy)))
                 .filter(|&(dx, dy)| inside(x + dx, y + dy) && !hole[at(x + dx, y + dy)]).collect();
             let mut best: Option<(f32, [f32; 3])> = None;
@@ -311,10 +347,41 @@ fn copy_similar(px: &mut [[f32; 3]], hole: &mut [bool], original_hole: &[bool], 
             }
             // A poor match (complex artwork, no repeating structure) would smear a foreign fragment into the
             // hole; such pixels are left to the diffusion, which at least continues the surrounding colour.
-            if let Some((_, c)) = best.filter(|(cost, _)| *cost <= MAX_MATCH * known.len() as f32) { filled.push((at(x, y), c)); }
-        }
+            best.filter(|(cost, _)| *cost <= MAX_MATCH * known.len() as f32).map(|(_, c)| (at(x, y), c))
+        };
+        let workers = workers_for(front.len());
+        let filled: Vec<(usize, [f32; 3])> = if workers <= 1 {
+            front.iter().filter_map(solve).collect()
+        } else {
+            let piece = front.len().div_ceil(workers);
+            std::thread::scope(|scope| {
+                let solve = &solve;
+                let handles: Vec<_> = front.chunks(piece).map(|part| scope.spawn(move || part.iter().filter_map(solve).collect::<Vec<_>>())).collect();
+                handles.into_iter().flat_map(|handle| handle.join().expect("exemplar search panicked")).collect()
+            })
+        };
         if filled.is_empty() { break; }
         for (i, c) in filled { px[i] = c; hole[i] = false; }
+    }
+}
+
+/// Smooths what the peeling diffusion filled: every pixel of `pending` becomes the mean of its four neighbours, the
+/// pixels around the hole stay as they are (Gauss-Seidel, sweeping forwards and backwards). The peeling alone leaves
+/// the streaks of its fill order (rows and columns copied inwards); the relaxed fill is the smooth surface that joins
+/// the border of the hole.
+fn relax(px: &mut [[f32; 3]], pending: &[bool], w: usize, h: usize, sweeps: usize) {
+    let cells: Vec<usize> = (0..w * h).filter(|&i| pending[i]).collect();
+    for sweep in 0..sweeps {
+        let order: Box<dyn Iterator<Item = &usize>> = if sweep % 2 == 0 { Box::new(cells.iter()) } else { Box::new(cells.iter().rev()) };
+        for &i in order {
+            let (x, y) = (i % w, i / w);
+            let (mut sum, mut n) = ([0.0f32; 3], 0.0f32);
+            if x > 0 { for c in 0..3 { sum[c] += px[i - 1][c]; } n += 1.0; }
+            if x + 1 < w { for c in 0..3 { sum[c] += px[i + 1][c]; } n += 1.0; }
+            if y > 0 { for c in 0..3 { sum[c] += px[i - w][c]; } n += 1.0; }
+            if y + 1 < h { for c in 0..3 { sum[c] += px[i + w][c]; } n += 1.0; }
+            if n > 0.0 { px[i] = sum.map(|v| v / n); }
+        }
     }
 }
 
@@ -399,6 +466,20 @@ fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, 
             hole[y * wu + x] = (y..=y + 2 * r).any(|yy| across[yy * pw + x + r]);
         }
     }
+    // The outline and the soft edge of a letter have another colour than its core and the colour test above leaves
+    // them out; a bright dot of them left beside the hole would be spread into it. Ink of the mask that touches the hole
+    // joins it (two pixels deep: the width of an outline).
+    for _ in 0..2 {
+        let before = hole.clone();
+        for y in 0..hu {
+            for x in 0..wu {
+                let i = y * wu + x;
+                if before[i] || !mask.at(x0 as usize + x, y0 as usize + y) { continue; }
+                let touches = (x > 0 && before[i - 1]) || (x + 1 < wu && before[i + 1]) || (y > 0 && before[i - wu]) || (y + 1 < hu && before[i + wu]);
+                if touches { hole[i] = true; }
+            }
+        }
+    }
     let original: Vec<[f32; 3]> = (0..hu * wu).map(|i| {
         let p = img.get_pixel(x0 + (i % wu) as u32, y0 + (i / wu) as u32).0;
         [p[0] as f32, p[1] as f32, p[2] as f32]
@@ -409,11 +490,12 @@ fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, 
     // clean pixel nearby; a smooth one or a gradient is better served by the diffusion below.
     // The exemplar search costs ~20 µs per pixel of the area at stride 2 (2 s for a dialogue block) and runs in the OCR
     // tick, before the new translation can appear: a big field is searched at a coarser stride, a huge one not at all.
-    let textured = analysis.reliable && analysis.texture >= 12.0 && wu * hu <= EXEMPLAR_MAX_AREA;
-    if textured {
+    if exemplar_worthy(analysis, wu * hu) {
         let stride = if wu * hu <= EXEMPLAR_FINE_AREA { 2 } else { 4 };
         copy_similar(&mut px, &mut hole, &opaque, wu, hu, (line_height * 2.0).round().clamp(16.0, 40.0) as i32, stride);
     }
+    // What the exemplar search could not fill: the diffusion below fills it and `relax` smooths it.
+    let to_diffuse = hole.clone();
     // Peel the hole from its border inwards: each pixel takes the mean of its known neighbours.
     for _ in 0..(4 * r + 24) {
         let mut filled = Vec::new();
@@ -434,6 +516,7 @@ fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, 
         if filled.is_empty() { break; }
         for (i, c) in filled { px[i] = c; hole[i] = false; }
     }
+    relax(&mut px, &to_diffuse, wu, hu, RELAX_SWEEPS);
     let mut out = RgbaImage::new(w, h);
     for i in 0..wu * hu {
         let (x, y) = (i % wu, i / wu);
@@ -492,7 +575,7 @@ fn reconstruct_without_ghost(img: &RgbaImage, mask: &InkMask, text: &Rect, area:
     let mut ghost = measure(&patch);
     // On a patterned background every attempt runs the costly exemplar search (`copy_similar`): one retry, the
     // widest, instead of two.
-    let textured = analysis.reliable && analysis.texture >= 12.0 && area.w * area.h <= EXEMPLAR_MAX_AREA as f32;
+    let textured = exemplar_worthy(analysis, (area.w * area.h) as usize);
     let retries: &[Retry] = if textured { &[Retry::WIDEST] } else { &[Retry::ANY_COLOUR, Retry::WIDEST] };
     for &retry in retries {
         if ghost <= GHOST_LIMIT { break; }
@@ -535,7 +618,7 @@ mod tests {
     #[test]
     fn automatic_strategy_depends_on_the_field_type() {
         let a = BackgroundAnalysis { median: [32, 40, 50], mean: [32, 40, 50], luminance: 0.16,
-            texture: 3.0, edge_density: 0.01, gradient: 0.0, reliable: true };
+            texture: 3.0, edge_density: 0.01, gradient: 0.0, reliable: true, detail: 1.0 };
         assert_eq!(BackgroundInpainter::resolve_mode(InplaceBackgroundMode::Auto, TextBlockType::Dialogue, &a), BackgroundRenderMode::SolidFill);
         assert_eq!(BackgroundInpainter::resolve_mode(InplaceBackgroundMode::Auto, TextBlockType::Subtitle, &a), BackgroundRenderMode::SolidFill);
         assert_eq!(BackgroundInpainter::resolve_mode(InplaceBackgroundMode::Auto, TextBlockType::Button, &a), BackgroundRenderMode::AdaptivePaddingFill);
@@ -613,6 +696,67 @@ mod tests {
         let (tx, ty, tw, th) = rect.pixels(img.width(), img.height());
         let yellow_left = (ty..ty + th).flat_map(|y| (tx..tx + tw).map(move |x| (x, y))).filter(|&(x, y)| { let p = shown.get_pixel(x, y).0; p[0] > 200 && p[1] > 160 && p[2] < 80 }).count();
         assert_eq!(yellow_left, 0, "no yellow pixel of the old text remains");
+    }
+
+    /// A smooth sky: blue to light blue, brighter towards one corner (what a photographic background looks like).
+    fn sky() -> RgbaImage {
+        RgbaImage::from_fn(640, 180, |x, y| {
+            let (t, u) = (x as f32 / 640.0, y as f32 / 180.0);
+            Rgba([(40.0 + 120.0 * t * u) as u8, (110.0 + 70.0 * t) as u8, (210.0 - 40.0 * u) as u8, 255])
+        })
+    }
+
+    /// The field as OCR gives it: the bounds of the ink in the rows the text was drawn in.
+    fn drawn_field(mask: &InkMask, rows: std::ops::Range<usize>) -> Rect {
+        let (mut x0, mut y0, mut x1, mut y1) = (usize::MAX, usize::MAX, 0, 0);
+        for y in rows { for x in 0..mask.w { if mask.at(x, y) { x0 = x0.min(x); y0 = y0.min(y); x1 = x1.max(x + 1); y1 = y1.max(y + 1); } } }
+        Rect::new(x0 as f32, y0 as f32, (x1 - x0) as f32, (y1 - y0) as f32)
+    }
+
+    fn analysis_of(img: &RgbaImage) -> BackgroundAnalysis {
+        let mask = BlockDetector::ink_mask(img);
+        BackgroundAnalyzer.analyze(img, &mask, &drawn_field(&mask, 60..110), BackgroundAnalyzer::margin(30.0))
+    }
+
+    #[test]
+    fn a_pattern_is_copied_but_a_smooth_picture_is_not() {
+        // Checks every 8 px: a pattern to copy. Wide soft bands (a cloud): bright and dark, yet no detail.
+        let mut checks = canvas(600, 160, [0, 0, 0]);
+        for y in 0..160 { for x in 0..600 { let v = ((x / 8 + y / 8) % 2 * 70 + 60) as u8; checks.put_pixel(x, y, Rgba([v, v, 200, 255])); } }
+        draw_line(&mut checks, 80, 70, 20, 14, 4, 22, 3, [255, 255, 255], false);
+        let mut cloud = canvas(600, 160, [0, 0, 0]);
+        for y in 0..160 { for x in 0..600 { let v = (130.0 + 110.0 * (x as f32 / 70.0).sin() * (y as f32 / 55.0).cos()) as u8; cloud.put_pixel(x, y, Rgba([v, v, 230, 255])); } }
+        draw_line(&mut cloud, 80, 70, 20, 14, 4, 22, 3, [20, 20, 20], false);
+        let (checks, cloud) = (analysis_of(&checks), analysis_of(&cloud));
+        assert!(checks.detail >= EXEMPLAR_MIN_DETAIL_RATIO * checks.texture, "{checks:?}");
+        assert!(cloud.texture >= 12.0 && cloud.detail < EXEMPLAR_MIN_DETAIL_RATIO * cloud.texture, "{cloud:?}");
+        assert!(exemplar_worthy(&checks, 10_000) && !exemplar_worthy(&cloud, 10_000));
+        assert!(!exemplar_worthy(&checks, EXEMPLAR_MAX_AREA + 1), "a huge field is never searched");
+    }
+
+    #[test]
+    fn text_on_a_smooth_sky_is_replaced_by_the_sky_without_light_patches_or_streaks() {
+        let clean = sky();
+        let mut img = clean.clone();
+        // White letters with a dark outline (copies of the dark text a little to every side).
+        for (dx, dy) in [(-2i32, 0i32), (2, 0), (0, -2), (0, 2)] { draw_line(&mut img, (120 + dx) as u32, (80 + dy) as u32, 24, 14, 4, 26, 4, [20, 20, 20], false); }
+        draw_line(&mut img, 120, 80, 24, 14, 4, 26, 4, [250, 250, 250], false);
+        let mask = BlockDetector::ink_mask(&img);
+        let (rect, lh) = (drawn_field(&mask, 70..120), 40.0);
+        let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, BackgroundAnalyzer::margin(lh));
+        let s = InplaceSettings { background_mode: InplaceBackgroundMode::TextReplacement, ..Default::default() };
+        let r = BackgroundInpainter.render(&img, &mask, &rect, lh, a, &s, TextBlockType::Unknown);
+        let out = composite(&img, &r);
+        let (x0, y0, w, h) = r.rect.pixels(640, 180);
+        let (mut sum, mut lightest) = (0.0f32, f32::MIN);
+        for y in y0..y0 + h { for x in x0..x0 + w {
+            let d = luma(&out.get_pixel(x, y).0) as f32 - luma(&clean.get_pixel(x, y).0) as f32;
+            sum += d.abs();
+            lightest = lightest.max(d);
+        } }
+        let mean = sum / (w * h) as f32;
+        assert!(mean < 3.0, "the sky comes back: mean error {mean:.2}");
+        assert!(lightest < 14.0, "no light patch or dot is left: {lightest:.1} levels lighter than the clean sky");
     }
 
     #[test]

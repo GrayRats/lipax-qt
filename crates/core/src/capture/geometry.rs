@@ -35,8 +35,28 @@ pub async fn shutdown() {
     }
 }
 
+/// Window classes shared by many different programs: a class alone says nothing about which game it is.
+const SHARED_CLASSES: [&str; 4] = ["steam_app_default", "wine", "explorer.exe", ""];
+
+/// The live window that is the same program as a window that has gone, by `(class, title)`: exactly one match, or none.
+/// A title that changed (a score, a level) is tolerated only for a class that identifies one program, and only if
+/// that class has a single window.
+pub(super) fn pick_window(identities: &HashMap<String, (String, String)>, class: &str, caption: &str, gone: &str) -> Option<String> {
+    let single = |matches: Vec<&String>| (matches.len() == 1).then(|| matches[0].clone());
+    let same_class = || identities.iter().filter(|(uuid, (c, _))| uuid.as_str() != gone && c == class);
+    if let Some(found) = single(same_class().filter(|(_, (_, t))| t == caption).map(|(u, _)| u).collect()) {
+        return Some(found);
+    }
+    if SHARED_CLASSES.contains(&class) {
+        return None;
+    }
+    single(same_class().map(|(u, _)| u).collect())
+}
+
 struct State {
     windows: Mutex<HashMap<String, WindowFrames>>,
+    /// `(class, title)` of every window KWin knows.
+    identities: Mutex<HashMap<String, (String, String)>>,
     /// The window that has the focus and whether it belongs to LipaX itself (settings, preview, translation window).
     focus: Mutex<(String, bool)>,
     minimized: Mutex<HashSet<String>>,
@@ -50,7 +70,7 @@ struct State {
 
 impl Default for State {
     fn default() -> Self {
-        Self { windows: Default::default(), focus: Default::default(), minimized: Default::default(), ready: Notify::new(), startup_error: Default::default(), placement: Mutex::new("null".into()), floating: watch::channel(None).0 }
+        Self { windows: Default::default(), identities: Default::default(), focus: Default::default(), minimized: Default::default(), ready: Notify::new(), startup_error: Default::default(), placement: Mutex::new("null".into()), floating: watch::channel(None).0 }
     }
 }
 
@@ -82,8 +102,14 @@ impl GeometryService {
             None => {
                 windows.remove(uuid);
                 self.0.minimized.lock().unwrap().remove(uuid);
+                self.0.identities.lock().unwrap().remove(uuid);
             }
         }
+    }
+
+    /// The class and title of a window (sent when it appears and when its title changes).
+    fn identity(&self, uuid: &str, class: &str, caption: &str) {
+        self.0.identities.lock().unwrap().insert(uuid.to_owned(), (class.to_owned(), caption.to_owned()));
     }
 
     /// The active window changed. `own`: it is a LipaX window; the user is only configuring, the game still counts as in use.
@@ -217,6 +243,11 @@ impl ClientGeometry {
         self.state.windows.lock().unwrap().get(uuid).copied()
     }
 
+    /// The window now running as `class` / `caption`, other than `gone` (see [`pick_window`]).
+    pub fn find(&self, class: &str, caption: &str, gone: &str) -> Option<String> {
+        pick_window(&self.state.identities.lock().unwrap(), class, caption, gone)
+    }
+
     /// Whether the window can be seen and used: it exists, is not minimised and has the focus (or a LipaX window has it).
     /// `None`: KWin does not know the window (closed).
     pub fn is_active(&self, uuid: &str) -> Option<bool> {
@@ -287,6 +318,25 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "requires an active KWin Wayland session"]
+    async fn kwin_script_reports_the_class_and_title_of_real_windows() {
+        let tracker = ClientGeometry::connect().await.expect("KWin script should announce Ready");
+        // The script sends the identities right after Ready; give the D-Bus calls a moment to arrive.
+        for _ in 0..50 {
+            if !tracker.state.identities.lock().unwrap().is_empty() { break; }
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        }
+        let known = tracker.state.identities.lock().unwrap().clone();
+        eprintln!("{} windows known: {:?}", known.len(), known.values().take(5).collect::<Vec<_>>());
+        assert!(!known.is_empty(), "no window identity arrived");
+        // Every window that has a geometry has an identity, and a window is found by its own class and title.
+        let (uuid, (class, caption)) = known.iter().find(|(_, (c, _))| !SHARED_CLASSES.contains(&c.as_str())).expect("a window of a named class");
+        assert_eq!(tracker.find(class, caption, "gone").as_deref().map(|u| known[u].0.as_str()), Some(class.as_str()), "{uuid}");
+        drop(tracker);
+        shutdown().await;
+    }
+
+    #[tokio::test]
+    #[ignore = "requires an active KWin Wayland session"]
     async fn kwin_script_loads_and_consumes_the_focus_guard_over_dbus() {
         let tracker = ClientGeometry::connect().await.expect("KWin script should announce Ready");
         arm_floating_focus_restore();
@@ -343,6 +393,44 @@ mod tests {
         assert_eq!(moved.frame, moved.client, "invalid frame falls back to the client area");
         service.update("game", "null");
         assert!(!state.windows.lock().unwrap().contains_key("game"));
+    }
+
+    fn identities(list: &[(&str, &str, &str)]) -> HashMap<String, (String, String)> {
+        list.iter().map(|(u, c, t)| (u.to_string(), (c.to_string(), t.to_string()))).collect()
+    }
+
+    #[test]
+    fn a_restarted_game_is_found_again_by_class_and_title() {
+        let windows = identities(&[("new", "steam_app_default", "CrossxMars"), ("other", "steam_app_default", "Hold Me Tight"), ("term", "konsole", "~")]);
+        assert_eq!(pick_window(&windows, "steam_app_default", "CrossxMars", "old").as_deref(), Some("new"));
+        // The dead uuid itself is never the answer, and two identical windows are not guessed between.
+        assert_eq!(pick_window(&windows, "steam_app_default", "CrossxMars", "new"), None);
+        let twins = identities(&[("a", "steam_app_default", "Game"), ("b", "steam_app_default", "Game")]);
+        assert_eq!(pick_window(&twins, "steam_app_default", "Game", "old"), None);
+    }
+
+    #[test]
+    fn a_changed_title_is_followed_only_for_a_class_that_names_one_program() {
+        let windows = identities(&[("new", "steam_app_1234", "Level 2"), ("term", "konsole", "~")]);
+        assert_eq!(pick_window(&windows, "steam_app_1234", "Level 1", "old").as_deref(), Some("new"));
+        // A shared class (every Proton game without an id) would pick some other game.
+        let shared = identities(&[("other", "steam_app_default", "Another game")]);
+        assert_eq!(pick_window(&shared, "steam_app_default", "CrossxMars", "old"), None);
+        // Several windows of the class: no guess.
+        let many = identities(&[("a", "steam_app_1234", "Menu"), ("b", "steam_app_1234", "Level 2")]);
+        assert_eq!(pick_window(&many, "steam_app_1234", "Level 1", "old"), None);
+        assert_eq!(pick_window(&windows, "firefox", "x", "old"), None);
+    }
+
+    #[test]
+    fn identities_follow_the_windows_the_script_reports() {
+        let state = Arc::new(State::default());
+        let service = GeometryService(state.clone());
+        service.identity("game", "steam_app_default", "CrossxMars");
+        service.identity("game", "steam_app_default", "CrossxMars — level 2");
+        assert_eq!(state.identities.lock().unwrap()["game"].1, "CrossxMars — level 2", "a new title replaces the old one");
+        service.update("game", "null");
+        assert!(state.identities.lock().unwrap().is_empty(), "a closed window is forgotten");
     }
 
     #[test]

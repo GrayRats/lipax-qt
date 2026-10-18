@@ -145,7 +145,7 @@ impl AnyCapture {
         if portal::is_portal_window(window) {
             self.portal.grab_full().await
         } else {
-            self.kwin().await?.grab_window(&window.uuid).await
+            self.kwin().await?.grab_window_of(window).await
         }
     }
 }

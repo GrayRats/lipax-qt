@@ -349,21 +349,23 @@ impl BlockDetector {
         (blocks, report)
     }
 
-    fn local_blocks(&self, img: &RgbaImage, mask: &mut InkMask, existing: &[DetectedTextBlock]) -> Vec<DetectedTextBlock> {
-        let (w, h) = (mask.w, mask.h);
-        let (fw, fh) = (w as f32, h as f32);
-        if w < 32 || h < 32 { return Vec::new(); }
+    /// The local-contrast candidates of one colour plane (0 brightness, 1 red, 2 blue), both polarities in order: the
+    /// mask and the blocks of text-like lines found in it. Pure: nothing here depends on what other planes found, so the
+    /// planes are searched on separate threads and the choice between candidates (which does depend on the order) is
+    /// made afterwards.
+    fn local_candidates(&self, img: &RgbaImage, plane: usize, w: usize, h: usize) -> Vec<(InkMask, Vec<DetectedTextBlock>)> {
+        let fh = h as f32;
+        let fw = w as f32;
+        let pixels = img.as_raw().as_chunks::<4>().0;
         // Brightness first; then the red and blue planes, in which tinted text on a glowing panel of another
         // tint (blue on light blue) stands out far more than it does in brightness.
-        let pixels = img.as_raw().as_chunks::<4>().0;
-        let planes: [Vec<u8>; 3] = [pixels.iter().map(|p| luma(p)).collect(), pixels.iter().map(|p| p[0]).collect(), pixels.iter().map(|p| p[2]).collect()];
-        let mut accepted: Vec<DetectedTextBlock> = Vec::new();
-        for local in planes.iter().flat_map(|plane| super::local_ink::contrast_masks(plane, w, h)) {
-            let covered = |candidate: &DetectedTextBlock, blocks: &[DetectedTextBlock]| {
-                blocks.iter().any(|b| b.rect.expand(0.5 * b.line_height().max(4.0), fw, fh).contains(&candidate.rect))
-                    || candidate.lines.iter().all(|line| blocks.iter().flat_map(|b| &b.lines).any(|existing|
-                        existing.rect.expand(0.5 * existing.rect.h.max(4.0), fw, fh).contains(&line.rect)))
-            };
+        let values: Vec<u8> = match plane {
+            0 => pixels.iter().map(|p| luma(p)).collect(),
+            1 => pixels.iter().map(|p| p[0]).collect(),
+            _ => pixels.iter().map(|p| p[2]).collect(),
+        };
+        let mut found = Vec::new();
+        for local in super::local_ink::contrast_masks(&values, w, h) {
             let comps: Vec<Component> = components(&local).into_iter()
                 .filter(|c| c.pixels >= 6 && local_glyph_like(c, fh))
                 .collect();
@@ -373,8 +375,31 @@ impl BlockDetector {
             // contains a full text-like row; standalone noise stays rejected.
             let lines: Vec<TextLine> = self.lines_from(img, &local, comps, fw, 0).into_iter()
                 .filter(|line| text_like_line_min(line, 3)).collect();
-            for block in self.blocks_from_lines_by_glyph_height(lines, true) {
-                if !block.lines.iter().any(text_like_line) { continue; }
+            let blocks: Vec<DetectedTextBlock> = self.blocks_from_lines_by_glyph_height(lines, true).into_iter()
+                .filter(|block| block.lines.iter().any(text_like_line)).collect();
+            found.push((local, blocks));
+        }
+        found
+    }
+
+    fn local_blocks(&self, img: &RgbaImage, mask: &mut InkMask, existing: &[DetectedTextBlock]) -> Vec<DetectedTextBlock> {
+        let (w, h) = (mask.w, mask.h);
+        let (fw, fh) = (w as f32, h as f32);
+        if w < 32 || h < 32 { return Vec::new(); }
+        // The three planes are independent: one thread each, so the frame is not walked six times in a row on one core.
+        let candidates: Vec<Vec<(InkMask, Vec<DetectedTextBlock>)>> = std::thread::scope(|scope| {
+            let workers: Vec<_> = (0..3).map(|plane| scope.spawn(move || self.local_candidates(img, plane, w, h))).collect();
+            workers.into_iter().map(|worker| worker.join().expect("local-contrast search panicked")).collect()
+        });
+        let mut accepted: Vec<DetectedTextBlock> = Vec::new();
+        // In the order the planes and polarities were searched before (the later candidate yields to the earlier).
+        for (local, blocks) in candidates.into_iter().flatten() {
+            let covered = |candidate: &DetectedTextBlock, blocks: &[DetectedTextBlock]| {
+                blocks.iter().any(|b| b.rect.expand(0.5 * b.line_height().max(4.0), fw, fh).contains(&candidate.rect))
+                    || candidate.lines.iter().all(|line| blocks.iter().flat_map(|b| &b.lines).any(|existing|
+                        existing.rect.expand(0.5 * existing.rect.h.max(4.0), fw, fh).contains(&line.rect)))
+            };
+            for block in blocks {
                 // Deduplicate complete text candidates. Removing covered
                 // letters before line reconstruction perpetuated fragmented
                 // global detections and made complete OCR crops impossible.

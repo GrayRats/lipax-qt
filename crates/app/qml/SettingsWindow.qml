@@ -2920,6 +2920,17 @@ ApplicationWindow {
                         onToggled: win.setInplace("click_through", checked)
                     }
                     FieldLabel {
+                        helpText: "Кнопки и пункты меню самой игры («SAVE», «LOAD», «Options») остаются как есть: их не читают и не переводят, поверх них ничего не рисуется. По умолчанию выключено: варианты ответа в диалоге похожи на кнопки, и их обычно нужно переводить."
+                        text: "Не переводить кнопки и пункты меню"
+                        helpControl: skipControlsSwitch
+                    }
+                    Switch {
+                        id: skipControlsSwitch
+                        objectName: "skipControls"
+                        checked: !!win.inplace().skip_controls
+                        onToggled: win.setInplace("skip_controls", checked)
+                    }
+                    FieldLabel {
                         text: "Фон под переводом"
                         helpText: "Выбирает способ закрыть исходный текст: восстановление фона, заливка или прозрачный фон с обводкой. Авто учитывает изображение игры; пример использует условную однотонную сцену."
                     }

@@ -379,6 +379,9 @@ struct RegionState {
     dirty_since: Option<Instant>,
     /// Первое изменение после последнего OCR.
     dirty_first: Option<Instant>,
+    /// This tick is read although the frame never settled (`MAX_UNSTABLE` passed): the fields whose text is still
+    /// being typed out are then held back by the layout engine.
+    unsettled: bool,
     last_attempt: Option<Instant>,
     retry_at: Option<Instant>,
     first_error: Option<Instant>,
@@ -878,6 +881,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         tracing::debug!(target: "pipeline.capture", region = %region.id, width = frame.width(), height = frame.height(), inplace, "capture frame received");
         self.timings.record("capture", grabbed.elapsed());
         let mut detected = false;
+        state.unsettled = false;
         if !force && !retry && !rescan {
             detected = true;
             let detecting = Instant::now();
@@ -896,6 +900,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             }
             state.dirty_since = None;
             state.dirty_first = None;
+            state.unsettled = !settled;
             // В кадре нет ничего похожего на текст: OCR не запускаем. Поля «поверх оригинала»
             // всё равно обновляются: пропавший текст должен погаснуть.
             if !state.detector.has_text() && !inplace {
@@ -992,6 +997,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let seeded = (!detected && state.stale < MAX_STALE).then(|| Self::seeded_probe(s, &frame));
         let engine = state.inplace.get_or_insert_with(Default::default);
         let laying_out = Instant::now();
+        engine.set_unsettled(state.unsettled);
         let jobs = engine.begin(frame, s, now, force);
         tracing::debug!(target: "pipeline.inplace", region = %region.id, stage = "detection", ocr_jobs = jobs.len(), "inplace frame analyzed");
         self.timings.record("layout", laying_out.elapsed());
@@ -2357,15 +2363,14 @@ mod tests {
         let (tx, mut rx) = mpsc::unbounded_channel();
         let t0 = Instant::now();
         p.tick(&inplace_settings(), false, t0, &tx).await;
-        let started = std::time::Instant::now();
         p.tick(&inplace_settings(), false, t0 + Duration::from_millis(150), &tx).await;
-        let elapsed = started.elapsed();
         let frame = drain(&mut rx).into_iter().find_map(|e| match e { Event::Inplace { frame, .. } => Some(frame), _ => None }).expect("fields");
         assert_eq!(frame.blocks.len(), 3, "three fields translated");
         assert!(frame.blocks.iter().all(|b| b.translation.starts_with("RU:Line number")));
+        // Concurrency is measured by the number of readings in flight at once, not by the clock: the tick also lays the
+        // fields out, and how long that takes depends on the machine's load.
         let peak = peak.load(Ordering::SeqCst);
         assert!((2..=FIELD_CONCURRENCY).contains(&peak), "peak concurrency {peak}");
-        assert!(elapsed < Duration::from_millis(3 * 40 + 200), "slower than sequential: {elapsed:?}");
     }
 
     #[tokio::test]

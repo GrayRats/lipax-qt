@@ -103,6 +103,9 @@ fn lines_within(m: &Measured, line_height: f32, height: f32) -> u32 {
 const FIT_EPS: f32 = 0.01;
 /// Width kept free at the end of every line, as a share of the font size.
 const WIDTH_SLACK: f32 = 0.02;
+/// The line step taken from the original never drops below this many font sizes: games set dense dialogue whose lines
+/// almost touch, and a translation drawn that tight (or squeezed to it to make the text fit) is hard to read.
+const MIN_LINE_STEP: f32 = 1.15;
 
 pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> FitResult {
     let (w, h) = (input.width.max(1.0), input.height.max(1.0));
@@ -123,9 +126,14 @@ pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> Fi
         let m = measure.measure("Hg", font, px, 0.0, f32::MAX, WrapMode::NoWrap);
         match (input.manual_line_height, input.source_line_px) {
             (Some(v), _) => v,
-            (None, Some(src)) if m.line_spacing > 0.0 => (src / m.line_spacing).clamp(0.85, 2.0),
+            (None, Some(src)) if m.line_spacing > 0.0 => (src.max(MIN_LINE_STEP * px) / m.line_spacing).clamp(0.85, 2.0),
             _ => 1.0,
         }
+    };
+    // The lowest multiplier of the automatic line height: the dense-text floor when the step comes from the original.
+    let lowest_lh = |px: f32, font: &FontSpec| {
+        let m = measure.measure("Hg", font, px, 0.0, f32::MAX, WrapMode::NoWrap);
+        if input.source_line_px.is_some() && m.line_spacing > 0.0 { (MIN_LINE_STEP * px / m.line_spacing).clamp(0.9, 2.0) } else { 0.9 }
     };
     let mut line_height = natural_lh(start, &input.font);
     let mut spacing = input.letter_spacing;
@@ -153,9 +161,10 @@ pub fn fit_translation_to_box(input: &FitInput, measure: &dyn TextMeasure) -> Fi
         let (ok, m) = try_size(&input.font, start, line_height, spacing, wrap);
         if ok { return done(&input.font, start, line_height, spacing, wrap, false, &m); }
     }
-    // 3. Межстрочный интервал (автоматический) — до 0.9.
-    if input.manual_line_height.is_none() && line_height > 0.9 {
-        line_height = (line_height - 0.15).max(0.9);
+    // 3. Межстрочный интервал (автоматический) — до 0.9, а при шаге из оригинала — до 1.15 кегля.
+    let floor = lowest_lh(start, &input.font);
+    if input.manual_line_height.is_none() && line_height > floor {
+        line_height = (line_height - 0.15).max(floor);
         let (ok, m) = try_size(&input.font, start, line_height, spacing, wrap);
         if ok { return done(&input.font, start, line_height, spacing, wrap, false, &m); }
     }
@@ -253,6 +262,23 @@ mod tests {
         let m = ApproxMeasure.measure(text, &input(text, 0.0, 0.0).font, r.font_px, r.letter_spacing, 300.0, r.wrap_mode);
         assert!(m.width <= 300.5 && text_height(&m, r.line_height) <= 60.5, "fits: {m:?}");
         assert!(r.letter_spacing >= -0.04 * r.font_px - 1e-3, "no destructive tracking");
+    }
+
+    #[test]
+    fn a_dense_source_never_makes_the_translation_tighter_than_1_15_font_sizes() {
+        let text = "Where are you going so late at night, stranger? Follow me.";
+        let step = |r: &FitResult| r.line_height * ApproxMeasure.measure("Hg", &input(text, 0.0, 0.0).font, r.font_px, 0.0, f32::MAX, WrapMode::NoWrap).line_spacing;
+        // Source lines 16 px apart (almost touching for a 20 px cap-height font): roomy box, then a box so low that
+        // the lines would be squeezed before the font shrinks.
+        for (w, h) in [(300.0, 120.0), (300.0, 52.0)] {
+            let dense = FitInput { source_line_px: Some(16.0), ..input(text, w, h) };
+            let r = fit_translation_to_box(&dense, &ApproxMeasure);
+            assert!(step(&r) >= MIN_LINE_STEP * r.font_px - 0.01, "{w}x{h}: step {} for {}px: {r:?}", step(&r), r.font_px);
+        }
+        // A roomy source keeps its own step.
+        let roomy = FitInput { source_line_px: Some(40.0), ..input(text, 300.0, 200.0) };
+        let r = fit_translation_to_box(&roomy, &ApproxMeasure);
+        assert!(step(&r) >= 40.0 - 0.01, "{r:?}");
     }
 
     #[test]

@@ -14,6 +14,10 @@ function sendFocus() {
 }
 function watchWindow(window) {
     const uuid = window.internalId.toString();
+    // Who the window is (class and title): after the game is restarted it has a new uuid, and LipaX finds it again by this.
+    function sendIdentity() { send("Identity", uuid, String(window.resourceClass), String(window.caption)); }
+    if (window.captionChanged) window.captionChanged.connect(sendIdentity);
+    sendIdentity();
     function sendMinimized() { send("Minimized", uuid, !!window.minimized); }
     if (window.minimizedChanged) window.minimizedChanged.connect(sendMinimized);
     sendMinimized();
