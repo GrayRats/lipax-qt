@@ -19,14 +19,10 @@ LipaX captures the selected game window, recognizes the text and shows the trans
 
 </div>
 
-![LipaX main window](docs/screenshots/main.png)
-
-<details>
-<summary>Translation appearance settings</summary>
-
-![LipaX settings — translation appearance](docs/screenshots/settings.png)
-
-</details>
+<p align="center">
+  <img src="docs/screenshots/ui/main-window.png" width="46%" alt="LipaX main window">
+  <img src="docs/screenshots/ui/settings-translation.png" width="52%" alt="Settings: translation">
+</p>
 
 <a id="features"></a>
 ## Features
@@ -42,6 +38,41 @@ LipaX captures the selected game window, recognizes the text and shows the trans
 - **Control without switching windows.** Configurable hotkeys and a system tray. With minimize-to-tray enabled, translation keeps running after the main window is closed.
 - **History and OCR checks.** A history of originals and translations with copy, a view of the recognized text, manual image filters and automatic frame processing.
 - **Diagnostics.** The Status tab shows whether the engines, models and capture components are ready. The log helps with errors.
+- **Overlay that follows the dialogue.** A field is not read while its text is still being typed. After a relaunch the game window is found again by its class and title, and speaker names and menu buttons can be left in the original language.
+
+### Screenshots
+
+<table>
+<tr>
+<td align="center"><img src="docs/screenshots/ui/settings-capture.png" alt="Capture source and regions" width="300"><br><sub>Capture source and regions</sub></td>
+<td align="center"><img src="docs/screenshots/ui/settings-recognition.png" alt="Text recognition" width="300"><br><sub>Text recognition</sub></td>
+<td align="center"><img src="docs/screenshots/ui/settings-translation.png" alt="Translation" width="300"><br><sub>Translation</sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/screenshots/ui/settings-appearance.png" alt="Translation appearance" width="300"><br><sub>Translation appearance</sub></td>
+<td align="center"><img src="docs/screenshots/ui/settings-status.png" alt="Status" width="300"><br><sub>Status: engines and components</sub></td>
+<td align="center"><img src="docs/screenshots/ui/main-window.png" alt="Main window" width="300"><br><sub>Main window</sub></td>
+</tr>
+</table>
+
+### Game tests
+
+Results from live runs: the captured game window, text recognized and translated to Russian, overlaid in place of the original.
+
+<p align="center">
+  <img src="docs/screenshots/game/hold-me-tight-overlay.png" width="90%" alt="Overlay in Hold Me Tight All Night, Onii-chan!">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/game/crossxmars-overlay.png" width="90%" alt="Overlay in CrossxMars">
+</p>
+
+Sequences of several dialogue transitions in the same runs:
+
+<p align="center">
+  <img src="docs/screenshots/game/hold-me-tight-transitions.png" width="45%" alt="Hold Me Tight: transitions">
+  <img src="docs/screenshots/game/crossxmars-transitions.png" width="45%" alt="CrossxMars: transitions">
+</p>
 
 <a id="details"></a>
 ## Details

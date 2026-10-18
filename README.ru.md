@@ -19,14 +19,10 @@ LipaX захватывает выбранное окно игры, распоз�
 
 </div>
 
-![Главное окно LipaX](docs/screenshots/main.png)
-
-<details>
-<summary>Настройки внешнего вида перевода</summary>
-
-![Настройки LipaX — внешний вид перевода](docs/screenshots/settings.png)
-
-</details>
+<p align="center">
+  <img src="docs/screenshots/ui/main-window.png" width="46%" alt="Главное окно LipaX">
+  <img src="docs/screenshots/ui/settings-translation.png" width="52%" alt="Настройки: перевод">
+</p>
 
 <a id="возможности"></a>
 ## Возможности
@@ -42,6 +38,41 @@ LipaX захватывает выбранное окно игры, распоз�
 - **Управление без переключения окон.** Настраиваемые горячие клавиши и системный трей. При сворачивании в трей перевод продолжается после закрытия главного окна.
 - **История и проверка OCR.** История оригиналов и переводов с копированием, просмотр распознанного текста, ручные фильтры изображения и автоподбор обработки кадра.
 - **Диагностика.** Вкладка «Статус» показывает готовность движков, моделей и компонентов захвата. Журнал помогает разобраться с ошибками.
+- **Наложение, которое следует за диалогом.** Поле не читается, пока его текст ещё печатается. После перезапуска игры окно находится заново по классу и заголовку, а имена персонажей и кнопки меню можно оставить на языке оригинала.
+
+### Скриншоты
+
+<table>
+<tr>
+<td align="center"><img src="docs/screenshots/ui/settings-capture.png" alt="Источник захвата и области" width="300"><br><sub>Источник захвата и области</sub></td>
+<td align="center"><img src="docs/screenshots/ui/settings-recognition.png" alt="Распознавание текста" width="300"><br><sub>Распознавание текста</sub></td>
+<td align="center"><img src="docs/screenshots/ui/settings-translation.png" alt="Перевод" width="300"><br><sub>Перевод</sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/screenshots/ui/settings-appearance.png" alt="Оформление перевода" width="300"><br><sub>Оформление перевода</sub></td>
+<td align="center"><img src="docs/screenshots/ui/settings-status.png" alt="Статус" width="300"><br><sub>Статус: движки и компоненты</sub></td>
+<td align="center"><img src="docs/screenshots/ui/main-window.png" alt="Главное окно" width="300"><br><sub>Главное окно</sub></td>
+</tr>
+</table>
+
+### Игровые тесты
+
+Результаты живых прогонов: захваченное окно игры, распознанный текст, переведённый на русский и наложенный вместо оригинала.
+
+<p align="center">
+  <img src="docs/screenshots/game/hold-me-tight-overlay.png" width="90%" alt="Наложение в Hold Me Tight All Night, Onii-chan!">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/game/crossxmars-overlay.png" width="90%" alt="Наложение в CrossxMars">
+</p>
+
+Последовательность переходов между репликами в тех же прогонах:
+
+<p align="center">
+  <img src="docs/screenshots/game/hold-me-tight-transitions.png" width="45%" alt="Hold Me Tight: переходы">
+  <img src="docs/screenshots/game/crossxmars-transitions.png" width="45%" alt="CrossxMars: переходы">
+</p>
 
 <a id="подробности"></a>
 ## Подробности
