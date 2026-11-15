@@ -277,3 +277,12 @@
   «nt the» (его раньше поглощала склейка). Откачено, патч: `tmp/agents/coder7/nested_join.patch`.
 - Направление на потом: для вложенных полей не перечитывать склейку, а выбирать чтение (по уверенности).
 - Добавлен только тест `a_line_of_another_ink_is_a_block_of_its_own_but_a_highlighted_word_is_not` (закрепляет `same_color`).
+
+### Цикл 6 (2026-11-15): A1 и A2, структурные
+- A1: `pipeline.rs` → `pipeline/{mod,state,inplace,preview,tests}.rs` (739 + 216 + 316 + 143 + 1312 строк), публичные пути сохранены
+  через `pub use`; тесты ядра 429, clippy чист, отчёты 16 кадров идентичны.
+- A2: `begin()` в `engine.rs` — 66 строк вместо ~280; выделены `detect_frame`, `regroup`, `cut_reach_above`, `track` и
+  функции на одно поле (`field_signatures`, `field_typing`, `field_ocr_state`, `probe_font`, `field_background`,
+  `field_typography`, `ocr_job`). Отчёты идентичны (0 расхождений из 16 кадров), время `begin()` за 34 вызова: 2114 мс до,
+  2121–2137 мс после — в пределах шума (разброс 20–37 мс), ускорения нет и не заявлялось.
+- Остаётся: A4 (повторное использование масок) — по результатам замера; «TR-1», «Uncommon».

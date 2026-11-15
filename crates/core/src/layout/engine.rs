@@ -299,6 +299,18 @@ impl Drop for RefiningThread {
     }
 }
 
+/// The stage times of one `begin`: each lap is the time since the previous one.
+struct Laps {
+    stage: Instant,
+    timings: Vec<(&'static str, std::time::Duration)>,
+}
+impl Laps {
+    fn lap(&mut self, name: &'static str) {
+        self.timings.push((name, self.stage.elapsed()));
+        self.stage = Instant::now();
+    }
+}
+
 /// A field still being typed is read this long after its ink last grew, at most `TYPING_MAX` from the first growth.
 const TYPING_MAX: std::time::Duration = std::time::Duration::from_secs(8);
 
@@ -341,6 +353,202 @@ fn preferences(s: &Settings) -> FontPreferences {
         .filter_map(|(k, v)| serde_json::from_value::<FontCategory>(serde_json::Value::String(k.clone())).ok().map(|c| (c, v.clone())))
         .collect();
     FontPreferences { category_overrides, preferred: s.appearance.inplace.preferred_fonts.clone() }
+}
+
+/// What every field of one `begin` is prepared from: the frame, its ink mask and blocks, and what changed since the last
+/// frame.
+struct FrameContext<'a> {
+    image: &'a RgbaImage,
+    mask: &'a InkMask,
+    detected: &'a [DetectedTextBlock],
+    now: Instant,
+    s: &'a Settings,
+    fw: f32,
+    fh: f32,
+    frame_changed: bool,
+    recognition_changed: bool,
+    unsettled: bool,
+    force: bool,
+    bg_changed: bool,
+}
+
+/// Stage 5a of `begin`: the content and ink signatures of a field; a translated field whose text changed is made stale.
+/// Returns the signatures and the time they took.
+fn field_signatures(t: &mut TrackedTextBlock, d: &DetectedTextBlock, frame: &FrameContext, ocr_dirty: &mut bool)
+    -> (Vec<u8>, Vec<bool>, std::time::Duration) {
+    let mut took = std::time::Duration::ZERO;
+    let started = Instant::now();
+    let signature = content_signature(frame.image, &d.rect);
+    took += started.elapsed();
+    // The text under a translated field changed (a new dialogue): the old translation goes at once, not
+    // when the new one is ready.
+    let started = Instant::now();
+    let ink = ink_signature(frame.mask, &d.rect);
+    took += started.elapsed();
+    if !t.translated_text.is_empty() && !t.stale && !t.ink_signature.is_empty() && ink_distance(&ink, &t.ink_signature) > INK_STALE {
+        tracing::debug!(target: "inplace.stale", block_id = t.id, distance = ink_distance(&ink, &t.ink_signature), "the text under the field changed: its translation is withdrawn until the new text is read");
+        t.stale = true;
+        t.revision += 1;
+        *ocr_dirty = true;
+    }
+    (signature, ink, took)
+}
+
+/// Stage 5b of `begin`: whether the text of a field is still being typed (it is then not read on an unsettled frame).
+/// Returns that and the time the ink count took.
+fn field_typing(t: &mut TrackedTextBlock, d: &DetectedTextBlock, frame: &FrameContext) -> (bool, std::time::Duration) {
+    // A field seen for the first time on a frame that never settled may be half printed: it waits one frame to
+    // show whether it grows.
+    let unseen = t.typing.unseen();
+    let started = Instant::now();
+    t.typing.observe(ink_area(frame.mask, &d.rect), frame.now);
+    let took = started.elapsed();
+    let settle = std::time::Duration::from_millis(frame.s.recognition.debounce_ms.max(300));
+    let holding = t.typing.holding(frame.now, settle, TYPING_MAX);
+    (frame.unsettled && !frame.force && (unseen || holding), took)
+}
+
+/// Stage 5c of `begin`: an earlier reading of a field is dropped when its source changed, or moved with the field; then
+/// where its glyphs are and whether it is due for OCR.
+fn field_ocr_state(t: &mut TrackedTextBlock, d: &DetectedTextBlock, lh: f32, signature: &[u8], frame: &FrameContext,
+    joins: &[JoinMemory], ocr_dirty: &mut bool) -> (Rect, bool) {
+    let mut ocr_invalidated = false;
+    if let Some(old) = t.ocr_detector_rect {
+        // A union can retain the old track id and almost the same sampled signature.
+        // Its new source pixels still require a complete reading, even at high IoU.
+        let regrouped = old != d.rect && joins.iter().any(|m| {
+            let union = m.members.iter().skip(1).fold(m.members[0], |r, b| r.union(b));
+            union.iou(&d.rect) >= 0.8 && m.members.iter().any(|r| r.iou(&old) >= 0.5)
+        });
+        if frame.frame_changed || frame.recognition_changed || regrouped || old.iou(&d.rect) < 0.8 || signature_changed(signature, &t.content_signature) {
+            t.ocr_field = None;
+            t.ocr_detector_rect = None;
+            t.ocr_owner = None;
+            t.ocr_bounds = None;
+            t.refined_rect = None;
+            t.ocr_lines = None;
+            *ocr_dirty = true;
+            ocr_invalidated = true;
+        } else if old != d.rect {
+            let (dx,dy) = (d.rect.x-old.x,d.rect.y-old.y);
+            if let Some(field) = &mut t.ocr_field { field.translate(dx,dy); }
+            for rect in [&mut t.ocr_bounds, &mut t.refined_rect].into_iter().flatten() { rect.x += dx; rect.y += dy; }
+            if let Some(rows) = &mut t.ocr_lines { for rect in rows { rect.x += dx; rect.y += dy; } }
+            t.ocr_detector_rect = Some(d.rect);
+            *ocr_dirty = true;
+        }
+    }
+    // Содержимое поля изменилось — распознать заново.
+    // Where the glyphs are: the OCR lines' boundary while it agrees with the detected block.
+    // Cached bounds already include the OCR ink margin: validate, do not pad again.
+    let rect = t.ocr_field.as_ref().map(|f| t.ocr_bounds.unwrap_or_else(|| {
+            let r = f.bounds(); Rect::new(r.x-1.0,r.y-1.0,r.w+2.0,r.h+2.0)
+        }))
+        .or_else(|| t.ocr_bounds.filter(|b| b.iou(&d.rect) >= LINES_AGREE_IOU
+        && refine_bounds(&[*b], &d.rect, lh).is_some())
+        .map(|r| bounded_refinement(r, &d.rect, frame.detected.iter().map(|b| b.rect)))).unwrap_or(d.rect);
+    t.refined_rect = (rect != d.rect).then_some(rect);
+    let empty_due = t.rejected_ocr_at.map_or_else(|| t.original_text.is_empty(), |last|
+        frame.now.saturating_duration_since(last) >= REJECTED_OCR_TTL);
+    let due = frame.force || frame.frame_changed || frame.recognition_changed || ocr_invalidated || empty_due || signature_changed(signature, &t.content_signature);
+    (rect, due)
+}
+
+/// Stage 5d of `begin`: the appearance of a field is probed again every 500 ms. Returns the time the probe took.
+fn probe_font(t: &mut TrackedTextBlock, d: &DetectedTextBlock, frame: &FrameContext) -> std::time::Duration {
+    // Probe appearance periodically even when OCR reads identical text. Keep the family
+    // stable until two confident probes agree; expensive classification is not per frame.
+    if t.font_analysis.is_none() || t.last_font_probe.is_none_or(|last|
+        frame.now.saturating_duration_since(last) >= std::time::Duration::from_millis(500)) {
+        let started = Instant::now();
+        t.observe_font(FontClassifier.classify(frame.image, frame.mask, d), frame.now);
+        return started.elapsed();
+    }
+    std::time::Duration::ZERO
+}
+
+/// Stage 6 of `begin`: the plate of a field (over `rect`, where its glyphs are) is computed again only when its
+/// surroundings or its size changed or the mode did; a patterned one is finished on its own thread. Returns the time
+/// it took.
+fn field_background(t: &mut TrackedTextBlock, d: &DetectedTextBlock, rect: Rect, lh: f32, frame: &FrameContext,
+    refining_threads: &Arc<std::sync::atomic::AtomicUsize>, refinements: &mut HashMap<u64, (Rect, std::sync::mpsc::Receiver<BackgroundResult>)>)
+    -> std::time::Duration {
+    let (image, mask, s) = (frame.image, frame.mask, frame.s);
+    let mut took = std::time::Duration::ZERO;
+    // Фон — только если он заметно изменился (подвижная сцена) или сменили режим.
+    let margin = BackgroundAnalyzer::margin(lh);
+    let started = Instant::now();
+    let bg_sig = BackgroundAnalyzer::signature(image, &rect, margin);
+    took += started.elapsed();
+    let moved = (t.previous_rect.x - t.current_rect.x).abs() > 3.0 || (t.previous_rect.y - t.current_rect.y).abs() > 3.0;
+    // A field that grew, shrank or was divided in place needs a plate of its new size, even if it did not move
+    // and its surroundings look the same.
+    let reshaped = [(t.background_for.x, rect.x), (t.background_for.y, rect.y), (t.background_for.w, rect.w), (t.background_for.h, rect.h)]
+        .iter().any(|(old, new)| (old - new).abs() > 3.0);
+    if t.background.is_none() || frame.bg_changed || moved || reshaped || t.background_signature.is_none_or(|old| color_distance(old, bg_sig) > 18.0) {
+        let started = Instant::now();
+        let analysis = BackgroundAnalyzer.analyze(image, mask, &rect, margin);
+        // On a patterned background the full fill (an exemplar search, up to a few hundred ms) is computed on
+        // its own thread; the quick one is drawn meanwhile and replaced when it is ready.
+        let quick = BackgroundInpainter.render_quick(image, mask, &rect, lh, analysis.clone(), &s.appearance.inplace, d.block_type);
+        use std::sync::atomic::Ordering::SeqCst;
+        if quick.refinable && refining_threads.load(SeqCst) < MAX_REFINEMENTS {
+            let (frame, ink, settings, block) = (image.clone(), mask.clone(), s.appearance.inplace.clone(), d.block_type);
+            let (sender, receiver) = std::sync::mpsc::channel();
+            let running = refining_threads.clone();
+            running.fetch_add(1, SeqCst);
+            let guard = RefiningThread(running.clone());
+            let spawned = std::thread::Builder::new().name("lipax-background".into()).spawn(move || {
+                let _guard = guard;
+                let _ = sender.send(BackgroundInpainter.render(&frame, &ink, &rect, lh, analysis, &settings, block));
+            });
+            // A thread that could not be started has dropped its guard with the closure: the count is right.
+            if spawned.is_ok() { refinements.insert(t.id, (rect, receiver)); }
+        }
+        let mut quick = quick;
+        // No thread to finish it (too many at once, or none could be started): the quick fill is final.
+        if !refinements.contains_key(&t.id) { quick.refinable = false; }
+        t.background = Some(quick);
+        took += started.elapsed();
+        t.background_for = rect;
+        t.background_signature = Some(bg_sig);
+        t.revision += 1;
+    }
+    took
+}
+
+/// Stage 7 of `begin`: the typography of a field is estimated again for a new field and when its size or number of
+/// lines changed noticeably. Returns the time it took.
+fn field_typography(t: &mut TrackedTextBlock, d: &DetectedTextBlock, frame: &FrameContext) -> std::time::Duration {
+    // Типографика — для нового поля и при заметной смене размера или числа строк.
+    let resized = (t.typography_rect.w - d.rect.w).abs() > 0.1 * d.rect.w || (t.typography_rect.h - d.rect.h).abs() > 0.1 * d.rect.h;
+    // The lines the OCR engine found count while they still lie on the detected block.
+    if t.ocr_field.is_none() && t.ocr_lines.as_ref().is_some_and(|lines| !lines_agree(lines, &d.rect)) {
+        t.ocr_lines = None;
+        t.ocr_bounds = None;
+        t.refined_rect = None;
+        t.lines_note = "строки по детектору: геометрия OCR больше не совпадает с блоком".into();
+    }
+    let expected_lines = t.ocr_lines.as_ref().map_or(d.lines.len(), Vec::len);
+    let relined = t.typography.as_ref().is_some_and(|e| e.lines as usize != expected_lines);
+    if t.typography.is_none() || resized || relined {
+        let started = Instant::now();
+        let bg = t.background.as_ref().map(|b| b.color).unwrap_or([0; 3]);
+        t.typography = Some(TypographyEstimator.estimate_from(d, t.font_analysis.as_ref().unwrap(), bg, frame.fw, t.ocr_lines.as_deref()));
+        t.typography_rect = d.rect;
+        t.revision += 1;
+        return started.elapsed();
+    }
+    std::time::Duration::ZERO
+}
+
+/// Stage 8 of `begin`: the OCR job of a field, its block with a margin cropped from the frame. Returns the job and the
+/// crop (frame pixels).
+fn ocr_job(id: u64, d: &DetectedTextBlock, lh: f32, frame: &FrameContext) -> (OcrJob, Rect) {
+    let image = frame.image;
+    let (x, y, w, h) = d.rect.expand((0.25 * lh).max(3.0), frame.fw, frame.fh).pixels(image.width(), image.height());
+    let job = OcrJob { id, rect: d.rect, origin: (x, y), image: DynamicImage::ImageRgba8(image::imageops::crop_imm(image, x, y, w, h).to_image()) };
+    (job, Rect::new(x as f32, y as f32, w as f32, h as f32))
 }
 
 impl InplaceEngine {
@@ -456,26 +664,87 @@ impl InplaceEngine {
         self.pending_ink.clear();
         self.pending_crops.clear();
         let begun = Instant::now();
-        let mut stage = Instant::now();
-        let mut lap = |name: &'static str, timings: &mut Vec<(&'static str, std::time::Duration)>| { timings.push((name, stage.elapsed())); stage = Instant::now(); };
-        let mut timings: Vec<(&'static str, std::time::Duration)> = Vec::new();
-        let mut mask = BlockDetector::ink_mask(&image);
-        lap("ink mask", &mut timings);
+        let mut laps = Laps { stage: Instant::now(), timings: Vec::new() };
+        let (mut mask, detected) = self.detect_frame(&image, s, now, &mut laps);
+        let mut detected = self.regroup(detected, &image, &mut mask, s, now, frame_changed);
+        self.cut_reach_above(&mut detected);
+        let assignments = self.track(&detected, now, &mut laps);
+        let mut per_field = [std::time::Duration::ZERO; 5];
+        let (fw, fh) = (image.width() as f32, image.height() as f32);
+        let bg_changed = self.applied.background != Fingerprints::of(s).background;
+        let mut jobs = Vec::new();
+        let mut blocks = HashMap::new();
+        let frame = FrameContext { image: &image, mask: &mask, detected: &detected, now, s, fw, fh,
+            frame_changed, recognition_changed, unsettled, force, bg_changed };
+        for a in assignments {
+            let d = &detected[a.detection];
+            let Some(t) = self.tracker.get_mut(a.id) else { continue };
+            let lh = d.line_height();
+            let (signature, ink, took) = field_signatures(t, d, &frame, &mut self.ocr_dirty);
+            per_field[0] += took;
+            self.pending_ink.insert(a.id, ink);
+            let (typing, took) = field_typing(t, d, &frame);
+            per_field[0] += took;
+            let (rect, due) = field_ocr_state(t, d, lh, &signature, &frame, &self.joins, &mut self.ocr_dirty);
+            if due && typing {
+                tracing::debug!(target: "inplace.typing", block_id = a.id, "the text under the field is still being typed: it is read when it stops growing");
+            } else if due {
+                let started = Instant::now();
+                let (job, crop) = ocr_job(a.id, d, lh, &frame);
+                jobs.push(job);
+                self.pending_crops.insert(a.id, crop);
+                // Remembered only when the field is completed (see `complete`): a failed or cancelled
+                // recognition must leave the field due for the next scan.
+                self.pending_signatures.insert(a.id, signature);
+                per_field[1] += started.elapsed();
+            }
+            per_field[2] += probe_font(t, d, &frame);
+            per_field[3] += field_background(t, d, rect, lh, &frame, &self.refining_threads, &mut self.refinements);
+            per_field[4] += field_typography(t, d, &frame);
+            blocks.insert(a.id, d.clone());
+        }
+        for (name, took) in ["signatures and ink", "OCR crops", "font probe", "background", "typography"].into_iter().zip(per_field) { laps.timings.push((name, took)); }
+        laps.lap("fields (all)");
+        if bg_changed { self.applied.background = Fingerprints::of(s).background; }
+        // Поле уже распознано, но шрифт сброшен (явный запрос): выбрать сразу, без нового OCR.
+        let pending: Vec<u64> = self.tracker.blocks().iter()
+            .filter(|t| !t.font_selection_locked() && !t.original_text.is_empty() && t.font_analysis.is_some())
+            .map(|t| t.id).collect();
+        for id in pending { self.lock_font(id, s); }
+        self.snapshot = Some(Snapshot { image, mask, blocks });
+        laps.lap("fonts and snapshot");
+        laps.timings.push(("begin (whole)", begun.elapsed()));
+        self.timings = laps.timings;
+        jobs
+    }
+
+    /// Stage 1 of `begin`: the ink mask of the frame and the blocks the detector finds in it (the report is kept for
+    /// `detection`).
+    fn detect_frame(&mut self, image: &RgbaImage, s: &Settings, now: Instant, laps: &mut Laps) -> (InkMask, Vec<DetectedTextBlock>) {
+        let mut mask = BlockDetector::ink_mask(image);
+        laps.lap("ink mask");
         self.detector.line_gap_factor = s.appearance.inplace.line_gap_factor;
         self.detector.max_blocks = s.appearance.inplace.max_blocks;
-        let (detected, report) = self.detector.detect_with_local(&image, &mut mask);
-        lap("detect blocks", &mut timings);
+        let (detected, report) = self.detector.detect_with_local(image, &mut mask);
+        laps.lap("detect blocks");
         if !report.dropped.is_empty() {
             tracing::warn!(target: "inplace.detect", candidates = report.candidates, dropped = report.dropped.len(), limit = self.detector.max_blocks,
                 "more text blocks than appearance.inplace.max_blocks: the smallest are not read");
         }
         self.detection = report;
         self.last_scan = Some(now);
+        (mask, detected)
+    }
+
+    /// Stage 2 of `begin`: the cuts and joins the OCR engine showed earlier are applied to the detected blocks, and the
+    /// interface the user asked to leave alone is dropped.
+    fn regroup(&mut self, detected: Vec<DetectedTextBlock>, image: &RgbaImage, mask: &mut InkMask, s: &Settings, now: Instant,
+        frame_changed: bool) -> Vec<DetectedTextBlock> {
         if frame_changed { self.joins.clear(); }
         self.pending_joins.clear();
         self.pending_cuts.clear();
         self.joined_aliases.clear();
-        let detected = self.apply_cuts(detected, now, &image, &mut mask);
+        let detected = self.apply_cuts(detected, now, image, mask);
         let mut detected = self.apply_joins(detected, now);
         // The interface of the game, if the user asked to leave it alone: such blocks never become fields.
         let inplace = &s.appearance.inplace;
@@ -486,6 +755,12 @@ impl InplaceEngine {
                 _ => true,
             });
         }
+        detected
+    }
+
+    /// Stage 3 of `begin`: blocks wholly in the strip above the drawn region are dropped, and the line height of text
+    /// cut by the top edge is kept for `cut_at_top`.
+    fn cut_reach_above(&mut self, detected: &mut Vec<DetectedTextBlock>) {
         // The strip added above the drawn region is read only to complete text its edge cut: what lies wholly in it is
         // not a field (and does not ask for more).
         if self.reach_above > 0.0 {
@@ -494,9 +769,13 @@ impl InplaceEngine {
         }
         // Text cut by the top edge of the frame: its upper part is missing ("Mika" reads as "Muka").
         self.cut_at_top = detected.iter().filter(|d| d.rect.y <= EDGE_REACH).map(|d| d.line_height()).reduce(f32::max);
-        let assignments = self.tracker.update(&detected, now);
-        lap("cuts, joins, tracking", &mut timings);
-        let mut per_field = [std::time::Duration::ZERO; 5];
+    }
+
+    /// Stage 4 of `begin`: the tracker matches the blocks to its fields; fields that lingered under a join now answer to
+    /// the joined one.
+    fn track(&mut self, detected: &[DetectedTextBlock], now: Instant, laps: &mut Laps) -> Vec<super::tracker::Assignment> {
+        let assignments = self.tracker.update(detected, now);
+        laps.lap("cuts, joins, tracking");
         for memory in &self.joins {
             let union = memory.members.iter().skip(1).fold(memory.members[0], |r,m| r.union(m));
             if let Some(owner) = assignments.iter().find(|a| detected[a.detection].rect.iou(&union) >= 0.8) {
@@ -506,170 +785,7 @@ impl InplaceEngine {
             }
         }
         self.missing_font_warned.retain(|id| self.tracker.get(*id).is_some());
-        let (fw, fh) = (image.width() as f32, image.height() as f32);
-        let bg_changed = self.applied.background != Fingerprints::of(s).background;
-        let mut jobs = Vec::new();
-        let mut blocks = HashMap::new();
-        for a in assignments {
-            let d = &detected[a.detection];
-            let Some(t) = self.tracker.get_mut(a.id) else { continue };
-            let lh = d.line_height();
-            let started = Instant::now();
-            let signature = content_signature(&image, &d.rect);
-            per_field[0] += started.elapsed();
-            // The text under a translated field changed (a new dialogue): the old translation goes at once, not
-            // when the new one is ready.
-            let started = Instant::now();
-            let ink = ink_signature(&mask, &d.rect);
-            per_field[0] += started.elapsed();
-            if !t.translated_text.is_empty() && !t.stale && !t.ink_signature.is_empty() && ink_distance(&ink, &t.ink_signature) > INK_STALE {
-                tracing::debug!(target: "inplace.stale", block_id = a.id, distance = ink_distance(&ink, &t.ink_signature), "the text under the field changed: its translation is withdrawn until the new text is read");
-                t.stale = true;
-                t.revision += 1;
-                self.ocr_dirty = true;
-            }
-            self.pending_ink.insert(a.id, ink);
-            // A field seen for the first time on a frame that never settled may be half printed: it waits one frame to
-            // show whether it grows.
-            let unseen = t.typing.unseen();
-            let started = Instant::now();
-            t.typing.observe(ink_area(&mask, &d.rect), now);
-            per_field[0] += started.elapsed();
-            let settle = std::time::Duration::from_millis(s.recognition.debounce_ms.max(300));
-            let holding = t.typing.holding(now, settle, TYPING_MAX);
-            let typing = unsettled && !force && (unseen || holding);
-            let mut ocr_invalidated = false;
-            if let Some(old) = t.ocr_detector_rect {
-                // A union can retain the old track id and almost the same sampled signature.
-                // Its new source pixels still require a complete reading, even at high IoU.
-                let regrouped = old != d.rect && self.joins.iter().any(|m| {
-                    let union = m.members.iter().skip(1).fold(m.members[0], |r, b| r.union(b));
-                    union.iou(&d.rect) >= 0.8 && m.members.iter().any(|r| r.iou(&old) >= 0.5)
-                });
-                if frame_changed || recognition_changed || regrouped || old.iou(&d.rect) < 0.8 || signature_changed(&signature, &t.content_signature) {
-                    t.ocr_field = None;
-                    t.ocr_detector_rect = None;
-                    t.ocr_owner = None;
-                    t.ocr_bounds = None;
-                    t.refined_rect = None;
-                    t.ocr_lines = None;
-                    self.ocr_dirty = true;
-                    ocr_invalidated = true;
-                } else if old != d.rect {
-                    let (dx,dy) = (d.rect.x-old.x,d.rect.y-old.y);
-                    if let Some(field) = &mut t.ocr_field { field.translate(dx,dy); }
-                    for rect in [&mut t.ocr_bounds, &mut t.refined_rect].into_iter().flatten() { rect.x += dx; rect.y += dy; }
-                    if let Some(rows) = &mut t.ocr_lines { for rect in rows { rect.x += dx; rect.y += dy; } }
-                    t.ocr_detector_rect = Some(d.rect);
-                    self.ocr_dirty = true;
-                }
-            }
-            // Содержимое поля изменилось — распознать заново.
-            // Where the glyphs are: the OCR lines' boundary while it agrees with the detected block.
-            // Cached bounds already include the OCR ink margin: validate, do not pad again.
-            let rect = t.ocr_field.as_ref().map(|f| t.ocr_bounds.unwrap_or_else(|| {
-                    let r = f.bounds(); Rect::new(r.x-1.0,r.y-1.0,r.w+2.0,r.h+2.0)
-                }))
-                .or_else(|| t.ocr_bounds.filter(|b| b.iou(&d.rect) >= LINES_AGREE_IOU
-                && refine_bounds(&[*b], &d.rect, lh).is_some())
-                .map(|r| bounded_refinement(r, &d.rect, detected.iter().map(|b| b.rect)))).unwrap_or(d.rect);
-            t.refined_rect = (rect != d.rect).then_some(rect);
-            let empty_due = t.rejected_ocr_at.map_or_else(|| t.original_text.is_empty(), |last|
-                now.saturating_duration_since(last) >= REJECTED_OCR_TTL);
-            let due = force || frame_changed || recognition_changed || ocr_invalidated || empty_due || signature_changed(&signature, &t.content_signature);
-            if due && typing {
-                tracing::debug!(target: "inplace.typing", block_id = a.id, "the text under the field is still being typed: it is read when it stops growing");
-            } else if due {
-                let started = Instant::now();
-                let (x, y, w, h) = d.rect.expand((0.25 * lh).max(3.0), fw, fh).pixels(image.width(), image.height());
-                jobs.push(OcrJob { id: a.id, rect: d.rect, origin: (x, y), image: DynamicImage::ImageRgba8(image::imageops::crop_imm(&image, x, y, w, h).to_image()) });
-                self.pending_crops.insert(a.id, Rect::new(x as f32, y as f32, w as f32, h as f32));
-                // Remembered only when the field is completed (see `complete`): a failed or cancelled
-                // recognition must leave the field due for the next scan.
-                self.pending_signatures.insert(a.id, signature);
-                per_field[1] += started.elapsed();
-            }
-            // Probe appearance periodically even when OCR reads identical text. Keep the family
-            // stable until two confident probes agree; expensive classification is not per frame.
-            if t.font_analysis.is_none() || t.last_font_probe.is_none_or(|last|
-                now.saturating_duration_since(last) >= std::time::Duration::from_millis(500)) {
-                let started = Instant::now();
-                t.observe_font(FontClassifier.classify(&image, &mask, d), now);
-                per_field[2] += started.elapsed();
-            }
-            // Фон — только если он заметно изменился (подвижная сцена) или сменили режим.
-            let margin = BackgroundAnalyzer::margin(lh);
-            let started = Instant::now();
-            let bg_sig = BackgroundAnalyzer::signature(&image, &rect, margin);
-            per_field[3] += started.elapsed();
-            let moved = (t.previous_rect.x - t.current_rect.x).abs() > 3.0 || (t.previous_rect.y - t.current_rect.y).abs() > 3.0;
-            // A field that grew, shrank or was divided in place needs a plate of its new size, even if it did not move
-            // and its surroundings look the same.
-            let reshaped = [(t.background_for.x, rect.x), (t.background_for.y, rect.y), (t.background_for.w, rect.w), (t.background_for.h, rect.h)]
-                .iter().any(|(old, new)| (old - new).abs() > 3.0);
-            if t.background.is_none() || bg_changed || moved || reshaped || t.background_signature.is_none_or(|old| color_distance(old, bg_sig) > 18.0) {
-                let started = Instant::now();
-                let analysis = BackgroundAnalyzer.analyze(&image, &mask, &rect, margin);
-                // On a patterned background the full fill (an exemplar search, up to a few hundred ms) is computed on
-                // its own thread; the quick one is drawn meanwhile and replaced when it is ready.
-                let quick = BackgroundInpainter.render_quick(&image, &mask, &rect, lh, analysis.clone(), &s.appearance.inplace, d.block_type);
-                use std::sync::atomic::Ordering::SeqCst;
-                if quick.refinable && self.refining_threads.load(SeqCst) < MAX_REFINEMENTS {
-                    let (frame, ink, settings, block) = (image.clone(), mask.clone(), s.appearance.inplace.clone(), d.block_type);
-                    let (sender, receiver) = std::sync::mpsc::channel();
-                    let running = self.refining_threads.clone();
-                    running.fetch_add(1, SeqCst);
-                    let guard = RefiningThread(running.clone());
-                    let spawned = std::thread::Builder::new().name("lipax-background".into()).spawn(move || {
-                        let _guard = guard;
-                        let _ = sender.send(BackgroundInpainter.render(&frame, &ink, &rect, lh, analysis, &settings, block));
-                    });
-                    // A thread that could not be started has dropped its guard with the closure: the count is right.
-                    if spawned.is_ok() { self.refinements.insert(a.id, (rect, receiver)); }
-                }
-                let mut quick = quick;
-                // No thread to finish it (too many at once, or none could be started): the quick fill is final.
-                if !self.refinements.contains_key(&a.id) { quick.refinable = false; }
-                t.background = Some(quick);
-                per_field[3] += started.elapsed();
-                t.background_for = rect;
-                t.background_signature = Some(bg_sig);
-                t.revision += 1;
-            }
-            // Типографика — для нового поля и при заметной смене размера или числа строк.
-            let resized = (t.typography_rect.w - d.rect.w).abs() > 0.1 * d.rect.w || (t.typography_rect.h - d.rect.h).abs() > 0.1 * d.rect.h;
-            // The lines the OCR engine found count while they still lie on the detected block.
-            if t.ocr_field.is_none() && t.ocr_lines.as_ref().is_some_and(|lines| !lines_agree(lines, &d.rect)) {
-                t.ocr_lines = None;
-                t.ocr_bounds = None;
-                t.refined_rect = None;
-                t.lines_note = "строки по детектору: геометрия OCR больше не совпадает с блоком".into();
-            }
-            let expected_lines = t.ocr_lines.as_ref().map_or(d.lines.len(), Vec::len);
-            let relined = t.typography.as_ref().is_some_and(|e| e.lines as usize != expected_lines);
-            if t.typography.is_none() || resized || relined {
-                let started = Instant::now();
-                let bg = t.background.as_ref().map(|b| b.color).unwrap_or([0; 3]);
-                t.typography = Some(TypographyEstimator.estimate_from(d, t.font_analysis.as_ref().unwrap(), bg, fw, t.ocr_lines.as_deref()));
-                t.typography_rect = d.rect;
-                t.revision += 1;
-                per_field[4] += started.elapsed();
-            }
-            blocks.insert(a.id, d.clone());
-        }
-        for (name, took) in ["signatures and ink", "OCR crops", "font probe", "background", "typography"].into_iter().zip(per_field) { timings.push((name, took)); }
-        lap("fields (all)", &mut timings);
-        if bg_changed { self.applied.background = Fingerprints::of(s).background; }
-        // Поле уже распознано, но шрифт сброшен (явный запрос): выбрать сразу, без нового OCR.
-        let pending: Vec<u64> = self.tracker.blocks().iter()
-            .filter(|t| !t.font_selection_locked() && !t.original_text.is_empty() && t.font_analysis.is_some())
-            .map(|t| t.id).collect();
-        for id in pending { self.lock_font(id, s); }
-        self.snapshot = Some(Snapshot { image, mask, blocks });
-        lap("fonts and snapshot", &mut timings);
-        timings.push(("begin (whole)", begun.elapsed()));
-        self.timings = timings;
-        jobs
+        assignments
     }
 
     /// Applies what the OCR engine showed earlier: a detected block that matches a remembered one is divided
