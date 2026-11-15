@@ -778,32 +778,32 @@ impl InplaceEngine {
     pub fn observe_ocr_result(&mut self, id: u64, result: &crate::ocr::OcrResult,
                               origin: (u32, u32), s: &Settings) -> OcrObservation {
         if result.lines.is_empty() {
-            if let Some(t) = self.tracker.get_mut(id) {
-                if t.ocr_field.take().is_some() {
-                    t.ocr_detector_rect = None;
-                    t.ocr_owner = None;
-                    t.ocr_bounds = None;
-                    t.refined_rect = None;
-                    t.ocr_lines = None;
-                    // A backend without geometry uses the detector again, including its plate.
-                    if let Some((snapshot, d)) = self.snapshot.as_ref().and_then(|snap|
-                        snap.blocks.get(&id).map(|d| (snap, d))) {
-                        let lh = d.line_height();
-                        let margin = BackgroundAnalyzer::margin(lh);
-                        let analysis = BackgroundAnalyzer.analyze(&snapshot.image, &snapshot.mask, &d.rect, margin);
-                        t.background = Some(BackgroundInpainter.render(&snapshot.image, &snapshot.mask, &d.rect, lh,
-                            analysis, &s.appearance.inplace, d.block_type));
-                        t.background_for = d.rect;
-                        t.background_signature = Some(BackgroundAnalyzer::signature(&snapshot.image, &d.rect, margin));
-                        if let Some(font) = &t.font_analysis {
-                            t.typography = Some(TypographyEstimator.estimate(d, font, t.background.as_ref().unwrap().color,
-                                snapshot.image.width() as f32));
-                        }
-                        t.lines_note = "геометрия по детектору: OCR без координат".into();
+            if let Some(t) = self.tracker.get_mut(id)
+                && t.ocr_field.take().is_some()
+            {
+                t.ocr_detector_rect = None;
+                t.ocr_owner = None;
+                t.ocr_bounds = None;
+                t.refined_rect = None;
+                t.ocr_lines = None;
+                // A backend without geometry uses the detector again, including its plate.
+                if let Some((snapshot, d)) = self.snapshot.as_ref().and_then(|snap|
+                    snap.blocks.get(&id).map(|d| (snap, d))) {
+                    let lh = d.line_height();
+                    let margin = BackgroundAnalyzer::margin(lh);
+                    let analysis = BackgroundAnalyzer.analyze(&snapshot.image, &snapshot.mask, &d.rect, margin);
+                    t.background = Some(BackgroundInpainter.render(&snapshot.image, &snapshot.mask, &d.rect, lh,
+                        analysis, &s.appearance.inplace, d.block_type));
+                    t.background_for = d.rect;
+                    t.background_signature = Some(BackgroundAnalyzer::signature(&snapshot.image, &d.rect, margin));
+                    if let Some(font) = &t.font_analysis {
+                        t.typography = Some(TypographyEstimator.estimate(d, font, t.background.as_ref().unwrap().color,
+                            snapshot.image.width() as f32));
                     }
-                    t.revision += 1;
-                    self.ocr_dirty = true;
+                    t.lines_note = "геометрия по детектору: OCR без координат".into();
                 }
+                t.revision += 1;
+                self.ocr_dirty = true;
             }
             return OcrObservation { text: crate::text::normalize(&result.text), verdict: LinesVerdict::Normal };
         }

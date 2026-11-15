@@ -439,8 +439,7 @@ fn replay_game(process: &str) -> lipa_core::layout::engine::InplaceFrame {
     let mut e = InplaceEngine::new();
     let now = std::time::Instant::now();
     let mut last = None;
-    let mut joins = 0;
-    for scan in 0..3 {
+    for (joins, scan) in (0..3).enumerate() {
         let jobs = e.begin(
             image.clone(),
             &s,
@@ -519,7 +518,6 @@ fn replay_game(process: &str) -> lipa_core::layout::engine::InplaceFrame {
             }
             return last;
         }
-        joins += 1;
     }
     panic!("source regrouping kept requesting OCR on an identical frame");
 }

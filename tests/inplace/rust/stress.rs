@@ -11,7 +11,7 @@ fn row(img: &mut RgbaImage, x: u32, y: u32, n: u32, seed: u32) {
     let mut gx = x;
     for i in 0..n {
         let w = 8 + (i * 7 + seed * 3) % 9;
-        let h = if (i + seed) % 3 == 0 { 22 } else { 15 };
+        let h = if (i + seed).is_multiple_of(3) { 22 } else { 15 };
         for yy in y + 22 - h..y + 22 {
             for xx in gx..gx + w {
                 if xx < gx + 3 || xx >= gx + w - 3 || (yy >= y + 11 && yy < y + 14) { img.put_pixel(xx, yy, Rgba([235, 235, 235, 255])); }

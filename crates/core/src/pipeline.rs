@@ -258,7 +258,7 @@ fn field_crops(frame: &image::DynamicImage, s: &Settings) -> Vec<image::DynamicI
     use crate::layout::block_detector::BlockDetector;
     let image = frame.to_rgba8();
     let mut mask = BlockDetector::ink_mask(&image);
-    let detector = BlockDetector { line_gap_factor: s.appearance.inplace.line_gap_factor, max_blocks: s.appearance.inplace.max_blocks, ..BlockDetector::default() };
+    let detector = BlockDetector { line_gap_factor: s.appearance.inplace.line_gap_factor, max_blocks: s.appearance.inplace.max_blocks };
     let mut blocks = detector.detect_with_local(&image, &mut mask).0;
     blocks.sort_by(|a, b| (b.rect.w * b.rect.h).total_cmp(&(a.rect.w * a.rect.h)));
     let (fw, fh) = (image.width() as f32, image.height() as f32);

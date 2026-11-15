@@ -10,6 +10,8 @@ fn canvas(w: u32, h: u32, bg: u8) -> RgbaImage {
 }
 
 /// A row of `n` H letters: height `h`, width `w`, stroke `s`, gap `gap`. Returns the right edge.
+// Test helper: flat geometry arguments read clearer at call sites than a parameter struct.
+#[allow(clippy::too_many_arguments)]
 fn row(img: &mut RgbaImage, x: u32, y: u32, n: u32, w: u32, h: u32, s: u32, gap: u32, ink: u8) -> u32 {
     let mut gx = x;
     for _ in 0..n {
