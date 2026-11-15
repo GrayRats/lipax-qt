@@ -39,12 +39,17 @@ pub async fn shutdown() {
 const SHARED_CLASSES: [&str; 4] = ["steam_app_default", "wine", "explorer.exe", ""];
 
 /// The live window that is the same program as a window that has gone, by `(class, title)`: exactly one match, or none.
-/// A title that changed (a score, a level) is tolerated only for a class that identifies one program, and only if
-/// that class has a single window.
-pub(super) fn pick_window(identities: &HashMap<String, (String, String)>, class: &str, caption: &str, gone: &str) -> Option<String> {
+/// A title that changed (a score, a level) is tolerated when the window of the class runs the same `program` (the
+/// `.exe` under Proton, see `process`), or, for a class that identifies one program, when that class has a single
+/// window.
+pub(super) fn pick_window(identities: &HashMap<String, (String, String)>, programs: &HashMap<String, String>, class: &str, caption: &str, program: &str, gone: &str) -> Option<String> {
     let single = |matches: Vec<&String>| (matches.len() == 1).then(|| matches[0].clone());
     let same_class = || identities.iter().filter(|(uuid, (c, _))| uuid.as_str() != gone && c == class);
     if let Some(found) = single(same_class().filter(|(_, (_, t))| t == caption).map(|(u, _)| u).collect()) {
+        return Some(found);
+    }
+    if !program.is_empty()
+        && let Some(found) = single(same_class().filter(|(u, _)| programs.get(*u).is_some_and(|p| p == program)).map(|(u, _)| u).collect()) {
         return Some(found);
     }
     if SHARED_CLASSES.contains(&class) {
@@ -57,6 +62,8 @@ struct State {
     windows: Mutex<HashMap<String, WindowFrames>>,
     /// `(class, title)` of every window KWin knows.
     identities: Mutex<HashMap<String, (String, String)>>,
+    /// The program of every window whose process could be read (see `process::program_of_pid`).
+    programs: Mutex<HashMap<String, String>>,
     /// The window that has the focus and whether it belongs to LipaX itself (settings, preview, translation window).
     focus: Mutex<(String, bool)>,
     minimized: Mutex<HashSet<String>>,
@@ -70,7 +77,7 @@ struct State {
 
 impl Default for State {
     fn default() -> Self {
-        Self { windows: Default::default(), identities: Default::default(), focus: Default::default(), minimized: Default::default(), ready: Notify::new(), startup_error: Default::default(), placement: Mutex::new("null".into()), floating: watch::channel(None).0 }
+        Self { windows: Default::default(), identities: Default::default(), programs: Default::default(), focus: Default::default(), minimized: Default::default(), ready: Notify::new(), startup_error: Default::default(), placement: Mutex::new("null".into()), floating: watch::channel(None).0 }
     }
 }
 
@@ -103,13 +110,17 @@ impl GeometryService {
                 windows.remove(uuid);
                 self.0.minimized.lock().unwrap().remove(uuid);
                 self.0.identities.lock().unwrap().remove(uuid);
+                self.0.programs.lock().unwrap().remove(uuid);
             }
         }
     }
 
-    /// The class and title of a window (sent when it appears and when its title changes).
-    fn identity(&self, uuid: &str, class: &str, caption: &str) {
+    /// The class, title and process id of a window (sent when it appears and when its title changes).
+    fn identity(&self, uuid: &str, class: &str, caption: &str, pid: &str) {
         self.0.identities.lock().unwrap().insert(uuid.to_owned(), (class.to_owned(), caption.to_owned()));
+        if let Some(program) = pid.trim().parse().ok().and_then(super::process::program_of_pid) {
+            self.0.programs.lock().unwrap().insert(uuid.to_owned(), program);
+        }
     }
 
     /// The active window changed. `own`: it is a LipaX window; the user is only configuring, the game still counts as in use.
@@ -243,9 +254,14 @@ impl ClientGeometry {
         self.state.windows.lock().unwrap().get(uuid).copied()
     }
 
-    /// The window now running as `class` / `caption`, other than `gone` (see [`pick_window`]).
-    pub fn find(&self, class: &str, caption: &str, gone: &str) -> Option<String> {
-        pick_window(&self.state.identities.lock().unwrap(), class, caption, gone)
+    /// The window now running as `class` / `caption` / `program`, other than `gone` (see [`pick_window`]).
+    pub fn find(&self, class: &str, caption: &str, program: &str, gone: &str) -> Option<String> {
+        pick_window(&self.state.identities.lock().unwrap(), &self.state.programs.lock().unwrap(), class, caption, program, gone)
+    }
+
+    /// The program of the window `uuid` (the `.exe` of a game under Proton), once the script has reported it.
+    pub fn program_of(&self, uuid: &str) -> Option<String> {
+        self.state.programs.lock().unwrap().get(uuid).cloned()
     }
 
     /// Whether the window can be seen and used: it exists, is not minimised and has the focus (or a LipaX window has it).
@@ -330,7 +346,11 @@ mod tests {
         assert!(!known.is_empty(), "no window identity arrived");
         // Every window that has a geometry has an identity, and a window is found by its own class and title.
         let (uuid, (class, caption)) = known.iter().find(|(_, (c, _))| !SHARED_CLASSES.contains(&c.as_str())).expect("a window of a named class");
-        assert_eq!(tracker.find(class, caption, "gone").as_deref().map(|u| known[u].0.as_str()), Some(class.as_str()), "{uuid}");
+        assert_eq!(tracker.find(class, caption, "", "gone").as_deref().map(|u| known[u].0.as_str()), Some(class.as_str()), "{uuid}");
+        // The script reports the process of the windows too: their programs are read from /proc.
+        let programs = tracker.state.programs.lock().unwrap().clone();
+        eprintln!("{} programs known: {:?}", programs.len(), programs.values().take(8).collect::<Vec<_>>());
+        assert!(!programs.is_empty(), "no program was read for any window");
         drop(tracker);
         shutdown().await;
     }
@@ -402,35 +422,51 @@ mod tests {
     #[test]
     fn a_restarted_game_is_found_again_by_class_and_title() {
         let windows = identities(&[("new", "steam_app_default", "CrossxMars"), ("other", "steam_app_default", "Hold Me Tight"), ("term", "konsole", "~")]);
-        assert_eq!(pick_window(&windows, "steam_app_default", "CrossxMars", "old").as_deref(), Some("new"));
+        assert_eq!(pick_window(&windows, &HashMap::new(), "steam_app_default", "CrossxMars", "", "old").as_deref(), Some("new"));
         // The dead uuid itself is never the answer, and two identical windows are not guessed between.
-        assert_eq!(pick_window(&windows, "steam_app_default", "CrossxMars", "new"), None);
+        assert_eq!(pick_window(&windows, &HashMap::new(), "steam_app_default", "CrossxMars", "", "new"), None);
         let twins = identities(&[("a", "steam_app_default", "Game"), ("b", "steam_app_default", "Game")]);
-        assert_eq!(pick_window(&twins, "steam_app_default", "Game", "old"), None);
+        assert_eq!(pick_window(&twins, &HashMap::new(), "steam_app_default", "Game", "", "old"), None);
     }
 
     #[test]
     fn a_changed_title_is_followed_only_for_a_class_that_names_one_program() {
         let windows = identities(&[("new", "steam_app_1234", "Level 2"), ("term", "konsole", "~")]);
-        assert_eq!(pick_window(&windows, "steam_app_1234", "Level 1", "old").as_deref(), Some("new"));
+        assert_eq!(pick_window(&windows, &HashMap::new(), "steam_app_1234", "Level 1", "", "old").as_deref(), Some("new"));
         // A shared class (every Proton game without an id) would pick some other game.
         let shared = identities(&[("other", "steam_app_default", "Another game")]);
-        assert_eq!(pick_window(&shared, "steam_app_default", "CrossxMars", "old"), None);
+        assert_eq!(pick_window(&shared, &HashMap::new(), "steam_app_default", "CrossxMars", "", "old"), None);
         // Several windows of the class: no guess.
         let many = identities(&[("a", "steam_app_1234", "Menu"), ("b", "steam_app_1234", "Level 2")]);
-        assert_eq!(pick_window(&many, "steam_app_1234", "Level 1", "old"), None);
-        assert_eq!(pick_window(&windows, "firefox", "x", "old"), None);
+        assert_eq!(pick_window(&many, &HashMap::new(), "steam_app_1234", "Level 1", "", "old"), None);
+        assert_eq!(pick_window(&windows, &HashMap::new(), "firefox", "x", "", "old"), None);
+    }
+
+    #[test]
+    fn a_proton_game_with_a_new_title_is_found_again_by_its_program() {
+        let windows = identities(&[("new", "steam_app_default", "CrossxMars — score 120"), ("other", "steam_app_default", "Hold Me Tight")]);
+        let programs: HashMap<String, String> = [("new", "crossxmars.exe"), ("other", "holdmetight.exe")].into_iter().map(|(u, p)| (u.to_owned(), p.to_owned())).collect();
+        assert_eq!(pick_window(&windows, &programs, "steam_app_default", "CrossxMars", "crossxmars.exe", "old").as_deref(), Some("new"));
+        // Without the program the shared class still refuses to guess.
+        assert_eq!(pick_window(&windows, &programs, "steam_app_default", "CrossxMars", "", "old"), None);
+        // Two windows of the same program: no guess either.
+        let twins: HashMap<String, String> = [("new", "game.exe"), ("other", "game.exe")].into_iter().map(|(u, p)| (u.to_owned(), p.to_owned())).collect();
+        assert_eq!(pick_window(&windows, &twins, "steam_app_default", "Menu", "game.exe", "old"), None);
     }
 
     #[test]
     fn identities_follow_the_windows_the_script_reports() {
         let state = Arc::new(State::default());
         let service = GeometryService(state.clone());
-        service.identity("game", "steam_app_default", "CrossxMars");
-        service.identity("game", "steam_app_default", "CrossxMars — level 2");
+        service.identity("game", "steam_app_default", "CrossxMars", "0");
+        service.identity("game", "steam_app_default", "CrossxMars — level 2", "0");
         assert_eq!(state.identities.lock().unwrap()["game"].1, "CrossxMars — level 2", "a new title replaces the old one");
+        service.identity("me", "lipax", "test", &std::process::id().to_string());
+        assert!(state.programs.lock().unwrap().get("me").is_some_and(|p| !p.is_empty()), "the program of a live process is read");
+        service.update("me", "null");
         service.update("game", "null");
         assert!(state.identities.lock().unwrap().is_empty(), "a closed window is forgotten");
+        assert!(state.programs.lock().unwrap().is_empty());
     }
 
     #[test]

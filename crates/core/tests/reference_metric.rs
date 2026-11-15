@@ -74,7 +74,7 @@ fn position_and_colour_of_the_text_are_measured() {
 #[test]
 fn compression_noise_is_not_a_change() {
     let mut noisy = reference();
-    for (i, p) in noisy.pixels_mut().enumerate() { let n = (i * 7 % 13) as u8; for c in 0..3 { p.0[c] = p.0[c].saturating_add(n / 2); } }
+    for (i, p) in noisy.pixels_mut().enumerate() { let n = (i * 7 % 13) as u8; for v in p.0.iter_mut().take(3) { *v = v.saturating_add(n / 2); } }
     let r = compare(&reference(), &noisy, &reference());
     assert_eq!((r.our_blocks, r.extra_blocks), (0, 0), "{r:?}");
 }

@@ -258,7 +258,7 @@ fn field_crops(frame: &image::DynamicImage, s: &Settings) -> Vec<image::DynamicI
     use crate::layout::block_detector::BlockDetector;
     let image = frame.to_rgba8();
     let mut mask = BlockDetector::ink_mask(&image);
-    let detector = BlockDetector { line_gap_factor: s.appearance.inplace.line_gap_factor, max_blocks: s.appearance.inplace.max_blocks, ..BlockDetector::default() };
+    let detector = BlockDetector { line_gap_factor: s.appearance.inplace.line_gap_factor, max_blocks: s.appearance.inplace.max_blocks };
     let mut blocks = detector.detect_with_local(&image, &mut mask).0;
     blocks.sort_by(|a, b| (b.rect.w * b.rect.h).total_cmp(&(a.rect.w * a.rect.h)));
     let (fw, fh) = (image.width() as f32, image.height() as f32);
@@ -337,8 +337,26 @@ fn translation_context(s: &Settings, text: &str) -> String {
     format!("{service}, «{excerpt}»")
 }
 
+use crate::layout::engine::EDGE_REACH;
+use crate::settings::NormRect;
+
+/// The inspector note for a field cut by the edge of the region: a speaker name cut at the top reads as another word
+/// ("Mika" as "Muka"), and only a larger region helps.
+fn edge_note(rect: &crate::layout::Rect, frame: (u32, u32)) -> Option<String> {
+    let top = rect.y <= EDGE_REACH;
+    let bottom = rect.bottom() >= frame.1 as f32 - EDGE_REACH;
+    let edge = match (top, bottom) {
+        (true, true) => "верхний и нижний края",
+        (true, false) => "верхний край",
+        (false, true) => "нижний край",
+        (false, false) => return None,
+    };
+    let side = match (top, bottom) { (true, true) => "вверх и вниз", (true, false) => "вверх", _ => "вниз" };
+    Some(format!("текст упирается в {edge} области: буквы могли обрезаться и читаться неверно — расширьте область {side}"))
+}
+
 /// What the layout engine decided for a field, for the inspector.
-fn describe(block: &crate::layout::engine::InplaceBlock) -> Vec<String> {
+fn describe(block: &crate::layout::engine::InplaceBlock, frame: (u32, u32)) -> Vec<String> {
     let font = &block.font;
     let mut lines = vec![format!("тип блока: {:?}", block.block_type)];
     lines.push(if font.generic {
@@ -349,6 +367,7 @@ fn describe(block: &crate::layout::engine::InplaceBlock) -> Vec<String> {
     if let Some(narrow) = &font.condensed_family { lines.push(format!("узкий вариант для длинного перевода: {narrow}")); }
     lines.push(format!("высота прописных оригинала: {:.0} px кадра", block.style.cap_height_px));
     if !block.lines_note.is_empty() { lines.push(block.lines_note.clone()); }
+    lines.extend(edge_note(&block.text_rect, frame));
     lines.push(format!("фон: {:?}", block.background.mode));
     lines
 }
@@ -412,7 +431,35 @@ struct RegionState {
     ignored: HashMap<u64, (Instant, PreviewBox)>,
     /// Inspector: boxes of the last frame sent to the screen.
     preview_boxes: Vec<PreviewBox>,
+    /// In-place mode: how far above the drawn region the capture starts (a fraction of the window height), because
+    /// its top edge cut a line of text (`appearance.inplace.extend_up`). Kept while the region stays the same.
+    reach_up: f64,
+    /// The drawn region `reach_up` was found for; another region starts again from 0.
+    reach_for: Option<NormRect>,
+    /// What the frame the layout engine holds was captured from, if not the drawn region: every frame of fields sent
+    /// to the overlay carries it, also one rebuilt without a new capture.
+    engine_capture: Option<NormRect>,
 }
+
+/// The farthest the capture of a region is extended upwards, a fraction of the window height.
+const MAX_REACH_UP: f64 = 0.12;
+
+/// `rect` started `reach` higher (a fraction of the window), not above the window.
+fn extended_up(rect: NormRect, reach: f64) -> NormRect {
+    let top = (rect.y - reach).max(0.0);
+    NormRect { x: rect.x, y: top, w: rect.w, h: rect.h + (rect.y - top) }
+}
+
+impl RegionState {
+    /// The region as captured this tick: the drawn one, or started higher for text its top edge cut (in-place mode).
+    fn captured(&mut self, s: &Settings, region: &CaptureRegion, inplace: bool) -> Option<CaptureRegion> {
+        if self.reach_for != region.rect { self.reach_up = 0.0; self.reach_for = region.rect; }
+        if !inplace || !s.appearance.inplace.extend_up || self.reach_up <= 0.0 { return None; }
+        let rect = extended_up(region.rect?, self.reach_up);
+        Some(CaptureRegion { rect: Some(rect), ..region.clone() })
+    }
+}
+
 impl RegionState {
     fn enter(&mut self, region_id: &str, phase: Phase) {
         if self.phase == phase { return; }
@@ -847,8 +894,14 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let can_inplace = s.capture.window.as_ref().is_some_and(|w| self.capture.capabilities(w, s).inplace_translation);
         let inplace = s.display_mode == TranslationDisplayMode::Inplace && can_inplace;
         if !inplace { state.inplace = None; }
+        // The capture of this tick: the drawn region, or started higher for a line its top edge cut. Everything below
+        // (capture, the check for a stale reading, the fields) works on it; the overlay is placed by it.
+        let extended = state.captured(s, region, inplace);
+        let drawn = region;
+        let region = extended.as_ref().unwrap_or(region);
         // Поменяли оформление «поверх оригинала»: перестроить без нового кадра и OCR.
-        if let Some(frame) = state.inplace.as_mut().and_then(|e| e.restyle(s)) {
+        if let Some(mut frame) = state.inplace.as_mut().and_then(|e| e.restyle(s)) {
+            frame.capture = state.engine_capture;
             out.send(Event::Inplace { region_id: region.id.clone(), region_name: region.name.clone(), frame: Box::new(frame) });
         }
         // Taken at once: it is for exactly one tick.
@@ -909,7 +962,11 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             }
         }
         if inplace {
-            self.inplace_tick(s, region, state, frame, detected, force, now, out).await;
+            let rows_above = match (drawn.rect, region.rect) {
+                (Some(d), Some(c)) if c.h > 0.0 => (frame.height() as f64 * (d.y - c.y) / c.h) as f32,
+                _ => 0.0,
+            };
+            self.inplace_tick(s, region, state, frame, detected, force, now, out, rows_above).await;
             return;
         }
         state.enter(&region.id, Phase::Recognizing);
@@ -987,9 +1044,11 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     /// Тик можно отменить в любой точке `await`: движок остаётся в состоянии области, а подпись
     /// содержимого поля запоминается только в `complete`, поэтому незавершённое поле на следующем
     /// кадре распознаётся снова.
+    ///
+    /// `rows_above`: the top rows of `frame` that lie above the drawn region (the capture was extended upwards).
     #[allow(clippy::too_many_arguments)]
     async fn inplace_tick(&mut self, s: &Settings, region: &CaptureRegion, state: &mut RegionState, frame: image::DynamicImage, detected: bool,
-                          force: bool, now: Instant, out: &dyn Sink) {
+                          force: bool, now: Instant, out: &dyn Sink, rows_above: f32) {
         // The engine takes the frame; the preview needs its own copy, made only while it is open.
         let preview_image = self.preview.load(Ordering::Relaxed).then(|| frame.to_rgba8());
         // What the picture looked like when OCR started; the engine takes `frame` itself.
@@ -998,7 +1057,22 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let engine = state.inplace.get_or_insert_with(Default::default);
         let laying_out = Instant::now();
         engine.set_unsettled(state.unsettled);
+        engine.set_reach_above(rows_above);
+        state.engine_capture = (rows_above > 0.0).then_some(region.rect).flatten();
+        let frame_height = frame.height().max(1) as f64;
         let jobs = engine.begin(frame, s, now, force);
+        // The top edge cut a line (a speaker name over the dialogue): next time the capture starts higher by its height
+        // and the region is read again at once. Not above the window, and not farther than `MAX_REACH_UP`.
+        if let (true, Some(line), Some(drawn), Some(captured)) = (s.appearance.inplace.extend_up, engine.cut_at_top(), state.reach_for, region.rect) {
+            let per_row = captured.h / frame_height;
+            let wanted = (state.reach_up + (1.25 * line as f64 + 4.0) * per_row).min(drawn.y).min(MAX_REACH_UP);
+            if wanted > state.reach_up + 0.5 * per_row {
+                tracing::info!(target: "pipeline.inplace", region = %region.id, from = state.reach_up, to = wanted, line_px = line,
+                    "text cut by the top edge of the region: the capture starts higher");
+                state.reach_up = wanted;
+                state.rescan = true;
+            }
+        }
         tracing::debug!(target: "pipeline.inplace", region = %region.id, stage = "detection", ocr_jobs = jobs.len(), "inplace frame analyzed");
         self.timings.record("layout", laying_out.elapsed());
         let budget = state.first_error.map(|first| ERROR_BUDGET.saturating_sub(now.saturating_duration_since(first))).unwrap_or(ERROR_BUDGET);
@@ -1154,7 +1228,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         if let Some(frame) = &result {
             let (known, read) = (&state.field_ocr, &state.field_lines);
             state.preview_boxes = frame.blocks.iter().map(|b| {
-                let mut details = describe(b);
+                let mut details = describe(b, frame.frame);
                 details.extend(known.get(&b.id).cloned());
                 let block = read.get(&b.id).map(|(origin, lines)| crate::layout::dto::TextBlock::of_field(b, lines, *origin));
                 PreviewBox { rect: b.text_rect, original: b.original.clone(), translation: b.translation.clone(), details, block, confidence: read.get(&b.id).filter(|(_, l)| !l.is_empty()).map(|(_, l)| l.iter().map(|x| x.confidence).sum::<f32>() / l.len() as f32) }
@@ -1170,7 +1244,9 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             let preview = OcrPreview { image, filtered, filters_auto, minimum_confidence: s.effective_minimum_confidence(), filters: crate::ocr::filter::Preprocess::of(&s.recognition), filter_noise: s.recognition.filter_noise, boxes, original, translation, phase: state.phase, timings: self.timings.summary() };
             out.send(Event::OcrPreview { region_id: region.id.clone(), region_name: region.name.clone(), preview: Box::new(preview) });
         }
-        if let Some(frame) = result {
+        if let Some(mut frame) = result {
+            // A capture other than the drawn region (extended upwards) tells the overlay where its pixels lie.
+            frame.capture = state.engine_capture;
             tracing::debug!(target: "pipeline.inplace", region = %region.id, stage = "event_emitted", blocks = frame.blocks.len(), undrawable = frame.undrawable.len(), new_translations = frame.new_translations.len(), "Event::Inplace emitted");
             self.last_status = "Перевод обновлён".into();
             out.send(Event::Inplace { region_id: region.id.clone(), region_name: region.name.clone(), frame: Box::new(frame) });
@@ -1225,7 +1301,7 @@ mod tests {
     }
 
     fn settings() -> Settings {
-        { let mut value = Settings::default(); value.capture.window = Some(WindowKey { uuid: "u".into(), resource_class: "g".into(), caption: "g".into() }); value.capture.region = Some(NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }); value.recognition.debounce_ms = 100; value.recognition.interval_ms = 50; value }
+        { let mut value = Settings::default(); value.capture.window = Some(WindowKey { uuid: "u".into(), resource_class: "g".into(), caption: "g".into(), program: String::new() }); value.capture.region = Some(NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }); value.recognition.debounce_ms = 100; value.recognition.interval_ms = 50; value }
     }
 
     /// Events other than stage statuses.
@@ -1870,6 +1946,17 @@ mod tests {
     }
 
     #[test]
+    fn a_field_cut_by_the_edge_of_the_region_is_pointed_out() {
+        use crate::layout::Rect;
+        let frame = (800, 200);
+        assert_eq!(edge_note(&Rect::new(40.0, 20.0, 300.0, 30.0), frame), None);
+        let top = edge_note(&Rect::new(40.0, 0.0, 120.0, 18.0), frame).expect("a name cut at the top");
+        assert!(top.contains("верхний край") && top.contains("вверх"), "{top}");
+        let bottom = edge_note(&Rect::new(40.0, 170.0, 300.0, 29.5), frame).expect("a line cut at the bottom");
+        assert!(bottom.contains("нижний край") && bottom.contains("вниз"), "{bottom}");
+    }
+
+    #[test]
     fn an_error_names_the_service_and_the_phrase_it_is_about() {
         let s = Settings::default();
         assert_eq!(translation_context(&s, "Where  are\nyou?"), "Google Translate, «Where are you?»");
@@ -2332,6 +2419,62 @@ mod tests {
         (SlowOcr { delay: Duration::from_millis(delay_ms), active: Arc::new(AtomicUsize::new(0)), peak: peak.clone(), calls: Arc::new(AtomicUsize::new(0)), same_text }, peak)
     }
     fn inplace_settings() -> Settings { { let mut value = settings(); value.display_mode = TranslationDisplayMode::Inplace; value } }
+
+    /// A window of 1000×500 with a speaker name at rows 180–202 and two lines of dialogue below; a grab returns the
+    /// part of the window `rect` asks for, and every rect asked for is recorded.
+    struct WindowCapture(Arc<Mutex<Vec<NormRect>>>);
+    impl Capture for WindowCapture {
+        fn capabilities(&self, _: &WindowKey, _: &Settings) -> crate::capture::CaptureCapabilities { crate::capture::CaptureCapabilities::KWIN }
+        async fn grab(&self, _: &WindowKey, rect: NormRect) -> Result<DynamicImage, CaptureError> {
+            self.0.lock().unwrap().push(rect);
+            let mut window = canvas(1000, 500, [25, 30, 40]);
+            draw_line(&mut window, 100, 180, 6, 14, 4, 22, 3, [240, 220, 120], false);
+            for y in [240u32, 274] { draw_line(&mut window, 100, y, 30, 14, 4, 22, 3, [240, 240, 240], false); }
+            let (x, y) = ((rect.x * 1000.0).round() as u32, (rect.y * 500.0).round() as u32);
+            let (w, h) = ((rect.w * 1000.0).round() as u32, (rect.h * 500.0).round() as u32);
+            Ok(DynamicImage::ImageRgba8(image::imageops::crop_imm(&window, x, y, w.min(1000 - x), h.min(500 - y)).to_image()))
+        }
+    }
+
+    #[tokio::test]
+    async fn a_name_cut_by_the_top_edge_of_the_region_is_captured_whole_and_the_overlay_follows() {
+        let asked = Arc::new(Mutex::new(Vec::new()));
+        let mut p = Pipeline::new(WindowCapture(asked.clone()), SureOcr { text: "Mika".into(), confidence: 90.0 }, MockTr(Arc::new(AtomicUsize::new(0))));
+        let mut s = inplace_settings();
+        // The region was drawn through the middle of the name.
+        let drawn = NormRect { x: 0.0, y: 0.38, w: 1.0, h: 0.62 };
+        s.capture.region = Some(drawn);
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let t0 = Instant::now();
+        p.tick(&s, true, t0, &tx).await;
+        let reach = p.states.values().next().unwrap().reach_up;
+        assert!(reach > 0.02 && reach <= MAX_REACH_UP, "the capture is to start higher: {reach}");
+        // The next tick reads at once, from higher up.
+        p.tick(&s, false, t0 + Duration::from_millis(10), &tx).await;
+        let last = *asked.lock().unwrap().last().unwrap();
+        assert!(last.y < 180.0 / 500.0 && (last.y + last.h - 1.0).abs() < 1e-9, "the name is inside the capture now: {last:?}");
+        let frames: Vec<Box<crate::layout::engine::InplaceFrame>> = drain(&mut rx).into_iter().filter_map(|e| match e { Event::Inplace { frame, .. } => Some(frame), _ => None }).collect();
+        let frame = frames.last().expect("fields");
+        assert_eq!(frame.capture, Some(last), "the overlay is placed by what was captured");
+        let rows_above = (drawn.y - last.y) * frame.frame.1 as f64 / last.h;
+        assert!(frame.blocks.iter().any(|b| (b.text_rect.y as f64) < rows_above && b.text_rect.y > EDGE_REACH), "the whole name is a field: {:?}",
+            frame.blocks.iter().map(|b| b.text_rect).collect::<Vec<_>>());
+        // Off: the drawn region is captured as it is.
+        let asked = Arc::new(Mutex::new(Vec::new()));
+        let mut p = Pipeline::new(WindowCapture(asked.clone()), SureOcr { text: "Mika".into(), confidence: 90.0 }, MockTr(Arc::new(AtomicUsize::new(0))));
+        s.appearance.inplace.extend_up = false;
+        p.tick(&s, true, t0, &tx).await;
+        p.tick(&s, true, t0 + Duration::from_millis(10), &tx).await;
+        assert!(asked.lock().unwrap().iter().all(|r| *r == drawn));
+        assert!(drain(&mut rx).iter().all(|e| !matches!(e, Event::Inplace { frame, .. } if frame.capture.is_some())));
+    }
+
+    #[test]
+    fn the_extended_capture_never_leaves_the_window() {
+        let r = extended_up(NormRect { x: 0.1, y: 0.05, w: 0.5, h: 0.3 }, 0.12);
+        assert_eq!((r.x, r.y, r.w), (0.1, 0.0, 0.5));
+        assert!((r.h - 0.35).abs() < 1e-12, "{r:?}");
+    }
 
     #[tokio::test]
     async fn bounded_runs_everything_with_a_limit() {

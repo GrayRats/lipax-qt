@@ -138,7 +138,7 @@ fn a_viewport_shorter_than_a_glyph_does_not_publish_an_empty_replacement() {
     block.text_rect = Rect::new(40.0, 0.0, 100.0, 3.0);
     block.background.rect = block.text_rect;
     block.background.image = None;
-    let frame = InplaceFrame { frame: (400, 3), blocks: vec![block], undrawable: vec![], new_translations: vec![] };
+    let frame = InplaceFrame { frame: (400, 3), capture: None, blocks: vec![block], undrawable: vec![], new_translations: vec![] };
     let region = RegionInput { id: "small", rect: NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }, frame: &frame };
     let result = place_regions(&[region], &Viewport::window(WindowGeometry::from([0.0, 0.0, 400.0, 3.0])),
         &settings.appearance.inplace, &Default::default(), &ApproxMeasure, &mut PlacementCache::default());

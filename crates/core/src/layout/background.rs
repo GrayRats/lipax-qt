@@ -69,6 +69,13 @@ const RELAX_SWEEPS: usize = 80;
 /// a few pixels cannot tell where on a smooth picture a fragment came from.
 const EXEMPLAR_MIN_DETAIL_RATIO: f32 = 0.04;
 
+/// The band of the hole around the letters keeps the original where it differs from the fill by no more than this
+/// many levels in every channel (and is not joined to the letter through pixels that do). The tolerance is twice the
+/// grain of the ring around the field (`detail`, the mean step between neighbours) within these bounds: the spread of
+/// the brightness (`texture`) also counts large clouds and gradients and let the soft edge of a light outline through.
+const BAND_MIN_TOLERANCE: f32 = 6.0;
+const BAND_MAX_TOLERANCE: f32 = 24.0;
+
 /// Whether the hole of a field of `area` pixels is filled by copying from its surroundings (a repeating pattern) and
 /// not by diffusion alone.
 fn exemplar_worthy(analysis: &BackgroundAnalysis, area: usize) -> bool {
@@ -382,6 +389,54 @@ fn copy_similar(px: &mut [[f32; 3]], hole: &mut [bool], original_hole: &[bool], 
     }
 }
 
+/// Fills the pixels of `hole` (in `area`, `opaque` is the hole as it was first) that a repeating background
+/// continues along its lattice (see `periodic`). The lattice is estimated from the clean pixels of the area and of a
+/// margin of `1.6 × line_height` around it: ink of the text colour, grown by 3 px for its outline, is not clean.
+/// Returns how many pixels were filled.
+#[allow(clippy::too_many_arguments)] // One field's frame, mask, rectangles and the buffers of the patch.
+fn periodic_fill(img: &RgbaImage, mask: &InkMask, text: &Rect, area: (u32, u32, u32, u32), r: usize, line_height: f32, opaque: &[bool], px: &mut [[f32; 3]], hole: &mut [bool]) -> usize {
+    const OUTLINE: usize = 3;
+    let (x0, y0, w, h) = area;
+    let reach = (1.6 * line_height).round().clamp(16.0, 48.0) as u32;
+    let (cx0, cy0) = (x0.saturating_sub(reach), y0.saturating_sub(reach));
+    let (cw, ch) = ((x0 + w + reach).min(img.width()) - cx0, (y0 + h + reach).min(img.height()) - cy0);
+    let (cwu, chu) = (cw as usize, ch as usize);
+    let ink = text_ink(img, mask, text, r);
+    let mut dirty: Vec<bool> = (0..cwu * chu).map(|i| {
+        let (x, y) = (cx0 + (i % cwu) as u32, cy0 + (i / cwu) as u32);
+        mask.at(x as usize, y as usize) && ink.is_none_or(|ink| {
+            let p = img.get_pixel(x, y).0;
+            (0..3).all(|c| (p[c] as i32 - ink[c]).abs() <= 56)
+        })
+    }).collect();
+    // Grown by the width of an outline, separably (rows, then columns).
+    let rows: Vec<bool> = (0..cwu * chu).map(|i| {
+        let (x, y) = (i % cwu, i / cwu);
+        (x.saturating_sub(OUTLINE)..=(x + OUTLINE).min(cwu - 1)).any(|xx| dirty[y * cwu + xx])
+    }).collect();
+    for (i, d) in dirty.iter_mut().enumerate() {
+        let (x, y) = (i % cwu, i / cwu);
+        *d = (y.saturating_sub(OUTLINE)..=(y + OUTLINE).min(chu - 1)).any(|yy| rows[yy * cwu + x]);
+    }
+    let (wu, hu) = (w as usize, h as usize);
+    let ctx = super::periodic::Context::new(img, (cx0, cy0, cw, ch), |x, y| {
+        let in_area = x >= x0 && y >= y0 && x < x0 + w && y < y0 + h;
+        !dirty[(y - cy0) as usize * cwu + (x - cx0) as usize] && !(in_area && opaque[(y - y0) as usize * wu + (x - x0) as usize])
+    });
+    let Some(lattice) = super::periodic::find_lattice(&ctx, reach as i32) else { return 0 };
+    let mut filled = 0;
+    for i in 0..wu * hu {
+        if !hole[i] { continue; }
+        if let Some(c) = super::periodic::copy_along(&ctx, &lattice, (x0 as usize + i % wu) as i32, (y0 as usize + i / wu) as i32) {
+            px[i] = c;
+            hole[i] = false;
+            filled += 1;
+        }
+    }
+    tracing::debug!(target: "inplace.background", basis = ?lattice.basis, filled, of = opaque.iter().filter(|&&o| o).count(), "repeating background continued along its period");
+    filled
+}
+
 /// Smooths what the peeling diffusion filled: every pixel of `pending` becomes the mean of its four neighbours, the
 /// pixels around the hole stay as they are (Gauss-Seidel, sweeping forwards and backwards). The peeling alone leaves
 /// the streaks of its fill order (rows and columns copied inwards); the relaxed fill is the smooth surface that joins
@@ -456,7 +511,7 @@ fn text_ink(img: &RgbaImage, mask: &InkMask, text: &Rect, dilation: usize) -> Op
 /// only those pixels are opaque, so the game's own background stays visible everywhere else and the
 /// patch has no rectangular edge. A pixel next to the hole is half-transparent to hide the seam.
 #[allow(clippy::too_many_arguments)] // One field's frame, mask, rectangles and the two switches of the attempt.
-fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis, retry: Retry, exemplar: bool) -> RgbaImage {
+fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis, retry: Retry, exemplar: bool) -> Patch {
     let fallback = analysis.median;
     let (x0, y0, w, h) = area.pixels(img.width(), img.height());
     let (wu, hu) = (w as usize, h as usize);
@@ -509,6 +564,8 @@ fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, 
     // The exemplar search costs ~20 µs per pixel of the area at stride 2 (2 s for a dialogue block) and runs in the OCR
     // tick, before the new translation can appear: a big field is searched at a coarser stride, a huge one not at all.
     if exemplar && exemplar_worthy(analysis, wu * hu) {
+        // A regular pattern is first continued along its period, in phase; the exemplar search takes what is left.
+        periodic_fill(img, mask, text, (x0, y0, w, h), r, line_height, &opaque, &mut px, &mut hole);
         let stride = if wu * hu <= EXEMPLAR_FINE_AREA { 2 } else { 4 };
         copy_similar(&mut px, &mut hole, &opaque, wu, hu, (line_height * 2.0).round().clamp(16.0, 40.0) as i32, stride);
     }
@@ -535,20 +592,65 @@ fn reconstruct_patch(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, 
         for (i, c) in filled { px[i] = c; hole[i] = false; }
     }
     relax(&mut px, &to_diffuse, wu, hu, RELAX_SWEEPS);
-    let mut out = RgbaImage::new(w, h);
-    for i in 0..wu * hu {
+    // The letters themselves: a pixel of the main text colour, or one pixel beside it (its anti-aliasing).
+    let core: Vec<bool> = (0..wu * hu).map(|i| {
+        let (x, y) = (i % wu + r, i / wu + r);
+        (y - 1..=y + 1).any(|yy| (x - 1..=x + 1).any(|xx| xx < pw && yy < ph && grid[yy * pw + xx]))
+    }).collect();
+    // The rest of the hole is the dilation band: background around the letters, repainted only in case it holds their
+    // outline or soft edge. Where the original there is no further from the fill than the background itself varies,
+    // it is background: the game's own pixel is kept (fading in between), so no smoothed halo in the shape of the line
+    // replaces the real texture. A remnant of an outline differs from the fill clearly and stays repainted.
+    // A pixel of an outline, and one beside it (the anti-aliased tail of the outline would show as light or dark
+    // specks otherwise), is repainted entirely; the decision is all or nothing, the seam ring below softens it.
+    // An outline or a soft edge is a continuous ring that touches the letter, while grain of the background that
+    // happens to differ is scattered: only differing pixels joined to a letter through differing pixels count.
+    let tolerance = (2.0 * analysis.detail).clamp(BAND_MIN_TOLERANCE, BAND_MAX_TOLERANCE);
+    let differs: Vec<bool> = (0..wu * hu).map(|i| opaque[i] && (core[i]
+        || (0..3).any(|c| (original[i][c] - px[i][c]).abs() > tolerance))).collect();
+    let mut marked: Vec<bool> = (0..wu * hu).map(|i| opaque[i] && core[i]).collect();
+    let mut queue: Vec<usize> = (0..wu * hu).filter(|&i| marked[i]).collect();
+    while let Some(i) = queue.pop() {
         let (x, y) = (i % wu, i / wu);
-        // A pixel nothing could be copied or diffused into is left to the game rather than painted black.
-        let c = if hole[i] { fallback.map(|v| v as f32) } else { px[i] };
-        let near = !opaque[i] && [(-1i32, 0i32), (1, 0), (0, -1), (0, 1)].iter().any(|(dx, dy)| {
-            let (nx, ny) = (x as i32 + dx, y as i32 + dy);
-            nx >= 0 && ny >= 0 && nx < wu as i32 && ny < hu as i32 && opaque[ny as usize * wu + nx as usize]
-        });
-        let alpha = if hole[i] { 0 } else if opaque[i] { 255 } else if near { 128 } else { 0 };
-        out.put_pixel(x as u32, y as u32, image::Rgba([c[0] as u8, c[1] as u8, c[2] as u8, alpha]));
+        for yy in y.saturating_sub(1)..=(y + 1).min(hu - 1) {
+            for xx in x.saturating_sub(1)..=(x + 1).min(wu - 1) {
+                let j = yy * wu + xx;
+                if differs[j] && !marked[j] { marked[j] = true; queue.push(j); }
+            }
+        }
     }
-    out
+    // The letters already carry their anti-aliasing (`core`); a pixel of the outline is grown by one for its own.
+    let kept: Vec<bool> = (0..wu * hu).map(|i| {
+        let (x, y) = (i % wu, i / wu);
+        opaque[i] && (core[i] || (y.saturating_sub(1)..=(y + 1).min(hu - 1))
+            .any(|yy| (x.saturating_sub(1)..=(x + 1).min(wu - 1)).any(|xx| { let j = yy * wu + xx; marked[j] && !core[j] })))
+    }).collect();
+    let alpha_of = |i: usize, soft: bool| -> u8 {
+        if hole[i] { 0 } else if opaque[i] && (!soft || kept[i]) { 255 } else { 0 }
+    };
+    let render = |soft: bool| {
+        let alphas: Vec<u8> = (0..wu * hu).map(|i| alpha_of(i, soft)).collect();
+        let mut out = RgbaImage::new(w, h);
+        for i in 0..wu * hu {
+            let (x, y) = (i % wu, i / wu);
+            // A pixel nothing could be copied or diffused into is left to the game rather than painted black.
+            let c = if hole[i] { fallback.map(|v| v as f32) } else { px[i] };
+            // Next to a fully repainted pixel the original shows half through to hide the seam.
+            let near = alphas[i] == 0 && !hole[i] && [(-1i32, 0i32), (1, 0), (0, -1), (0, 1)].iter().any(|(dx, dy)| {
+                let (nx, ny) = (x as i32 + dx, y as i32 + dy);
+                nx >= 0 && ny >= 0 && nx < wu as i32 && ny < hu as i32 && alphas[ny as usize * wu + nx as usize] == 255
+            });
+            let alpha = if near { 128 } else { alphas[i] };
+            out.put_pixel(x as u32, y as u32, image::Rgba([c[0] as u8, c[1] as u8, c[2] as u8, alpha]));
+        }
+        out
+    };
+    Patch { hard: render(false), soft: render(true), repainted: opaque.iter().filter(|&&o| o).count() }
 }
+
+/// One attempt of `reconstruct_patch`: the same fill with every pixel of the hole opaque (`hard`) and with the band
+/// around the letters faded into the original where it is background (`soft`). `repainted` counts the hole.
+struct Patch { hard: RgbaImage, soft: RgbaImage, repainted: usize }
 
 /// How much of the old text still shows through `patch`. The patch is laid over the frame as QML does (alpha
 /// blending); a pixel of the text rectangle counts as a ghost when it lies at least `GHOST_REACH` of the colour
@@ -580,29 +682,33 @@ fn ghost_residual(img: &RgbaImage, patch: &RgbaImage, area: &Rect, text: &Rect, 
     (share(true) - share(false)).max(0.0)
 }
 
-/// Pixels of the patch that replace the picture completely.
-fn repainted(patch: &RgbaImage) -> usize { patch.pixels().filter(|p| p.0[3] == 255).count() }
-
 /// `reconstruct_patch` and its ghost. While the ghost is above the limit the patch is built again, at most twice (once on a patterned background):
 /// first counting every ink pixel of the field as a letter (a keyword in another colour), then also with a
 /// wider mask (the outline or the soft edge of the letters was wider than the first dilation).
+///
+/// Of every attempt the soft patch is taken (the band around the letters keeps the game's own background) unless it
+/// lets the old text through and the hard one, repainting the whole band, leaves less of it.
 fn reconstruct_without_ghost(img: &RgbaImage, mask: &InkMask, text: &Rect, area: &Rect, line_height: f32, analysis: &BackgroundAnalysis, exemplar: bool) -> (RgbaImage, f32) {
     let ink = text_ink(img, mask, text, 0);
     let measure = |patch: &RgbaImage| ink.map_or(0.0, |ink| ghost_residual(img, patch, area, text, ink, analysis.median));
-    let mut patch = reconstruct_patch(img, mask, text, area, line_height, analysis, Retry::FIRST, exemplar);
-    let mut ghost = measure(&patch);
+    let choose = |attempt: Patch| -> (RgbaImage, f32, usize) {
+        let soft = measure(&attempt.soft);
+        if soft <= GHOST_LIMIT { return (attempt.soft, soft, attempt.repainted); }
+        let hard = measure(&attempt.hard);
+        if hard < soft { (attempt.hard, hard, attempt.repainted) } else { (attempt.soft, soft, attempt.repainted) }
+    };
+    let (mut patch, mut ghost, mut repainted) = choose(reconstruct_patch(img, mask, text, area, line_height, analysis, Retry::FIRST, exemplar));
     // On a patterned background every attempt runs the costly exemplar search (`copy_similar`): one retry, the
     // widest, instead of two.
     let textured = exemplar && exemplar_worthy(analysis, (area.w * area.h) as usize);
     let retries: &[Retry] = if textured { &[Retry::WIDEST] } else { &[Retry::ANY_COLOUR, Retry::WIDEST] };
     for &retry in retries {
         if ghost <= GHOST_LIMIT { break; }
-        let retry = reconstruct_patch(img, mask, text, area, line_height, analysis, retry, exemplar);
-        let left = measure(&retry);
+        let (retry, left, more) = choose(reconstruct_patch(img, mask, text, area, line_height, analysis, retry, exemplar));
         // A retry that repaints more can also repaint scenery (and pull the colours of its neighbours into the
         // hole): it is kept only if it clearly removes the ghost and does not grow the repainted area much.
         // A keyword in another colour adds a part of the text; scenery taken for letters adds far more.
-        if left < ghost * 0.5 && repainted(&retry) as f32 <= MAX_GROWTH * repainted(&patch).max(1) as f32 { (patch, ghost) = (retry, left); }
+        if left < ghost * 0.5 && more as f32 <= MAX_GROWTH * repainted.max(1) as f32 { (patch, ghost, repainted) = (retry, left, more); }
     }
     (patch, ghost)
 }
@@ -665,7 +771,7 @@ mod tests {
     #[test]
     fn the_ghost_is_measured_where_the_old_text_stays_visible() {
         let mut img = canvas(800, 200, [30, 40, 60]);
-        draw_line(&mut img, 100, 80, 30, 14, 4, 22, 3, [255, 255, 255], false);
+        draw_line(&mut img, 60, 70, 20, 24, 6, 40, 4, [255, 255, 255], false);
         let (mask, rect, lh) = setup(&img);
         let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, BackgroundAnalyzer::margin(lh));
         let area = rect.expand(6.0, 800.0, 200.0);
@@ -700,7 +806,7 @@ mod tests {
         assert!(ink.iter().all(|&v| v > 200), "the white text is the main ink: {ink:?}");
         let area = rect.expand(BackgroundAnalyzer::margin(lh), 900.0, 200.0);
         let first = reconstruct_patch(&img, &mask, &rect, &area, lh, &a, Retry::FIRST, true);
-        let before = ghost_residual(&img, &first, &area, &rect, ink, a.median);
+        let before = ghost_residual(&img, &first.hard, &area, &rect, ink, a.median);
         let (_, after) = reconstruct_without_ghost(&img, &mask, &rect, &area, lh, &a, true);
         eprintln!("yellow word ghost: first {before:.4}, after the retry {after:.4}");
         assert!(before > GHOST_LIMIT, "the scene must defeat the first pass: {before}");
@@ -810,6 +916,57 @@ mod tests {
         let brightest = (ty..ty + th).flat_map(|y| (tx..tx + tw).map(move |x| (x, y))).map(|(x, y)| luma(&shown.get_pixel(x, y).0)).max().unwrap();
         // The checkerboard has no white square: whatever is that bright is the old text.
         assert!(brightest < 160, "brightest pixel of the field {brightest}");
+    }
+
+    /// Mean absolute luminance difference between `a` and `b` over `rect`.
+    fn mean_error(a: &RgbaImage, b: &RgbaImage, rect: &Rect) -> f32 {
+        let (x0, y0, w, h) = rect.pixels(a.width(), a.height());
+        let sum: f32 = (y0..y0 + h).flat_map(|y| (x0..x0 + w).map(move |x| (x, y)))
+            .map(|(x, y)| (luma(&a.get_pixel(x, y).0) as f32 - luma(&b.get_pixel(x, y).0) as f32).abs()).sum();
+        sum / (w * h).max(1) as f32
+    }
+
+    #[test]
+    fn checks_larger_than_the_exemplar_context_are_continued_in_phase() {
+        // Diagonal checks of two blues with cells of 14 px, as behind the dialogue of a visual novel: the 5×5 exemplar
+        // context alone loses the phase and leaves blotches.
+        let clean = RgbaImage::from_fn(700, 200, |x, y| {
+            if ((x + y) / 14 + (x + 1000 - y) / 14) % 2 == 0 { Rgba([10, 105, 225, 255]) } else { Rgba([0, 170, 240, 255]) }
+        });
+        let mut img = clean.clone();
+        draw_line(&mut img, 100, 80, 30, 14, 4, 26, 3, [255, 255, 255], false);
+        let (mask, rect, lh) = setup(&img);
+        let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, BackgroundAnalyzer::margin(lh));
+        assert!(exemplar_worthy(&a, 30_000), "{a:?}");
+        let s = InplaceSettings { background_mode: InplaceBackgroundMode::TextReplacement, ..Default::default() };
+        let r = BackgroundInpainter.render(&img, &mask, &rect, lh, a, &s, TextBlockType::Dialogue);
+        assert!(r.ghost <= GHOST_LIMIT, "ghost {}", r.ghost);
+        let error = mean_error(&composite(&img, &r), &clean, &r.rect);
+        let before = mean_error(&img, &clean, &r.rect);
+        eprintln!("checks: {before:.2} levels with the text, {error:.2} after the replacement");
+        assert!(error < 1.5, "the checks come back in phase: mean error {error:.2} (with the text {before:.2})");
+    }
+
+    #[test]
+    fn the_band_around_the_letters_keeps_the_game_background() {
+        // A fine grain (film noise, a painted wall): the band the mask is grown by is background and stays the game's.
+        let grain = |x: u32, y: u32| ((x.wrapping_mul(7919) ^ y.wrapping_mul(104_729)).wrapping_mul(2_654_435_761) >> 28) as u8;
+        let clean = RgbaImage::from_fn(800, 200, |x, y| { let g = grain(x, y); Rgba([60 + g, 70 + g, 90 + g, 255]) });
+        let mut img = clean.clone();
+        draw_line(&mut img, 60, 70, 20, 24, 6, 40, 4, [255, 255, 255], false);
+        let (mask, rect, lh) = setup(&img);
+        let a = BackgroundAnalyzer.analyze(&img, &mask, &rect, BackgroundAnalyzer::margin(lh));
+        let area = rect.expand((0.3 * lh).clamp(2.0, 16.0), 800.0, 200.0);
+        let patch = reconstruct_patch(&img, &mask, &rect, &area, lh, &a, Retry::FIRST, false);
+        let full = |p: &RgbaImage| p.pixels().filter(|q| q.0[3] == 255).count();
+        assert!(full(&patch.soft) * 10 < full(&patch.hard) * 7, "soft {} vs hard {} repainted pixels", full(&patch.soft), full(&patch.hard));
+        let s = InplaceSettings { background_mode: InplaceBackgroundMode::TextReplacement, ..Default::default() };
+        let r = BackgroundInpainter.render(&img, &mask, &rect, lh, a, &s, TextBlockType::Dialogue);
+        assert!(r.ghost <= GHOST_LIMIT, "ghost {}", r.ghost);
+        let shown = composite(&img, &r);
+        let (tx, ty, tw, th) = rect.pixels(800, 200);
+        let brightest = (ty..ty + th).flat_map(|y| (tx..tx + tw).map(move |x| (x, y))).map(|(x, y)| luma(&shown.get_pixel(x, y).0)).max().unwrap();
+        assert!(brightest < 120, "the white letters are gone: brightest {brightest}");
     }
 
     #[test]

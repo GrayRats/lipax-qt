@@ -116,6 +116,9 @@ impl Default for BlockDetector {
 /// A local-contrast line is accepted only with at least this many glyph-like components.
 const LOCAL_MIN_GLYPHS: usize = 5;
 const LOCAL_MIN_LINE_HEIGHT: f32 = 6.0;
+/// Glyphs of the local-contrast pass at least this tall are large type (titles, labels): the only lines whose fragments
+/// `join_row_fragments` puts back together. Ordinary text sizes keep the plain grouping.
+const LARGE_GLYPH: f32 = 4.0 * LOCAL_MIN_LINE_HEIGHT;
 
 #[derive(Clone, Copy)]
 struct Component {
@@ -238,6 +241,20 @@ fn is_blob_pattern(b: &DetectedTextBlock, mask: &InkMask) -> bool {
     total >= 4 && blobs as f32 >= 0.5 * total as f32
 }
 
+/// Fill and size from which a component is a plate (`is_plate`).
+const PLATE_FILL: f32 = 0.8;
+/// As wide as a one-component line must be to stay a line (`lines_from`), so a plate on its own is kept.
+const PLATE_ASPECT: f32 = 2.0;
+const PLATE_HEIGHT: f32 = 2.5;
+
+/// A large solid rectangle: the plate of a label, its letters holes in it (light plate, dark text, while the mask takes
+/// light for ink). It is the background of text, not a glyph: as a member of a row it would join its neighbours across
+/// the gaps between plates (a row of tiles becomes one line, read in one piece). A letter is never this full and this
+/// wide at once while being much taller than the typical component; a dash or a rule is low.
+fn is_plate(c: &Component, typical: f32) -> bool {
+    c.pixels as f32 >= PLATE_FILL * c.rect.area() && c.rect.w >= PLATE_ASPECT * c.rect.h && c.rect.h >= PLATE_HEIGHT * typical
+}
+
 /// A component that can be a glyph of the local-contrast pass: text-sized, compact, neither a hairline nor a blob.
 fn local_glyph_like(c: &Component, frame_h: f32) -> bool {
     let (w, h) = (c.rect.w, c.rect.h);
@@ -264,6 +281,59 @@ fn text_like_line_min(l: &TextLine, minimum_glyphs: usize) -> bool {
     let cv = |v: Vec<f32>| { let m = v.iter().sum::<f32>() / v.len() as f32; (v.iter().map(|x| (x - m).powi(2)).sum::<f32>() / v.len() as f32).sqrt() / m.max(1e-3) };
     let uniform = n >= 6 && cv(l.glyphs.iter().map(|g| g.w).collect()) < 0.15 && cv(l.glyphs.iter().map(|g| g.h).collect()) < 0.15;
     similar as f32 >= 0.7 * n as f32 && on_base as f32 >= 0.5 * n as f32 && !uniform
+}
+
+/// Rows are gathered across the whole frame (`BlockDetector::lines_from`), and in a local-contrast mask the specks of the
+/// scenery seed row bands at every height: the letters of one large word can fall into different bands and come out as
+/// fragments side by side, each too short to pass as a line. Neighbouring fragments of large type on the same row, with
+/// glyphs of one height, are put back together, but only when neither passes as a line on its own and together they make
+/// a text-like line of letters of one cap height (`one_cap_height`): every line that passed before stays as it was.
+fn join_row_fragments(img: &RgbaImage, mask: &InkMask, lines: Vec<TextLine>) -> Vec<TextLine> {
+    let height = |l: &TextLine| median(l.glyphs.iter().map(|g| g.h).collect());
+    let fragment = |l: &TextLine| !text_like_line_min(l, 3) && height(l) >= LARGE_GLYPH;
+    let (mut fragments, mut out): (Vec<TextLine>, Vec<TextLine>) = lines.into_iter().partition(|l| fragment(l));
+    fragments.sort_by(|a, b| a.rect.x.total_cmp(&b.rect.x));
+    let mut used = vec![false; fragments.len()];
+    for i in 0..fragments.len() {
+        if used[i] { continue; }
+        let mut line = fragments[i].clone();
+        let mut members = vec![i];
+        for j in i + 1..fragments.len() {
+            if used[j] { continue; }
+            let (a, b) = (&line, &fragments[j]);
+            let (ha, hb) = (height(a), height(b));
+            let same_height = ha.max(hb) <= 1.45 * ha.min(hb);
+            let same_row = a.rect.bottom().min(b.rect.bottom()) - a.rect.y.max(b.rect.y) >= 0.7 * a.rect.h.min(b.rect.h);
+            let gap = b.rect.x - a.rect.right();
+            if !(same_height && same_row && gap >= -0.5 * ha.max(hb) && gap <= 1.5 * ha.max(hb)) { continue; }
+            let mut glyphs = line.glyphs.clone();
+            glyphs.extend(b.glyphs.iter().copied());
+            let rect = a.rect.union(&b.rect);
+            line = TextLine { rect, glyphs, ink_color: line.ink_color };
+            members.push(j);
+        }
+        if members.len() > 1 && text_like_line(&line) && one_cap_height(&line) {
+            line.ink_color = mean_color(img, &line.rect, |x, y| mask.at(x, y)).unwrap_or(line.ink_color);
+            for &m in &members { used[m] = true; }
+            out.push(line);
+        }
+    }
+    out.extend(fragments.into_iter().zip(used).filter(|(_, u)| !u).map(|(l, _)| l));
+    out
+}
+
+/// At least `LOCAL_MIN_GLYPHS` glyphs of the line share one height (within 15 %), one top and one bottom (within a fifth of
+/// the height), and none lies inside another: capitals or digits of one size. Outlines of a picture cut into pieces (eyes,
+/// folds) differ in height; an icon and its rim are nested.
+fn one_cap_height(l: &TextLine) -> bool {
+    let h = median(l.glyphs.iter().map(|g| g.h).collect());
+    let top = median(l.glyphs.iter().map(|g| g.y).collect());
+    let base = median(l.glyphs.iter().map(|g| g.bottom()).collect());
+    l.glyphs.iter().filter(|g| (g.h - h).abs() <= 0.15 * h && (g.y - top).abs() <= 0.2 * h && (g.bottom() - base).abs() <= 0.2 * h)
+        .count() >= LOCAL_MIN_GLYPHS
+        // Letters of a line stand side by side; a shape inside another one (the rim of an icon around it) is a picture.
+        && !l.glyphs.iter().enumerate().any(|(i, g)| l.glyphs.iter().enumerate()
+            .any(|(j, o)| i != j && o.area() >= g.area() && g.intersection(o) >= 0.8 * g.area()))
 }
 
 /// Large connected components are scenery unless they look like oversized type: several of them side by
@@ -373,7 +443,7 @@ impl BlockDetector {
             // A paragraph may end with a short word. Keep a geometrically
             // compatible short continuation only when the same block also
             // contains a full text-like row; standalone noise stays rejected.
-            let lines: Vec<TextLine> = self.lines_from(img, &local, comps, fw, 0).into_iter()
+            let lines: Vec<TextLine> = join_row_fragments(img, &local, self.lines_from(img, &local, comps, fw, 0)).into_iter()
                 .filter(|line| text_like_line_min(line, 3)).collect();
             let blocks: Vec<DetectedTextBlock> = self.blocks_from_lines_by_glyph_height(lines, true).into_iter()
                 .filter(|block| block.lines.iter().any(text_like_line)).collect();
@@ -441,6 +511,8 @@ impl BlockDetector {
         let (mut main, small): (Vec<_>, Vec<_>) = comps.into_iter().partition(|c| c.rect.h >= main_min);
         // Слишком широкие при малой высоте — линии-разделители интерфейса.
         main.retain(|c| !(c.rect.w > 8.0 * c.rect.h && c.rect.w > 0.3 * fw && c.pixels as f32 > 0.8 * c.rect.area()));
+        // A plate is a line of its own: it neither joins its neighbours in a row nor loses the text it carries.
+        let (plates, mut main): (Vec<_>, Vec<_>) = main.into_iter().partition(|c| is_plate(c, typical));
 
         // Строки: сначала полосы по перекрытию по вертикали, затем разрывы по горизонтали.
         main.sort_by(|a, b| a.rect.center().1.total_cmp(&b.rect.center().1));
@@ -478,6 +550,7 @@ impl BlockDetector {
                 lines.push(TextLine { rect: Rect::default(), glyphs: current, ink_color: [0; 3] });
             }
         }
+        lines.extend(plates.iter().map(|p| TextLine { rect: Rect::default(), glyphs: vec![p.rect], ink_color: [0; 3] }));
         // Точки, акценты, запятые — к ближайшей строке, которая их накрывает по горизонтали.
         let mut orphans: Vec<Component> = Vec::new();
         for c in small {
@@ -691,5 +764,94 @@ mod tests {
         assert!(BlockDetector::default().detect_text_blocks(&img, &BlockDetector::ink_mask(&img)).is_empty());
         let tiny = canvas(4, 4, [0, 0, 0]);
         assert!(BlockDetector::default().detect_text_blocks(&tiny, &BlockDetector::ink_mask(&tiny)).is_empty());
+    }
+
+    /// Light capitals on a dark plate in a light frame: the global mask takes the plate for ink and the letters for
+    /// background, so only the local pass can find them. Light specks elsewhere on the same rows seed bands of the
+    /// frame-wide row grouping first and the word falls apart into two short fragments (two and three letters), neither
+    /// of which passes as a line: the fragments are put back together into one word.
+    #[test]
+    fn a_large_word_of_reversed_polarity_is_not_split_by_specks_on_its_rows() {
+        let mut img = canvas(1000, 600, [200, 200, 200]);
+        for y in 370..490 { for x in 500..900 { img.put_pixel(x, y, image::Rgba([40, 40, 40, 255])); } }
+        // Ring-shaped specks of the scenery, far to the left, higher than the word's centre.
+        for i in 0..10u32 {
+            let x0 = 20 + 40 * i;
+            for y in 392..404 { for x in x0..x0 + 12 {
+                if !(x0 + 2..x0 + 10).contains(&x) || !(394..402).contains(&y) { img.put_pixel(x, y, image::Rgba([255, 255, 255, 255])); }
+            } }
+        }
+        // Five letters; the last three sit a few pixels lower (a slanted baseline, a different cut of the font).
+        let next = draw_line(&mut img, 540, 396, 2, 26, 10, 60, 6, [220, 220, 220], false);
+        draw_line(&mut img, next, 404, 3, 26, 10, 60, 6, [220, 220, 220], false);
+
+        let mut mask = BlockDetector::ink_mask(&img);
+        assert!(mask.ink_is_dark, "the plate is the ink of the global mask");
+        let (blocks, _) = BlockDetector::default().detect_with_local(&img, &mut mask);
+        let word = Rect::new(540.0, 396.0, 170.0, 68.0);
+        let summary: Vec<_> = blocks.iter().map(|b| (b.rect.x as u32, b.rect.y as u32, b.rect.w as u32, b.rect.h as u32)).collect();
+        assert!(blocks.iter().any(|b| b.rect.expand(2.0, 1000.0, 600.0).contains(&word) && b.rect.w <= word.w + 4.0), "{summary:?}");
+    }
+
+    /// A row of light label plates with dark text on them, closer to each other than one and a half plate heights, under a
+    /// line of light text: the mask takes light for ink, so each plate is one solid component with its letters as holes.
+    /// The plates are not glyphs of one line: each stays a block of its own (its text is read on its own), none reaches
+    /// over to the next. Solid letters that are narrow (`I`) or low (a dash) are still glyphs of their line.
+    #[test]
+    fn label_plates_in_a_row_are_not_joined_into_one_line() {
+        let mut img = canvas(1400, 500, [20, 60, 120]);
+        draw_line(&mut img, 100, 60, 30, 13, 4, 20, 3, [240, 240, 240], false);
+        let plates: Vec<Rect> = (0..6).map(|i| Rect::new(100.0 + 200.0 * i as f32, 150.0, 160.0, 68.0)).collect();
+        for p in &plates {
+            let (x0, y0) = (p.x as u32, p.y as u32);
+            for y in y0..y0 + 68 { for x in x0..x0 + 160 { img.put_pixel(x, y, image::Rgba([235, 240, 245, 255])); } }
+            draw_line(&mut img, x0 + 12, y0 + 24, 8, 12, 4, 20, 3, [30, 40, 60], false);
+        }
+        // Large letters with solid strokes between them: an `I` (narrow) and a dash (low), both filled.
+        let fill = |img: &mut RgbaImage, x0: u32, y0: u32, w: u32, h: u32| {
+            for y in y0..y0 + h { for x in x0..x0 + w { img.put_pixel(x, y, image::Rgba([240, 240, 240, 255])); } }
+        };
+        let next = draw_line(&mut img, 100, 340, 3, 40, 12, 64, 8, [240, 240, 240], false);
+        fill(&mut img, next, 340, 14, 64);
+        fill(&mut img, next + 26, 368, 52, 10);
+        draw_line(&mut img, next + 90, 340, 3, 40, 12, 64, 8, [240, 240, 240], false);
+
+        let mask = BlockDetector::ink_mask(&img);
+        assert!(!mask.ink_is_dark, "the plates and the light text are the ink");
+        let blocks = BlockDetector::default().detect_text_blocks(&img, &mask);
+        let summary: Vec<_> = blocks.iter().map(|b| (b.rect.x as u32, b.rect.y as u32, b.rect.w as u32, b.rect.h as u32)).collect();
+        for b in &blocks {
+            assert!(plates.iter().filter(|p| b.rect.intersection(p) > 0.0).count() <= 1, "a block over two plates: {summary:?}");
+        }
+        for p in &plates {
+            assert!(blocks.iter().any(|b| b.rect.intersection(p) >= 0.9 * p.area()), "plate {p:?} lost: {summary:?}");
+        }
+        let large: Vec<_> = blocks.iter().filter(|b| b.rect.y >= 330.0).collect();
+        assert_eq!(large.len(), 1, "{summary:?}");
+        assert_eq!(large[0].lines.len(), 1, "{summary:?}");
+        assert!(large[0].rect.x <= 100.0 && large[0].rect.right() >= (next + 90 + 140) as f32, "{summary:?}");
+    }
+
+    /// Fragments of one row are joined only into a row of capitals of one height; pieces of a picture of different heights
+    /// and an icon with its rim inside stay apart (and are later rejected as lines).
+    #[test]
+    fn only_fragments_of_one_cap_height_are_joined_into_a_line() {
+        let img = canvas(400, 200, [0, 0, 0]);
+        let mask = BlockDetector::ink_mask(&img);
+        let line = |glyphs: Vec<(f32, f32, f32, f32)>| {
+            let glyphs: Vec<Rect> = glyphs.into_iter().map(|(x, y, w, h)| Rect::new(x, y, w, h)).collect();
+            let rect = glyphs.iter().skip(1).fold(glyphs[0], |a, g| a.union(g));
+            TextLine { rect, glyphs, ink_color: [255; 3] }
+        };
+        let joined = |a: TextLine, b: TextLine| join_row_fragments(&img, &mask, vec![a, b]).len() == 1;
+        // Two capitals, then three, a little lower: one word.
+        assert!(joined(line(vec![(10.0, 40.0, 24.0, 60.0), (44.0, 40.0, 24.0, 60.0)]),
+            line(vec![(78.0, 44.0, 24.0, 60.0), (112.0, 44.0, 24.0, 60.0), (146.0, 44.0, 24.0, 60.0)])));
+        // The same places, but the heights of a drawing's outlines (30 to 64 px).
+        assert!(!joined(line(vec![(10.0, 70.0, 24.0, 30.0), (44.0, 62.0, 24.0, 40.0)]),
+            line(vec![(78.0, 40.0, 24.0, 64.0), (112.0, 66.0, 24.0, 34.0), (146.0, 62.0, 24.0, 40.0)])));
+        // Capitals of one height, but the last shape holds another one inside it (an icon and its rim).
+        assert!(!joined(line(vec![(10.0, 40.0, 24.0, 60.0), (44.0, 40.0, 24.0, 60.0)]),
+            line(vec![(78.0, 44.0, 24.0, 60.0), (112.0, 44.0, 50.0, 60.0), (118.0, 46.0, 40.0, 56.0)])));
     }
 }

@@ -574,14 +574,29 @@ fn accepted(trial: &[Candidate], before: &[Option<collision::Placement>], index:
 /// Conservative duplicate ownership: geometry alone must never suppress an unrelated HUD field.
 /// Only an exact normalized substring of a longer OCR reading in the same capture, almost entirely
 /// contained in its glyph box, is redundant. Equal readings use the stable block id to break ties.
+///
+/// A fragment of a few glyphs read again inside a long text is often read with a look-alike glyph ("o o" of
+/// "to our" as "0 0"): a reading of at least two characters that is a part of a reading at least `FRAGMENT_RATIO`
+/// times longer, exactly or up to look-alike glyphs (`ocr::lookalike`), is redundant as well.
 fn duplicate_owner(blocks: &[InplaceBlock], readings: &[String], index: usize) -> bool {
+    /// How many times longer the containing reading must be for a look-alike match to count.
+    const FRAGMENT_RATIO: usize = 4;
     let item = &blocks[index];
     let reading = &readings[index];
-    if reading.chars().count() < 3 || item.text_rect.area() <= 0.0 { return false; }
+    let length = reading.chars().count();
+    if length < 2 || item.text_rect.area() <= 0.0 { return false; }
+    let fragment_of = |longer: &str| {
+        let (longer, short): (Vec<char>, String) = (longer.chars().collect(), reading.clone());
+        longer.len() >= FRAGMENT_RATIO * length && longer.windows(length).any(|w| {
+            let part: String = w.iter().collect();
+            part == short || crate::ocr::lookalike::differs_only_by_lookalikes(&part, &short)
+        })
+    };
     blocks.iter().enumerate().any(|(j, other)| {
-        j != index && readings[j].contains(reading.as_str())
-            && (readings[j].len() > reading.len() || (readings[j] == *reading && other.id < item.id))
-            && other.text_rect.intersection(&item.text_rect) >= item.text_rect.area() * 0.9
+        j != index && other.text_rect.intersection(&item.text_rect) >= item.text_rect.area() * 0.9
+            && ((length >= 3 && readings[j].contains(reading.as_str())
+                && (readings[j].len() > reading.len() || (readings[j] == *reading && other.id < item.id)))
+                || fragment_of(&readings[j]))
     })
 }
 
@@ -889,7 +904,7 @@ mod tests {
             b.revision = 1;
             b
         }).collect();
-        InplaceFrame { frame: size, blocks, undrawable: Vec::new(), new_translations: Vec::new() }
+        InplaceFrame { frame: size, capture: None, blocks, undrawable: Vec::new(), new_translations: Vec::new() }
     }
 
     fn outcome(frame: &InplaceFrame) -> PlacementOutcome {
@@ -969,6 +984,67 @@ mod tests {
         assert_eq!(Outcome::classify(Some("inside-original"), 1.0), Outcome::Partial);
         assert_eq!(Outcome::classify(Some("beside-original"), 1.0), Outcome::DegradedFallback);
         assert_eq!(DroppedText::OUTCOME, Outcome::Unrenderable);
+    }
+
+    #[test]
+    fn a_fragment_read_again_inside_a_long_text_with_look_alike_glyphs_does_not_displace_it() {
+        // A dialogue and, inside its rectangle, two fragments of it read again: one exactly, one with zeros for "o".
+        let mut frame = custom_frame(&[(Rect::new(100.0, 100.0, 900.0, 120.0), Rect::new(92.0, 92.0, 916.0, 136.0)),
+                                       (Rect::new(180.0, 150.0, 60.0, 24.0), Rect::new(172.0, 142.0, 76.0, 40.0)),
+                                       (Rect::new(500.0, 150.0, 50.0, 24.0), Rect::new(492.0, 142.0, 66.0, 40.0)),
+                                       (Rect::new(700.0, 300.0, 50.0, 24.0), Rect::new(692.0, 292.0, 66.0, 40.0))]);
+        frame.blocks[0].original = "We receive requests from outside parties in addition to our routine work.".into();
+        frame.blocks[1].original = "de p".into();
+        frame.blocks[2].original = "0 0".into();
+        // A short reading elsewhere that happens to be a part of the text ("to" of "to our") stays a field of its own.
+        frame.blocks[3].original = "to".into();
+        let out = outcome(&frame);
+        let dialogue = out.placed.iter().find(|p| p.block_id == 1).expect("the dialogue is placed");
+        assert!(dialogue.degraded.is_none() && dialogue.source_coverage > 0.95, "over its own text, not beside it: {:?} {}", dialogue.degraded, dialogue.source_coverage);
+        let dropped: Vec<u64> = out.dropped.iter().filter(|d| d.reason.contains("повторный")).map(|d| d.block_id).collect();
+        assert_eq!(dropped, [2, 3], "both fragments are duplicates");
+        assert!(out.placed.iter().any(|p| p.block_id == 4), "a field outside the text is not a duplicate of it");
+    }
+
+    /// A long reading and a two-glyph reading lying entirely inside its rectangle.
+    fn two_glyphs_inside(owner: &str, fragment: &str) -> PlacementOutcome {
+        let mut frame = custom_frame(&[(Rect::new(100.0, 100.0, 900.0, 120.0), Rect::new(92.0, 92.0, 916.0, 136.0)),
+                                       (Rect::new(400.0, 150.0, 40.0, 24.0), Rect::new(392.0, 142.0, 56.0, 40.0))]);
+        frame.blocks[0].original = owner.into();
+        frame.blocks[1].original = fragment.into();
+        outcome(&frame)
+    }
+
+    fn repeated(out: &PlacementOutcome) -> Vec<u64> {
+        out.dropped.iter().filter(|d| d.reason.contains("повторный")).map(|d| d.block_id).collect()
+    }
+
+    #[test]
+    fn two_glyphs_found_exactly_inside_a_reading_four_times_longer_are_a_repeat() {
+        // "vo" is a part of the owner's text; the owner is 22 glyphs long, more than 4 × 2.
+        let out = two_glyphs_inside("Alpha bravo charlie delta", "VO");
+        assert_eq!(repeated(&out), [2]);
+        assert!(out.placed.iter().any(|p| p.block_id == 1), "the owner stays");
+    }
+
+    #[test]
+    fn two_glyphs_inside_a_reading_less_than_four_times_longer_are_not_a_repeat() {
+        // The same "vo" inside a five-glyph owner: 5 < 4 × 2.
+        let out = two_glyphs_inside("bravo", "VO");
+        assert!(repeated(&out).is_empty(), "{:?}", out.dropped);
+        // The two glyphs go on to placement as a field of their own (drawn or left out for lack of room).
+        assert!(out.placed.iter().any(|p| p.block_id == 2) || out.dropped.iter().any(|d| d.block_id == 2 && d.reason.contains("нет места")),
+            "{:?}", out.dropped);
+    }
+
+    #[test]
+    fn two_glyphs_absent_from_the_owner_text_are_not_a_repeat() {
+        // Neither "x" nor "q" (nor a look-alike of them) occurs in the owner's text.
+        let out = two_glyphs_inside("Alpha bravo charlie delta", "XQ");
+        assert!(repeated(&out).is_empty(), "{:?}", out.dropped);
+        // The two glyphs go on to placement as a field of their own (drawn or left out for lack of room).
+        assert!(out.placed.iter().any(|p| p.block_id == 2) || out.dropped.iter().any(|d| d.block_id == 2 && d.reason.contains("нет места")),
+            "{:?}", out.dropped);
     }
 
     #[test]

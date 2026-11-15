@@ -96,7 +96,7 @@ fn main() {
     let font = FontVec::try_from_vec(std::fs::read(&font_path).expect("bundled NotoSans.ttf (build the app once to unpack the fonts)")).unwrap();
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let settings = InplaceSettings { background_mode: InplaceBackgroundMode::TextReplacement, ..Default::default() };
-    println!("{:12} {:>7} {:>7} {:>6} {:>8} {:>8}  mode", "scene", "error", "bias", "seam", "changed", "ms");
+    println!("{:12} {:>7} {:>7} {:>6} {:>8} {:>7} {:>8}  mode", "scene", "error", "bias", "seam", "changed", "ghost", "ms");
     let mut totals = (0.0f32, 0.0f32, 0.0f32, 0u32);
     for scene in SCENES.iter().filter(|s| wanted.is_empty() || wanted.iter().any(|w| w == s.name)) {
         let frame = image::open(root.join(scene.source)).expect("source frame").to_rgba8();
@@ -121,6 +121,7 @@ fn main() {
         let mut patches = Vec::new();
         let started = Instant::now();
         let mut mode = None;
+        let mut ghost = 0.0f32;
         for block in &on_text {
             let lh = 1.2 * scene.size;
             let analysis = BackgroundAnalyzer.analyze(&with_text, &mask, block, BackgroundAnalyzer::margin(lh));
@@ -130,6 +131,7 @@ fn main() {
             let (x0, y0, w, h) = result.rect.pixels(cw, ch);
             lay_over(&mut composite, &patch, x0, y0);
             mode = Some(result.mode);
+            ghost = ghost.max(result.ghost);
             patches.push((patch, x0, y0, w, h));
         }
         let millis = started.elapsed().as_secs_f32() * 1000.0;
@@ -155,7 +157,7 @@ fn main() {
             }
         }
         let m = Measure { error: abs / n.max(1) as f32, bias: signed / n.max(1) as f32, seam: seam_after / seam_clean.max(4.0), changed: changed as f32 / n.max(1) as f32, millis };
-        println!("{:12} {:7.2} {:+7.2} {:6.2} {:7.1}% {:8.1}  {:?} x{}", scene.name, m.error, m.bias, m.seam, 100.0 * m.changed, m.millis, result.0, patches.len());
+        println!("{:12} {:7.2} {:+7.2} {:6.2} {:7.1}% {:6.2}% {:8.1}  {:?} x{}", scene.name, m.error, m.bias, m.seam, 100.0 * m.changed, 100.0 * ghost, m.millis, result.0, patches.len());
         totals = (totals.0 + m.error, totals.1 + m.bias.abs(), totals.2 + m.millis, totals.3 + 1);
         // A closer look at the first 330 px of the field: original, result, clean, 3 times enlarged.
         {

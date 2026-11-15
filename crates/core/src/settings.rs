@@ -139,6 +139,10 @@ pub struct InplaceSettings {
     /// them. Off by default; a name is often a proper noun, and a small translation over a large original name (or a
     /// name cut by the edge of the region and read as nonsense) looks worse than the original.
     pub skip_names: bool,
+    /// Text the top edge of the region cuts (a speaker name just above the dialogue) is captured whole: the region is
+    /// read higher by the height of that line, the overlay follows. Blocks that lie wholly in the added strip are not
+    /// read. On by default; off keeps the capture exactly the drawn region.
+    pub extend_up: bool,
 }
 
 impl Default for InplaceSettings {
@@ -176,6 +180,7 @@ impl Default for InplaceSettings {
             click_through: false,
             skip_controls: false,
             skip_names: false,
+            extend_up: true,
         }
     }
 }
@@ -223,11 +228,15 @@ pub struct NormRect {
     pub h: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct WindowKey {
     pub uuid: String,
     pub resource_class: String,
     pub caption: String,
+    /// The program of the window's process, lower case without the path (`crossxmars.exe` for a game under Proton);
+    /// empty when it could not be read (portal, no KWin script, settings of an older version).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub program: String,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -507,7 +516,7 @@ pub const REACTIONS: &[(&str, Reaction)] = &{
         ("recognition.minimum_confidence", Pipeline), ("recognition.binarize", Pipeline), ("recognition.auto_invert", Pipeline), ("recognition.contrast", Pipeline), ("recognition.sharpen", Pipeline), ("recognition.filter_noise", Pipeline), ("recognition.auto_filters", Pipeline), ("translation.service", Pipeline), ("translation.yandex_api_key", Pipeline), ("translation.yandex_folder_id", Pipeline),
         ("translation.custom_url", Pipeline), ("capture.portal_fills_monitor", Pipeline), ("translation.custom_api_key", Pipeline), ("translation.deepl_api_key", Pipeline), ("translation.microsoft_api_key", Pipeline), ("translation.microsoft_region", Pipeline), ("translation.bergamot_binary", Pipeline), ("translation.bergamot_models_dir", Pipeline), ("translation.bergamot_model_paths", Pipeline), ("recognition.interval_ms", Pipeline), ("recognition.sensitivity", Pipeline),
         ("recognition.debounce_ms", Pipeline), ("display_mode", Pipeline), ("capture.regions", Pipeline),
-        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.max_blocks", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("appearance.inplace.click_through", Immediate), ("appearance.inplace.skip_controls", Pipeline), ("appearance.inplace.skip_names", Pipeline), ("general.theme", ApplicationStyle), ("general.ui_text_scale", Immediate), ("general.autostart", Immediate), ("general.remember_window_geometry", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
+        ("appearance.inplace.background_mode", Layout), ("appearance.inplace.font_family", Layout), ("appearance.inplace.font_size", Layout), ("appearance.inplace.font_weight", Layout), ("appearance.inplace.italic", Layout), ("appearance.inplace.line_height", Layout), ("appearance.inplace.letter_spacing", Layout), ("appearance.inplace.alignment", Layout), ("appearance.inplace.wrap_mode", Layout), ("appearance.inplace.text_color", Layout), ("appearance.inplace.outline_color", Layout), ("appearance.inplace.outline_width", Layout), ("appearance.inplace.shadow", Layout), ("appearance.inplace.text_opacity", Layout), ("appearance.inplace.fill_color", Layout), ("appearance.inplace.fill_opacity", Layout), ("appearance.inplace.padding_x", Layout), ("appearance.inplace.padding_y", Layout), ("appearance.inplace.extra_margin", Layout), ("appearance.inplace.corner_radius", Layout), ("appearance.inplace.padding", Layout), ("appearance.inplace.minimum_font_size", Layout), ("appearance.inplace.maximum_font_size", Layout), ("appearance.inplace.allow_condensed_fallback", Layout), ("appearance.inplace.font_overrides", Layout), ("appearance.inplace.preferred_fonts", Layout), ("appearance.inplace.line_gap_factor", Pipeline), ("appearance.inplace.max_blocks", Pipeline), ("appearance.inplace.only_when_active", Immediate), ("appearance.inplace.click_through", Immediate), ("appearance.inplace.skip_controls", Pipeline), ("appearance.inplace.skip_names", Pipeline), ("appearance.inplace.extend_up", Pipeline), ("general.theme", ApplicationStyle), ("general.ui_text_scale", Immediate), ("general.autostart", Immediate), ("general.remember_window_geometry", Immediate), ("general.notify_errors", Immediate), ("general.notify_retries", Immediate), ("general.log_level", Immediate), ("appearance.main_window.font_family", Immediate), ("appearance.main_window.cjk_font_family", Immediate), ("appearance.main_window.font_size", Immediate), ("appearance.main_window.background", Immediate), ("translation.changes_only", Pipeline),
         ("hotkeys.toggle", Hotkeys), ("hotkeys.select_region", Hotkeys), ("hotkeys.translate_once", Hotkeys), ("hotkeys.toggle_translation", Hotkeys), ("hotkeys.toggle_pin", Hotkeys),
         // The backend is chosen by the window key at selection time.
         ("capture.source", Reselect),
@@ -534,6 +543,12 @@ pub fn reaction(key: &str) -> Option<Reaction> {
 
 /// Most games remembered; a new one beyond this is simply not stored.
 pub const MAX_GAME_PROFILES: usize = 64;
+
+/// Window classes that many games share: Proton (`steam_app_default`, also `steam_app_<id>` for the key of 1.4.1),
+/// plain Wine. Their profile key takes the program of the window.
+fn shared_class(class: &str) -> bool {
+    class.starts_with("steam_app_") || class == "wine" || class == "explorer.exe"
+}
 
 /// What is remembered per game (window class): where the text is, how it is read and where the
 /// translation sits. Region rectangles are fractions of the client frame, so they survive
@@ -1211,9 +1226,22 @@ impl Settings {
     }
 
     /// Key of the selected game: its window class. Portal windows have no class of their own.
-    /// Proton gives every game the same generic class (`steam_app_default`, `steam_app_<id>`),
-    /// so there the normalised caption joins the key: `steam_app_default|cross x mars`.
+    /// Proton and Wine give many games the same class (`steam_app_default`, `steam_app_<id>`, `wine`), so there the
+    /// program of the window joins the key (`steam_app_default|crossxmars.exe`): it stays the same when the title
+    /// shows a score or a level. Without a known program a Proton class takes the normalised caption, as before 1.4.2
+    /// (`steam_app_default|cross x mars`).
     pub fn game_key(&self) -> Option<String> {
+        let window = self.capture.window.as_ref().filter(|w| !crate::capture::portal::is_portal_window(w))?;
+        let class = window.resource_class.trim().to_lowercase();
+        if class.is_empty() { return None; }
+        let program = window.program.trim().to_lowercase();
+        if shared_class(&class) && !program.is_empty() { return Some(format!("{class}|{program}")); }
+        self.caption_game_key()
+    }
+
+    /// The key of 1.4.1 and earlier (class, with the caption for Proton classes). A profile stored under it is moved to
+    /// [`Self::game_key`] when the game is met with its program known.
+    fn caption_game_key(&self) -> Option<String> {
         let window = self.capture.window.as_ref().filter(|w| !crate::capture::portal::is_portal_window(w))?;
         let class = window.resource_class.trim().to_lowercase();
         if class.is_empty() { return None; }
@@ -1222,6 +1250,19 @@ impl Settings {
             if !caption.is_empty() { return Some(format!("{class}|{caption}")); }
         }
         Some(class)
+    }
+
+    /// Moves the profile of the selected game from its pre-1.4.2 key (by caption) to the key by program, if only the
+    /// old one exists. A profile keyed by a bare shared class (`wine`) may belong to several games: it is copied, not
+    /// moved.
+    fn migrate_game_profile(&mut self) {
+        let (Some(key), Some(old)) = (self.game_key(), self.caption_game_key()) else { return };
+        if key == old || self.game_profiles.contains_key(&key) { return; }
+        let profile = if old.contains('|') { self.game_profiles.remove(&old) } else { self.game_profiles.get(&old).cloned() };
+        if let Some(profile) = profile {
+            tracing::info!(component = "settings", from = %old, to = %key, "Профиль игры перенесён на ключ по программе");
+            self.game_profiles.insert(key, profile);
+        }
     }
 
     fn game_profile(&self, caption: &str) -> GameProfile {
@@ -1258,6 +1299,7 @@ impl Settings {
     /// Store the current state of the selected game. Called after every change, so a game
     /// never needs an explicit «save profile».
     pub fn remember_game(&mut self) {
+        if self.game_profiles_enabled { self.migrate_game_profile(); }
         let Some(key) = self.game_key().filter(|_| self.game_profiles_enabled) else { return };
         if !self.game_profiles.contains_key(&key) && self.game_profiles.len() >= MAX_GAME_PROFILES {
             tracing::warn!(component = "settings", limit = MAX_GAME_PROFILES, "Слишком много профилей игр: новый не сохранён");
@@ -1270,6 +1312,7 @@ impl Settings {
 
     /// Bring back what was remembered for the selected game. `false`: the game is new.
     pub fn apply_game_profile(&mut self) -> bool {
+        if self.game_profiles_enabled { self.migrate_game_profile(); }
         let Some(profile) = self.game_key().filter(|_| self.game_profiles_enabled).and_then(|k| self.game_profiles.get(&k)).cloned() else { return false };
         self.recognition.language = profile.recognition.language;
         self.translation.target_language = profile.translation.target_language;
@@ -1392,7 +1435,7 @@ overlay_size = [800, 200]
     }
 
     fn game(class: &str, uuid: &str) -> Option<WindowKey> {
-        Some(WindowKey { uuid: uuid.into(), resource_class: class.into(), caption: format!("{class} window") })
+        Some(WindowKey { uuid: uuid.into(), resource_class: class.into(), caption: format!("{class} window"), program: String::new() })
     }
 
     #[test]
@@ -1523,7 +1566,7 @@ overlay_size = [800, 200]
     }
 
     fn proton(class: &str, caption: &str) -> Option<WindowKey> {
-        Some(WindowKey { uuid: "u".into(), resource_class: class.into(), caption: caption.into() })
+        Some(WindowKey { uuid: "u".into(), resource_class: class.into(), caption: caption.into(), program: String::new() })
     }
 
     #[test]
@@ -1536,6 +1579,59 @@ overlay_size = [800, 200]
         assert_ne!(s.game_key().unwrap(), a);
         s.capture.window = proton("Steam_App_1234", "  Cross \t x   Mars ");
         assert_eq!(s.game_key().unwrap(), "steam_app_1234|cross x mars");
+    }
+
+    fn proton_program(class: &str, caption: &str, program: &str) -> Option<WindowKey> {
+        Some(WindowKey { uuid: "u".into(), resource_class: class.into(), caption: caption.into(), program: program.into() })
+    }
+
+    #[test]
+    fn a_shared_class_is_keyed_by_the_program_and_survives_a_changed_title() {
+        let mut s = Settings::default();
+        s.capture.window = proton_program("steam_app_default", "Cross x Mars", "crossxmars.exe");
+        assert_eq!(s.game_key().unwrap(), "steam_app_default|crossxmars.exe");
+        s.recognition.language = "jpn".into();
+        s.remember_game();
+        // The title now shows a score: the same game, the same profile.
+        s.capture.window = proton_program("steam_app_default", "Cross x Mars — 1200 pts", "crossxmars.exe");
+        s.recognition.language = "eng".into();
+        assert!(s.apply_game_profile());
+        assert_eq!(s.recognition.language, "jpn");
+        // Plain Wine and its explorer class are shared too; a class of its own is not touched.
+        s.capture.window = proton_program("wine", "Game", "game.exe");
+        assert_eq!(s.game_key().unwrap(), "wine|game.exe");
+        s.capture.window = proton_program("CrossxMars.exe", "Game", "crossxmars.exe");
+        assert_eq!(s.game_key().unwrap(), "crossxmars.exe");
+        // The program is optional in the TOML: older settings and windows without it read as before.
+        let back = Settings::from_toml(&toml::to_string_pretty(&s).unwrap());
+        assert_eq!(back.capture.window.as_ref().unwrap().program, "crossxmars.exe");
+        let mut old = Settings::default();
+        old.capture.window = proton("steam_app_default", "Cross x Mars");
+        assert!(!toml::to_string_pretty(&old).unwrap().contains("program"), "an empty program is not written");
+    }
+
+    #[test]
+    fn a_profile_of_1_4_1_is_moved_to_the_key_by_program() {
+        let mut s = Settings::default();
+        // Stored by 1.4.1: keyed by the caption.
+        s.capture.window = proton("steam_app_default", "Cross x Mars");
+        s.recognition.language = "jpn".into();
+        s.remember_game();
+        assert!(s.game_profiles.contains_key("steam_app_default|cross x mars"));
+        // 1.4.2 meets the game with its program known.
+        s.capture.window = proton_program("steam_app_default", "Cross x Mars", "crossxmars.exe");
+        s.recognition.language = "eng".into();
+        assert!(s.apply_game_profile(), "the old profile is found");
+        assert_eq!(s.recognition.language, "jpn");
+        assert!(s.game_profiles.contains_key("steam_app_default|crossxmars.exe"));
+        assert!(!s.game_profiles.contains_key("steam_app_default|cross x mars"), "moved, not copied");
+        // A profile of a bare shared class may belong to several games: copied.
+        let mut w = Settings::default();
+        w.capture.window = proton("wine", "Some game");
+        w.remember_game();
+        w.capture.window = proton_program("wine", "Some game", "some.exe");
+        assert!(w.apply_game_profile());
+        assert!(w.game_profiles.contains_key("wine") && w.game_profiles.contains_key("wine|some.exe"));
     }
 
     #[test]
@@ -1662,7 +1758,7 @@ overlay_size = [800, 200]
             |s: &mut Settings| s.recognition.interval_ms += 100,
             |s: &mut Settings| s.display_mode = TranslationDisplayMode::Inplace,
             |s: &mut Settings| s.capture.regions[0].enabled = false,
-            |s: &mut Settings| s.capture.window = Some(WindowKey { uuid: "u".into(), resource_class: "c".into(), caption: "t".into() }),
+            |s: &mut Settings| s.capture.window = Some(WindowKey { uuid: "u".into(), resource_class: "c".into(), caption: "t".into(), program: String::new() }),
         ] {
             let mut changed = base.clone();
             change(&mut changed);

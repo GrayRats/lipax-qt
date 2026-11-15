@@ -14,8 +14,9 @@ function sendFocus() {
 }
 function watchWindow(window) {
     const uuid = window.internalId.toString();
-    // Who the window is (class and title): after the game is restarted it has a new uuid, and LipaX finds it again by this.
-    function sendIdentity() { send("Identity", uuid, String(window.resourceClass), String(window.caption)); }
+    // Who the window is (class, title and process): after the game is restarted it has a new uuid, and LipaX finds it
+    // again by this; the process tells which program it is (games under Proton share a class).
+    function sendIdentity() { send("Identity", uuid, String(window.resourceClass), String(window.caption), String(window.pid || 0)); }
     if (window.captionChanged) window.captionChanged.connect(sendIdentity);
     sendIdentity();
     function sendMinimized() { send("Minimized", uuid, !!window.minimized); }

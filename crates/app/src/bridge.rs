@@ -1036,7 +1036,11 @@ impl qobject::Controller {
         let window = serde_json::from_str::<[f64; 4]>(&self.game_geometry().to_string()).ok();
         // Арк-указатели: клонируются только счётчики, не блоки и не картинки.
         let frames: Vec<(String, lipa_core::settings::NormRect, Arc<InplaceFrame>)> = match window {
-            Some(_) => regions.iter().filter_map(|r| Some((r.id.clone(), r.rect?, self.rust().region_inplace.get(&r.id)?.clone()))).collect(),
+            // A frame captured higher than the drawn region (text its top edge cut) is placed where it was captured.
+            Some(_) => regions.iter().filter_map(|r| {
+                let frame = self.rust().region_inplace.get(&r.id)?.clone();
+                Some((r.id.clone(), frame.capture.or(r.rect)?, frame))
+            }).collect(),
             None => Vec::new(),
         };
         // Подложки пишутся на диск только при новой ревизии поля.
@@ -1805,7 +1809,7 @@ mod display_tests {
     #[test]
     fn appearance_patch_preserves_live_capture_settings() {
         let mut current = Settings::default();
-        current.capture.window = Some(WindowKey { uuid: "game-now".into(), resource_class: "Game".into(), caption: "Game".into() });
+        current.capture.window = Some(WindowKey { uuid: "game-now".into(), resource_class: "Game".into(), caption: "Game".into(), program: String::new() });
         current.capture.source = CaptureSource::Portal;
         let before = current.processing_key();
         let patch = serde_json::json!({ "appearance.window.font_size": 30, "translation_window.pinned_corner_radius": 18 });
@@ -1842,7 +1846,7 @@ mod display_tests {
         let caps = |s: &Settings| serde_json::from_str::<serde_json::Value>(&capabilities_json(s)).unwrap();
         let none = caps(&s);
         assert_eq!(none["inplaceTranslation"]["available"], false, "select a capture window first");
-        s.capture.window = Some(WindowKey { uuid: "portal:window".into(), resource_class: String::new(), caption: String::new() });
+        s.capture.window = Some(WindowKey { uuid: "portal:window".into(), resource_class: String::new(), caption: String::new(), program: String::new() });
         let portal = caps(&s);
         assert_eq!((portal["window_geometry"].as_bool(), portal["inplace_translation"].as_bool()), (Some(false), Some(false)));
         assert!(portal["inplaceBlocker"].as_str().unwrap().contains("глобальные координаты"));
@@ -1869,10 +1873,10 @@ mod display_tests {
     #[test]
     fn inplace_does_not_depend_on_the_translation_window() {
         let mut s = Settings { display_mode: TranslationDisplayMode::Inplace, ..Default::default() };
-        s.capture.window = Some(WindowKey { uuid: "kwin-game".into(), resource_class: "game".into(), caption: "Game".into() });
+        s.capture.window = Some(WindowKey { uuid: "kwin-game".into(), resource_class: "game".into(), caption: "Game".into(), program: String::new() });
         assert_eq!(effective_display(&s), ("inplace", String::new()));
         // Portal capture has no window position: logged fallback to the translation window.
-        s.capture.window = Some(WindowKey { uuid: "portal:window".into(), resource_class: String::new(), caption: String::new() });
+        s.capture.window = Some(WindowKey { uuid: "portal:window".into(), resource_class: String::new(), caption: String::new(), program: String::new() });
         let (mode, note) = effective_display(&s);
         assert_eq!(mode, "window");
         assert!(note.contains("portal"));
