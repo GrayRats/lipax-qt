@@ -43,7 +43,7 @@ pub fn is_portal_window(w: &WindowKey) -> bool {
 }
 
 pub fn portal_window_key() -> WindowKey {
-    WindowKey { uuid: PORTAL_UUID.into(), resource_class: "xdg-desktop-portal".into(), caption: "Окно (portal)".into() }
+    WindowKey { uuid: PORTAL_UUID.into(), resource_class: "xdg-desktop-portal".into(), caption: "Окно (portal)".into(), program: String::new() }
 }
 
 // ───────────────────────── нарезка потока PNG ─────────────────────────
@@ -531,6 +531,6 @@ mod tests {
     #[test]
     fn portal_key_is_recognised() {
         assert!(is_portal_window(&portal_window_key()));
-        assert!(!is_portal_window(&WindowKey { uuid: "abc".into(), resource_class: String::new(), caption: String::new() }));
+        assert!(!is_portal_window(&WindowKey { uuid: "abc".into(), resource_class: String::new(), caption: String::new(), program: String::new() }));
     }
 }

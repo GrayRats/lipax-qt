@@ -18,6 +18,7 @@ pub mod engine;
 pub mod ocr_geometry;
 pub mod fit;
 mod local_ink;
+mod periodic;
 pub mod font_classifier;
 pub mod font_database;
 pub mod font_matcher;

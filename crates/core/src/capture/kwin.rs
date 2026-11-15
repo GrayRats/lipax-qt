@@ -150,10 +150,20 @@ impl KwinCapture {
         if uuid.is_empty() {
             return Ok(None);
         }
+        // The program of the window (which game it is under Proton) comes from the KWin script; it reports a window
+        // shortly after it starts, so a freshly started script is given a moment.
+        let mut program = String::new();
+        if let Some(tracker) = self.tracker().await {
+            for _ in 0..10 {
+                if let Some(found) = tracker.program_of(&uuid) { program = found; break; }
+                tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+            }
+        }
         Ok(Some(WindowKey {
             uuid,
             resource_class: string(&info, "resourceClass"),
             caption: string(&info, "caption"),
+            program,
         }))
     }
 
@@ -183,7 +193,7 @@ impl KwinCapture {
     /// `None` when there is no such single window (or the KWin script is not available).
     pub async fn rebind(&self, window: &WindowKey) -> Option<String> {
         let current = self.resolve(&window.uuid);
-        let found = self.tracker().await?.find(&window.resource_class, &window.caption, &current)?;
+        let found = self.tracker().await?.find(&window.resource_class, &window.caption, &window.program, &current)?;
         tracing::info!(target: "capture.kwin", class = %window.resource_class, caption = %window.caption, "Окно игры найдено заново после перезапуска");
         self.aliases.lock().unwrap().insert(window.uuid.clone(), found.clone());
         Some(found)

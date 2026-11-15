@@ -2942,6 +2942,17 @@ ApplicationWindow {
                         onToggled: win.setInplace("skip_names", checked)
                     }
                     FieldLabel {
+                        helpText: "Если верхний край области обрезает текст (обычно имя говорящего над репликой), область читается выше на высоту этой строки, и перевод встаёт на место целого имени. Текст, который целиком лежит в добавленной полосе, не читается. Выключите, чтобы захватывалась строго нарисованная область."
+                        text: "Дочитывать текст, обрезанный верхним краем"
+                        helpControl: extendUpSwitch
+                    }
+                    Switch {
+                        id: extendUpSwitch
+                        objectName: "extendUp"
+                        checked: win.inplace().extend_up !== false
+                        onToggled: win.setInplace("extend_up", checked)
+                    }
+                    FieldLabel {
                         text: "Фон под переводом"
                         helpText: "Выбирает способ закрыть исходный текст: восстановление фона, заливка или прозрачный фон с обводкой. Авто учитывает изображение игры; пример использует условную однотонную сцену."
                     }

@@ -6,6 +6,7 @@ pub use geometry::shutdown as shutdown_geometry;
 pub use geometry::{arm_floating_focus_restore, clear_floating_focus_restore};
 pub mod kwin;
 pub mod portal;
+pub mod process;
 pub mod title_bar;
 
 use crate::settings::{NormRect, Settings, WindowKey};
@@ -178,7 +179,7 @@ mod tests {
 
     #[test]
     fn the_backend_decides_what_the_ui_offers() {
-        let kwin = WindowKey { uuid: "{abc}".into(), resource_class: "game".into(), caption: "g".into() };
+        let kwin = WindowKey { uuid: "{abc}".into(), resource_class: "game".into(), caption: "g".into(), program: String::new() };
         let settings = Settings::default();
         assert_eq!(capabilities_for(&kwin, &settings), CaptureCapabilities::KWIN);
         assert_eq!(capabilities_for(&portal::portal_window_key(), &settings), CaptureCapabilities::PORTAL);

@@ -170,6 +170,7 @@ mod tests {
                             uuid: "test".into(),
                             caption: "Test".into(),
                             resource_class: "test".into(),
+                            program: String::new(),
                         }); value.capture.region = Some(NormRect {
                             x: 0.0,
                             y: 0.0,

@@ -16,7 +16,7 @@ use super::block_detector::{BlockDetector, DetectedTextBlock, DetectionReport};
 use super::font_classifier::{FontAnalysis, FontClassifier};
 use super::font_database::InstalledFontDatabase;
 use super::font_matcher::{FontMatcher, FontPreferences, FontSelection};
-use super::tracker::TextBlockTracker;
+use super::tracker::{TextBlockTracker, TrackedTextBlock};
 use super::typography::{TranslationTextStyle, TypographyEstimator};
 use super::{FontCategory, InkMask, Rect, Script, TextBlockType, luma};
 use crate::settings::Settings;
@@ -111,9 +111,15 @@ pub struct UndrawableField {
     pub reason: &'static str,
 }
 
+/// A block whose edge lies within this many px of the edge of the frame is taken as cut by it.
+pub const EDGE_REACH: f32 = 1.5;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct InplaceFrame {
     pub frame: (u32, u32),
+    /// The part of the window this frame was captured from, when it differs from the region the user drew (extended
+    /// upwards for text the top edge cut). The overlay is placed by it.
+    pub capture: Option<crate::settings::NormRect>,
     pub blocks: Vec<InplaceBlock>,
     pub undrawable: Vec<UndrawableField>,
     /// Новые пары «оригинал → перевод» с последней отправки: для истории.
@@ -159,6 +165,12 @@ pub struct InplaceEngine {
     /// The pipeline gave up waiting for the frame to settle (it kept changing past `MAX_UNSTABLE`): a field whose text is
     /// still growing is then not read yet. Set before `begin` for that tick only.
     unsettled: bool,
+    /// The top rows of the frame (px) that lie above the region the user drew: the capture was extended to read a line
+    /// its top edge cut. Blocks wholly inside this strip are not fields. Set before `begin` (see `set_reach_above`).
+    reach_above: f32,
+    /// The line height (px) of the block that the top edge of the last frame cut, if any: the pipeline extends the
+    /// capture upwards by it.
+    cut_at_top: Option<f32>,
     /// Full backgrounds being computed on their own threads for fields that got the quick one (by field id: the glyph
     /// rectangle they are for, and where the result arrives).
     refinements: HashMap<u64, (Rect, std::sync::mpsc::Receiver<BackgroundResult>)>,
@@ -183,6 +195,15 @@ pub struct InplaceEngine {
     pending_joins: HashSet<u64>,
     joined_aliases: HashMap<u64,u64>,
     recognition_policy: Option<crate::settings::TextRecognitionSettings>,
+}
+
+/// A field the latest scan did not find, whose place a field found in it takes (a cut parent, the previous line of
+/// dialogue): it gives way at once instead of lingering for the grace scan. It is not drawn (`finish`), so it owns no
+/// reading either (`reconcile_ocr`): a repeat of a field that is not drawn would leave its text with no plate at all.
+fn gives_way(t: &TrackedTextBlock, fresh: &[Rect]) -> bool {
+    if t.misses == 0 { return false; }
+    let old = t.text_rect();
+    fresh.iter().any(|f| f.intersection(&old) >= 0.3 * old.area().min(f.area()))
 }
 
 /// A block the detector keeps seeing as one that the OCR engine showed to be several fields: the parts
@@ -326,7 +347,7 @@ impl InplaceEngine {
     /// Встроенный реестр создаётся при первом выборе шрифта и кешируется на сеанс.
     pub fn new() -> Self {
         Self { tracker: TextBlockTracker::default(), detector: BlockDetector::default(), fonts: None, snapshot: None,
-            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), unsettled: false, refinements: HashMap::new(), refining_threads: Default::default(), timings: Vec::new(), pending_signatures: HashMap::new(), pending_ink: HashMap::new(), pending_crops: HashMap::new(),
+            applied: Fingerprints::default(), published: Vec::new(), new_translations: Vec::new(), missing_font_warned: HashSet::new(), unsettled: false, reach_above: 0.0, cut_at_top: None, refinements: HashMap::new(), refining_threads: Default::default(), timings: Vec::new(), pending_signatures: HashMap::new(), pending_ink: HashMap::new(), pending_crops: HashMap::new(),
             cuts: Vec::new(), pending_cuts: HashSet::new(), last_scan: None, detection: DetectionReport::default(), ocr_dirty: false, joins: Vec::new(),
             pending_joins: HashSet::new(), joined_aliases: HashMap::new(), recognition_policy: None }
     }
@@ -410,6 +431,16 @@ impl InplaceEngine {
         self.unsettled = unsettled;
     }
 
+    /// How many rows at the top of the next frames lie above the drawn region (the capture is extended upwards).
+    pub fn set_reach_above(&mut self, px: f32) {
+        self.reach_above = px.max(0.0);
+    }
+
+    /// The line height of a block whose top the last frame's top edge cut: the capture should start higher.
+    pub fn cut_at_top(&self) -> Option<f32> {
+        self.cut_at_top
+    }
+
     /// Кадр: поиск и сопоставление полей, анализ шрифта новых полей, фон и типографика там,
     /// где они изменились. Возвращает задания OCR для полей с изменившимся содержимым.
     pub fn begin(&mut self, frame: DynamicImage, s: &Settings, now: Instant, force: bool) -> Vec<OcrJob> {
@@ -455,6 +486,14 @@ impl InplaceEngine {
                 _ => true,
             });
         }
+        // The strip added above the drawn region is read only to complete text its edge cut: what lies wholly in it is
+        // not a field (and does not ask for more).
+        if self.reach_above > 0.0 {
+            let strip = self.reach_above;
+            detected.retain(|d| d.rect.bottom() > strip + EDGE_REACH);
+        }
+        // Text cut by the top edge of the frame: its upper part is missing ("Mika" reads as "Muka").
+        self.cut_at_top = detected.iter().filter(|d| d.rect.y <= EDGE_REACH).map(|d| d.line_height()).reduce(f32::max);
         let assignments = self.tracker.update(&detected, now);
         lap("cuts, joins, tracking", &mut timings);
         let mut per_field = [std::time::Duration::ZERO; 5];
@@ -813,7 +852,8 @@ impl InplaceEngine {
         if !self.ocr_dirty { return; }
         self.ocr_dirty = false;
         let Some(snapshot) = &self.snapshot else { return };
-        let fields: Vec<_> = self.tracker.blocks().iter().filter(|t| t.misses <= 1 && !t.translated_text.is_empty())
+        let fresh: Vec<Rect> = self.tracker.blocks().iter().filter(|t| t.misses == 0).map(|t| t.text_rect()).collect();
+        let fields: Vec<_> = self.tracker.blocks().iter().filter(|t| t.misses <= 1 && !t.translated_text.is_empty() && !gives_way(t, &fresh))
             .filter_map(|t| t.ocr_field.clone()).collect();
         // A crop can contain an independent speaker plus truncated dialogue rows.
         // A second, complete reading of the same pixels establishes the boundary;
@@ -1081,10 +1121,7 @@ impl InplaceEngine {
         for t in self.tracker.blocks() {
             // Пропуск одного кадра не гасит поле: короткие сбои распознавания не мигают.
             if t.misses > 1 || t.translated_text.is_empty() || t.stale { continue; }
-            if t.misses > 0 {
-                let old = t.text_rect();
-                if fresh.iter().any(|f| f.intersection(&old) >= 0.3 * old.area().min(f.area())) { continue; }
-            }
+            if gives_way(t, &fresh) { continue; }
             if self.pending_joins.contains(&t.id) {
                 undrawable.push(UndrawableField { id:t.id, original:t.original_text.clone(), translation:t.translated_text.clone(),
                     reason:"объединение OCR-полей; требуется повторное распознавание" });
@@ -1120,7 +1157,7 @@ impl InplaceEngine {
         let state: Vec<(u64, u64)> = blocks.iter().map(|b| (b.id, b.revision)).chain(undrawable.iter().map(|u| (u.id | 1 << 63, revision_of(u.id)))).collect();
         if state == self.published { return None; }
         self.published = state;
-        Some(InplaceFrame { frame: (snap.image.width(), snap.image.height()), blocks, undrawable, new_translations: std::mem::take(&mut self.new_translations) })
+        Some(InplaceFrame { frame: (snap.image.width(), snap.image.height()), capture: None, blocks, undrawable, new_translations: std::mem::take(&mut self.new_translations) })
     }
 
     /// Настройки поменялись без нового кадра: перестроить то, что от них зависит.
@@ -1419,6 +1456,55 @@ mod tests {
         assert!(e.finish(&s).is_none(), "and nothing flickers");
     }
 
+    /// An OCR reading of the given rows, each with its text, in frame coordinates.
+    fn reading_of(origin: (u32, u32), rows: &[(Rect, &str)]) -> crate::ocr::OcrResult {
+        crate::ocr::OcrResult {
+            text: rows.iter().map(|(_, t)| *t).collect::<Vec<_>>().join(" "),
+            lines: rows.iter().map(|(r, t)| crate::ocr::OcrLine {
+                rect: crate::layout::CropRect::in_space(r.x - origin.0 as f32, r.y - origin.1 as f32, r.w, r.h),
+                text: (*t).into(), confidence: 98.0 }).collect(),
+            confidence: Some(98.0),
+            engine: "test",
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn the_parts_of_a_cut_field_are_not_repeats_of_the_parent_that_gave_way() {
+        let s = settings();
+        let mut img = canvas(1200, 400, [25, 30, 40]);
+        for y in [100, 134, 168, 202] { draw_line(&mut img, 100, y, 30, 14, 4, 22, 3, [240, 240, 240], false); }
+        let (frame, t0) = (dynamic(img), Instant::now());
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        // The whole block is read and drawn first.
+        let parent = e.begin(frame.clone(), &s, t0, false).remove(0);
+        let lines: Vec<Rect> = e.snapshot.as_ref().unwrap().blocks[&parent.id].lines.iter().map(|l| l.rect).collect();
+        assert_eq!(lines.len(), 4);
+        let rows: Vec<(Rect, &str)> = lines.iter().copied().zip(["alpha one", "beta two", "gamma three", "delta four"]).collect();
+        let o = e.observe_ocr_result(parent.id, &reading_of(parent.origin, &rows), parent.origin, &s);
+        assert_eq!(o.verdict, LinesVerdict::Normal);
+        e.complete(parent.id, Some((o.text, "целое".into())), &s);
+        assert_eq!(e.finish(&s).expect("the whole field").blocks.len(), 1);
+        // The block is then divided row by row (independent labels): the next scan finds the parts, not the parent.
+        e.cuts.push(CutMemory { parent: parent.rect, partitions: lines.clone(), rows: lines.iter().map(|&r| vec![r]).collect(), seen: t0 });
+        let parts = e.begin(frame, &s, t0 + Duration::from_millis(100), false);
+        assert_eq!(parts.len(), 4, "{:?}", parts.iter().map(|j| j.rect).collect::<Vec<_>>());
+        assert!(parts.iter().all(|j| j.id != parent.id), "the parts are new fields");
+        for job in &parts {
+            let row: Vec<(Rect, &str)> = rows.iter().copied().filter(|(r, _)| r.intersection(&job.rect) > 0.5 * r.area()).collect();
+            assert_eq!(row.len(), 1);
+            let o = e.observe_ocr_result(job.id, &reading_of(job.origin, &row), job.origin, &s);
+            e.complete(job.id, Some((o.text, format!("часть {}", job.id))), &s);
+        }
+        // The parent that gave way to them is not drawn, so it cannot make them its repeats: every part is drawn.
+        let out = e.finish(&s).expect("the parts");
+        let mut drawn: Vec<u64> = out.blocks.iter().map(|b| b.id).collect();
+        drawn.sort_unstable();
+        let mut want: Vec<u64> = parts.iter().map(|j| j.id).collect();
+        want.sort_unstable();
+        assert_eq!(drawn, want, "undrawable: {:?}", out.undrawable.iter().map(|u| (u.id, u.reason)).collect::<Vec<_>>());
+    }
+
     #[test]
     fn a_split_is_planned_once_and_forgotten_with_the_scene() {
         let s = settings();
@@ -1642,6 +1728,25 @@ mod tests {
         let frame = e.finish(&on).expect("the dialogue is published");
         assert_eq!(frame.blocks.len(), 2, "nothing is drawn over the buttons");
         assert!(frame.blocks.iter().all(|b| !matches!(b.block_type, TextBlockType::Button | TextBlockType::MenuItem)));
+    }
+
+    #[test]
+    fn text_cut_at_the_top_is_reported_and_the_strip_above_the_region_is_not_read() {
+        let t0 = Instant::now();
+        // A name whose upper part the frame cut (rows 0..12) over a line of dialogue.
+        let mut img = canvas(800, 120, [25, 30, 40]);
+        draw_line(&mut img, 60, 0, 6, 14, 4, 12, 3, [240, 220, 120], false);
+        draw_line(&mut img, 60, 60, 30, 14, 4, 22, 3, [240, 240, 240], false);
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        assert_eq!(e.begin(dynamic(img.clone()), &settings(), t0, false).len(), 2);
+        assert!(e.cut_at_top().is_some_and(|h| h >= 10.0), "{:?}", e.cut_at_top());
+        // The same picture where the top 20 rows lie above the drawn region: the name there is no field.
+        let mut e = InplaceEngine::with_fonts(InstalledFontDatabase::bundled());
+        e.set_reach_above(20.0);
+        let jobs = e.begin(dynamic(img), &settings(), t0, false);
+        assert_eq!(jobs.len(), 1, "only the dialogue: {:?}", jobs.iter().map(|j| j.rect).collect::<Vec<_>>());
+        assert!(jobs[0].rect.y > 50.0);
+        assert_eq!(e.cut_at_top(), None, "what the strip holds does not ask for more");
     }
 
     #[test]

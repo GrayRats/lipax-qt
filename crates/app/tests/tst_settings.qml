@@ -1011,6 +1011,12 @@ TestCase {
         names.toggled()
         compare(settings.current.appearance.inplace.skip_names, true)
         settings.set("appearance.inplace.skip_names", false)
+        const extendUp = findChild(settings, "extendUp")
+        verify(extendUp !== null && extendUp.checked, "text cut by the top edge is read whole by default")
+        extendUp.checked = false
+        extendUp.toggled()
+        compare(settings.current.appearance.inplace.extend_up, false)
+        settings.set("appearance.inplace.extend_up", true)
         const changes = findChild(settings, "changesOnly")
         verify(changes !== null && !changes.checked)
         changes.checked = true

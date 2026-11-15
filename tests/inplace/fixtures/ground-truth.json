@@ -1,0 +1,539 @@
+{
+ "dialogue-en-0": [
+  {
+   "class": "ui",
+   "text": "CHARACTER"
+  },
+  {
+   "class": "name",
+   "text": "Buro"
+  },
+  {
+   "class": "ui",
+   "text": "Zombie Girl"
+  },
+  {
+   "class": "ui",
+   "text": "CV: Mao Amatsuka"
+  },
+  {
+   "class": "ui",
+   "text": "HP:250"
+  },
+  {
+   "class": "dialogue",
+   "text": "Zombie Girl can enter Dying Mode for 15 seconds when HP falls to the minimum. She cannot enter Dying Mode again if not collecting any red hearts after quiting"
+  },
+  {
+   "class": "ui",
+   "text": "SELECT"
+  }
+ ],
+ "dialogue-en-1": [
+  {
+   "class": "ui",
+   "text": "AUTO"
+  },
+  {
+   "class": "ui",
+   "text": "SKIP"
+  },
+  {
+   "class": "name",
+   "text": "Amiya"
+  },
+  {
+   "class": "dialogue",
+   "text": "However, you'll always be the most important person to me, Doctor. No matter what happens, this will never change."
+  }
+ ],
+ "dialogue-en-2": [
+  {
+   "class": "ui",
+   "text": "Shop"
+  },
+  {
+   "class": "dialogue",
+   "text": "Spend the coins you've collected while playing in the Shop!"
+  },
+  {
+   "class": "dialogue",
+   "text": "As your rank increases, the lineup gets better and better!"
+  },
+  {
+   "class": "ui",
+   "text": "Lantern",
+   "unsure": true
+  },
+  {
+   "class": "ui",
+   "text": "Monster",
+   "unsure": true
+  }
+ ],
+ "dialogue-en-3": [
+  {
+   "class": "name",
+   "text": "Onibi A"
+  },
+  {
+   "class": "dialogue",
+   "text": "Hanako-san, the ghost who haunts bathrooms, will find you!"
+  }
+ ],
+ "dialogue-en-4": [
+  {
+   "class": "ui",
+   "text": "TIPS"
+  },
+  {
+   "class": "ui",
+   "text": "(Obakeidoro)"
+  },
+  {
+   "class": "dialogue",
+   "text": "A game that's all the rage among Monsters. Lately, more and more Humans have been spirited away to play the game."
+  }
+ ],
+ "dialogue-en-5": [
+  {
+   "class": "dialogue",
+   "text": "Flashpoints offer moments of emotional choice. How Aloy expresses her personality is up to you."
+  },
+  {
+   "class": "dialogue",
+   "text": "Choose and Aloy will Confront the challenge directly."
+  },
+  {
+   "class": "dialogue",
+   "text": "Choose and Aloy will use her Insight to find a clever, less obvious approach."
+  },
+  {
+   "class": "dialogue",
+   "text": "Choose and Aloy will express Compassion or give voice to her deepest convictions."
+  },
+  {
+   "class": "choice",
+   "text": "Someone who doesn't have time for this"
+  },
+  {
+   "class": "choice",
+   "text": "Someone who had no other choice"
+  },
+  {
+   "class": "choice",
+   "text": "Someone who had a good reason"
+  }
+ ],
+ "dialogue-en-6": [
+  {
+   "class": "ui",
+   "text": "WORKBENCH"
+  },
+  {
+   "class": "ui",
+   "text": "OUTFIT UPGRADES"
+  },
+  {
+   "class": "name",
+   "text": "NORA ANOINTED"
+  },
+  {
+   "class": "ui",
+   "text": "Hunter"
+  },
+  {
+   "class": "ui",
+   "text": "Uncommon"
+  },
+  {
+   "class": "dialogue",
+   "text": "Well-worn armor made with repurposed technology from an ancient lab. After losing its power source, it was modified to augment ranged combat."
+  },
+  {
+   "class": "ui",
+   "text": "LEVEL 2 UPGRADE"
+  },
+  {
+   "class": "ui",
+   "text": "Increases Resistances"
+  },
+  {
+   "class": "ui",
+   "text": "1x Skill Improvement"
+  },
+  {
+   "class": "ui",
+   "text": "Close"
+  }
+ ],
+ "dialogue-en-7": [
+  {
+   "class": "ui",
+   "text": "Consecutive Sign-in"
+  },
+  {
+   "class": "ui",
+   "text": "Rookie Mission"
+  },
+  {
+   "class": "ui",
+   "text": "Cumulative Sign-in"
+  },
+  {
+   "class": "ui",
+   "text": "7-day Sign-in Event"
+  },
+  {
+   "class": "dialogue",
+   "text": "Sign in for 7 days consecutively to get the 5-star Operator \"Cliffheart\". Your progress will be reset if you miss a sign-in day. Previous rewards cannot be claimed again."
+  },
+  {
+   "class": "name",
+   "text": "Cliffheart"
+  },
+  {
+   "class": "ui",
+   "text": "Claimable"
+  },
+  {
+   "class": "ui",
+   "text": "Headhunting Permit"
+  },
+  {
+   "class": "ui",
+   "text": "Originite Prime"
+  },
+  {
+   "class": "ui",
+   "text": "Furniture Part"
+  },
+  {
+   "class": "ui",
+   "text": "Expedited Plan"
+  },
+  {
+   "class": "ui",
+   "text": "Contract"
+  },
+  {
+   "class": "ui",
+   "text": "Checked in",
+   "unsure": true
+  }
+ ],
+ "dialogue-en-8": [
+  {
+   "class": "dialogue",
+   "text": "At Rhodes Island, we actually will receive occasional requests from outside parties in addition to our routine internal and maintenance work."
+  },
+  {
+   "class": "ui",
+   "text": "OPERATION"
+  },
+  {
+   "class": "ui",
+   "text": "0-1"
+  },
+  {
+   "class": "ui",
+   "text": "TUTORIAL"
+  },
+  {
+   "class": "ui",
+   "text": "TR-1"
+  },
+  {
+   "class": "ui",
+   "text": "Progress"
+  }
+ ],
+ "dialogue-en-9": [
+  {
+   "class": "dialogue",
+   "text": "Uh, I'm Myrrh, a herbalist. Dr. Kal'tsit gave me this title... she said myrrh symboliz"
+  },
+  {
+   "class": "name",
+   "text": "Myrrh"
+  },
+  {
+   "class": "ui",
+   "text": "MEDIC"
+  },
+  {
+   "class": "ui",
+   "text": "NEW"
+  },
+  {
+   "class": "ui",
+   "text": "First-time Hire"
+  },
+  {
+   "class": "ui",
+   "text": "Distinction Certificate"
+  }
+ ],
+ "dialogue-en-10": [
+  {
+   "class": "ui",
+   "text": "Investigation Phase 9:00"
+  },
+  {
+   "class": "ui",
+   "text": "You Are the Magistrate"
+  },
+  {
+   "class": "dialogue",
+   "text": "Night: 1 Buy film from the requisitioner in the police station"
+  },
+  {
+   "class": "dialogue",
+   "text": "If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis"
+  },
+  {
+   "class": "name",
+   "text": "Chief Constable"
+  },
+  {
+   "class": "dialogue",
+   "text": "Hello Magistrate. I'm the Chief Constable here in Whitechapel and responsible for police matters. (1/4)"
+  },
+  {
+   "class": "ui",
+   "text": "Next"
+  },
+  {
+   "class": "ui",
+   "text": "POLICE STATION"
+  },
+  {
+   "class": "ui",
+   "text": "EQUIPPED: Magnifying Glass"
+  },
+  {
+   "class": "ui",
+   "text": "Industrial"
+  },
+  {
+   "class": "ui",
+   "text": "Upper Class"
+  },
+  {
+   "class": "ui",
+   "text": "Lower Class"
+  }
+ ],
+ "dialogue-en-11": [
+  {
+   "class": "ui",
+   "text": "Investigation Phase 0:25"
+  },
+  {
+   "class": "ui",
+   "text": "You Are the Magistrate"
+  },
+  {
+   "class": "dialogue",
+   "text": "Night: 1 Buy film from the requisitioner in the police station"
+  },
+  {
+   "class": "dialogue",
+   "text": "If you run out of things you can investigate, talk to suspects in the holding cells to investigate their alibis"
+  },
+  {
+   "class": "ui",
+   "text": "DUTFIELD'S YARD"
+  },
+  {
+   "class": "ui",
+   "text": "EQUIPPED: Truncheon"
+  },
+  {
+   "class": "ui",
+   "text": "SHOW TRUNCHEON"
+  },
+  {
+   "class": "ui",
+   "text": "INSPECT"
+  },
+  {
+   "class": "ui",
+   "text": "DROP"
+  },
+  {
+   "class": "ui",
+   "text": "MAP"
+  },
+  {
+   "class": "ui",
+   "text": "Industrial"
+  },
+  {
+   "class": "ui",
+   "text": "Upper Class"
+  },
+  {
+   "class": "ui",
+   "text": "Lower Class"
+  }
+ ],
+ "dialogue-en-12": [
+  {
+   "class": "dialogue",
+   "text": "These are your equipment slots, picking up an equippable item will automatically equip that item if a slot is empty. Some items, like Helmets, can not be equipped more than once."
+  },
+  {
+   "class": "ui",
+   "text": "(click this to dismiss)"
+  },
+  {
+   "class": "ui",
+   "text": "Spell Book"
+  },
+  {
+   "class": "ui",
+   "text": "Expertise"
+  },
+  {
+   "class": "ui",
+   "text": "Tasks"
+  },
+  {
+   "class": "ui",
+   "text": "Mob Bestiary"
+  },
+  {
+   "class": "ui",
+   "text": "Player Stats"
+  },
+  {
+   "class": "ui",
+   "text": "Extra Damage"
+  },
+  {
+   "class": "ui",
+   "text": "Damage Multiplier"
+  },
+  {
+   "class": "ui",
+   "text": "Attack Speed"
+  },
+  {
+   "class": "ui",
+   "text": "Reload Speed"
+  },
+  {
+   "class": "ui",
+   "text": "Weapon Range"
+  },
+  {
+   "class": "ui",
+   "text": "Support Range"
+  },
+  {
+   "class": "ui",
+   "text": "Critical Chance"
+  },
+  {
+   "class": "ui",
+   "text": "Critical Damage"
+  },
+  {
+   "class": "ui",
+   "text": "Knockback"
+  },
+  {
+   "class": "ui",
+   "text": "Spell Haste"
+  },
+  {
+   "class": "ui",
+   "text": "Dodge Chance"
+  },
+  {
+   "class": "ui",
+   "text": "Block Chance"
+  },
+  {
+   "class": "ui",
+   "text": "Damage Reduction"
+  },
+  {
+   "class": "ui",
+   "text": "Move Speed"
+  },
+  {
+   "class": "ui",
+   "text": "Kills: 3"
+  },
+  {
+   "class": "ui",
+   "text": "New Expertise Available!"
+  }
+ ],
+ "dialogue-en-13": [
+  {
+   "class": "dialogue",
+   "text": "But my sisters were always with me. I felt bad for bothering them and for all the worry I caused them, but I was really happy that I wasn't left alone."
+  },
+  {
+   "class": "ui",
+   "text": "SAVE"
+  },
+  {
+   "class": "ui",
+   "text": "LOAD"
+  }
+ ],
+ "dialogue-en-14": [
+  {
+   "class": "name",
+   "text": "Gorna"
+  },
+  {
+   "class": "dialogue",
+   "text": "Finally opened up after that incident, the idiot broke my counter, with his head..."
+  },
+  {
+   "class": "ui",
+   "text": "Day"
+  },
+  {
+   "class": "ui",
+   "text": "Skip"
+  }
+ ],
+ "dialogue-en-15": [
+  {
+   "class": "name",
+   "text": "Mika"
+  },
+  {
+   "class": "dialogue",
+   "text": "Morning, Ella. Sometimes I wonder if I'm in the right place — all this hauling back-and-forth gets tiresome and, quite frankly, I'm upset at it more than I should be... but I have the right to be angry!"
+  },
+  {
+   "class": "ui",
+   "text": "60% Fuel"
+  },
+  {
+   "class": "ui",
+   "text": "rSpeed: 5 ms"
+  },
+  {
+   "class": "ui",
+   "text": "Temp: 20 C"
+  },
+  {
+   "class": "ui",
+   "text": "unread message",
+   "unsure": true
+  },
+  {
+   "class": "ui",
+   "text": "Tracking Earth",
+   "unsure": true
+  }
+ ]
+}
