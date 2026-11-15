@@ -832,6 +832,29 @@ mod tests {
         assert!(large[0].rect.x <= 100.0 && large[0].rect.right() >= (next + 90 + 140) as f32, "{summary:?}");
     }
 
+    /// Two lines one paragraph pitch apart (46 px = 1.44 line heights), aligned and of one size: `ink` is the colour of
+    /// the second line, `word` the colour of the second word of the first line (five letters out of thirty-four).
+    fn two_lines(second: [u8; 3], word: [u8; 3]) -> Vec<usize> {
+        let mut img = canvas(1200, 400, [25, 30, 40]);
+        let white = [240, 240, 240];
+        let next = draw_prose_line(&mut img, 100, 100, 5, 14, 4, 32, 3, white);
+        let next = draw_prose_line(&mut img, next + 12, 100, 5, 14, 4, 32, 3, word);
+        draw_prose_line(&mut img, next + 12, 100, 24, 14, 4, 32, 3, white);
+        draw_prose_line(&mut img, 100, 146, 34, 14, 4, 32, 3, second);
+        let blocks = BlockDetector::default().detect_text_blocks(&img, &BlockDetector::ink_mask(&img));
+        blocks.iter().map(|b| b.lines.len()).collect()
+    }
+
+    /// Lines of sharply different ink are separate blocks even at the pitch of one paragraph; the colour is compared
+    /// between whole lines, so a highlighted word inside a line of the paragraph does not cut it.
+    #[test]
+    fn a_line_of_another_ink_is_a_block_of_its_own_but_a_highlighted_word_is_not() {
+        let (white, green) = ([240, 240, 240], [110, 170, 110]);
+        assert_eq!(two_lines(green, white), vec![1, 1], "a white line over a green one");
+        assert_eq!(two_lines(white, white), vec![2], "a paragraph of one colour");
+        assert_eq!(two_lines(white, green), vec![2], "a paragraph with a word of another colour");
+    }
+
     /// Fragments of one row are joined only into a row of capitals of one height; pieces of a picture of different heights
     /// and an icon with its rim inside stay apart (and are later rejected as lines).
     #[test]
