@@ -299,4 +299,5 @@
 ### Цикл 8 (2026-11-19): разбиение `engine.rs`
 - `layout/engine.rs` (1996 строк) → `layout/engine/{mod 677, fields 274, regroup 137, observe 272, tests 636}`; публичные пути прежние, дочерние
   модули видят приватные поля `InplaceEngine`. Отчёты 16 кадров идентичны r8 (0 расхождений), clippy `--all-targets` чист.
-- Остаётся: `settings.rs`, «TR-1», A4.
+- `settings.rs` (1947 строк) → `settings/{mod 512, inplace 176, sections 264, profile 111, types 133, migrate 134, reaction 61, tests 566}`; публичные пути прежние через `pub use`; clippy `--workspace --all-targets` чист, тесты workspace зелёные.
+- Остаётся: «TR-1», A4, `bridge.rs` (1904 строки).

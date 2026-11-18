@@ -49,7 +49,7 @@ LipaX — переводчик игрового текста для KDE Plasma 6
 
 | Компонент | Назначение |
 |---|---|
-| `crates/core/src/settings.rs` | TOML, проверка значений, миграция старой области, максимум три профиля |
+| `crates/core/src/settings/` | `mod.rs` (`Settings`, загрузка и проверка), `inplace.rs`, `sections.rs`, `profile.rs` (профили игр), `types.rs`, `migrate.rs` (старые файлы), `reaction.rs` (`REACTIONS`). TOML, проверка значений, миграция старой области, максимум три профиля |
 | `capture/kwin.rs`, `capture/geometry.rs`, `capture/geometry.js` | ScreenShot2 и клиентская геометрия окна |
 | `capture/portal.rs` | запасной ScreenCast / PipeWire / GStreamer |
 | `detect.rs`, `pipeline/` | детектор текста, независимое состояние областей, OCR, перевод, повторы. `pipeline/mod.rs` — `Pipeline`, цикл тика, `Io` (перевод, кэш), события; `state.rs` — `Phase` и `RegionState`; `inplace.rs` — `inplace_tick`, `read_field`; `preview.rs` — инспектор (`OcrPreview`, `PreviewBox`, `describe`, `edge_note`); `tests.rs` — общие моки и тесты конвейера |
@@ -337,7 +337,7 @@ MMB по наложению **скрывает перевод**, если пол
 | Поиск окна игры после перезапуска | `capture/geometry.js`, `geometry.rs`, `kwin.rs` | Скрипт KWin присылает класс и заголовок каждого окна (`Identity`). `KwinCapture` хранит псевдонимы и переподключается по совпадению. Общие классы (`steam_app_default`, `wine`, `explorer.exe`, пустой) без совпадения заголовка не угадываются |
 | Текст, который ещё печатается | `layout/tracker.rs` (`Typing`), `engine/mod.rs` (`unsettled`), `pipeline/state.rs` (`RegionState.unsettled`) | Пока рост текста в поле не прекратился, поле не читается; ожидание не длиннее `TYPING_MAX` = 8 с. Принудительное чтение и устоявшийся кадр не задерживаются |
 | Межстрочный шаг при подгонке | `layout/fit.rs` | Шаг не меньше `MIN_LINE_STEP` = 1,15 кегля, даже если в оригинале строки плотнее |
-| Фильтр кнопок и имён | `settings.rs` (`skip_controls`, `skip_names`), `engine.rs` `begin()` | Блоки типов `Button`/`MenuItem` и `CharacterName` отбрасываются до перевода, если включена опция. Обе опции выключены по умолчанию |
+| Фильтр кнопок и имён | `settings/inplace.rs` (`skip_controls`, `skip_names`), `engine/mod.rs` `begin()` | Блоки типов `Button`/`MenuItem` и `CharacterName` отбрасываются до перевода, если включена опция. Обе опции выключены по умолчанию |
 | Фон узорчатый или гладкий | `layout/background.rs` | `detail` — средний шаг яркости в кольце вокруг поля. Поиск образца (`copy_similar`) запускается только при `detail/texture ≥ EXEMPLAR_MIN_DETAIL_RATIO` (0,04), то есть на повторяющемся рисунке; на облаках и градиентах он выключен. Заливка уточняется релаксацией Гаусса–Зейделя (`RELAX_SWEEPS` = 80), пиксели обводки у края дыры входят в неё (2 px) |
 | Быстрый фон сразу, полный позже | `layout/engine.rs` (`refinements`, `poll_refinements`), `background.rs` (`render_quick`, `refinable`) | На узорчатом фоне `begin()` сначала ставит быстрый патч без поиска образца, полный фон считает поток `lipax-background`. Результат приходит через канал и перерисовывает поле без нового кадра. Потоков одновременно не больше `MAX_REFINEMENTS` = 4 (счётчик `RefiningThread` освобождается и при панике) |
 | Скорость разбора кадра | `layout/local_ink.rs` (`contrast_masks_in_bands`), `block_detector.rs` (`local_blocks`) | Среднее в скользящем окне без интегрального изображения; три плоскости детектора считаются в `std::thread::scope`; полосы строк дают те же маски, что и целый кадр. Потоков поиска образца — половина ядер, не менее 1 и не более 8 |
