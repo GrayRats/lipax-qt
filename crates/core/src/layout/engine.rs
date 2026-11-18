@@ -218,6 +218,8 @@ struct CutMemory {
 
 struct JoinMemory {
     members: Vec<Rect>,
+    /// What the members read before the join: a row of the union read again may take a better reading from here.
+    better: Vec<super::ocr_geometry::OcrSpan>,
     seen: Instant,
 }
 
@@ -885,8 +887,19 @@ impl InplaceEngine {
             return false;
         }
         self.pending_joins.insert(id); self.pending_joins.insert(peer.id());
-        self.joins.push(JoinMemory { members, seen: self.last_scan.unwrap_or_else(Instant::now) });
+        let better = item.spans().iter().chain(peer.spans()).cloned().collect();
+        self.joins.push(JoinMemory { members, better, seen: self.last_scan.unwrap_or_else(Instant::now) });
         true
+    }
+
+    /// A field read again after a join takes, row by row, the better readings the members had before it.
+    fn better_readings(&self, mut field: super::ocr_geometry::OcrField) -> super::ocr_geometry::OcrField {
+        for m in &self.joins {
+            let union = m.members.iter().skip(1).fold(m.members[0], |r, b| r.union(b));
+            if field.bounds().intersection(&union) <= 0.0 { continue; }
+            if let Some(corrected) = field.corrected_by(&m.better) { field = corrected; }
+        }
+        field
     }
 
     /// Keep per-span text/confidence and source coordinates before translation. OCR outside the
@@ -948,6 +961,7 @@ impl InplaceEngine {
                 None => field,
             }
         });
+        let field = field.map(|f| self.better_readings(f));
         let text = field.as_ref().map(|field| field.text().to_owned()).unwrap_or_default();
         let lines = field.as_ref().map(|f| f.rows()).unwrap_or_default();
         let verdict = self.observe_supported_ocr_lines(id, &lines, s, true);

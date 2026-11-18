@@ -85,6 +85,10 @@ fn word_similarity(word: &str, other: &str) -> f32 {
 /// join a garbled fragment to the line it was clipped from.
 const SHARED_ROW: f32 = 0.5;
 const SHARED_ROW_TEXT: f32 = 0.9;
+/// A row is read again by a better reading when that covers this share of the smaller of the two rectangles
+/// and repeats this share of the row's letters.
+const CORRECTION_OVERLAP: f32 = 0.7;
+const CORRECTION_TEXT: f32 = 0.7;
 /// Share of the whole readings that may be repeated by the other one before it counts as a duplicate or a fragment.
 const SHARED_WHOLE_TEXT: f32 = 0.8;
 
@@ -268,6 +272,32 @@ impl OcrField {
         text_support(self.text(), other.text())
     }
 
+    /// Rows of this reading that `better` (readings of the same pixels from other crops) read otherwise and more
+    /// confidently take the other text: a union read again may lose or change a letter that a tight crop of the
+    /// word read well ("Uncommon" beside "Hunter"). A row is replaced only by a reading that has all its words (so
+    /// a tight reading of one word never replaces a row of two) and says nearly the same. `None`: nothing changed.
+    #[must_use]
+    pub fn corrected_by(&self, better: &[OcrSpan]) -> Option<Self> {
+        let mut changed = false;
+        let spans: Vec<OcrSpan> = self.spans.iter().map(|span| {
+            let area = span.rect.area();
+            let best = better.iter().filter(|b| {
+                b.confidence > span.confidence && b.text != span.text
+                    && words(&b.text).len() >= words(&span.text).len()
+                    && area > 0.0 && b.rect.intersection(&span.rect) >= CORRECTION_OVERLAP * area.min(b.rect.area())
+                    && text_support(&span.text, &b.text) >= CORRECTION_TEXT
+            }).max_by(|a, b| a.confidence.total_cmp(&b.confidence));
+            match best {
+                Some(b) => { changed = true; OcrSpan { rect: span.rect, text: b.text.clone(), confidence: b.confidence } }
+                None => span.clone(),
+            }
+        }).collect();
+        if !changed { return None; }
+        let mut field = Self::new(self.id, spans, self.cap_height)?;
+        field.crop_bounds = self.crop_bounds;
+        Some(field)
+    }
+
     /// Related overlapping crops which must be read again together: neither reading owns all
     /// the source pixels. The detector must independently confirm overlapping source support.
     #[must_use]
@@ -348,5 +378,36 @@ impl OcrField {
         self.spans
             .iter()
             .all(|s| covered_source_area(s.rect, &owner.spans, cut_at_input) >= 0.8 * s.rect.area())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn span(x: f32, y: f32, w: f32, text: &str, confidence: f32) -> OcrSpan {
+        OcrSpan::new(Rect::new(x, y, w, 20.0), text, confidence).unwrap()
+    }
+
+    fn field(spans: Vec<OcrSpan>) -> OcrField { OcrField::new(1, spans, 14.0).unwrap() }
+
+    #[test]
+    fn a_row_read_better_by_a_tight_crop_takes_that_reading() {
+        let union = field(vec![span(10.0, 10.0, 80.0, "Hunter", 98.0), span(10.0, 40.0, 80.0, "common", 99.7)]);
+        let tight = [span(5.0, 38.0, 90.0, "Uncommon", 99.96)];
+        let fixed = union.corrected_by(&tight).expect("the word is read better elsewhere");
+        assert_eq!(fixed.text(), "Hunter Uncommon");
+        assert_eq!(fixed.id(), 1);
+    }
+
+    #[test]
+    fn a_worse_or_different_or_smaller_reading_changes_nothing() {
+        let union = field(vec![span(10.0, 10.0, 80.0, "Hunter Incommon", 99.0)]);
+        // Less confident; another text altogether; one word where the row has two.
+        assert!(union.corrected_by(&[span(10.0, 10.0, 80.0, "Hunter Uncommon", 90.0)]).is_none());
+        assert!(union.corrected_by(&[span(10.0, 10.0, 80.0, "Something else", 99.9)]).is_none());
+        assert!(union.corrected_by(&[span(50.0, 10.0, 40.0, "Uncommon", 99.9)]).is_none());
+        // Another place of the frame.
+        assert!(union.corrected_by(&[span(300.0, 200.0, 80.0, "Hunter Uncommon", 99.9)]).is_none());
     }
 }
