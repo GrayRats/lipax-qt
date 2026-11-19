@@ -2,6 +2,7 @@
 //! Старый парсер fontconfig сохранён только для совместимости с тестовыми фикстурами;
 //! `InplaceEngine` не опрашивает шрифты системы.
 
+use crate::sync::RwLockExt;
 use super::{FontCategory, FontWeight};
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, RwLock};
@@ -210,20 +211,20 @@ pub fn set_bundled_available(families: impl IntoIterator<Item = String>) {
     for font in BUNDLED.iter().filter(|f| !loaded.contains(f.family)) {
         tracing::error!(target: "inplace.font", family = font.family, files = ?font.files, "bundled font family is not available");
     }
-    *BUNDLED_AVAILABLE.write().unwrap() = Some(loaded);
-    *BUNDLED_CACHE.write().unwrap() = None;
+    *BUNDLED_AVAILABLE.write_recover() = Some(loaded);
+    *BUNDLED_CACHE.write_recover() = None;
 }
 
 impl InstalledFontDatabase {
     /// Шрифты приложения. Результат общий и неизменяемый: повторные вызовы не пересобирают таблицу.
     pub fn bundled() -> Arc<Self> {
-        if let Some(db) = BUNDLED_CACHE.read().unwrap().as_ref() { return db.clone(); }
-        let loaded = BUNDLED_AVAILABLE.read().unwrap();
+        if let Some(db) = BUNDLED_CACHE.read_recover().as_ref() { return db.clone(); }
+        let loaded = BUNDLED_AVAILABLE.read_recover();
         let fonts = BUNDLED.iter()
             .filter(|f| loaded.as_ref().is_none_or(|set| set.contains(f.family)))
             .map(bundled_info).collect();
         let db = Arc::new(Self { fonts });
-        *BUNDLED_CACHE.write().unwrap() = Some(db.clone());
+        *BUNDLED_CACHE.write_recover() = Some(db.clone());
         db
     }
 }
@@ -280,7 +281,7 @@ impl InstalledFontDatabase {
 
     /// Шрифты системы; `fc-list` вызывается при первом обращении и после `reload`.
     pub fn system() -> Arc<InstalledFontDatabase> {
-        if let Some(db) = SYSTEM.read().unwrap().as_ref() { return db.clone(); }
+        if let Some(db) = SYSTEM.read_recover().as_ref() { return db.clone(); }
         let text = match std::process::Command::new("fc-list").args(["-f", FC_FORMAT]).output() {
             Ok(output) if output.status.success() => String::from_utf8_lossy(&output.stdout).into_owned(),
             Ok(output) => { tracing::warn!(status = %output.status, "fontconfig: список шрифтов недоступен, используется семейство Qt"); String::new() },
@@ -288,13 +289,13 @@ impl InstalledFontDatabase {
         };
         let db = Arc::new(Self::parse(&text));
         tracing::debug!(families = db.fonts.len(), "База установленных шрифтов обновлена");
-        *SYSTEM.write().unwrap() = Some(db.clone());
+        *SYSTEM.write_recover() = Some(db.clone());
         db
     }
 
     /// Шрифты установлены или удалены: следующий `system()` опросит fontconfig заново.
     pub fn reload() {
-        *SYSTEM.write().unwrap() = None;
+        *SYSTEM.write_recover() = None;
     }
 
     pub fn fonts(&self) -> &[FontInfo] {

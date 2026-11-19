@@ -6,6 +6,7 @@
 //! `.desktop` перечисляет интерфейс в `X-KDE-DBUS-Restricted-Interfaces`
 //! (см. packaging/io.lipa.Translator.desktop). Обходов модели безопасности нет.
 
+use crate::sync::LockExt;
 use super::{Capture, CaptureError, rect_px};
 use crate::settings::{NormRect, Settings, WindowKey};
 use image::{DynamicImage, RgbaImage};
@@ -186,7 +187,7 @@ impl KwinCapture {
 
     /// The uuid KWin knows the chosen window by now (it changes when the game is restarted).
     fn resolve(&self, uuid: &str) -> String {
-        self.aliases.lock().unwrap().get(uuid).cloned().unwrap_or_else(|| uuid.to_owned())
+        self.aliases.lock_recover().get(uuid).cloned().unwrap_or_else(|| uuid.to_owned())
     }
 
     /// The chosen window has gone: find the same program again by class and title and use its uuid from now on.
@@ -195,7 +196,7 @@ impl KwinCapture {
         let current = self.resolve(&window.uuid);
         let found = self.tracker().await?.find(&window.resource_class, &window.caption, &window.program, &current)?;
         tracing::info!(target: "capture.kwin", class = %window.resource_class, caption = %window.caption, "Окно игры найдено заново после перезапуска");
-        self.aliases.lock().unwrap().insert(window.uuid.clone(), found.clone());
+        self.aliases.lock_recover().insert(window.uuid.clone(), found.clone());
         Some(found)
     }
 
@@ -233,14 +234,14 @@ impl KwinCapture {
         if let Some(tracker) = self.geometry.get() {
             return Some(tracker);
         }
-        if self.geometry_failed.lock().unwrap().is_some_and(|t| t.elapsed() < GEOMETRY_RETRY) {
+        if self.geometry_failed.lock_recover().is_some_and(|t| t.elapsed() < GEOMETRY_RETRY) {
             return None;
         }
         match self.geometry.get_or_try_init(super::geometry::ClientGeometry::connect).await {
             Ok(tracker) => Some(tracker),
             Err(e) => {
                 tracing::warn!("KWin client geometry unavailable: {e}");
-                *self.geometry_failed.lock().unwrap() = Some(std::time::Instant::now());
+                *self.geometry_failed.lock_recover() = Some(std::time::Instant::now());
                 None
             }
         }

@@ -1,5 +1,6 @@
 //! KWin's public window-info API exposes only the decorated frame. Its scripting API
 //! exposes client, frame and buffer geometry in logical desktop coordinates.
+use crate::sync::LockExt;
 use super::kwin::{WindowFrames, WindowGeometry};
 use std::collections::{HashMap, HashSet};
 use crate::settings::FloatingGeometry;
@@ -21,7 +22,7 @@ pub fn clear_floating_focus_restore() {
 
 /// Explicitly unload scripts before the application runtime is shut down.
 pub async fn shutdown() {
-    let scripts = std::mem::take(&mut *SCRIPTS.get_or_init(Default::default).lock().unwrap());
+    let scripts = std::mem::take(&mut *SCRIPTS.get_or_init(Default::default).lock_recover());
     for (conn, plugin) in scripts {
         let _ = conn
             .call_method(
@@ -83,9 +84,9 @@ impl Default for State {
 
 impl State {
     fn is_active(&self, uuid: &str) -> Option<bool> {
-        self.windows.lock().unwrap().get(uuid)?;
-        if self.minimized.lock().unwrap().contains(uuid) { return Some(false); }
-        let (active, own) = &*self.focus.lock().unwrap();
+        self.windows.lock_recover().get(uuid)?;
+        if self.minimized.lock_recover().contains(uuid) { return Some(false); }
+        let (active, own) = &*self.focus.lock_recover();
         Some(*own || active == uuid)
     }
 }
@@ -103,33 +104,33 @@ impl GeometryService {
             let client = rect(c)?;
             Some(WindowFrames { client, frame: rect(f).unwrap_or(client), buffer: rect(b).unwrap_or(client) })
         });
-        let mut windows = self.0.windows.lock().unwrap();
+        let mut windows = self.0.windows.lock_recover();
         match frames {
             Some(frames) => { windows.insert(uuid.into(), frames); }
             None => {
                 windows.remove(uuid);
-                self.0.minimized.lock().unwrap().remove(uuid);
-                self.0.identities.lock().unwrap().remove(uuid);
-                self.0.programs.lock().unwrap().remove(uuid);
+                self.0.minimized.lock_recover().remove(uuid);
+                self.0.identities.lock_recover().remove(uuid);
+                self.0.programs.lock_recover().remove(uuid);
             }
         }
     }
 
     /// The class, title and process id of a window (sent when it appears and when its title changes).
     fn identity(&self, uuid: &str, class: &str, caption: &str, pid: &str) {
-        self.0.identities.lock().unwrap().insert(uuid.to_owned(), (class.to_owned(), caption.to_owned()));
+        self.0.identities.lock_recover().insert(uuid.to_owned(), (class.to_owned(), caption.to_owned()));
         if let Some(program) = pid.trim().parse().ok().and_then(super::process::program_of_pid) {
-            self.0.programs.lock().unwrap().insert(uuid.to_owned(), program);
+            self.0.programs.lock_recover().insert(uuid.to_owned(), program);
         }
     }
 
     /// The active window changed. `own`: it is a LipaX window; the user is only configuring, the game still counts as in use.
     fn focus(&self, uuid: &str, own: bool) {
-        *self.0.focus.lock().unwrap() = (uuid.to_owned(), own);
+        *self.0.focus.lock_recover() = (uuid.to_owned(), own);
     }
 
     fn minimized(&self, uuid: &str, minimized: bool) {
-        let mut set = self.0.minimized.lock().unwrap();
+        let mut set = self.0.minimized.lock_recover();
         if minimized { set.insert(uuid.to_owned()); } else { set.remove(uuid); }
     }
 
@@ -139,14 +140,14 @@ impl GeometryService {
 
     fn script_failed(&self, reason: &str) {
         tracing::error!(target: "capture.geometry", stage = "kwin_script", reason, "KWin geometry script failed");
-        *self.0.startup_error.lock().unwrap() = Some(reason.to_owned());
+        *self.0.startup_error.lock_recover() = Some(reason.to_owned());
         self.0.ready.notify_one();
     }
 
     /// Where to put the floating translation window: `{x,y}` on the desktop, or
     /// `{output,rx,ry}` relative to an output, or `null` to let KWin place it.
     fn floating_placement(&self) -> String {
-        self.0.placement.lock().unwrap().clone()
+        self.0.placement.lock_recover().clone()
     }
 
     /// One-shot guard for an automatic show. A task-manager click after this returns false.
@@ -202,8 +203,7 @@ impl ClientGeometry {
         }
         SCRIPTS
             .get_or_init(Default::default)
-            .lock()
-            .unwrap()
+            .lock_recover()
             .push((conn.clone(), plugin.clone()));
         let loaded = conn
             .call_method(
@@ -232,7 +232,7 @@ impl ClientGeometry {
             )
             .await?;
             tokio::time::timeout(std::time::Duration::from_secs(3), state.ready.notified()).await?;
-            if let Some(reason) = state.startup_error.lock().unwrap().take() {
+            if let Some(reason) = state.startup_error.lock_recover().take() {
                 return Err(reason.into());
             }
             tracing::debug!(target: "capture.geometry", script_id = id, "KWin geometry tracker ready");
@@ -244,24 +244,24 @@ impl ClientGeometry {
             // A retry must not accumulate idle scripts or keep obsolete D-Bus services alive.
             let _ = conn.call_method(Some("org.kde.KWin"), "/Scripting",
                 Some("org.kde.kwin.Scripting"), "unloadScript", &(plugin.as_str(),)).await;
-            SCRIPTS.get().unwrap().lock().unwrap().retain(|(_, name)| name != &plugin);
+            SCRIPTS.get().unwrap().lock_recover().retain(|(_, name)| name != &plugin);
         }
         let _ = std::fs::remove_file(path);
         result
     }
 
     pub fn get(&self, uuid: &str) -> Option<WindowFrames> {
-        self.state.windows.lock().unwrap().get(uuid).copied()
+        self.state.windows.lock_recover().get(uuid).copied()
     }
 
     /// The window now running as `class` / `caption` / `program`, other than `gone` (see [`pick_window`]).
     pub fn find(&self, class: &str, caption: &str, program: &str, gone: &str) -> Option<String> {
-        pick_window(&self.state.identities.lock().unwrap(), &self.state.programs.lock().unwrap(), class, caption, program, gone)
+        pick_window(&self.state.identities.lock_recover(), &self.state.programs.lock_recover(), class, caption, program, gone)
     }
 
     /// The program of the window `uuid` (the `.exe` of a game under Proton), once the script has reported it.
     pub fn program_of(&self, uuid: &str) -> Option<String> {
-        self.state.programs.lock().unwrap().get(uuid).cloned()
+        self.state.programs.lock_recover().get(uuid).cloned()
     }
 
     /// Whether the window can be seen and used: it exists, is not minimised and has the focus (or a LipaX window has it).
@@ -271,7 +271,7 @@ impl ClientGeometry {
     }
 
     pub fn set_floating_placement(&self, json: String) {
-        *self.state.placement.lock().unwrap() = json;
+        *self.state.placement.lock_recover() = json;
     }
 
     pub fn floating_moves(&self) -> watch::Receiver<Option<(FloatingGeometry, String)>> {
@@ -296,8 +296,7 @@ impl Drop for ClientGeometry {
                     .await;
                 SCRIPTS
                     .get_or_init(Default::default)
-                    .lock()
-                    .unwrap()
+                    .lock_recover()
                     .retain(|(_, name)| name != &plugin);
             });
         }

@@ -1,5 +1,6 @@
 //! The invokable methods of the controller that change state: settings, regions, window, pipeline commands.
 
+use lipa_core::sync::LockExt;
 use super::*;
 
 impl qobject::Controller {
@@ -550,7 +551,7 @@ impl qobject::Controller {
             // A fresh frame at once instead of waiting for the next change on screen.
             if *self.has_region() { let _ = self.rust().shared.cmds.send(Cmd::TranslateOnce); }
         } else {
-            self.rust().shared.preview_entries.lock().unwrap().clear();
+            self.rust().shared.preview_entries.lock_recover().clear();
             remove_preview_files();
             self.as_mut().set_ocr_preview_json(QString::from("[]"));
         }

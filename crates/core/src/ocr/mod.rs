@@ -9,6 +9,7 @@ pub mod paddle_env;
 pub mod rapid;
 pub mod rapid_models;
 
+use crate::sync::LockExt;
 use crate::layout::CropRect;
 use crate::settings::Settings;
 use crate::tesseract::TesseractManager;
@@ -95,7 +96,7 @@ const RAPID_RETRY_AFTER: std::time::Duration = std::time::Duration::from_secs(30
 const MEIKI_RETRY_AFTER: std::time::Duration = std::time::Duration::from_secs(300);
 
 fn is_down(until: &std::sync::Mutex<Option<std::time::Instant>>) -> bool {
-    until.lock().unwrap().is_some_and(|t| std::time::Instant::now() < t)
+    until.lock_recover().is_some_and(|t| std::time::Instant::now() < t)
 }
 
 /// Whether a second reading is surer than the first one (and is a reading at all).
@@ -144,7 +145,7 @@ impl AnyOcr {
                     Ok(_) => return Ok(first),
                     Err(e) => {
                         tracing::debug!(engine = "auto", error = %e, "OCR: MeikiOCR unavailable, RapidOCR is tried instead");
-                        *self.meiki_down_until.lock().unwrap() = Some(std::time::Instant::now() + MEIKI_RETRY_AFTER);
+                        *self.meiki_down_until.lock_recover() = Some(std::time::Instant::now() + MEIKI_RETRY_AFTER);
                     }
                 }
             }
@@ -158,12 +159,12 @@ impl AnyOcr {
                     Ok(_) => return Ok(first),
                     Err(e) => {
                         tracing::debug!(engine = "auto", error = %e, "OCR: RapidOCR unavailable, PaddleOCR is tried instead");
-                        *self.rapid_down_until.lock().unwrap() = Some(std::time::Instant::now() + RAPID_RETRY_AFTER);
+                        *self.rapid_down_until.lock_recover() = Some(std::time::Instant::now() + RAPID_RETRY_AFTER);
                     }
                 }
             }
         }
-        let down = self.paddle_down_until.lock().unwrap().is_some_and(|t| std::time::Instant::now() < t);
+        let down = self.paddle_down_until.lock_recover().is_some_and(|t| std::time::Instant::now() < t);
         if down { return Ok(first); }
         let second = if filters.is_identity() {
             self.paddle.recognize_detailed(img, settings).await
@@ -178,7 +179,7 @@ impl AnyOcr {
             Ok(_) => Ok(first),
             Err(e) => {
                 tracing::debug!(engine = "auto", error = %e, "OCR: PaddleOCR unavailable, Tesseract result kept");
-                *self.paddle_down_until.lock().unwrap() = Some(std::time::Instant::now() + PADDLE_RETRY_AFTER);
+                *self.paddle_down_until.lock_recover() = Some(std::time::Instant::now() + PADDLE_RETRY_AFTER);
                 Ok(first)
             }
         }
@@ -214,13 +215,13 @@ where F: Fn(filter::Preprocess) -> Fut, Fut: Future<Output = Result<OcrResult, O
     if added {
         let empty = result.text.trim().is_empty();
         let unsure = result.confidence.is_some_and(|c| floor > 0 && c < floor as f32);
-        let believed_empty = empty && backoff.lock().unwrap().is_some_and(|t| t.elapsed() < EMPTY_BACKOFF);
+        let believed_empty = empty && backoff.lock_recover().is_some_and(|t| t.elapsed() < EMPTY_BACKOFF);
         if (empty || unsure) && !believed_empty {
             let alone = plan.without_addition();
             if let Ok(mut other) = read(alone).await {
                 other.filters = alone;
                 if empty && other.text.trim().is_empty() {
-                    *backoff.lock().unwrap() = Some(std::time::Instant::now());
+                    *backoff.lock_recover() = Some(std::time::Instant::now());
                 }
                 if std::ptr::eq(filter::better_reading(&result, &other, floor), &other) {
                     tracing::debug!(target: "ocr.filters", automatic = ?filters, "the automatic filters did not help: the frame without them is used");

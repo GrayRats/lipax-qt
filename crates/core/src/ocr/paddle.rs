@@ -1,3 +1,4 @@
+use crate::sync::LockExt;
 use super::{Ocr, OcrError, OcrLine, OcrResult};
 use crate::settings::Settings;
 use image::DynamicImage;
@@ -112,7 +113,7 @@ impl Worker {
                     break;
                 }
                 tracing::debug!(component = "paddleocr", stderr = %String::from_utf8_lossy(&buffer[..n]), "Диагностика Python worker");
-                let mut bytes = tail.lock().unwrap();
+                let mut bytes = tail.lock_recover();
                 bytes.extend_from_slice(&buffer[..n]);
                 let excess = bytes.len().saturating_sub(8192);
                 bytes.drain(..excess);
@@ -141,7 +142,7 @@ impl Worker {
         self.input.flush().await.map_err(setup)?;
         let mut line = String::new();
         if self.output.read_line(&mut line).await.map_err(setup)? == 0 {
-            let detail = String::from_utf8_lossy(&self.stderr.lock().unwrap()).into_owned();
+            let detail = String::from_utf8_lossy(&self.stderr.lock_recover()).into_owned();
             return Err(setup(format!("процесс завершился: {detail}")));
         }
         let reply: Reply = serde_json::from_str(&line).map_err(setup)?;

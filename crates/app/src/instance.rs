@@ -6,6 +6,7 @@
 //! или просто `lipax`) не открывает второй процесс, а передаёт действие первому и завершается.
 //! Действия доходят до `Controller` через очередь; QML выполняет их в одном месте.
 
+use lipa_core::sync::LockExt;
 use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
 use tokio::sync::mpsc;
@@ -263,7 +264,7 @@ async fn forward(name: &str, action: Option<Action>) -> zbus::Result<()> {
 
 /// Забрать очередь запросов; вызывается один раз при создании `Controller`.
 pub fn take_requests() -> Option<mpsc::UnboundedReceiver<Request>> {
-    PRIMARY.get()?.requests.lock().unwrap().take()
+    PRIMARY.get()?.requests.lock_recover().take()
 }
 
 #[cfg(test)]

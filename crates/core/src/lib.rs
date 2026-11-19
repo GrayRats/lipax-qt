@@ -11,6 +11,7 @@ pub mod layout;
 pub mod ocr;
 pub mod pipeline;
 pub mod settings;
+pub mod sync;
 pub mod tesseract;
 pub mod text;
 pub mod translate;

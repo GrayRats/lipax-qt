@@ -1,5 +1,6 @@
 //! Backdrop and OCR-preview files of the inspector.
 
+use lipa_core::sync::LockExt;
 use super::*;
 
 pub(super) fn backdrop_path(region_id: &str, block: u64) -> std::path::PathBuf {
@@ -70,7 +71,7 @@ pub(super) fn publish_preview(shared: &Shared, region_id: String, region_name: S
         None => { let _ = std::fs::remove_file(&filtered_path); None }
     };
     let active: Vec<String> = shared.settings.borrow().capture_regions().into_iter().map(|r| r.id).collect();
-    let mut entries = shared.preview_entries.lock().unwrap();
+    let mut entries = shared.preview_entries.lock_recover();
     // The window may have been closed while the frame was being encoded.
     if !shared.preview.load(Ordering::Relaxed) { return None; }
     entries.insert(region_id.clone(), preview_entry(&region_id, &region_name, &preview, &url, filtered_url.as_deref()));

@@ -7,6 +7,7 @@
 //! Автоматически ничего не устанавливается: [`TesseractManager::install_argv`] только описывает команду,
 //! которую выполняет вызывающий код после явного подтверждения пользователя.
 
+use crate::sync::LockExt;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -79,7 +80,7 @@ static TESSDATA_ARG: std::sync::Mutex<Option<(std::time::Instant, Option<PathBuf
 
 /// То же для текущего пользователя.
 pub fn tessdata_arg() -> Option<PathBuf> {
-    let mut cached = TESSDATA_ARG.lock().unwrap();
+    let mut cached = TESSDATA_ARG.lock_recover();
     if let Some((when, answer)) = cached.as_ref() && when.elapsed() < TESSDATA_ARG_TTL { return answer.clone(); }
     // The lock is held while the directories are walked: concurrent readings make the links once, not each their own.
     let answer = tessdata_arg_in(&user_tessdata_dir(), system_tessdata_dir().as_deref());
@@ -89,7 +90,7 @@ pub fn tessdata_arg() -> Option<PathBuf> {
 
 /// Forget the answer of `tessdata_arg` (a language was added or removed).
 pub fn forget_tessdata_arg() {
-    *TESSDATA_ARG.lock().unwrap() = None;
+    *TESSDATA_ARG.lock_recover() = None;
 }
 
 /// Скачивает модель `code` из `tessdata_fast` в пользовательский каталог.

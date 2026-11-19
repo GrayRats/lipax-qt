@@ -2,6 +2,7 @@
 //! Only failures of the pipeline are reported, and the same message not more often than once a minute:
 //! a region that fails every second would otherwise cover the screen.
 
+use lipa_core::sync::LockExt;
 use std::collections::HashMap;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
@@ -15,7 +16,7 @@ static LAST: Mutex<Option<HashMap<String, Instant>>> = Mutex::new(None);
 
 /// Whether `key` may be shown now. Asking marks it as shown.
 pub fn due(key: &str, now: Instant) -> bool {
-    let mut guard = LAST.lock().unwrap();
+    let mut guard = LAST.lock_recover();
     let map = guard.get_or_insert_with(HashMap::new);
     if map.get(key).is_some_and(|t| now.saturating_duration_since(*t) < REPEAT_AFTER) { return false; }
     if map.len() >= REMEMBERED { map.retain(|_, t| now.saturating_duration_since(*t) < REPEAT_AFTER); }

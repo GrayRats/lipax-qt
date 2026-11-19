@@ -4,6 +4,7 @@ pub mod bergamot;
 pub mod guard;
 pub mod models;
 
+use crate::sync::LockExt;
 use crate::settings::{Settings, TranslationService};
 use serde_json::{Value, json};
 use std::{collections::HashMap, sync::Mutex, time::{Duration, Instant, SystemTime}};
@@ -119,7 +120,7 @@ impl Translate for HttpTranslate {
             Translator::Bergamot { .. } => "bergamot".to_string(),
         };
         let cooldown = {
-            let mut cooldowns = self.cooldowns.lock().unwrap();
+            let mut cooldowns = self.cooldowns.lock_recover();
             let now = Instant::now();
             cooldowns.retain(|_, until| *until > now);
             cooldowns.get(&key).map(|until| until.duration_since(now))
@@ -132,7 +133,7 @@ impl Translate for HttpTranslate {
             let now = Instant::now();
             let until = now.checked_add(Duration::from_secs(*retry_after))
                 .unwrap_or_else(|| now + Duration::from_secs(365 * 24 * 3600));
-            self.cooldowns.lock().unwrap().insert(key, until);
+            self.cooldowns.lock_recover().insert(key, until);
         }
         result
     }
@@ -148,7 +149,7 @@ impl Translate for HttpTranslate {
         let Translator::Bergamot { binary, models_dir, model_paths } = Translator::from_settings(s) else { return one_by_one().await };
         if texts.len() < 2 { return one_by_one().await; }
         let cooldown = {
-            let mut cooldowns = self.cooldowns.lock().unwrap();
+            let mut cooldowns = self.cooldowns.lock_recover();
             let now = Instant::now();
             cooldowns.retain(|_, until| *until > now);
             cooldowns.get("bergamot").is_some()

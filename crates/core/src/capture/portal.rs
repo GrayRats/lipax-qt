@@ -8,6 +8,7 @@
 //!
 //! `restore_token` сохраняется в настройках: при следующем запуске окно выбирается без диалога.
 
+use crate::sync::LockExt;
 use super::{Capture, CaptureError, rect_px};
 use crate::settings::{NormRect, Settings, WindowKey};
 use futures_util::StreamExt;
@@ -139,13 +140,13 @@ fn checked_frame(child: &mut Child, frames: &Frames, stderr: &[u8]) -> Result<Op
     let reason = match child.try_wait() {
         Ok(Some(status)) => Some(format!("gst-launch-1.0 завершился ({status})")),
         Err(e) => Some(format!("не удалось проверить gst-launch-1.0: {e}")),
-        Ok(None) => frames.closed.lock().unwrap().clone(),
+        Ok(None) => frames.closed.lock_recover().clone(),
     };
     if let Some(reason) = reason {
         let detail = String::from_utf8_lossy(stderr);
         return Err(err(format!("Portal-захват остановлен: {reason}. Выберите окно заново. Проверьте PipeWire и плагины GStreamer (pipewiresrc, pngenc). {}", detail.trim())));
     }
-    Ok(frames.latest.lock().unwrap().clone())
+    Ok(frames.latest.lock_recover().clone())
 }
 
 pub struct PortalCapture {
@@ -308,7 +309,7 @@ async fn spawn_session(restore_token: &str) -> Result<(Session, Option<String>),
         while let Ok(n) = stderr_pipe.read(&mut buf).await {
             if n == 0 { break; }
             tracing::debug!(component = "gstreamer", stderr = %String::from_utf8_lossy(&buf[..n]), "Диагностика процесса захвата");
-            let mut tail = errors.lock().unwrap();
+            let mut tail = errors.lock_recover();
             tail.extend_from_slice(&buf[..n]);
             let excess = tail.len().saturating_sub(8192);
             tail.drain(..excess);
@@ -325,12 +326,12 @@ async fn spawn_session(restore_token: &str) -> Result<(Session, Option<String>),
                 Err(e) => break format!("ошибка чтения кадров GStreamer: {e}"),
             };
             if let Some(last) = splitter.push(&chunk[..n]).pop() {
-                *sink.latest.lock().unwrap() = Some(Arc::new(last));
+                *sink.latest.lock_recover() = Some(Arc::new(last));
                 sink.notify.notify_waiters();
             }
         };
         tracing::warn!("{reason}");
-        *sink.closed.lock().unwrap() = Some(reason);
+        *sink.closed.lock_recover() = Some(reason);
         sink.notify.notify_waiters();
     });
     Ok((Session { _conn: started.conn, child, frames, reader, stderr_reader, stderr }, started.token))
@@ -392,7 +393,7 @@ impl PortalCapture {
             tokio::pin!(notified);
             notified.as_mut().enable();
             // Check the process before returning even a cached frame.
-            if let Some(f) = checked_frame(&mut session.child, &frames, &session.stderr.lock().unwrap())? { return Ok(f); }
+            if let Some(f) = checked_frame(&mut session.child, &frames, &session.stderr.lock_recover())? { return Ok(f); }
             if tokio::time::Instant::now() >= deadline {
                 return Err(err("PipeWire не передал первый кадр за 5 секунд. Проверьте, что выбранное окно открыто и не свёрнуто."));
             }

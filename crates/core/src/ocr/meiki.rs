@@ -5,6 +5,7 @@
 //! candidates are thinned out by non-maximum suppression along the line. Tall boxes are read by the vertical
 //! recognizer. Nothing is downloaded here and no other process is started.
 
+use crate::sync::LockExt;
 use super::rapid::{self, Piece, effective_threads, gpu_providers, inference, init_runtime, resize, session, write_bgr};
 use super::rapid_models::{self, OcrModel};
 use super::{Ocr, OcrError, OcrResult};
@@ -414,7 +415,7 @@ impl Ocr for MeikiOcr {
         let model = rapid_models::select_meiki(&r.language).map_err(OcrError::Setup)?;
         let engine = self.engine(model, effective_threads(r.rapid_threads), r.rapid_use_gpu).await?;
         let img = img.clone();
-        let pieces = tokio::task::spawn_blocking(move || engine.lock().unwrap_or_else(|e| e.into_inner()).read(&img.to_rgb8())).await
+        let pieces = tokio::task::spawn_blocking(move || engine.lock_recover().read(&img.to_rgb8())).await
             .map_err(|e| OcrError::Failed(format!("распознавание MeikiOCR прервано: {e}")))??;
         Ok(OcrResult { engine: ENGINE, ..rapid::to_result(pieces) })
     }

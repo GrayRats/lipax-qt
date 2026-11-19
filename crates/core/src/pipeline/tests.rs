@@ -1,4 +1,5 @@
 //! Tests of the pipeline as a whole (ticks, commands, both display modes) and the mocks they share.
+use crate::sync::LockExt;
 use super::*;
 use crate::capture::CaptureError;
 use crate::layout::engine::EDGE_REACH;
@@ -16,7 +17,7 @@ impl Capture for MockCapture {
     fn capabilities(&self, _: &WindowKey, _: &Settings) -> crate::capture::CaptureCapabilities { crate::capture::CaptureCapabilities::KWIN }
     async fn grab(&self, _: &WindowKey, _: NormRect) -> Result<DynamicImage, CaptureError> {
         // Светлое «слово» на тёмном фоне; значение сдвигает его, меняя текст в кадре.
-        let x0 = *self.0.lock().unwrap() as u32 / 4;
+        let x0 = *self.0.lock_recover() as u32 / 4;
         let mut img = RgbaImage::from_pixel(100, 50, Rgba([20, 20, 20, 255]));
         for y in 20..30 { for x in x0..x0 + 20 { img.put_pixel(x, y, Rgba([250, 250, 250, 255])); } }
         Ok(DynamicImage::ImageRgba8(img))
@@ -26,7 +27,7 @@ struct MockOcr(Mutex<String>, Arc<AtomicUsize>);
 impl Ocr for MockOcr {
     async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> {
         self.1.fetch_add(1, Ordering::SeqCst);
-        Ok(self.0.lock().unwrap().clone())
+        Ok(self.0.lock_recover().clone())
     }
 }
 
@@ -229,7 +230,7 @@ async fn ocr_of_a_frame_the_window_has_left_is_dropped() {
     let (tx, mut rx) = mpsc::unbounded_channel();
     // The picture changes 300 ms into the recognition.
     let mover = cap.clone();
-    tokio::spawn(async move { tokio::time::sleep(Duration::from_millis(300)).await; *mover.0.lock().unwrap() = 160; });
+    tokio::spawn(async move { tokio::time::sleep(Duration::from_millis(300)).await; *mover.0.lock_recover() = 160; });
     p.tick(&s, true, Instant::now(), &tx).await;
     let events = drain(&mut rx);
     assert_eq!(finished.load(Ordering::SeqCst), 0, "the stale OCR was cancelled, not awaited");
@@ -277,9 +278,9 @@ async fn auto_tune_reports_the_preset_that_reads_the_most() {
 /// Lines far apart (separate texts), as the engine would report a menu.
 struct MenuOcr(Mutex<String>);
 impl Ocr for MenuOcr {
-    async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok(self.0.lock().unwrap().clone()) }
+    async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok(self.0.lock_recover().clone()) }
     async fn recognize_detailed(&self, _: &DynamicImage, _: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
-        let text = self.0.lock().unwrap().clone();
+        let text = self.0.lock_recover().clone();
         let lines = text.lines().enumerate().map(|(i, t)| crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(0.0, 40.0 * i as f32, 90.0, 15.0), text: t.to_owned(), confidence: 90.0 }).collect();
         Ok(crate::ocr::OcrResult { text, lines, confidence: Some(90.0), engine: "mock", ..Default::default() })
     }
@@ -311,7 +312,7 @@ async fn changes_only_translates_the_new_paragraphs_and_reuses_the_rest() {
     assert_eq!(calls.load(Ordering::SeqCst), 3, "three separate texts the first time");
     assert_eq!(texts_of(&drain(&mut rx)), vec!["RU:Main menu\nRU:Continue\nRU:Exit".to_string()]);
     // Only the middle item changes.
-    *p.io.ocr.0.lock().unwrap() = "Main menu\nLoad game\nExit".into();
+    *p.io.ocr.0.lock_recover() = "Main menu\nLoad game\nExit".into();
     p.tick(&s, true, Instant::now(), &tx).await;
     assert_eq!(calls.load(Ordering::SeqCst), 4, "one new request for the one new paragraph");
     assert_eq!(texts_of(&drain(&mut rx)), vec!["RU:Main menu\nRU:Load game\nRU:Exit".to_string()]);
@@ -368,7 +369,7 @@ impl Ocr for RecordingOcr {
     async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok(String::new()) }
     async fn recognize_detailed(&self, _: &DynamicImage, s: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
         tokio::time::sleep(self.delay).await;
-        self.finished.lock().unwrap().push((s.recognition.binarize, s.recognition.minimum_confidence));
+        self.finished.lock_recover().push((s.recognition.binarize, s.recognition.minimum_confidence));
         Ok(crate::ocr::OcrResult { text: "Some words here".into(), lines: Vec::new(), confidence: Some(90.0), engine: "mock", ..Default::default() })
     }
 }
@@ -388,7 +389,7 @@ async fn changed_settings_reach_the_next_frame_without_a_restart_and_drop_the_re
     settings_tx.send_modify(|s| { s.recognition.binarize = true; s.recognition.minimum_confidence = 45; });
     tokio::time::sleep(Duration::from_millis(1800)).await;
     task.abort();
-    let readings = finished.lock().unwrap().clone();
+    let readings = finished.lock_recover().clone();
     assert!(!readings.is_empty(), "the pipeline went on reading");
     assert!(readings.iter().all(|r| *r == (true, 45)), "no reading with the old settings reached its end: {readings:?}");
 }
@@ -406,7 +407,7 @@ async fn a_setting_that_does_not_affect_recognition_does_not_interrupt_a_reading
     settings_tx.send_modify(|s| s.translation_window.opacity = 0.5);
     tokio::time::sleep(Duration::from_millis(700)).await;
     task.abort();
-    assert!(!finished.lock().unwrap().is_empty(), "the reading in progress was not thrown away by a cosmetic change");
+    assert!(!finished.lock_recover().is_empty(), "the reading in progress was not thrown away by a cosmetic change");
 }
 
 #[tokio::test]
@@ -501,7 +502,7 @@ async fn a_cancelled_tick_does_not_lose_its_translation_request() {
     tokio::time::sleep(Duration::from_millis(20)).await;
     p.tick(&s, true, started + Duration::from_millis(500), &tx).await;
     assert_eq!(calls.load(Ordering::SeqCst), 1);
-    assert!(p.io.inflight.lock().unwrap().is_empty(), "finished requests are forgotten");
+    assert!(p.io.inflight.lock_recover().is_empty(), "finished requests are forgotten");
 }
 
 #[tokio::test]
@@ -527,7 +528,7 @@ impl Translate for BatchTr {
     }
     async fn translate_many(&self, _: &Settings, texts: &[String], _: &str, _: &str) -> Vec<Result<String, TranslateError>> {
         self.many.fetch_add(1, Ordering::SeqCst);
-        self.sent.lock().unwrap().push(texts.to_vec());
+        self.sent.lock_recover().push(texts.to_vec());
         texts.iter().map(|t| Ok(if t == "Echo the source text" { t.clone() } else { format!("RU:{t}") })).collect()
     }
 }
@@ -550,7 +551,7 @@ async fn bergamot_gets_all_pending_texts_in_one_batch_call() {
     let out = p.io.translate_texts(&s, texts.clone(), "en", "ru").await;
     assert_eq!((many.load(Ordering::SeqCst), single.load(Ordering::SeqCst)), (1, 0));
     for t in texts { assert_eq!(out[t].as_ref().unwrap(), &format!("RU:{t}")); }
-    assert_eq!(sent.lock().unwrap()[0], ["Start game", "Where are you going?", "Hello there"], "order is kept");
+    assert_eq!(sent.lock_recover()[0], ["Start game", "Where are you going?", "Hello there"], "order is kept");
     // Everything is cached now: no further call.
     let again = p.io.translate_texts(&s, vec!["Start game", "Hello there"], "en", "ru").await;
     assert_eq!(again["Hello there"].as_ref().unwrap(), "RU:Hello there");
@@ -562,10 +563,10 @@ async fn cached_texts_are_left_out_of_the_batch_and_a_rejected_one_is_not_cached
     let (p, many, single, sent) = batch_pipeline();
     let mut s = settings();
     s.translation.service = crate::settings::TranslationService::Bergamot;
-    p.io.cache.lock().unwrap().put(&cache_source(&s, "en"), "ru", "Known line", "Известная".into());
+    p.io.cache.lock_recover().put(&cache_source(&s, "en"), "ru", "Known line", "Известная".into());
     let out = p.io.translate_batch_shared(&s, &["Known line", "Echo the source text", "Open the door", "Open the door"], "en", "ru").await;
     assert_eq!(many.load(Ordering::SeqCst), 1);
-    assert_eq!(sent.lock().unwrap()[0], ["Echo the source text", "Open the door"]);
+    assert_eq!(sent.lock_recover()[0], ["Echo the source text", "Open the door"]);
     assert_eq!(out["Known line"].as_ref().unwrap(), "Известная");
     assert_eq!(out["Open the door"].as_ref().unwrap(), "RU:Open the door");
     assert!(matches!(&out["Echo the source text"], Err(e) if matches!(**e, TranslateError::Rejected(_))), "{:?}", out["Echo the source text"]);
@@ -775,7 +776,7 @@ async fn auto_pins_a_field_to_the_engine_that_was_needed() {
     impl Ocr for AutoOcr {
         async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok("Hello there".into()) }
         async fn recognize_detailed(&self, _: &DynamicImage, s: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
-            self.0.lock().unwrap().push(s.recognition.engine.as_str().to_owned());
+            self.0.lock_recover().push(s.recognition.engine.as_str().to_owned());
             Ok(crate::ocr::OcrResult { text: "Hello there".into(), lines: Vec::new(), confidence: Some(90.0), engine: self.1, ..Default::default() })
         }
     }
@@ -788,14 +789,14 @@ async fn auto_pins_a_field_to_the_engine_that_was_needed() {
         let t0 = Instant::now();
         p.tick(&s, false, t0, &tx).await;
         p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
-        assert_eq!(*seen.lock().unwrap(), ["auto"], "the first read decides");
+        assert_eq!(*seen.lock_recover(), ["auto"], "the first read decides");
         // The text changed; the same field is read again, now straight with the engine that was needed.
         p.tick(&s, true, t0 + Duration::from_millis(300), &tx).await;
-        assert_eq!(*seen.lock().unwrap(), ["auto", engine]);
+        assert_eq!(*seen.lock_recover(), ["auto", engine]);
         // Another engine setting is not touched by pins.
         let plain = { let mut value = s.clone(); value.recognition.engine = "tesseract".into(); value };
         p.tick(&plain, true, t0 + Duration::from_millis(500), &tx).await;
-        assert_eq!(seen.lock().unwrap().last().map(String::as_str), Some("tesseract"));
+        assert_eq!(seen.lock_recover().last().map(String::as_str), Some("tesseract"));
     }
 }
 
@@ -847,7 +848,7 @@ async fn same_text_after_visual_change_not_retranslated() {
     let t0 = Instant::now();
     p.tick(&s, false, t0, &tx).await;
     p.tick(&s, false, t0 + Duration::from_millis(150), &tx).await;
-    *cap.0.lock().unwrap() = 200; // визуальное изменение, текст тот же
+    *cap.0.lock_recover() = 200; // визуальное изменение, текст тот же
     p.tick(&s, false, t0 + Duration::from_millis(200), &tx).await;
     p.tick(&s, false, t0 + Duration::from_millis(400), &tx).await;
     assert_eq!(ocr_n.load(Ordering::SeqCst), 2);
@@ -860,7 +861,7 @@ async fn region_language_and_translation_override_use_distinct_cache_entries() {
     struct Languages(Arc<Mutex<Vec<(String, String)>>>);
     impl Translate for Languages {
         async fn translate(&self, s: &Settings, text: &str, src: &str, _: &str) -> Result<String, TranslateError> {
-            self.0.lock().unwrap().push((s.recognition.language.clone(), src.to_owned()));
+            self.0.lock_recover().push((s.recognition.language.clone(), src.to_owned()));
             Ok(format!("{src}:{text}"))
         }
     }
@@ -878,7 +879,7 @@ async fn region_language_and_translation_override_use_distinct_cache_entries() {
     s.translation.source_language = crate::settings::TranslationSourceLanguage::RecognitionLanguage;
     p.reset();
     p.tick(&s, true, Instant::now(), &tx).await;
-    assert_eq!(*seen.lock().unwrap(), [("jpn+eng".into(), "ja".into()), ("jpn+eng".into(), "fr".into())]);
+    assert_eq!(*seen.lock_recover(), [("jpn+eng".into(), "ja".into()), ("jpn+eng".into(), "fr".into())]);
 }
 
 #[tokio::test]
@@ -893,12 +894,12 @@ async fn changed_text_uses_cache_on_return() {
     let step = |ms| t0 + Duration::from_millis(ms);
     p.tick(&s, false, step(0), &tx).await;
     p.tick(&s, false, step(150), &tx).await;
-    *p.io.ocr.0.lock().unwrap() = "Totally different".into();
-    *cap.0.lock().unwrap() = 200;
+    *p.io.ocr.0.lock_recover() = "Totally different".into();
+    *cap.0.lock_recover() = 200;
     p.tick(&s, false, step(200), &tx).await;
     p.tick(&s, false, step(400), &tx).await;
-    *p.io.ocr.0.lock().unwrap() = "First line".into();
-    *cap.0.lock().unwrap() = 20;
+    *p.io.ocr.0.lock_recover() = "First line".into();
+    *cap.0.lock_recover() = 20;
     p.tick(&s, false, step(450), &tx).await;
     p.tick(&s, false, step(650), &tx).await;
     assert_eq!(tr_n.load(Ordering::SeqCst), 2, "третий текст берётся из кэша");
@@ -938,9 +939,9 @@ async fn a_backend_without_inplace_reads_the_region_as_a_whole() {
 /// An engine whose reading and confidence the test changes between ticks.
 struct FlipOcr(Mutex<(String, f32)>);
 impl Ocr for FlipOcr {
-    async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok(self.0.lock().unwrap().0.clone()) }
+    async fn recognize(&self, _: &DynamicImage, _: &Settings) -> Result<String, OcrError> { Ok(self.0.lock_recover().0.clone()) }
     async fn recognize_detailed(&self, img: &DynamicImage, _: &Settings) -> Result<crate::ocr::OcrResult, OcrError> {
-        let (text, confidence) = self.0.lock().unwrap().clone();
+        let (text, confidence) = self.0.lock_recover().clone();
         let lines = vec![crate::ocr::OcrLine { rect: crate::layout::CropRect::in_space(5.0, 5.0, img.width() as f32 - 10.0, 15.0), text: text.clone(), confidence }];
         Ok(crate::ocr::OcrResult { text, lines, confidence: Some(confidence), engine: "mock", ..Default::default() })
     }
@@ -960,14 +961,14 @@ async fn a_weak_lookalike_flip_of_a_solid_label_is_neither_translated_nor_drawn(
     assert_eq!(shown(drain(&mut rx)).as_deref(), Some("RU:Level 15"));
 
     // The picture is read again and the engine now sees "is" instead of "15", unsure of it: the same label.
-    *p.io.ocr.0.lock().unwrap() = ("Level is".into(), 55.0);
+    *p.io.ocr.0.lock_recover() = ("Level is".into(), 55.0);
     p.tick(&s, true, t0 + Duration::from_millis(300), &tx).await;
     assert_eq!(shown(drain(&mut rx)), None, "nothing is redrawn");
     assert_eq!(tr_n.load(Ordering::SeqCst), 1, "and nothing is sent to the translator");
     assert!(p.states["subtitles"].field_ocr.values().any(|d| d.contains("похожие символы")), "the inspector says why");
 
     // Sure of the new reading, the engine is believed.
-    *p.io.ocr.0.lock().unwrap() = ("Level is".into(), 91.0);
+    *p.io.ocr.0.lock_recover() = ("Level is".into(), 91.0);
     p.tick(&s, true, t0 + Duration::from_millis(450), &tx).await;
     assert_eq!(shown(drain(&mut rx)).as_deref(), Some("RU:Level is"));
     assert_eq!(tr_n.load(Ordering::SeqCst), 2);
@@ -997,15 +998,15 @@ async fn inplace_fields_are_translated_once_and_unchanged_fields_are_not_resent(
     assert_eq!((ocr_n.load(Ordering::SeqCst), tr_n.load(Ordering::SeqCst)), (2, 1));
 
     // Текст сдвинулся: поле найдено заново, перевод взят из кэша.
-    *cap.0.lock().unwrap() = 200;
+    *cap.0.lock_recover() = 200;
     p.tick(&s, false, t0 + Duration::from_millis(400), &tx).await;
     p.tick(&s, false, t0 + Duration::from_millis(600), &tx).await;
     assert!(drain(&mut rx).iter().any(|e| matches!(e, Event::Inplace { .. })));
     assert_eq!(tr_n.load(Ordering::SeqCst), 1, "no second request to the translator");
 
     // Неудачное распознавание не стирает поле.
-    p.io.ocr.0.lock().unwrap().clear();
-    *cap.0.lock().unwrap() = 120;
+    p.io.ocr.0.lock_recover().clear();
+    *cap.0.lock_recover() = 120;
     p.tick(&s, true, t0 + Duration::from_millis(800), &tx).await;
     assert!(drain(&mut rx).iter().all(|e| !matches!(e, Event::Inplace { frame, .. } if frame.blocks.is_empty())));
 }
@@ -1098,7 +1099,7 @@ struct WindowCapture(Arc<Mutex<Vec<NormRect>>>);
 impl Capture for WindowCapture {
     fn capabilities(&self, _: &WindowKey, _: &Settings) -> crate::capture::CaptureCapabilities { crate::capture::CaptureCapabilities::KWIN }
     async fn grab(&self, _: &WindowKey, rect: NormRect) -> Result<DynamicImage, CaptureError> {
-        self.0.lock().unwrap().push(rect);
+        self.0.lock_recover().push(rect);
         let mut window = canvas(1000, 500, [25, 30, 40]);
         draw_line(&mut window, 100, 180, 6, 14, 4, 22, 3, [240, 220, 120], false);
         for y in [240u32, 274] { draw_line(&mut window, 100, y, 30, 14, 4, 22, 3, [240, 240, 240], false); }
@@ -1123,7 +1124,7 @@ async fn a_name_cut_by_the_top_edge_of_the_region_is_captured_whole_and_the_over
     assert!(reach > 0.02 && reach <= MAX_REACH_UP, "the capture is to start higher: {reach}");
     // The next tick reads at once, from higher up.
     p.tick(&s, false, t0 + Duration::from_millis(10), &tx).await;
-    let last = *asked.lock().unwrap().last().unwrap();
+    let last = *asked.lock_recover().last().unwrap();
     assert!(last.y < 180.0 / 500.0 && (last.y + last.h - 1.0).abs() < 1e-9, "the name is inside the capture now: {last:?}");
     let frames: Vec<Box<crate::layout::engine::InplaceFrame>> = drain(&mut rx).into_iter().filter_map(|e| match e { Event::Inplace { frame, .. } => Some(frame), _ => None }).collect();
     let frame = frames.last().expect("fields");
@@ -1137,7 +1138,7 @@ async fn a_name_cut_by_the_top_edge_of_the_region_is_captured_whole_and_the_over
     s.appearance.inplace.extend_up = false;
     p.tick(&s, true, t0, &tx).await;
     p.tick(&s, true, t0 + Duration::from_millis(10), &tx).await;
-    assert!(asked.lock().unwrap().iter().all(|r| *r == drawn));
+    assert!(asked.lock_recover().iter().all(|r| *r == drawn));
     assert!(drain(&mut rx).iter().all(|e| !matches!(e, Event::Inplace { frame, .. } if frame.capture.is_some())));
 }
 
@@ -1265,7 +1266,7 @@ async fn real_flows_never_leave_the_state_machine_whole_region() {
     p.tick(&s, false, at(150), &tx).await;
     p.tick(&s, false, at(400), &tx).await;
     // The picture changes again, settles and is read again.
-    *cap.0.lock().unwrap() = 200;
+    *cap.0.lock_recover() = 200;
     p.tick(&s, false, at(600), &tx).await;
     p.tick(&s, false, at(800), &tx).await;
     // The engine starts failing: a forced read fails, retries are scheduled and finally given up.

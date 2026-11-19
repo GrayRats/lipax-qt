@@ -1,4 +1,5 @@
 //! Independent region state, bounded retries and a 60-second operation deadline.
+use crate::sync::LockExt;
 use crate::{cache::TranslationCache, layout::engine::InplaceFrame, capture::Capture, detect::ChangeDetector, ocr::Ocr,
     settings::{Settings, CaptureRegion, TranslationDisplayMode}, text, translate::{Translate, TranslateError}};
 use futures_util::{FutureExt, StreamExt, stream::FuturesUnordered};
@@ -397,7 +398,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
 
 impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
     fn cached(&self, s: &Settings, src: &str, dst: &str, text: &str) -> Option<String> {
-        self.cache.lock().unwrap().get(&cache_source(s, src), dst, text)
+        self.cache.lock_recover().get(&cache_source(s, src), dst, text)
     }
 
     /// Translate `text`, joining a request for the same phrase that is already running. The
@@ -410,7 +411,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         // The service is part of the key: another translator may answer differently.
         let key = format!("{}\u{1}{dst}\u{1}{text}", cache_source(s, src));
         let pending = {
-            let mut running = self.inflight.lock().unwrap();
+            let mut running = self.inflight.lock_recover();
             if let Some(found) = running.get(&key) { found.clone() } else {
                 let (translator, settings, cache) = (self.translator.clone(), s.clone(), self.cache.clone());
                 let (text, src, dst) = (text.to_owned(), src.to_owned(), dst.to_owned());
@@ -425,7 +426,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                     });
                     match first {
                         Ok(translated) => {
-                            cache.lock().unwrap().put(&cache_source(&settings, &src), &dst, &text, translated.clone());
+                            cache.lock_recover().put(&cache_source(&settings, &src), &dst, &text, translated.clone());
                             Ok(translated)
                         }
                         Err(error) if matches!(settings.translation.service, crate::settings::TranslationService::DeepL | crate::settings::TranslationService::Microsoft)
@@ -434,14 +435,14 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                             let mut fallback = settings.clone();
                             fallback.translation.service = crate::settings::TranslationService::Google;
                             let fallback_src = cache_source(&fallback, &src);
-                            let cached = cache.lock().unwrap().get(&fallback_src, &dst, &text);
+                            let cached = cache.lock_recover().get(&fallback_src, &dst, &text);
                             if let Some(translated) = cached { return Ok(translated); }
                             let translated = translator.translate(&fallback, &text, &src, &dst).await.map_err(Arc::new)?;
                             if let Err(reason) = crate::translate::guard::check(&text, &translated, &src, &dst) {
                                 tracing::warn!(%reason, "Ответ запасного переводчика отклонён");
                                 return Err(Arc::new(TranslateError::Rejected(reason.to_string())));
                             }
-                            cache.lock().unwrap().put(&fallback_src, &dst, &text, translated.clone());
+                            cache.lock_recover().put(&fallback_src, &dst, &text, translated.clone());
                             Ok(translated)
                         }
                         Err(error) => Err(Arc::new(error)),
@@ -453,7 +454,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                     let (driver, inflight) = (request.clone(), self.inflight.clone());
                     tokio::spawn(async move {
                         let _ = tokio::time::timeout(ORPHAN_REQUEST_LIMIT, driver).await;
-                        inflight.lock().unwrap().remove(&key);
+                        inflight.lock_recover().remove(&key);
                     });
                 }
                 request
@@ -504,7 +505,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
                         TranslateError::Rejected(reason.to_string())
                     })
                 }).inspect(|translated| {
-                    cache.lock().unwrap().put(&cache_source(&settings, &src), &dst, text, translated.clone());
+                    cache.lock_recover().put(&cache_source(&settings, &src), &dst, text, translated.clone());
                 }).map_err(Arc::new)
             }).collect::<Vec<_>>()
         });

@@ -8,6 +8,7 @@
 //! down is also read turned, and the surer reading kept); its per-step probabilities are decoded by CTC against the
 //! dictionary of the model.
 
+use crate::sync::LockExt;
 use super::rapid_models::{self, OcrModel};
 use super::{Ocr, OcrError, OcrLine, OcrResult};
 use crate::layout::CropRect;
@@ -83,7 +84,7 @@ static RUNTIME: StdMutex<Option<PathBuf>> = StdMutex::new(None);
 /// Load ONNX Runtime once for the process. Nothing of `ort` may be used before this succeeded: without a loaded library
 /// `ort` would look for one by itself. A failure is not remembered, so installing the library helps without a restart.
 pub fn init_runtime(explicit: Option<&Path>) -> Result<PathBuf, OcrError> {
-    let mut loaded = RUNTIME.lock().unwrap_or_else(|e| e.into_inner());
+    let mut loaded = RUNTIME.lock_recover();
     if let Some(path) = loaded.as_ref() {
         return Ok(path.clone());
     }
@@ -694,7 +695,7 @@ impl Ocr for RapidOcr {
         let model = rapid_models::select(&r.language, &r.rapid_variant).map_err(OcrError::Setup)?;
         let engine = self.engine(model, effective_threads(r.rapid_threads), r.rapid_use_gpu).await?;
         let img = img.clone();
-        let pieces = tokio::task::spawn_blocking(move || engine.lock().unwrap_or_else(|e| e.into_inner()).read(&img.to_rgb8())).await
+        let pieces = tokio::task::spawn_blocking(move || engine.lock_recover().read(&img.to_rgb8())).await
             .map_err(|e| OcrError::Failed(format!("распознавание RapidOCR прервано: {e}")))??;
         Ok(to_result(pieces))
     }

@@ -1,4 +1,5 @@
 //! Runtime style policy. Requested configuration is persisted independently of the loaded style.
+use lipa_core::sync::LockExt;
 use std::sync::{Mutex, OnceLock};
 static STARTUP: OnceLock<(String, bool)> = OnceLock::new();
 static ACTIVE_THEME: OnceLock<Mutex<String>> = OnceLock::new();
@@ -17,7 +18,7 @@ pub fn theme_policy(requested: &str) -> serde_json::Value {
     let (startup, overridden) = STARTUP.get().cloned().unwrap_or(("dark".into(), false));
     let mut result = policy(&startup, requested, overridden);
     let mut active = ACTIVE_THEME.get_or_init(|| Mutex::new(startup))
-        .lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        .lock_recover();
     if result["restartRequired"] == true {
         // Keep the last live palette, including dark/light changes made since startup.
         result["activeTheme"] = serde_json::Value::String(active.clone());
