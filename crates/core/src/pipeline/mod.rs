@@ -532,10 +532,16 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             tokio::select! {
                 biased;
                 done = &mut work => return Ok(done),
-                _ = ticker.tick() => {
+                _ = ticker.tick() => {}
+            }
+            // The look at the window is itself awaited beside the work: a reading that finishes while the capture is
+            // under way is taken at once, not after the capture (which can take as long as KWin or the portal needs).
+            tokio::select! {
+                biased;
+                done = &mut work => return Ok(done),
+                next = self.capture.grab(window, rect) => {
                     // A failed grab says nothing about the picture: the work goes on.
-                    if let Ok(next) = self.capture.grab(window, rect).await
-                        && probe.changed(&next, s.recognition.sensitivity, Instant::now()) { return Err(()); }
+                    if let Ok(next) = next && probe.changed(&next, s.recognition.sensitivity, Instant::now()) { return Err(()); }
                 }
             }
         }

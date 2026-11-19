@@ -143,8 +143,14 @@ async fn exchange(mut child: tokio::process::Child, text: &str) -> std::io::Resu
         drop(input);
         Ok::<(), std::io::Error>(())
     };
-    let ((), output) = tokio::try_join!(write, child.wait_with_output())?;
-    Ok(output)
+    let (written, output) = tokio::join!(write, child.wait_with_output());
+    let output = output?;
+    // An engine that exited before it read its input (a bad config) makes the write fail with a broken pipe: what the
+    // engine said on stderr is the cause, and `run` reports it. A failed write of an engine that went on well is an error.
+    match written {
+        Err(e) if output.status.success() => Err(e),
+        _ => Ok(output),
+    }
 }
 
 #[cfg(test)]
@@ -159,6 +165,18 @@ mod tests {
             .await.expect("child must receive EOF").unwrap();
         assert!(output.status.success());
         assert_eq!(output.stdout, b"text without newline");
+    }
+
+    #[tokio::test]
+    async fn an_engine_that_exits_before_reading_reports_its_stderr_not_a_broken_pipe() {
+        // A big input so the write cannot finish into the pipe buffer before the process is gone.
+        let child = Command::new("sh").args(["-c", "echo 'bad config' >&2; exit 3"]).stdin(Stdio::piped()).stdout(Stdio::piped())
+            .stderr(Stdio::piped()).kill_on_drop(true).spawn().unwrap();
+        let input = "x".repeat(4 * 1024 * 1024);
+        let output = tokio::time::timeout(Duration::from_secs(5), exchange(child, &input)).await.expect("no hang")
+            .expect("the exit status and stderr come back, not the write error");
+        assert_eq!(output.status.code(), Some(3));
+        assert_eq!(String::from_utf8_lossy(&output.stderr).trim(), "bad config");
     }
 
     #[test]

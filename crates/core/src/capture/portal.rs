@@ -152,6 +152,17 @@ fn checked_frame(child: &mut Child, frames: &Frames, stderr: &[u8]) -> Result<Op
 pub struct PortalCapture {
     session: Mutex<Option<Session>>,
     token: watch::Sender<String>,
+    /// Why the session could not be restored from the saved token: kept until the user chooses a window again.
+    failed: std::sync::Mutex<Option<String>>,
+}
+
+/// Whether the automatic capture may try to restore a session by itself: only with a saved choice of the user and
+/// not again after that failed. Otherwise it would open the dialog of the portal without the user asking, again and
+/// again, and close it in the middle of a choice when the time of the tick runs out.
+fn may_restore(saved_token: &str, failed: Option<&str>) -> Result<(), CaptureError> {
+    if let Some(reason) = failed { return Err(err(format!("{reason} Выберите окно заново."))); }
+    if saved_token.is_empty() { return Err(err("Окно для захвата через портал не выбрано. Выберите окно.")); }
+    Ok(())
 }
 
 type Dict = HashMap<String, OwnedValue>;
@@ -339,7 +350,7 @@ async fn spawn_session(restore_token: &str) -> Result<(Session, Option<String>),
 
 impl PortalCapture {
     pub fn new(restore_token: String) -> Self {
-        Self { session: Mutex::new(None), token: watch::channel(restore_token).0 }
+        Self { session: Mutex::new(None), token: watch::channel(restore_token).0, failed: std::sync::Mutex::new(None) }
     }
 
     /// Stop the reader and GStreamer when the UI exits.
@@ -369,9 +380,10 @@ impl PortalCapture {
     /// Пользователь выбирает окно в диалоге портала. Прежняя сессия закрывается.
     pub async fn select_window(&self) -> Result<WindowKey, CaptureError> {
         let mut slot = self.session.lock().await;
-        *slot = None;
+        // The working session is replaced only by a new one: a cancelled dialog leaves the capture as it was.
         let (session, token) = spawn_session("").await?;
         *slot = Some(session);
+        *self.failed.lock_recover() = None;
         self.remember(token);
         Ok(portal_window_key())
     }
@@ -381,7 +393,11 @@ impl PortalCapture {
         let mut slot = self.session.lock().await;
         if slot.is_none() {
             let saved = self.token.borrow().clone();
-            let (session, token) = spawn_session(&saved).await?;
+            may_restore(&saved, self.failed.lock_recover().as_deref())?;
+            let (session, token) = match spawn_session(&saved).await {
+                Ok(started) => started,
+                Err(e) => { *self.failed.lock_recover() = Some(e.to_string()); return Err(e); }
+            };
             *slot = Some(session);
             self.remember(token);
         }
@@ -429,6 +445,14 @@ impl Capture for PortalCapture {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn the_automatic_capture_restores_a_saved_choice_once_and_never_opens_the_dialog_itself() {
+        assert!(may_restore("token", None).is_ok());
+        assert!(may_restore("", None).is_err(), "no saved choice: the user has to choose");
+        let failed = may_restore("token", Some("portal refused")).unwrap_err().to_string();
+        assert!(failed.contains("portal refused"), "{failed}");
+    }
+
     use super::*;
     use image::{Rgba, RgbaImage};
     use std::io::Cursor;
