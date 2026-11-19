@@ -301,3 +301,4 @@
   модули видят приватные поля `InplaceEngine`. Отчёты 16 кадров идентичны r8 (0 расхождений), clippy `--all-targets` чист.
 - `settings.rs` (1947 строк) → `settings/{mod 512, inplace 176, sections 264, profile 111, types 133, migrate 134, reaction 61, tests 566}`; публичные пути прежние через `pub use`; clippy `--workspace --all-targets` чист, тесты workspace зелёные.
 - Остаётся: «TR-1», A4, `bridge.rs` (1904 строки).
+- `bridge.rs` (1904 строки) → `bridge.rs` 894 (мост cxx-qt, `ControllerRust`, `Shared`, службы) + `bridge/{invokables 585, queries 164, capabilities 93, preview 81, display_tests 109}`; приложение собирается, clippy чист, тесты приложения зелёные. Живой запуск GUI не выполнялся.
