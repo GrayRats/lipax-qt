@@ -48,6 +48,12 @@ ApplicationWindow {
     readonly property var tuned: { try { return JSON.parse(controller.autotuneJson || "null") } catch (e) { return null } }
     property bool tuning: false
     onTunedChanged: tuning = false
+    // An answer can fail to come (no window, no area, the capture failed, the pipeline restarted): the button is not left busy.
+    Timer {
+        interval: 30000
+        running: win.tuning
+        onTriggered: win.tuning = false
+    }
     function openWindow() { show(); raise(); requestActivate() }
     // Frames are copied and encoded only while the window is visible.
     onVisibleChanged: controller.setOcrPreviewEnabled(visible)

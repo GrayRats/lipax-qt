@@ -395,6 +395,27 @@ async fn changed_settings_reach_the_next_frame_without_a_restart_and_drop_the_re
 }
 
 #[tokio::test]
+async fn an_auto_tune_asked_right_after_a_settings_change_is_not_lost() {
+    let pipeline = Pipeline::new(Arc::new(MockCapture(Mutex::new(10))), PickyOcr, MockTr(Arc::new(AtomicUsize::new(0))));
+    let (settings_tx, settings_rx) = watch::channel(settings());
+    let (_running_tx, running_rx) = watch::channel(false);
+    let (cmd_tx, cmd_rx) = mpsc::unbounded_channel();
+    let (ev_tx, mut ev_rx) = mpsc::unbounded_channel();
+    let task = tokio::spawn(pipeline.run(settings_rx, running_rx, cmd_rx, Arc::default(), ev_tx));
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    // The user moves a slider that restarts the pipeline and presses the button at once: the button must not be eaten
+    // by the restart (the window waits for the answer for ever).
+    settings_tx.send_modify(|s| s.recognition.minimum_confidence = 45);
+    cmd_tx.send(Cmd::AutoTune).unwrap();
+    let answer = tokio::time::timeout(Duration::from_secs(3), async {
+        while let Some((_, event)) = ev_rx.recv().await { if matches!(event, Event::AutoTune { .. }) { return true; } }
+        false
+    }).await;
+    task.abort();
+    assert_eq!(answer, Ok(true), "the auto-tune was answered");
+}
+
+#[tokio::test]
 async fn a_setting_that_does_not_affect_recognition_does_not_interrupt_a_reading() {
     let finished = Arc::new(Mutex::new(Vec::new()));
     let pipeline = Pipeline::new(MockCapture(Mutex::new(10)), RecordingOcr { delay: Duration::from_millis(400), finished: finished.clone() }, MockTr(Arc::new(AtomicUsize::new(0))));

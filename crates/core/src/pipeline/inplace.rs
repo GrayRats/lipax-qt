@@ -100,6 +100,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let mut recognized = Vec::with_capacity(jobs.len());
         let mut origins: HashMap<u64, (crate::layout::Rect, (u32, u32))> = HashMap::new();
         let mut newly_ignored = false;
+        // A reading dropped because the picture changed under it is not an answer: neither a success nor a failure.
+        let mut dropped = false;
         if !jobs.is_empty() {
             state.enter(&region.id, Phase::Recognizing);
             self.status("Распознавание окна…", out);
@@ -119,7 +121,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             match tokio::time::timeout_at(deadline, self.unless_stale(s, region, probe, all)).await {
                 Ok(Ok(done)) => { state.stale = 0; self.timings.record("ocr", recognizing.elapsed()); recognized = done },
                 // The fields stay due: their signatures are stored only when a field is completed.
-                Ok(Err(())) => self.dropped_stale(region, state, now, out),
+                Ok(Err(())) => { dropped = true; self.dropped_stale(region, state, now, out) },
                 Err(_) => failure = Some(("Ошибка OCR: нет ответа за 60 с".into(), true)),
             }
         }
@@ -236,7 +238,12 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         let finishing = Instant::now();
         let result = state.inplace.get_or_insert_with(Default::default).finish(s);
         self.timings.record("layout", finishing.elapsed());
-        if failure.is_none() { state.enter(&region.id, if result.as_ref().is_some_and(|f| !f.blocks.is_empty()) { Phase::Showing } else { Phase::WaitingFrame }); }
+        // What the inspector keeps per field goes with the field: ids only grow, a long session would collect them all.
+        let alive: std::collections::HashSet<u64> = state.inplace.as_ref().map(|e| e.tracker().blocks().iter().map(|t| t.id).collect()).unwrap_or_default();
+        state.field_ocr.retain(|id, _| alive.contains(id));
+        state.field_lines.retain(|id, _| alive.contains(id));
+        state.ignored.retain(|_, (when, _)| now.saturating_duration_since(*when) < IGNORED_SHOWN);
+        if failure.is_none() && !dropped { state.enter(&region.id, if result.as_ref().is_some_and(|f| !f.blocks.is_empty()) { Phase::Showing } else { Phase::WaitingFrame }); }
         if let Some(frame) = &result {
             let (known, read) = (&state.field_ocr, &state.field_lines);
             state.preview_boxes = frame.blocks.iter().map(|b| {
@@ -265,6 +272,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         }
         match failure {
             Some((first, terminal)) => state.fail(region, join_messages(&first, &notes), now, terminal, out),
+            // The reading was dropped: the retry delays and the error budget stay as they were.
+            None if dropped => {}
             None => state.settle(region, out),
         }
     }

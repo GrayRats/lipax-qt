@@ -775,7 +775,12 @@ impl cxx_qt::Initialize for qobject::Controller {
                         let shared = preview_shared.clone();
                         let json = tokio::task::spawn_blocking(move || publish_preview(&shared, region_id, region_name, *preview)).await.ok().flatten();
                         if let Some(json) = json
-                            && qt.queue(move |mut o| o.as_mut().set_ocr_preview_json(QString::from(json.as_str()))).is_err() { break; }
+                            && qt.queue(move |mut o| {
+                                // The window may have been closed (and its files removed) while this answer was on its way.
+                                if o.rust().shared.preview.load(std::sync::atomic::Ordering::Relaxed) {
+                                    o.as_mut().set_ocr_preview_json(QString::from(json.as_str()));
+                                }
+                            }).is_err() { break; }
                         continue;
                     }
                     other => other,
@@ -844,6 +849,8 @@ impl cxx_qt::Initialize for qobject::Controller {
                         });
                         let json = serde_json::json!({
                             "region": region_id, "best": best, "applied": winner.score > 0.0,
+                            // Another answer for the same frame is another value: the window waits for a change.
+                            "at": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_millis() as u64),
                             "results": results.iter().map(|r| serde_json::json!({ "name": r.name, "score": r.score })).collect::<Vec<_>>(),
                         });
                         // Nothing was read with any filter: the settings stay as they are.

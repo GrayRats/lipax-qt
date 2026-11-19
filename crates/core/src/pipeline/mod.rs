@@ -359,8 +359,10 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Pipeline<C, O, T> {
             };
             if command == Cmd::Reset { self.reset(); continue; }
             if command == Cmd::ReanalyzeFonts { self.reanalyze_fonts(); continue; }
-            // Settings are looked at before every frame, not only when the pipeline starts.
-            if settings.has_changed().unwrap_or(false) && self.apply_settings_change(&mut settings, &mut seen_key) && command != Cmd::TranslateOnce {
+            // Settings are looked at before every frame, not only when the pipeline starts. What the user asked for by hand
+            // (a read now, a filter choice) is not dropped with the automatic tick the change restarts.
+            if settings.has_changed().unwrap_or(false) && self.apply_settings_change(&mut settings, &mut seen_key)
+                && !matches!(command, Cmd::TranslateOnce | Cmd::AutoTune) {
                 continue;
             }
             let stamp = Stamped { tx: &out, generation: generation.load(Ordering::SeqCst) };
@@ -602,6 +604,8 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
         }
         // Taken at once: it is for exactly one tick.
         let rescan = std::mem::take(&mut state.rescan);
+        // A regrouping asks for a new reading, not for another request to a service that has stopped the automatic retries.
+        if state.halted && !force { return; }
         if !force && !rescan {
             if state.halted { return; }
             if let Some(first) = state.first_error
