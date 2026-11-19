@@ -334,7 +334,9 @@ impl qobject::Controller {
                 }
                 self.as_mut().publish_settings();
                 self.as_mut().publish_translation();
-                self.as_mut().publish_history();
+                // The history file is rewritten whole: only a change of its own settings (limit, saving) does that, not
+                // every step of a slider.
+                if patch.keys().any(|k| k.starts_with("history_")) { self.as_mut().publish_history(); }
                 // A setting that waits for something (a new window selection) says so instead of looking ignored.
                 let pending = previous.pending_actions(&self.rust().shared.settings.borrow());
                 if let Some(note) = pending.first() {

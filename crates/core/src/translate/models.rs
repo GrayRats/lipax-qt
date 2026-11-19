@@ -111,15 +111,24 @@ pub fn cache_root() -> PathBuf {
 pub fn missing(pair: &str) -> String {
     format!("Translation model for {pair} is missing. Download it in Settings.")
 }
+/// Files whose hash was confirmed: path -> (size, modification time, the hash it matched). Hashing tens of megabytes
+/// for every translation is wasted work for a file that has not been touched; a changed size or time checks it again.
+/// What was confirmed about a file: its size, its modification time and the hash it matched.
+type Confirmed = (u64, Option<std::time::SystemTime>, String);
+static VERIFIED: std::sync::Mutex<BTreeMap<PathBuf, Confirmed>> = std::sync::Mutex::new(BTreeMap::new());
+
 pub(crate) fn verify(path: &Path, file: &ModelFile) -> bool {
+    use crate::sync::LockExt;
     let Ok(mut input) = fs::File::open(path) else {
         return false;
     };
-    if !input
-        .metadata()
-        .is_ok_and(|m| m.is_file() && m.len() == file.size)
-    {
+    let Ok(meta) = input.metadata() else { return false };
+    if !(meta.is_file() && meta.len() == file.size) {
         return false;
+    }
+    let stamp = (meta.len(), meta.modified().ok(), file.sha256.clone());
+    if stamp.1.is_some() && VERIFIED.lock_recover().get(path) == Some(&stamp) {
+        return true;
     }
     let mut hash = Sha256::new();
     let mut buffer = [0; 65536];
@@ -130,7 +139,11 @@ pub(crate) fn verify(path: &Path, file: &ModelFile) -> bool {
             Err(_) => return false,
         }
     }
-    format!("{:x}", hash.finalize()) == file.sha256
+    let matches = format!("{:x}", hash.finalize()) == file.sha256;
+    if matches && stamp.1.is_some() {
+        VERIFIED.lock_recover().insert(path.to_path_buf(), stamp);
+    }
+    matches
 }
 
 // Explicit paths may be a directory or a legacy Bergamot YAML configuration.
@@ -410,6 +423,26 @@ async fn ensure_with_catalog(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_verified_file_is_not_hashed_again_until_its_size_or_time_changes() {
+        use sha2::{Digest, Sha256};
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("model.bin");
+        fs::write(&path, b"original").unwrap();
+        let record = |bytes: &[u8]| ModelFile { name: "model.bin".into(), size: bytes.len() as u64, sha256: format!("{:x}", Sha256::digest(bytes)), url: String::new() };
+        let original = record(b"original");
+        assert!(verify(&path, &original));
+        // Same size and time, other content: the cache answers (the price of not reading the file every time) ...
+        let time = fs::metadata(&path).unwrap().modified().unwrap();
+        fs::write(&path, b"tampered").unwrap();
+        fs::File::options().write(true).open(&path).unwrap().set_modified(time).unwrap();
+        assert!(verify(&path, &original), "unchanged size and time: not read again");
+        // ... a new time reads it again.
+        fs::File::options().write(true).open(&path).unwrap().set_modified(time + std::time::Duration::from_secs(5)).unwrap();
+        assert!(!verify(&path, &original));
+        assert!(verify(&path, &record(b"tampered")));
+    }
+
     use super::*;
     fn fixture() -> (tempfile::TempDir, Model) {
         fixture_of("test")
