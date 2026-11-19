@@ -164,7 +164,9 @@ pub const NOISY_TEXTURE: f32 = 0.4;
 
 impl FrameStats {
     pub fn of(img: &DynamicImage) -> Self {
-        let (w, h) = (img.width().max(2), img.height().max(1));
+        // Nothing to measure in a picture narrower than two pixels or without rows (a degenerate crop).
+        if img.width() < 2 || img.height() == 0 { return Self { texture: 0.0, entropy: 0.0 }; }
+        let (w, h) = (img.width(), img.height());
         let step = (((w as u64 * h as u64) / STATS_SAMPLES as u64) as f32).sqrt().ceil().max(1.0) as u32;
         let rgba = img.as_rgba8();
         let luma_at = |x: u32, y: u32| -> i32 {
@@ -306,6 +308,15 @@ pub fn pick_best(scores: &[f32]) -> usize {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_degenerate_crop_has_no_texture_and_does_not_panic() {
+        for (w, h) in [(1, 20), (20, 0), (0, 0), (1, 1)] {
+            let img = DynamicImage::ImageRgba8(image::RgbaImage::new(w, h));
+            let stats = FrameStats::of(&img);
+            assert_eq!((stats.texture, stats.entropy), (0.0, 0.0), "{w}×{h}");
+        }
+    }
+
     use super::*;
     use crate::layout::CropRect;
     use image::{GrayImage, Luma};

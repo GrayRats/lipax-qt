@@ -122,9 +122,18 @@ const EMPTY_BACKOFF: std::time::Duration = std::time::Duration::from_secs(5);
 
 impl AnyOcr {
     async fn auto(&self, img: &DynamicImage, settings: &Settings, filters: filter::Preprocess) -> Result<OcrResult, OcrError> {
-        let first = Tesseract.run_detailed_with(img, &settings.recognition.language, filters).await?;
+        // Tesseract not installed (or its language missing) must not shut out the engines that are: they are tried before
+        // its error is reported. Its failed reading stands for a frame it was not sure about.
+        let (first, failed) = match Tesseract.run_detailed_with(img, &settings.recognition.language, filters).await {
+            Ok(first) => (first, None),
+            Err(e) => (OcrResult { confidence: Some(0.0), ..OcrResult::default() }, Some(e)),
+        };
         // A result is good enough unless the engine itself is unsure.
-        if first.confidence.is_none_or(|c| c >= AUTO_ACCEPT) { return Ok(first); }
+        if failed.is_none() && first.confidence.is_none_or(|c| c >= AUTO_ACCEPT) { return Ok(first); }
+        // What stays when no other engine answers: Tesseract's reading, or its error.
+        let failed_flag = failed.is_some();
+        let keep = |first: OcrResult| failed.map_or(Ok(first), Err);
+        let better = |second: &OcrResult, first: &OcrResult| failed_flag || is_better(second, first);
         // MeikiOCR is the second opinion for Japanese when its model is installed (it is optional, nothing is fetched
         // for it); otherwise RapidOCR is, and PaddleOCR only stands in while RapidOCR is unavailable.
         let meiki = self.meiki.installed(&settings.recognition.language) && !is_down(&self.meiki_down_until);
@@ -136,13 +145,13 @@ impl AnyOcr {
             let image = if manual.is_identity() { img } else { prepared = filtered(img, manual).await?; &prepared };
             if meiki {
                 match self.meiki.recognize_detailed(image, settings).await {
-                    Ok(mut second) if is_better(&second, &first) => {
+                    Ok(mut second) if better(&second, &first) => {
                         tracing::debug!(engine = "auto", tesseract = ?first.confidence, meikiocr = ?second.confidence, "OCR: MeikiOCR is more sure");
                         second.filters = manual;
                         return Ok(second);
                     }
                     // Japanese is MeikiOCR's: an empty or unsure reading is not repeated by another engine.
-                    Ok(_) => return Ok(first),
+                    Ok(_) => return keep(first),
                     Err(e) => {
                         tracing::debug!(engine = "auto", error = %e, "OCR: MeikiOCR unavailable, RapidOCR is tried instead");
                         *self.meiki_down_until.lock_recover() = Some(std::time::Instant::now() + MEIKI_RETRY_AFTER);
@@ -151,12 +160,12 @@ impl AnyOcr {
             }
             if rapid {
                 match self.rapid.recognize_detailed(image, settings).await {
-                    Ok(mut second) if is_better(&second, &first) => {
+                    Ok(mut second) if better(&second, &first) => {
                         tracing::debug!(engine = "auto", tesseract = ?first.confidence, rapidocr = ?second.confidence, "OCR: RapidOCR is more sure");
                         second.filters = manual;
                         return Ok(second);
                     }
-                    Ok(_) => return Ok(first),
+                    Ok(_) => return keep(first),
                     Err(e) => {
                         tracing::debug!(engine = "auto", error = %e, "OCR: RapidOCR unavailable, PaddleOCR is tried instead");
                         *self.rapid_down_until.lock_recover() = Some(std::time::Instant::now() + RAPID_RETRY_AFTER);
@@ -165,22 +174,22 @@ impl AnyOcr {
             }
         }
         let down = self.paddle_down_until.lock_recover().is_some_and(|t| std::time::Instant::now() < t);
-        if down { return Ok(first); }
+        if down { return keep(first); }
         let second = if filters.is_identity() {
             self.paddle.recognize_detailed(img, settings).await
         } else {
             self.paddle.recognize_detailed(&filtered(img, filters).await?, settings).await
         };
         match second {
-            Ok(second) if !second.text.trim().is_empty() && second.confidence.is_none_or(|c| c > first.confidence.unwrap_or(0.0)) => {
+            Ok(second) if better(&second, &first) => {
                 tracing::debug!(engine = "auto", tesseract = ?first.confidence, paddleocr = ?second.confidence, "OCR: PaddleOCR is more sure");
                 Ok(second)
             }
-            Ok(_) => Ok(first),
+            Ok(_) => keep(first),
             Err(e) => {
                 tracing::debug!(engine = "auto", error = %e, "OCR: PaddleOCR unavailable, Tesseract result kept");
                 *self.paddle_down_until.lock_recover() = Some(std::time::Instant::now() + PADDLE_RETRY_AFTER);
-                Ok(first)
+                keep(first)
             }
         }
     }
@@ -255,12 +264,14 @@ pub struct Tesseract;
 
 /// Сбой запуска или нехватка языковых данных превращаются в понятное сообщение с именем пакета
 /// для текущего дистрибутива. Проверка запускается только после ошибки, поэтому в обычном цикле не тормозит.
-fn explain(raw: String, lang: &str, spawn_failed: bool) -> Option<OcrError> {
+/// The check starts processes (`tesseract --version`, the package manager), so it runs off the runtime's threads.
+async fn explain(raw: String, lang: &str, spawn_failed: bool) -> Option<OcrError> {
     let lang_problem = raw.contains("Failed loading language") || raw.contains("Error opening data file") || raw.contains("Could not initialize tesseract");
     if !spawn_failed && !lang_problem {
         return None;
     }
-    TesseractManager::system().explain_ocr_failure(lang).map(OcrError::Setup)
+    let lang = lang.to_owned();
+    tokio::task::spawn_blocking(move || TesseractManager::system().explain_ocr_failure(&lang).map(OcrError::Setup)).await.ok().flatten()
 }
 
 /// Увеличение 2x и градации серого повышают точность на мелком игровом тексте.
@@ -308,7 +319,7 @@ impl Tesseract {
 
         // Языки выбираются в настройках: основной первым, дополнительные через «+» (например, `jpn+eng`).
         let lang = lang.to_owned();
-        let mut child = Command::new("tesseract")
+        let child = Command::new("tesseract")
             .args(["stdin", "stdout", "-l", &lang, "--psm", "6"])
             // Скачанные модели лежат в каталоге пользователя (рядом со ссылками на системные).
             .args(crate::tesseract::tessdata_arg().iter().flat_map(|dir| ["--tessdata-dir".to_string(), dir.display().to_string()]))
@@ -317,8 +328,11 @@ impl Tesseract {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .kill_on_drop(true)
-            .spawn()
-            .map_err(|e| explain(e.to_string(), &lang, true).unwrap_or(OcrError::Spawn(e)))?;
+            .spawn();
+        let mut child = match child {
+            Ok(child) => child,
+            Err(e) => return Err(explain(e.to_string(), &lang, true).await.unwrap_or(OcrError::Spawn(e))),
+        };
 
         let mut stdin = child.stdin.take().expect("piped");
         let mut stdout = child.stdout.take().expect("piped");
@@ -344,7 +358,7 @@ impl Tesseract {
         }
         if !status.success() {
             let msg = String::from_utf8_lossy(&err).trim().to_string();
-            return Err(explain(msg.clone(), &lang, false).unwrap_or(OcrError::Failed(msg)));
+            return Err(explain(msg.clone(), &lang, false).await.unwrap_or(OcrError::Failed(msg)));
         }
         tracing::debug!(engine = "tesseract", bytes = out.len(), "OCR завершён");
         Ok(out)
@@ -362,9 +376,10 @@ impl Tesseract {
     }
 }
 
-/// CJK text has no spaces between words; Tesseract's TSV still splits it into tokens.
+/// Han, kana and full-width text has no spaces between words; Tesseract's TSV still splits it into tokens. Hangul is not
+/// here: Korean separates its words with spaces.
 fn is_cjk(c: char) -> bool {
-    matches!(c as u32, 0x3000..=0x30FF | 0x3400..=0x4DBF | 0x4E00..=0x9FFF | 0xAC00..=0xD7AF | 0xFF00..=0xFFEF)
+    matches!(c as u32, 0x3000..=0x30FF | 0x3400..=0x4DBF | 0x4E00..=0x9FFF | 0xFF00..=0xFFEF)
 }
 
 fn join_words(line: &mut String, word: &str) {
@@ -563,6 +578,13 @@ mod tests {
         let mut line = String::new();
         for word in ["こんにちは", "世界", "Hello", "world"] { join_words(&mut line, word); }
         assert_eq!(line, "こんにちは世界Hello world");
+    }
+
+    #[test]
+    fn korean_words_keep_their_spaces() {
+        let mut line = String::new();
+        for word in ["안녕하세요", "세계", "Hello"] { join_words(&mut line, word); }
+        assert_eq!(line, "안녕하세요 세계 Hello");
     }
 
     /// Real Tesseract on a rendered line of text; skipped where Tesseract, Python/PIL or the font are missing.

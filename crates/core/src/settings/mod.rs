@@ -219,7 +219,16 @@ impl Settings {
                 tracing::error!(path = %backup.display(), error = %e, "Не удалось сохранить копию настроек новой версии");
             }
         }
-        let mut settings = Self::from_toml(&text);
+        let mut settings = match Self::try_from_toml(&text) {
+            Ok(settings) => settings,
+            Err(reason) => {
+                // The next save overwrites the file: keep what the user wrote (API keys, profiles) beside it.
+                let kept = crate::files::keep_copy(&path, "broken");
+                // Do not print the TOML excerpt: configuration may contain API keys.
+                tracing::error!(reason, copy = ?kept, "Некорректный TOML настроек; используются значения по умолчанию");
+                Self::default()
+            }
+        };
         // Migrate the old single rectangle into the first named region.
         if settings.capture.regions.iter().all(|r| r.rect.is_none())
             && let Some(first) = settings.capture.regions.first_mut() { first.rect = settings.capture.region; }
@@ -230,7 +239,16 @@ impl Settings {
     /// Parse a saved config, migrating older formats. A file from a newer LipaX is read as far as
     /// this version understands it (unknown keys are ignored); `load` keeps a copy of it first.
     pub fn from_toml(text: &str) -> Self {
-        let parsed = text.parse::<toml::Table>().map_err(|e| e.message().to_owned()).and_then(|mut table| {
+        Self::try_from_toml(text).unwrap_or_else(|reason| {
+            // Do not print the TOML excerpt: configuration may contain API keys.
+            tracing::error!(reason, "Некорректный TOML настроек; используются значения по умолчанию");
+            Self::default()
+        })
+    }
+
+    /// As [`Settings::from_toml`], but a file that cannot be understood is an error (the message of the parser).
+    pub fn try_from_toml(text: &str) -> Result<Self, String> {
+        text.parse::<toml::Table>().map_err(|e| e.message().to_owned()).and_then(|mut table| {
             let version = table.get("schema_version").and_then(toml::Value::as_integer).map_or(0, |v| v.clamp(0, i64::from(u32::MAX)) as u32);
             if version > SCHEMA_VERSION {
                 tracing::warn!(file = version, supported = SCHEMA_VERSION, "Настройки записаны более новой версией LipaX; неизвестные поля будут потеряны при сохранении");
@@ -240,11 +258,6 @@ impl Settings {
             }
             migrate_flat_keys(&mut table);
             table.try_into::<Self>().map_err(|e| e.message().to_owned())
-        });
-        parsed.unwrap_or_else(|reason| {
-            // Do not print the TOML excerpt: configuration may contain API keys.
-            tracing::error!(reason, "Некорректный TOML настроек; используются значения по умолчанию");
-            Self::default()
         })
     }
 
@@ -491,22 +504,14 @@ impl Settings {
 
     pub fn save(&self) -> std::io::Result<()> {
         static SAVE: std::sync::Mutex<()> = std::sync::Mutex::new(());
-        let _guard = SAVE.lock().unwrap();
+        let _guard = SAVE.lock().unwrap_or_else(|e| e.into_inner());
         let path = Self::path();
         if let Some(dir) = path.parent() {
             std::fs::create_dir_all(dir)?;
         }
         let s = toml::to_string_pretty(self).map_err(std::io::Error::other)?;
-        // Атомарная запись, чтобы не повредить конфиг при падении.
-        let tmp = path.with_extension("toml.tmp");
-        std::fs::write(&tmp, s)?;
-        // В файле могут лежать API-ключи: доступ только владельцу.
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&tmp, std::fs::Permissions::from_mode(0o600))?;
-        }
-        std::fs::rename(tmp, path)
+        // Атомарная запись (в файле могут лежать API-ключи: доступ только владельцу с первого байта).
+        crate::files::write_atomic(&path, s.as_bytes(), 0o600)
     }
 }
 

@@ -226,7 +226,7 @@ fn write_config(dir: &Path, model: &Model) -> Result<(), String> {
         file(dst),
         file("lex")
     );
-    fs::write(dir.join(format!("{}.yml", model.pair)), config).map_err(|e| e.to_string())
+    crate::files::write_atomic(&dir.join(format!("{}.yml", model.pair)), config.as_bytes(), 0o644).map_err(|e| e.to_string())
 }
 fn install(
     root: &Path,

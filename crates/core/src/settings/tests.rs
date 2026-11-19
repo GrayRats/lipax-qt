@@ -564,3 +564,11 @@ fn partial_config_uses_defaults() {
     assert_eq!(s.translation.target_language, "de");
     assert_eq!(s.recognition.interval_ms, 500);
 }
+
+#[test]
+fn a_file_with_one_wrong_type_is_an_error_for_load_and_defaults_for_the_rest() {
+    let broken = "schema_version = 2\nhistory_limit = \"200\"\n[translation]\nyandex_api_key = \"secret\"\n";
+    assert!(Settings::try_from_toml(broken).is_err(), "load keeps a copy of such a file before the defaults replace it");
+    assert_eq!(Settings::from_toml(broken), Settings::default());
+    assert!(Settings::try_from_toml("schema_version = 2\n").is_ok());
+}

@@ -607,6 +607,9 @@ impl Engine {
             if classes != self.dict.len() + 2 && classes != self.dict.len() + 1 {
                 return Err(OcrError::Setup(format!("RapidOCR: словарь ({} символов) не подходит к распознавателю ({classes} классов). Удалите модель и скачайте её заново.", self.dict.len())));
             }
+            if probs.len() < batch.len() * steps * classes {
+                return Err(inference("recognizer output is shorter than batch × steps × classes"));
+            }
             for (k, &i) in batch.iter().enumerate() {
                 let (text, confidence, chars) = ctc_decode(&probs[k * steps * classes..(k + 1) * steps * classes], steps, classes, &self.dict);
                 pieces[i] = Some(Piece { quad: crops[i].0, text, confidence, chars });

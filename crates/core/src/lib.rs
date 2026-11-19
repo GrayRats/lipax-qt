@@ -6,6 +6,7 @@ pub mod autostart;
 pub mod cache;
 pub mod capture;
 pub mod detect;
+pub mod files;
 pub mod hotkeys;
 pub mod layout;
 pub mod ocr;
