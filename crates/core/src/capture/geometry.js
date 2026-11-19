@@ -22,13 +22,16 @@ function watchWindow(window) {
     function sendMinimized() { send("Minimized", uuid, !!window.minimized); }
     if (window.minimizedChanged) window.minimizedChanged.connect(sendMinimized);
     sendMinimized();
+    // After the window is closed its geometry signals can still arrive (the closing animation): they must not bring it back.
+    let closed = false;
     function update() {
+        if (closed) return;
         send("Update", uuid, JSON.stringify([rect(window.clientGeometry), rect(window.frameGeometry), rect(window.bufferGeometry)]));
     }
     window.clientGeometryChanged.connect(update);
     if (window.frameGeometryChanged) window.frameGeometryChanged.connect(update);
     if (window.bufferGeometryChanged) window.bufferGeometryChanged.connect(update);
-    window.closed.connect(function() { send("Update", uuid, "null"); });
+    window.closed.connect(function() { closed = true; send("Update", uuid, "null"); });
     update();
 }
 // ── LipaX floating translation window (an ordinary xdg_toplevel) ──

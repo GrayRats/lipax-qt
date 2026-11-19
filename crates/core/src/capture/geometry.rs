@@ -95,7 +95,9 @@ struct GeometryService(Arc<State>);
 
 #[zbus::interface(name = "io.lipa.Geometry", spawn = false)]
 impl GeometryService {
-    /// `[client, frame, buffer]`, each `[x, y, w, h]`; anything else (`null` on close) forgets the window.
+    /// `[client, frame, buffer]`, each `[x, y, w, h]`; `null` (the window closed) forgets the window. A geometry that cannot
+    /// be used (a degenerate size while the window is being set up or changes its mode) only leaves the window without
+    /// a geometry for now: who it is and whether it is minimised are sent once, not with every update, and stay.
     fn update(&self, uuid: &str, geometry: &str) {
         let rect = |[x, y, w, h]: [f64; 4]| {
             ([x, y, w, h].iter().all(|v| v.is_finite()) && w > 0.0 && h > 0.0).then_some(WindowGeometry { x, y, w, h })
@@ -109,9 +111,11 @@ impl GeometryService {
             Some(frames) => { windows.insert(uuid.into(), frames); }
             None => {
                 windows.remove(uuid);
-                self.0.minimized.lock_recover().remove(uuid);
-                self.0.identities.lock_recover().remove(uuid);
-                self.0.programs.lock_recover().remove(uuid);
+                if geometry.trim() == "null" {
+                    self.0.minimized.lock_recover().remove(uuid);
+                    self.0.identities.lock_recover().remove(uuid);
+                    self.0.programs.lock_recover().remove(uuid);
+                }
             }
         }
     }
@@ -199,7 +203,11 @@ impl ClientGeometry {
                 .create_new(true)
                 .mode(0o600)
                 .open(&path)?;
-            file.write_all(script.as_bytes())?;
+            // A script half written is of no use and must not stay in the runtime directory.
+            if let Err(e) = file.write_all(script.as_bytes()) {
+                let _ = std::fs::remove_file(&path);
+                return Err(e.into());
+            }
         }
         SCRIPTS
             .get_or_init(Default::default)
@@ -466,6 +474,26 @@ mod tests {
         service.update("game", "null");
         assert!(state.identities.lock().unwrap().is_empty(), "a closed window is forgotten");
         assert!(state.programs.lock().unwrap().is_empty());
+    }
+
+    #[test]
+    fn an_unusable_geometry_does_not_make_the_script_forget_who_the_window_is() {
+        let state = Arc::new(State::default());
+        let service = GeometryService(state.clone());
+        service.identity("game", "steam_app_default", "CrossxMars", "0");
+        service.minimized("game", true);
+        service.update("game", "[[0,0,800,600],[0,0,800,600],[0,0,800,600]]");
+        // A zero-sized client while the window changes its mode: no geometry now, the rest stays.
+        service.update("game", "[[0,0,0,0],[0,0,800,600],[0,0,800,600]]");
+        service.update("game", "garbage");
+        assert!(state.windows.lock_recover().get("game").is_none());
+        assert!(state.identities.lock_recover().contains_key("game"));
+        assert!(state.minimized.lock_recover().contains("game"));
+        // The next good update brings the window back; only `null` forgets it.
+        service.update("game", "[[0,0,800,600],[0,0,800,600],[0,0,800,600]]");
+        assert!(state.windows.lock_recover().contains_key("game"));
+        service.update("game", "null");
+        assert!(state.identities.lock_recover().is_empty() && state.minimized.lock_recover().is_empty());
     }
 
     #[test]

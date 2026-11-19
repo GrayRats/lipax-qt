@@ -25,6 +25,8 @@ pub struct KwinCapture {
 }
 
 const GEOMETRY_RETRY: std::time::Duration = std::time::Duration::from_secs(30);
+/// How long KWin may take to answer a window screenshot; a compositor that does not answer must not hold the pipeline for ever.
+const CAPTURE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
 
 fn unavailable(e: impl std::fmt::Display) -> CaptureError {
     CaptureError::Unavailable(e.to_string())
@@ -194,7 +196,10 @@ impl KwinCapture {
     /// `None` when there is no such single window (or the KWin script is not available).
     pub async fn rebind(&self, window: &WindowKey) -> Option<String> {
         let current = self.resolve(&window.uuid);
-        let found = self.tracker().await?.find(&window.resource_class, &window.caption, &window.program, &current)?;
+        let tracker = self.tracker().await?;
+        // The window is still there (the error was something else): another window of the same program is not its successor.
+        if tracker.get(&current).is_some() { return None; }
+        let found = tracker.find(&window.resource_class, &window.caption, &window.program, &current)?;
         tracing::info!(target: "capture.kwin", class = %window.resource_class, caption = %window.caption, "Окно игры найдено заново после перезапуска");
         self.aliases.lock_recover().insert(window.uuid.clone(), found.clone());
         Some(found)
@@ -306,18 +311,20 @@ impl KwinCapture {
         options.insert("include-shadow", false.into());
         options.insert("native-resolution", true.into());
 
-        let reply = self
-            .conn
-            .call_method(
+        let answer = tokio::time::timeout(
+            CAPTURE_TIMEOUT,
+            self.conn.call_method(
                 Some("org.kde.KWin"),
                 "/org/kde/KWin/ScreenShot2",
                 Some("org.kde.KWin.ScreenShot2"),
                 "CaptureWindow",
                 &(uuid, options, Fd::from(&fd)),
-            )
-            .await;
+            ),
+        ).await;
         // Закрываем свою копию записывающего конца, чтобы читатель получил EOF.
         drop(fd);
+        // No answer: the reader is not awaited (KWin may still hold its end of the pipe); it ends when that is closed.
+        let Ok(reply) = answer else { return Err(unavailable("KWin не ответил на снимок окна за 10 с")) };
         let reply = match reply {
             Ok(r) => r,
             Err(e) => {
