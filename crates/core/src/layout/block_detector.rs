@@ -322,6 +322,29 @@ fn join_row_fragments(img: &RgbaImage, mask: &InkMask, lines: Vec<TextLine>) -> 
     out
 }
 
+/// A value under its caption ("TUTORIAL" over "TR-1"): a block of large type with fewer glyphs than a full row, right
+/// below a smaller full one and as wide as it, whose short text is the point of the label.
+const VALUE_GAP: f32 = 1.0;
+/// Glyphs of such a value are at least this many times as tall as those of the caption.
+const VALUE_SCALE: f32 = 1.5;
+
+/// The blocks of one local-contrast window worth keeping: those with a full text-like row, and the short blocks of large
+/// type that are the value of such a block's caption. Standalone short blocks stay rejected as noise.
+fn keep_with_value_labels(blocks: Vec<DetectedTextBlock>) -> Vec<DetectedTextBlock> {
+    let (full, short): (Vec<_>, Vec<_>) = blocks.into_iter().partition(|b| b.lines.iter().any(text_like_line));
+    let values: Vec<DetectedTextBlock> = short.into_iter().filter(|v| {
+        let height = median(v.lines.iter().map(|l| l.glyph_height()).collect());
+        height >= LARGE_GLYPH && full.iter().any(|c| {
+            let caption = median(c.lines.iter().map(|l| l.glyph_height()).collect());
+            let overlap = (c.rect.right().min(v.rect.right()) - c.rect.x.max(v.rect.x)).max(0.0);
+            let gap = v.rect.y - c.rect.bottom();
+            caption > 0.0 && height >= VALUE_SCALE * caption && overlap >= 0.6 * v.rect.w.min(c.rect.w)
+                && (0.0..=VALUE_GAP * v.rect.h).contains(&gap)
+        })
+    }).collect();
+    full.into_iter().chain(values).collect()
+}
+
 /// At least `LOCAL_MIN_GLYPHS` glyphs of the line share one height (within 15 %), one top and one bottom (within a fifth of
 /// the height), and none lies inside another: capitals or digits of one size. Outlines of a picture cut into pieces (eyes,
 /// folds) differ in height; an icon and its rim are nested.
@@ -445,8 +468,7 @@ impl BlockDetector {
             // contains a full text-like row; standalone noise stays rejected.
             let lines: Vec<TextLine> = join_row_fragments(img, &local, self.lines_from(img, &local, comps, fw, 0)).into_iter()
                 .filter(|line| text_like_line_min(line, 3)).collect();
-            let blocks: Vec<DetectedTextBlock> = self.blocks_from_lines_by_glyph_height(lines, true).into_iter()
-                .filter(|block| block.lines.iter().any(text_like_line)).collect();
+            let blocks = keep_with_value_labels(self.blocks_from_lines_by_glyph_height(lines, true));
             found.push((local, blocks));
         }
         found
@@ -684,6 +706,29 @@ fn classify(blocks: &mut [DetectedTextBlock], fw: f32, fh: f32) {
 
 #[cfg(test)]
 mod tests {
+    /// A block of one line of glyphs `h` tall, `n` of them, starting at (`x`, `y`).
+    fn label(x: f32, y: f32, n: usize, h: f32) -> DetectedTextBlock {
+        let glyphs: Vec<Rect> = (0..n).map(|i| Rect::new(x + i as f32 * (h * 0.8), y, h * (0.4 + 0.15 * (i % 3) as f32), h)).collect();
+        let rect = glyphs.iter().skip(1).fold(glyphs[0], |r, g| r.union(g));
+        DetectedTextBlock { rect, lines: vec![TextLine { rect, glyphs, ink_color: [240; 3] }],
+            block_type: TextBlockType::Unknown, ink_color: [240; 3] }
+    }
+
+    #[test]
+    fn a_short_value_of_large_type_under_its_caption_is_kept_but_standalone_short_blocks_are_not() {
+        let caption = label(1240.0, 610.0, 8, 10.0);
+        // "TR-1" right under "TUTORIAL", three times as tall.
+        let value = label(1238.0, 628.0, 3, 30.0);
+        let noise = label(300.0, 628.0, 3, 30.0);
+        let small = label(1240.0, 624.0, 3, 10.0);
+        let far = label(1238.0, 700.0, 3, 30.0);
+        let kept = keep_with_value_labels(vec![caption.clone(), value.clone(), noise, small, far]);
+        let rects: Vec<Rect> = kept.iter().map(|b| b.rect).collect();
+        assert_eq!(rects, vec![caption.rect, value.rect]);
+        // Without a caption nothing short is kept.
+        assert!(keep_with_value_labels(vec![value]).is_empty());
+    }
+
     use super::*;
     use crate::layout::testing::*;
 
