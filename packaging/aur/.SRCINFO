@@ -1,0 +1,48 @@
+pkgbase = lipax
+	pkgdesc = LipaX — game text OCR and live translation for KDE Plasma / Wayland
+	pkgver = 1.4.5
+	pkgrel = 1
+	url = https://github.com/GrayRats/lipax-qt
+	arch = x86_64
+	license = MIT
+	license = OFL-1.1
+	license = Apache-2.0
+	license = MPL-2.0
+	license = BSD-3-Clause
+	makedepends = cargo
+	makedepends = rust
+	makedepends = xz
+	makedepends = git
+	makedepends = cmake
+	makedepends = ninja
+	depends = qt6-base>=6.12
+	depends = qt6-declarative>=6.12
+	depends = qt6-svg>=6.12
+	depends = layer-shell-qt
+	depends = kwindowsystem
+	depends = tesseract
+	depends = tesseract-data-eng
+	depends = pcre2
+	optdepends = qqc2-breeze-style: Breeze style for Qt Quick Controls
+	optdepends = python: PaddleOCR in a separate venv (see /usr/share/doc/lipax/PaddleOCR.md)
+	optdepends = onnxruntime: RapidOCR (PP-OCRv5) and MeikiOCR engines, loaded at run time; models are downloaded in Settings (see /usr/share/doc/lipax/RapidOCR.md and MeikiOCR.md)
+	optdepends = tesseract-data-rus: Russian OCR
+	optdepends = tesseract-data-jpn: Japanese OCR
+	optdepends = kwin: window capture with ScreenShot2 and client geometry
+	optdepends = xdg-desktop-portal: portal capture
+	optdepends = pipewire: portal video stream
+	optdepends = gstreamer: gst-launch-1.0 for portal capture
+	optdepends = gst-plugin-pipewire: pipewiresrc for portal capture
+	optdepends = gst-plugins-base: videoconvert for portal capture
+	optdepends = gst-plugins-good: PNG encoding for portal capture
+	optdepends = polkit: installing Tesseract languages from settings
+	provides = LipaXQT
+	provides = lipa
+	conflicts = LipaXQT
+	conflicts = lipa
+	options = !lto
+	options = !debug
+	source = lipax-1.4.5.tar.gz::https://github.com/GrayRats/lipax-qt/archive/refs/tags/v1.4.5.tar.gz
+	sha256sums = 559c5ec453064c0ea2297ecbc4ab48c46a3b0fc8d33c03117b43c33c73309d04
+
+pkgname = lipax
