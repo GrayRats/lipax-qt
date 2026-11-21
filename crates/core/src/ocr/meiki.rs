@@ -257,13 +257,16 @@ impl Engine {
         Ok(Self { det, rec, vrec: None, vrec_path: model.file(root, "vrec"), threads, gpu })
     }
 
-    fn read(&mut self, img: &RgbImage) -> Result<Vec<Piece>, OcrError> {
+    /// Reads the picture, stopping between the stages once `cancel` is raised (see `rapid::CancelOnDrop`).
+    fn read_unless(&mut self, img: &RgbImage, cancel: &std::sync::atomic::AtomicBool) -> Result<Vec<Piece>, OcrError> {
+        rapid::live(cancel)?;
         let (w, h) = img.dimensions();
         if w < 4 || h < 4 {
             return Ok(Vec::new());
         }
         let started = Instant::now();
         let lines = self.detect(img)?;
+        rapid::live(cancel)?;
         let detected = started.elapsed();
         let mut horizontal = Vec::new();
         let mut vertical = Vec::new();
@@ -275,8 +278,8 @@ impl Engine {
             }
         }
         let mut found: Vec<Vec<Candidate>> = vec![Vec::new(); lines.len()];
-        self.recognize(horizontal, false, &mut found)?;
-        self.recognize(vertical, true, &mut found)?;
+        self.recognize(horizontal, false, &mut found, cancel)?;
+        self.recognize(vertical, true, &mut found, cancel)?;
         let mut pieces: Vec<Piece> = lines.iter().zip(found).map(|(&rect, chars)| {
             let mut chars = suppress(chars);
             fix_swapped_pairs(&mut chars);
@@ -310,7 +313,7 @@ impl Engine {
         Ok(lines_from_detection(boxes, scores, img.dimensions(), DET_THRESHOLD))
     }
 
-    fn recognize(&mut self, crops: Vec<Crop>, vertical: bool, found: &mut [Vec<Candidate>]) -> Result<(), OcrError> {
+    fn recognize(&mut self, crops: Vec<Crop>, vertical: bool, found: &mut [Vec<Candidate>], cancel: &std::sync::atomic::AtomicBool) -> Result<(), OcrError> {
         if crops.is_empty() {
             return Ok(());
         }
@@ -320,6 +323,7 @@ impl Engine {
         let (width, height) = if vertical { (VREC_WIDTH, VREC_HEIGHT) } else { (REC_WIDTH, REC_HEIGHT) };
         let plane = (3 * width * height) as usize;
         for batch in crops.chunks(BATCH) {
+            rapid::live(cancel)?;
             let mut input = Vec::with_capacity(batch.len() * plane);
             for crop in batch {
                 input.extend_from_slice(&crop.tensor);
@@ -415,7 +419,9 @@ impl Ocr for MeikiOcr {
         let model = rapid_models::select_meiki(&r.language).map_err(OcrError::Setup)?;
         let engine = self.engine(model, effective_threads(r.rapid_threads), r.rapid_use_gpu).await?;
         let img = img.clone();
-        let pieces = tokio::task::spawn_blocking(move || engine.lock_recover().read(&img.to_rgb8())).await
+        let cancel = rapid::CancelOnDrop(Default::default());
+        let flag = cancel.0.clone();
+        let pieces = tokio::task::spawn_blocking(move || engine.lock_recover().read_unless(&img.to_rgb8(), &flag)).await
             .map_err(|e| OcrError::Failed(format!("распознавание MeikiOCR прервано: {e}")))??;
         Ok(OcrResult { engine: ENGINE, ..rapid::to_result(pieces) })
     }

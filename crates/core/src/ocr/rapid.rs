@@ -503,26 +503,35 @@ impl Engine {
         Ok(Self { det, cls, cls_size, rec, dict })
     }
 
+    #[cfg(test)]
     fn read(&mut self, img: &RgbImage) -> Result<Vec<Piece>, OcrError> {
+        self.read_unless(img, &std::sync::atomic::AtomicBool::new(false))
+    }
+
+    /// As `read`, but stops between the stages once `cancel` is raised.
+    fn read_unless(&mut self, img: &RgbImage, cancel: &std::sync::atomic::AtomicBool) -> Result<Vec<Piece>, OcrError> {
+        live(cancel)?;
         let (w, h) = img.dimensions();
         if w < 4 || h < 4 {
             return Ok(Vec::new());
         }
         let started = Instant::now();
         let quads = self.detect(img)?;
+        live(cancel)?;
         let detected = started.elapsed();
         let crops: Vec<(Quad, RgbImage)> = quads.into_iter().filter_map(|q| crop(img, &q).map(|c| (q, c))).collect();
         let turned: Vec<(usize, (Quad, RgbImage))> = self.upside_down(&crops)?.into_iter()
             .map(|i| (i, (crops[i].0, image::imageops::rotate180(&crops[i].1)))).collect();
+        live(cancel)?;
         let oriented = started.elapsed();
-        let mut pieces = self.recognize(crops)?;
+        let mut pieces = self.recognize(crops, cancel)?;
         // The classifier only suggests: a line it calls upside down is read both ways and the surer reading is kept.
         // On long thin crops over a textured background it calls upright lines upside down with 0.92 (measured on a
         // 1920×1080 frame), and turning them would lose the line.
         if !turned.is_empty() {
             let (indices, turned): (Vec<usize>, Vec<(Quad, RgbImage)>) = turned.into_iter().unzip();
             let mut kept = 0;
-            for (i, other) in indices.into_iter().zip(self.recognize(turned)?) {
+            for (i, other) in indices.into_iter().zip(self.recognize(turned, cancel)?) {
                 if !other.text.trim().is_empty() && other.confidence > pieces[i].confidence + TURN_MARGIN {
                     pieces[i] = other;
                     kept += 1;
@@ -584,12 +593,13 @@ impl Engine {
         Ok(found)
     }
 
-    fn recognize(&mut self, crops: Vec<(Quad, RgbImage)>) -> Result<Vec<Piece>, OcrError> {
+    fn recognize(&mut self, crops: Vec<(Quad, RgbImage)>, cancel: &std::sync::atomic::AtomicBool) -> Result<Vec<Piece>, OcrError> {
         let ratio = |c: &RgbImage| c.width() as f32 / c.height() as f32;
         let mut order: Vec<usize> = (0..crops.len()).collect();
         order.sort_by(|&a, &b| ratio(&crops[a].1).total_cmp(&ratio(&crops[b].1)));
         let mut pieces: Vec<Option<Piece>> = vec![None; crops.len()];
         for batch in order.chunks(REC_BATCH) {
+            live(cancel)?;
             let widest = batch.iter().map(|&i| ratio(&crops[i].1)).fold(REC_MIN_WIDTH as f32 / REC_HEIGHT as f32, f32::max);
             let width = ((REC_HEIGHT as f32 * widest).ceil() as u32).min(REC_MAX_WIDTH);
             let plane = (width * REC_HEIGHT) as usize;
@@ -687,6 +697,20 @@ impl RapidOcr {
     }
 }
 
+/// Raises its flag when dropped. A reading that the pipeline gave up (the picture changed) drops its future; the
+/// blocking thread that is running the model cannot be killed like a child process, so it looks at the flag between
+/// the stages of the model and stops there, instead of keeping the engine busy for a result nobody wants.
+pub(crate) struct CancelOnDrop(pub(crate) Arc<std::sync::atomic::AtomicBool>);
+
+impl Drop for CancelOnDrop {
+    fn drop(&mut self) { self.0.store(true, std::sync::atomic::Ordering::Relaxed); }
+}
+
+/// `Err` once the reading is no longer wanted.
+pub(crate) fn live(cancel: &std::sync::atomic::AtomicBool) -> Result<(), OcrError> {
+    if cancel.load(std::sync::atomic::Ordering::Relaxed) { Err(OcrError::Failed("распознавание отменено: результат больше не нужен".into())) } else { Ok(()) }
+}
+
 impl Ocr for RapidOcr {
     async fn recognize(&self, img: &DynamicImage, settings: &Settings) -> Result<String, OcrError> {
         Ok(self.recognize_detailed(img, settings).await?.text)
@@ -698,7 +722,10 @@ impl Ocr for RapidOcr {
         let model = rapid_models::select(&r.language, &r.rapid_variant).map_err(OcrError::Setup)?;
         let engine = self.engine(model, effective_threads(r.rapid_threads), r.rapid_use_gpu).await?;
         let img = img.clone();
-        let pieces = tokio::task::spawn_blocking(move || engine.lock_recover().read(&img.to_rgb8())).await
+        // Dropped with this future: the blocking thread then stops (see `CancelOnDrop`), also while it waits for the engine.
+        let cancel = CancelOnDrop(Default::default());
+        let flag = cancel.0.clone();
+        let pieces = tokio::task::spawn_blocking(move || engine.lock_recover().read_unless(&img.to_rgb8(), &flag)).await
             .map_err(|e| OcrError::Failed(format!("распознавание RapidOCR прервано: {e}")))??;
         Ok(to_result(pieces))
     }
@@ -706,6 +733,15 @@ impl Ocr for RapidOcr {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_dropped_reading_raises_the_flag_the_blocking_thread_looks_at() {
+        let guard = CancelOnDrop(Default::default());
+        let flag = guard.0.clone();
+        assert!(live(&flag).is_ok());
+        drop(guard);
+        assert!(live(&flag).is_err(), "the engine stops at its next stage");
+    }
+
     use super::*;
 
     #[test]
