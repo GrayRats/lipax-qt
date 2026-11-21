@@ -9,11 +9,31 @@ pub(super) fn backdrop_path(region_id: &str, block: u64) -> std::path::PathBuf {
 }
 
 /// Размытая подложка поля рядом с превью окна; ревизия в URL заставляет QML перечитать файл.
-pub(super) fn save_backdrop(region_id: &str, block: u64, revision: u64, img: &image::RgbaImage) -> Option<String> {
+fn save_backdrop(region_id: &str, block: u64, revision: u64, img: &image::RgbaImage) -> Option<String> {
     let path = backdrop_path(region_id, block);
     std::fs::create_dir_all(path.parent()?).inspect_err(|e| tracing::error!(component = "inplace", error = %e, "Не удалось создать каталог подложек")).ok()?;
     img.save(&path).inspect_err(|e| tracing::error!(component = "inplace", error = %e, "Не удалось сохранить подложку")).ok()?;
     Some(format!("file://{}?r={revision}", path.display()))
+}
+
+/// The URL of the backdrop of a field at `revision`: the file written earlier, or written now (encoding a PNG takes
+/// milliseconds, so the lock is not held while it is done).
+pub(super) fn ensure_backdrop(shared: &Shared, region_id: &str, block: u64, revision: u64, img: &image::RgbaImage) -> Option<String> {
+    let key = (region_id.to_owned(), block);
+    if let Some((rev, url)) = shared.backdrops.lock_recover().get(&key) && *rev == revision { return Some(url.clone()); }
+    let url = save_backdrop(region_id, block, revision, img)?;
+    shared.backdrops.lock_recover().insert(key, (revision, url.clone()));
+    Some(url)
+}
+
+/// Writes the backdrops of the fields of a frame that are new or changed. Runs off the GUI thread.
+pub(super) fn write_backdrops(shared: &Shared, region_id: &str, frame: &InplaceFrame) {
+    for b in &frame.blocks {
+        let Some(img) = b.background.image.as_ref() else { continue };
+        if ensure_backdrop(shared, region_id, b.id, b.revision, img).is_none() {
+            tracing::warn!(target: "inplace.render", region = %region_id, block_id = b.id, "backdrop image could not be written");
+        }
+    }
 }
 
 pub(super) fn preview_dir() -> std::path::PathBuf { lipa_core::runtime_dir().join("lipa") }

@@ -161,7 +161,9 @@ fn offline(model: &OcrModel, error: impl std::fmt::Display) -> String {
 /// Download the model set into `root/<id>`. `progress` gets 0..100. An installation that already verifies is kept.
 pub async fn download(model: &OcrModel, root: &Path, mut progress: impl FnMut(i32)) -> Result<PathBuf, String> {
     let dest = model.dir(root);
-    if verified(root, model) {
+    // Hashing a model set takes long; it is done beside the runtime thread so the user's cancellation is heard meanwhile.
+    let (checked_root, checked) = (root.to_path_buf(), model.clone());
+    if tokio::task::spawn_blocking(move || verified(&checked_root, &checked)).await.unwrap_or(false) {
         progress(100);
         return Ok(dest);
     }
@@ -199,7 +201,8 @@ pub async fn download(model: &OcrModel, root: &Path, mut progress: impl FnMut(i3
         }
         out.sync_all().map_err(|e| e.to_string())?;
         drop(out);
-        if !verify(&part, file) {
+        let (written, expected) = (part.clone(), file.clone());
+        if !tokio::task::spawn_blocking(move || verify(&written, &expected)).await.unwrap_or(false) {
             return Err(format!("Модель {} «{}»: размер или SHA-256 файла {} не совпадает с каталогом; файл удалён. Повторите загрузку.", model.engine_name(), model.label, file.name));
         }
         fs::rename(&part, stage.path().join(&file.name)).map_err(|e| e.to_string())?;

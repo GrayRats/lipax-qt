@@ -241,7 +241,21 @@ fn write_config(dir: &Path, model: &Model) -> Result<(), String> {
     );
     crate::files::write_atomic(&dir.join(format!("{}.yml", model.pair)), config.as_bytes(), 0o644).map_err(|e| e.to_string())
 }
-fn install(
+/// Runs blocking work (hashing tens of megabytes, walking directories, copying files) on the blocking pool. The
+/// installation is awaited on a runtime of one thread beside its cancellation (`select!`): work done on that thread
+/// cannot be interrupted, work awaited here can. A cancelled step finishes in the background and its result is dropped;
+/// the steps done this way only read, or write into a staging directory that goes away with the installation.
+async fn off<T: Send + 'static>(work: impl FnOnce() -> T + Send + 'static) -> T {
+    tokio::task::spawn_blocking(work).await.unwrap_or_else(|e| std::panic::resume_unwind(e.into_panic()))
+}
+
+/// `valid_at` off the runtime thread.
+async fn valid_at_off(path: PathBuf, model: &Model) -> Option<BTreeMap<String, PathBuf>> {
+    let model = model.clone();
+    off(move || valid_at(&path, &model)).await
+}
+
+async fn install(
     root: &Path,
     model: &Model,
     paths: &BTreeMap<String, PathBuf>,
@@ -252,8 +266,10 @@ fn install(
         .tempdir_in(root)
         .map_err(|e| e.to_string())?;
     for (role, file) in &model.files {
-        fs::copy(&paths[role], stage.path().join(&file.name)).map_err(|e| e.to_string())?;
+        let (from, to) = (paths[role].clone(), stage.path().join(&file.name));
+        off(move || fs::copy(from, to)).await.map_err(|e| e.to_string())?;
     }
+    // From here the installation is not cancelled: the verification and the rename are one short step.
     commit(root, model, stage)
 }
 fn commit(root: &Path, model: &Model, stage: tempfile::TempDir) -> Result<PathBuf, String> {
@@ -351,22 +367,26 @@ async fn ensure_with_catalog(
     {
         for candidate in [path.clone(), path.join(pair)] {
             for model in &models {
-                if let Some(paths) = valid_at(&candidate, model) {
+                if let Some(paths) = valid_at_off(candidate.clone(), model).await {
                     if candidate == cache {
                         write_config(&cache, model)?;
                         return Ok(cache);
                     }
-                    return install(root, model, &paths);
+                    return install(root, model, &paths).await;
                 }
             }
         }
     }
-    let mut dirs = Vec::new();
-    firefox_dirs(firefox, 0, false, &mut dirs, &mut 10000);
+    let firefox = firefox.to_path_buf();
+    let dirs = off(move || {
+        let mut dirs = Vec::new();
+        firefox_dirs(&firefox, 0, false, &mut dirs, &mut 10000);
+        dirs
+    }).await;
     for dir in dirs {
         for model in &models {
-            if let Some(paths) = valid_at(&dir, model) {
-                return install(root, model, &paths);
+            if let Some(paths) = valid_at_off(dir.clone(), model).await {
+                return install(root, model, &paths).await;
             }
         }
     }
@@ -412,7 +432,8 @@ async fn ensure_with_catalog(
             }
         }
         out.sync_all().map_err(|e| e.to_string())?;
-        if !verify(&stage.path().join(&file.name), file) {
+        let (downloaded, expected) = (stage.path().join(&file.name), file.clone());
+        if !off(move || verify(&downloaded, &expected)).await {
             return Err("Model size or SHA-256 verification failed.".into());
         }
     }
@@ -423,6 +444,34 @@ async fn ensure_with_catalog(
 
 #[cfg(test)]
 mod tests {
+    /// The installation is awaited beside its cancellation on a runtime of one thread (the app's model worker): the
+    /// hashing of a large file must not hold that thread, or the cancellation waits for the end of it.
+    #[test]
+    fn hashing_a_large_model_leaves_the_runtime_free_for_the_cancellation() {
+        let runtime = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+        let dir = tempfile::tempdir().unwrap();
+        let (_source, mut model) = fixture();
+        // A 512 MB sparse file under the name of a model file, so verifying it takes a while.
+        let big = dir.path().join("big");
+        fs::create_dir_all(&big).unwrap();
+        for file in model.files.values_mut() { file.size = 512 * 1024 * 1024; }
+        for file in model.files.values() { fs::File::create(big.join(&file.name)).unwrap().set_len(file.size).unwrap(); }
+        let ticks = runtime.block_on(async {
+            let mut ticks = 0u32;
+            let check = valid_at_off(big.clone(), &model);
+            tokio::pin!(check);
+            let mut ticker = tokio::time::interval(Duration::from_millis(5));
+            loop {
+                tokio::select! {
+                    _ = &mut check => break,
+                    _ = ticker.tick() => ticks += 1,
+                }
+            }
+            ticks
+        });
+        assert!(ticks >= 3, "the runtime thread was held while hashing: {ticks} ticks");
+    }
+
     #[test]
     fn a_verified_file_is_not_hashed_again_until_its_size_or_time_changes() {
         use sha2::{Digest, Sha256};
@@ -545,7 +594,8 @@ mod tests {
         assert_eq!((none.installed, none.update, none.newest.as_deref()), (None, false, Some("2")));
         assert_eq!(none.versions.len(), 2);
         // Same file names and sizes in both sets: only the hash tells them apart.
-        install(root.path(), &old, &files_at(old_dir.path(), &old).unwrap()).unwrap();
+        tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap()
+            .block_on(install(root.path(), &old, &files_at(old_dir.path(), &old).unwrap())).unwrap();
         let outdated = version_status_in(&catalog, "en-ru", root.path());
         assert_eq!(outdated.installed.as_deref(), Some("1"));
         assert!(outdated.update);
@@ -558,7 +608,7 @@ mod tests {
         let (old_dir, old) = fixture_of("1");
         let (new_dir, mut new) = fixture_of("2");
         let root = tempfile::tempdir().unwrap();
-        install(root.path(), &old, &files_at(old_dir.path(), &old).unwrap()).unwrap();
+        install(root.path(), &old, &files_at(old_dir.path(), &old).unwrap()).await.unwrap();
         let mut offline = new.clone();
         for f in offline.files.values_mut() {
             f.url = "http://127.0.0.1:9/never".into();

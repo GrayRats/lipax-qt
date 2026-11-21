@@ -362,6 +362,9 @@ struct Shared {
     paused: Arc<std::sync::atomic::AtomicBool>,
     /// Последний результат каждой области в виде JSON-значения (см. `preview_entry`).
     preview_entries: std::sync::Mutex<std::collections::BTreeMap<String, serde_json::Value>>,
+    /// Backdrop files of the in-place fields: (region, block) -> (revision written, URL). Written off the GUI thread when
+    /// the frame arrives; the GUI thread only looks the URL up.
+    backdrops: std::sync::Mutex<std::collections::HashMap<(String, u64), (u64, String)>>,
 }
 
 impl Shared {
@@ -447,7 +450,6 @@ pub struct ControllerRust {
     /// Screens of the desktop as QML reports them (logical px): the in-place fields stay on them.
     screens: Vec<lipa_core::layout::DesktopRect>,
     /// PNG подложек: (область, поле) → (ревизия, URL). Файл пишется только при новой ревизии.
-    inplace_images: std::collections::HashMap<(String, u64), (u64, String)>,
     inplace_json: QString,
     inplace_fallback_json: QString,
     ocr_preview_json: QString,
@@ -512,7 +514,6 @@ impl Default for ControllerRust {
             region_inplace: Default::default(),
             placement_cache: PlacementCache::default(),
             screens: Vec::new(),
-            inplace_images: Default::default(),
             inplace_json: QString::from("[]"),
             inplace_fallback_json: QString::from(r#"{"texts":[],"degraded":0}"#),
             ocr_preview_json: QString::from("[]"),
@@ -559,6 +560,7 @@ impl Default for ControllerRust {
                 preview: Arc::default(),
                 paused: Arc::default(),
                 preview_entries: Default::default(),
+                backdrops: Default::default(),
             }),
             events: Some((ev_rx, ev_tx, cmd_rx)),
             settings_rx,
@@ -782,6 +784,15 @@ impl cxx_qt::Initialize for qobject::Controller {
                                 }
                             }).is_err() { break; }
                         continue;
+                    }
+                    // The backdrop pictures of the fields are encoded here too: the GUI thread places the fields, it does not write PNGs.
+                    Event::Inplace { region_id, region_name, frame } => {
+                        let shared = preview_shared.clone();
+                        let encoded = tokio::task::spawn_blocking(move || { write_backdrops(&shared, &region_id, &frame); (region_id, region_name, frame) }).await;
+                        match encoded {
+                            Ok((region_id, region_name, frame)) => Event::Inplace { region_id, region_name, frame },
+                            Err(_) => continue,
+                        }
                     }
                     other => other,
                 };

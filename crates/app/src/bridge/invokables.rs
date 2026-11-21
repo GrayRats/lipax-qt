@@ -184,28 +184,19 @@ impl qobject::Controller {
             for b in &frame.blocks {
                 let Some(img) = b.background.image.as_ref() else { continue };
                 let key = (region.clone(), b.id);
-                let url = match self.rust().inplace_images.get(&key) {
-                    Some((rev, url)) if *rev == b.revision => url.clone(),
-                    _ => match save_backdrop(region, b.id, b.revision, img) {
-                        Some(url) => {
-                            self.as_mut().rust_mut().inplace_images.insert(key.clone(), (b.revision, url.clone()));
-                            url
-                        }
-                        None => {
-                            tracing::warn!(target: "inplace.render", region = %region, block_id = b.id, "backdrop image could not be written");
-                            continue;
-                        }
-                    },
-                };
+                // Written when the frame arrived (`write_backdrops`); this only looks the file up.
+                let Some(url) = ensure_backdrop(&self.rust().shared, region, b.id, b.revision, img) else { continue };
                 images.insert(key, url);
             }
         }
         // Подложки исчезнувших полей больше не нужны.
-        let gone: Vec<_> = self.rust().inplace_images.keys().filter(|k| !images.contains_key(*k)).cloned().collect();
-        for key in gone {
-            self.as_mut().rust_mut().inplace_images.remove(&key);
-            let _ = std::fs::remove_file(backdrop_path(&key.0, key.1));
-        }
+        let gone: Vec<_> = {
+            let mut written = self.rust().shared.backdrops.lock_recover();
+            let gone: Vec<_> = written.keys().filter(|k| !images.contains_key(*k)).cloned().collect();
+            for key in &gone { written.remove(key); }
+            gone
+        };
+        for key in gone { let _ = std::fs::remove_file(backdrop_path(&key.0, key.1)); }
         let placed = match window {
             Some(window) => {
                 let inputs: Vec<RegionInput> = frames.iter().map(|(id, rect, frame)| RegionInput { id, rect: *rect, frame }).collect();
