@@ -572,3 +572,130 @@ fn a_file_with_one_wrong_type_is_an_error_for_load_and_defaults_for_the_rest() {
     assert_eq!(Settings::from_toml(broken), Settings::default());
     assert!(Settings::try_from_toml("schema_version = 2\n").is_ok());
 }
+
+#[test]
+fn debug_output_never_contains_api_keys() {
+    let mut s = Settings::default();
+    s.translation.yandex_api_key = "yandex-secret-1".into();
+    s.translation.custom_api_key = "custom-secret-2".into();
+    s.translation.deepl_api_key = "deepl-secret-3:fx".into();
+    s.translation.microsoft_api_key = "microsoft-secret-4".into();
+    for translator_text in [
+        format!("{s:?}"),
+        format!("{:?}", s.translation),
+        format!("{:?}", crate::translate::Translator::Yandex { api_key: "yandex-secret-1".into(), folder_id: "f".into() }),
+        format!("{:?}", crate::translate::Translator::Custom { url: "u".into(), api_key: "custom-secret-2".into() }),
+        format!("{:?}", crate::translate::Translator::DeepL { api_key: "deepl-secret-3:fx".into() }),
+        format!("{:?}", crate::translate::Translator::Microsoft { api_key: "microsoft-secret-4".into(), region: "r".into() }),
+    ] {
+        assert!(!translator_text.contains("secret"), "{translator_text}");
+    }
+    assert!(format!("{:?}", s.translation).contains("<redacted>"));
+    assert!(format!("{:?}", TranslationSettings::default()).contains("<unset>"));
+}
+
+// ---- API keys in the wallet (the tests share the "keys not read" flag, so they run one at a time) ----
+
+static WALLET_TESTS: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+fn with_keys(keys_in_wallet: bool) -> Settings {
+    let mut s = Settings::default();
+    s.general.keys_in_wallet = keys_in_wallet;
+    s.translation.deepl_api_key = "deepl-secret:fx".into();
+    s.translation.yandex_api_key = "yandex-secret".into();
+    s
+}
+
+/// What `save` would write for these settings (the file layer is not touched).
+fn saved_toml(s: &Settings, wallet: &dyn crate::secrets::SecretStore) -> String {
+    let mut file = s.clone();
+    if s.general.keys_in_wallet && s.move_keys_to_wallet(wallet).is_ok() {
+        for (_, key) in file.api_keys_mut() { key.clear(); }
+    }
+    toml::to_string_pretty(&file).unwrap()
+}
+
+#[test]
+fn keys_move_to_the_wallet_and_leave_the_file() {
+    let _g = WALLET_TESTS.lock().unwrap_or_else(|e| e.into_inner());
+    let wallet = crate::secrets::fake::Memory::default();
+    let s = with_keys(true);
+    let text = saved_toml(&s, &wallet);
+    assert!(!text.contains("secret"), "{text}");
+    assert_eq!(wallet.items.borrow().get("deepl_api_key").map(String::as_str), Some("deepl-secret:fx"));
+    assert_eq!(wallet.items.borrow().get("yandex_api_key").map(String::as_str), Some("yandex-secret"));
+    assert!(!wallet.items.borrow().contains_key("custom_api_key"));
+
+    // The next start: the file has no keys, the wallet gives them back.
+    let mut loaded = Settings::from_toml(&text);
+    assert!(loaded.translation.deepl_api_key.is_empty());
+    loaded.fetch_keys_from_wallet(&wallet);
+    assert_eq!(loaded.translation.deepl_api_key, "deepl-secret:fx");
+    assert_eq!(loaded.translation.yandex_api_key, "yandex-secret");
+    assert_eq!(loaded.translation.custom_api_key, "");
+}
+
+#[test]
+fn without_the_option_the_wallet_is_never_used_and_the_file_keeps_the_keys() {
+    let _g = WALLET_TESTS.lock().unwrap_or_else(|e| e.into_inner());
+    let wallet = crate::secrets::fake::Memory::default();
+    let s = with_keys(false);
+    assert!(saved_toml(&s, &wallet).contains("deepl-secret:fx"));
+    assert!(wallet.items.borrow().is_empty());
+    let mut loaded = Settings::from_toml(&saved_toml(&s, &wallet));
+    loaded.fetch_keys_from_wallet(&crate::secrets::fake::Memory { broken: true, ..Default::default() });
+    assert_eq!(loaded.translation.deepl_api_key, "deepl-secret:fx");
+}
+
+#[test]
+fn an_unavailable_wallet_keeps_the_keys_in_the_file() {
+    let _g = WALLET_TESTS.lock().unwrap_or_else(|e| e.into_inner());
+    let wallet = crate::secrets::fake::Memory { broken: true, ..Default::default() };
+    let text = saved_toml(&with_keys(true), &wallet);
+    assert!(text.contains("deepl-secret:fx") && text.contains("yandex-secret"), "a key must not be lost with the wallet: {text}");
+}
+
+#[test]
+fn a_key_still_in_the_file_wins_and_is_moved_by_the_next_save() {
+    let _g = WALLET_TESTS.lock().unwrap_or_else(|e| e.into_inner());
+    let wallet = crate::secrets::fake::Memory::default();
+    wallet.items.borrow_mut().insert("deepl_api_key".into(), "old-wallet-value".into());
+    let mut loaded = Settings::from_toml(&saved_toml(&with_keys(false), &wallet));
+    loaded.general.keys_in_wallet = true;
+    loaded.fetch_keys_from_wallet(&wallet);
+    assert_eq!(loaded.translation.deepl_api_key, "deepl-secret:fx");
+    assert!(!saved_toml(&loaded, &wallet).contains("secret"));
+    assert_eq!(wallet.items.borrow().get("deepl_api_key").map(String::as_str), Some("deepl-secret:fx"));
+}
+
+#[test]
+fn clearing_a_key_removes_it_from_the_wallet() {
+    let _g = WALLET_TESTS.lock().unwrap_or_else(|e| e.into_inner());
+    let wallet = crate::secrets::fake::Memory::default();
+    let mut s = with_keys(true);
+    saved_toml(&s, &wallet);
+    s.translation.yandex_api_key.clear();
+    saved_toml(&s, &wallet);
+    assert!(!wallet.items.borrow().contains_key("yandex_api_key"));
+    assert!(wallet.items.borrow().contains_key("deepl_api_key"));
+}
+
+#[test]
+fn keys_that_could_not_be_read_are_not_taken_for_empty_ones() {
+    let _g = WALLET_TESTS.lock().unwrap_or_else(|e| e.into_inner());
+    let wallet = crate::secrets::fake::Memory::default();
+    saved_toml(&with_keys(true), &wallet);
+    // Start with the wallet locked: the keys stay empty in memory ...
+    let mut running = Settings::default();
+    running.general.keys_in_wallet = true;
+    running.fetch_keys_from_wallet(&crate::secrets::fake::Memory { broken: true, ..Default::default() });
+    assert!(running.translation.deepl_api_key.is_empty());
+    // ... and a later save with the wallet back must not delete what it holds.
+    running.translation.custom_api_key = "custom-secret".into();
+    saved_toml(&running, &wallet);
+    assert_eq!(wallet.items.borrow().get("deepl_api_key").map(String::as_str), Some("deepl-secret:fx"));
+    assert_eq!(wallet.items.borrow().get("custom_api_key").map(String::as_str), Some("custom-secret"));
+    // A successful read ends the caution.
+    running.fetch_keys_from_wallet(&wallet);
+    assert_eq!(running.translation.deepl_api_key, "deepl-secret:fx");
+}

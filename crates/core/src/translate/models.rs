@@ -89,6 +89,9 @@ fn version_status_in(catalog: &[Model], pair: &str, root: &Path) -> PairVersions
 }
 
 pub fn pair(source: &str, target: &str) -> Result<String, String> {
+    if source.eq_ignore_ascii_case("auto") {
+        return Err("The source language is detected from the text: the models of the installed pairs are used. Select an explicit source language to download a model.".into());
+    }
     if [source, target].iter().any(|s| {
         s.is_empty()
             || s.len() > 16

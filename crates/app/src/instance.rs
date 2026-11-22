@@ -26,10 +26,35 @@ pub enum Action {
     StartAutoTranslate,
     StopAutoTranslate,
     Quit,
+    /// The five hotkey actions of `hotkeys.rs`, for shortcuts that LipaX does not register itself (compositor keybinds, scripts).
+    Toggle,
+    SelectRegion,
+    TranslateOnce,
+    ToggleOverlay,
+    TogglePin,
 }
 
 impl Action {
-    const ALL: [Action; 6] = [Self::Show, Self::Settings, Self::Capture, Self::StartAutoTranslate, Self::StopAutoTranslate, Self::Quit];
+    const ALL: [Action; 11] = [
+        Self::Show, Self::Settings, Self::Capture, Self::StartAutoTranslate, Self::StopAutoTranslate, Self::Quit,
+        Self::Toggle, Self::SelectRegion, Self::TranslateOnce, Self::ToggleOverlay, Self::TogglePin,
+    ];
+    /// Actions of the `.desktop` file (the context menu of the launcher); the hotkey ones would only clutter it.
+    #[cfg(test)]
+    const MENU: [Action; 6] = [Self::Show, Self::Settings, Self::Capture, Self::StartAutoTranslate, Self::StopAutoTranslate, Self::Quit];
+
+    /// The hotkey action this runs, if it is one.
+    pub fn hotkey(self) -> Option<lipa_core::hotkeys::HotkeyAction> {
+        use lipa_core::hotkeys::HotkeyAction as H;
+        Some(match self {
+            Self::Toggle => H::Toggle,
+            Self::SelectRegion => H::SelectRegion,
+            Self::TranslateOnce => H::TranslateOnce,
+            Self::ToggleOverlay => H::ToggleTranslation,
+            Self::TogglePin => H::TogglePin,
+            _ => return None,
+        })
+    }
 
     /// Имя действия в QML (`Controller::actionRequested`) и в D-Bus `ActivateAction`.
     pub fn name(self) -> &'static str {
@@ -40,6 +65,11 @@ impl Action {
             Self::StartAutoTranslate => "start-autotranslate",
             Self::StopAutoTranslate => "stop-autotranslate",
             Self::Quit => "quit",
+            Self::Toggle => "toggle",
+            Self::SelectRegion => "select-region",
+            Self::TranslateOnce => "translate-once",
+            Self::ToggleOverlay => "toggle-overlay",
+            Self::TogglePin => "toggle-pin",
         }
     }
 
@@ -52,6 +82,11 @@ impl Action {
             Self::StartAutoTranslate => "StartAutoTranslate",
             Self::StopAutoTranslate => "StopAutoTranslate",
             Self::Quit => "Quit",
+            Self::Toggle => "Toggle",
+            Self::SelectRegion => "SelectRegion",
+            Self::TranslateOnce => "TranslateOnce",
+            Self::ToggleOverlay => "ToggleOverlay",
+            Self::TogglePin => "TogglePin",
         }
     }
 
@@ -88,8 +123,13 @@ pub fn usage() -> String {
         (Action::StartAutoTranslate, "запустить автоперевод"),
         (Action::StopAutoTranslate, "остановить автоперевод"),
         (Action::Quit, "полностью завершить LipaX"),
+        (Action::Toggle, "запустить / остановить слежение (как горячая клавиша)"),
+        (Action::SelectRegion, "выбрать область захвата (как горячая клавиша)"),
+        (Action::TranslateOnce, "перевести сейчас (как горячая клавиша)"),
+        (Action::ToggleOverlay, "показать / скрыть перевод (как горячая клавиша)"),
+        (Action::TogglePin, "закрепить окно / сделать окно свободным (как горячая клавиша)"),
     ] {
-        text.push_str(&format!("  {:<24}{help}\n", action.flag()));
+        text.push_str(&format!("  {:<26}{help}\n", action.flag()));
     }
     text.push_str("  -h, --help              эта справка\n  -V, --version           версия\n");
     text
@@ -162,7 +202,7 @@ pub enum Startup {
     Primary,
     /// Действие передано уже запущенному экземпляру; этот процесс должен завершиться.
     Forwarded,
-    /// Запущенного экземпляра нет, а действие ничего не запускает (`--quit`).
+    /// Запущенного экземпляра нет, а действие ничего не запускает (`--quit`, действия горячих клавиш).
     NothingToDo,
 }
 
@@ -197,7 +237,7 @@ pub fn acquire(action: Option<Action>) -> Startup {
     });
     match result {
         Ok(Some((connection, tx, rx))) => {
-            if action == Some(Action::Quit) {
+            if action.is_some_and(|a| a == Action::Quit || a.hotkey().is_some()) {
                 eprintln!("LipaX не запущен");
                 return Startup::NothingToDo;
             }
@@ -218,7 +258,7 @@ pub fn acquire(action: Option<Action>) -> Startup {
         },
         Err(e) => {
             tracing::warn!(target: "instance", error = %e, "сессионная шина D-Bus недоступна: единственный экземпляр и действия извне отключены");
-            if action == Some(Action::Quit) { Startup::NothingToDo } else { Startup::Primary }
+            if action.is_some_and(|a| a == Action::Quit || a.hotkey().is_some()) { Startup::NothingToDo } else { Startup::Primary }
         }
     }
 }
@@ -284,6 +324,15 @@ mod tests {
     }
 
     #[test]
+    fn hotkey_actions_are_exactly_the_five_of_the_keyboard() {
+        let mapped: Vec<_> = Action::ALL.into_iter().filter_map(Action::hotkey).collect();
+        assert_eq!(mapped.len(), 5);
+        assert!(Action::ALL.into_iter().filter(|a| a.hotkey().is_none()).all(|a| Action::MENU.contains(&a)));
+        assert_eq!(parse(&["--toggle-pin"]), Ok(Cli::Run(Some(Action::TogglePin))));
+        assert_eq!(Action::from_name("toggle-overlay").and_then(Action::hotkey), Some(lipa_core::hotkeys::HotkeyAction::ToggleTranslation));
+    }
+
+    #[test]
     fn no_arguments_just_run() {
         assert_eq!(parse(&[]), Ok(Cli::Run(None)));
         assert_eq!(parse(&["--help"]), Ok(Cli::Help));
@@ -301,11 +350,14 @@ mod tests {
     #[test]
     fn desktop_file_actions_match_the_cli() {
         let desktop = include_str!("../../../packaging/io.lipa.Translator.desktop");
-        for action in Action::ALL {
+        for action in Action::MENU {
             assert!(desktop.contains(&format!("[Desktop Action {}]", action.desktop_id())), "{:?}", action);
             assert!(desktop.contains(&format!("Exec=/usr/bin/lipax {}\n", action.flag())), "{:?}", action);
         }
         let listed = desktop.lines().find_map(|l| l.strip_prefix("Actions=")).unwrap();
-        for action in Action::ALL { assert!(listed.split(';').any(|id| id == action.desktop_id())); }
+        for action in Action::MENU { assert!(listed.split(';').any(|id| id == action.desktop_id())); }
+        for action in Action::ALL.into_iter().filter(|a| !Action::MENU.contains(a)) {
+            assert!(!listed.split(';').any(|id| id == action.desktop_id()), "{action:?}");
+        }
     }
 }

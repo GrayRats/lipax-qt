@@ -111,6 +111,20 @@ pub(super) fn gpu_providers() -> Vec<(&'static str, ExecutionProviderDispatch)> 
     providers
 }
 
+/// What the Status tab says about GPU use of RapidOCR/MeikiOCR: `(state, detail)`. It reports the execution
+/// providers the loaded ONNX Runtime offers; whether a session really runs on one of them is decided when the
+/// models are opened (a failure falls back to the CPU and is logged), so this never claims more than "available".
+pub fn gpu_report(requested: bool) -> (&'static str, String) {
+    if !requested { return ("ready", "Выключено в настройках: распознавание на процессоре".into()); }
+    if let Err(e) = init_runtime(None) { return ("warning", format!("ONNX Runtime не загружен: {e}")); }
+    let names: Vec<&str> = gpu_providers().iter().map(|(name, _)| *name).collect();
+    match (requested, names.is_empty()) {
+        (false, _) => unreachable!("handled above"),
+        (true, true) => ("warning", "Включено, но установленный ONNX Runtime собран без CUDA, MIGraphX и ROCm: распознавание идёт на процессоре".into()),
+        (true, false) => ("ready", format!("Включено; библиотека предлагает: {}. Если модель не откроется на видеокарте, она работает на процессоре (запись в журнале)", names.join(", "))),
+    }
+}
+
 pub(super) fn session(path: &Path, threads: usize, providers: &[ExecutionProviderDispatch]) -> Result<Session, OcrError> {
     let fail = |e: String| OcrError::Setup(format!("Не удалось открыть модель {}: {e}. Удалите модель в настройках и скачайте её заново.", path.display()));
     // No spinning: idle threads of ONNX Runtime would otherwise keep cores busy between frames, next to the game.
@@ -733,6 +747,13 @@ impl Ocr for RapidOcr {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn gpu_report_off_needs_no_runtime_and_says_cpu() {
+        let (state, detail) = super::gpu_report(false);
+        assert_eq!(state, "ready");
+        assert!(detail.contains("процессоре"), "{detail}");
+    }
+
     #[test]
     fn a_dropped_reading_raises_the_flag_the_blocking_thread_looks_at() {
         let guard = CancelOnDrop(Default::default());

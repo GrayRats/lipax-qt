@@ -21,7 +21,7 @@ ApplicationWindow {
     UiTheme { id: ui; textScale: settingsWin.general.ui_text_scale || "normal" }
     font: ui.body
     Universal.theme: settingsWin.universalTheme
-    title: "LipaX — переводчик для игр"
+    title: qsTr("LipaX — переводчик для игр")
     // Two separate things: hiding to the tray (`hideToTray`, everything keeps running) and quitting
     // (`quitApp`, stops everything). Capture, OCR, translation and overlays belong to the
     // Controller and the translation windows below, not to this window, so hiding it changes nothing for them.
@@ -107,25 +107,25 @@ ApplicationWindow {
         visible: !root.closingDown
         icon.source: "qrc:/lipa/icon.svg"
         tooltip: ctl.modelBusy ? "LipaX: " + ((JSON.parse(ctl.modelState || "{}").progress ?? -1) < 0
-            ? "Поиск модели…" : "Загрузка модели… " + JSON.parse(ctl.modelState).progress + "%")
-            : "LipaX — " + (ctl.running ? "автоперевод запущен" : "автоперевод остановлен")
+            ? qsTr("Поиск модели…") : qsTr("Загрузка модели… ") + JSON.parse(ctl.modelState).progress + "%")
+            : "LipaX — " + (ctl.running ? qsTr("автоперевод запущен") : qsTr("автоперевод остановлен"))
         onActivated: (reason) => { if (reason === Platform.SystemTrayIcon.Trigger) root.toggleMain() }
         menu: Platform.Menu {
-            Platform.MenuItem { text: "Открыть LipaX"; onTriggered: root.perform("show", "") }
-            Platform.MenuItem { text: "Настройки"; onTriggered: root.perform("settings", "") }
-            Platform.MenuItem { text: "Выбрать окно для захвата"; onTriggered: root.perform("capture", "") }
+            Platform.MenuItem { text: qsTr("Открыть LipaX"); onTriggered: root.perform("show", "") }
+            Platform.MenuItem { text: qsTr("Настройки"); onTriggered: root.perform("settings", "") }
+            Platform.MenuItem { text: qsTr("Выбрать окно для захвата"); onTriggered: root.perform("capture", "") }
             Platform.MenuItem {
-                text: "Запустить автоперевод"
+                text: qsTr("Запустить автоперевод")
                 visible: !ctl.running
                 onTriggered: root.perform("start-autotranslate", "")
             }
             Platform.MenuItem {
-                text: "Остановить автоперевод"
+                text: qsTr("Остановить автоперевод")
                 visible: ctl.running
                 onTriggered: root.perform("stop-autotranslate", "")
             }
             Platform.MenuSeparator {}
-            Platform.MenuItem { text: "Выход"; onTriggered: root.perform("quit", "") }
+            Platform.MenuItem { text: qsTr("Выход"); onTriggered: root.perform("quit", "") }
         }
     }
 
@@ -302,38 +302,38 @@ ApplicationWindow {
                 Layout.minimumWidth: 0
                 Layout.preferredWidth: 0
                 Layout.alignment: Qt.AlignVCenter
-                text: ctl.windowTitle.length ? ctl.windowTitle : "Выберите окно игры"
+                text: ctl.windowTitle.length ? ctl.windowTitle : qsTr("Выберите окно игры")
                 underline: ctl.windowTitle.length > 0
                 alwaysHint: true
                 baseFont: ui.body
                 basePixelSize: Math.round(ui.bodyPoints * 96 / 72)
-                tooltip: ctl.windowTitle.length ? ctl.windowTitle + "\nПри выборе знакомой игры восстанавливаются её области и профиль." : "Выберите окно игры, затем выделите область с текстом."
+                tooltip: ctl.windowTitle.length ? ctl.windowTitle + qsTr("\nПри выборе знакомой игры восстанавливаются её области и профиль.") : qsTr("Выберите окно игры, затем выделите область с текстом.")
             }
             RowLayout {
                 id: topButtons
                 spacing: 2
                 Layout.alignment: Qt.AlignVCenter
-                ActionButton { objectName: "ocrPreviewButton"; iconFile: "ocr-preview.svg"; text: "Предпросмотр распознавания"; helpText: "Открывает последний кадр распознавания, найденные блоки и фильтры. Для появления кадра запустите распознавание."; onClicked: ocrWin.openWindow() }
-                ActionButton { objectName: "historyButton"; iconFile: "translation-history.svg"; text: "История переводов"; helpText: "Открывает историю распознанного текста и переводов с поиском и копированием."; onClicked: historyWin.openWindow() }
-                ActionButton { objectName: "settingsButton"; iconFile: "settings.svg"; text: "Настройки"; helpText: "Открывает настройки захвата, OCR, сервисов, оформления и сочетаний клавиш. Изменения сохраняются автоматически."; onClicked: settingsWin.openWindow() }
+                ActionButton { objectName: "ocrPreviewButton"; iconFile: "ocr-preview.svg"; text: qsTr("Предпросмотр распознавания"); helpText: qsTr("Открывает последний кадр распознавания, найденные блоки и фильтры. Для появления кадра запустите распознавание."); onClicked: ocrWin.openWindow() }
+                ActionButton { objectName: "historyButton"; iconFile: "translation-history.svg"; text: qsTr("История переводов"); helpText: qsTr("Открывает историю распознанного текста и переводов с поиском и копированием."); onClicked: historyWin.openWindow() }
+                ActionButton { objectName: "settingsButton"; iconFile: "settings.svg"; text: qsTr("Настройки"); helpText: qsTr("Открывает настройки захвата, OCR, сервисов, оформления и сочетаний клавиш. Изменения сохраняются автоматически."); onClicked: settingsWin.openWindow() }
             }
         }
         Flow {
             id: actionFlow
             Layout.fillWidth: true
             spacing: ui.gap
-            ActionButton { objectName: "selectWindowButton"; iconFile: "select-window.svg"; text: "Выбрать окно"; helpText: "Выберите окно игры щелчком. Для знакомой игры восстановится сохранённый профиль; Esc отменяет выбор."; onClicked: ctl.pickWindow() }
+            ActionButton { objectName: "selectWindowButton"; iconFile: "select-window.svg"; text: qsTr("Выбрать окно"); helpText: qsTr("Выберите окно игры щелчком. Для знакомой игры восстановится сохранённый профиль; Esc отменяет выбор."); onClicked: ctl.pickWindow() }
             ActionButton {
                 id: startTranslation
                 objectName: "startTranslationButton"
                 iconFile: ctl.running ? "stop-translation.svg" : "start-translation.svg"
                 activity: ctl.running ? "running" : "stopped"
-                text: ctl.running ? "Остановить перевод" : "Запуск перевода"
+                text: ctl.running ? qsTr("Остановить перевод") : qsTr("Запуск перевода")
                 // The one action that starts work stands out while it can be pressed.
                 highlighted: !ctl.running && ctl.hasRegion
                 enabled: ctl.running || ctl.hasRegion
-                helpText: ctl.running ? "Останавливает автоматическое распознавание и перевод. Области и профиль сохраняются." : "Запускает автоматическое распознавание текста в активных областях и отправляет его выбранному переводчику."
-                UnavailableHint { control: startTranslation; feature: "Начать перевод"; reason: "Нет выделенной области захвата."; remedy: "Выберите окно игры и область с текстом." }
+                helpText: ctl.running ? qsTr("Останавливает автоматическое распознавание и перевод. Области и профиль сохраняются.") : qsTr("Запускает автоматическое распознавание текста в активных областях и отправляет его выбранному переводчику.")
+                UnavailableHint { control: startTranslation; feature: qsTr("Начать перевод"); reason: qsTr("Нет выделенной области захвата."); remedy: qsTr("Выберите окно игры и область с текстом.") }
                 onClicked: ctl.running ? ctl.stop() : ctl.start()
             }
         }
@@ -348,21 +348,21 @@ ApplicationWindow {
                 id: selectCaptureRegion
                 objectName: "selectCaptureRegionButton"
                 iconFile: "select-capture-area.svg"
-                text: "Выбрать область захвата"
+                text: qsTr("Выбрать область захвата")
                 enabled: ctl.windowTitle.length > 0
-                helpText: "Выделите прямоугольник с текстом в выбранном окне игры. Изменяется только активная область."
+                helpText: qsTr("Выделите прямоугольник с текстом в выбранном окне игры. Изменяется только активная область.")
                 onClicked: regionWin.begin()
-                UnavailableHint { control: selectCaptureRegion; feature: "Выделить область"; reason: "Окно игры ещё не выбрано."; remedy: "Нажмите «Выбрать окно»." }
+                UnavailableHint { control: selectCaptureRegion; feature: qsTr("Выделить область"); reason: qsTr("Окно игры ещё не выбрано."); remedy: qsTr("Нажмите «Выбрать окно».") }
             }
             ActionButton {
                 id: resetCaptureRegion
                 objectName: "resetCaptureRegionButton"
                 iconFile: "reset-capture-area.svg"
-                text: "Сбросить область"
+                text: qsTr("Сбросить область")
                 enabled: ctl.hasRegion
-                helpText: "Сбрасывает только границы активной области. Остальные области и настройки игры сохраняются."
+                helpText: qsTr("Сбрасывает только границы активной области. Остальные области и настройки игры сохраняются.")
                 onClicked: ctl.resetRegion()
-                UnavailableHint { control: resetCaptureRegion; feature: "Сбросить область"; reason: "Область ещё не выделена."; remedy: "Нажмите «Выбрать область захвата»." }
+                UnavailableHint { control: resetCaptureRegion; feature: qsTr("Сбросить область"); reason: qsTr("Область ещё не выделена."); remedy: qsTr("Нажмите «Выбрать область захвата».") }
             }
             ComboBox {
                 id: regionBox
@@ -371,7 +371,7 @@ ApplicationWindow {
                 width: Math.min(areaFlow.width, Math.max(150, Math.min(260, implicitContentWidth + 48)))
                 implicitHeight: ui.iconButtonSize
                 readonly property var regions: settingsWin.current.capture.regions || []
-                readonly property var labels: regions.map(r => (r.rect ? "" : "○ ") + r.name + (r.enabled ? "" : " (выкл.)"))
+                readonly property var labels: regions.map(r => (r.rect ? "" : "○ ") + r.name + (r.enabled ? "" : qsTr(" (выкл.)")))
                 model: labels
                 currentIndex: Math.max(0, regions.findIndex(r => r.id === settingsWin.current.capture.active_region))
                 onActivated: { settingsWin.activateRegion(currentIndex, true); settingsWin.apply() }
@@ -398,9 +398,9 @@ ApplicationWindow {
                     ToolTip.delay: 400
                 }
                 popup.width: Math.max(width, Math.min(areaFlow.width, 360))
-                Accessible.name: "Название области окна"
+                Accessible.name: qsTr("Название области окна")
                 Accessible.description: displayText
-                HoverHint { control: regionBox; feature: "Активная область"; explanation: regionBox.displayText + "\n\nВыбирает и включает область для перевода. Кружок означает, что её границы ещё не выделены. Несколько областей можно включить в настройках захвата." }
+                HoverHint { control: regionBox; feature: qsTr("Активная область"); explanation: regionBox.displayText + qsTr("\n\nВыбирает и включает область для перевода. Кружок означает, что её границы ещё не выделены. Несколько областей можно включить в настройках захвата.") }
             }
             // Two independent switches, one per way of showing a translation. Each owns its own visibility
             // (Controller.inplaceVisible / translationWindowVisible); the state is the `checked` look of the button.
@@ -410,9 +410,9 @@ ApplicationWindow {
                 iconFile: "show-inplace-overlay.svg"
                 checkable: true
                 checked: ctl.inplaceVisible
-                text: "Показывать поверх исходного текста"
-                helpText: "Показывает или скрывает перевод поверх исходного текста. Распознавание и перевод продолжают работать в фоне."
-                    + (root.inplaceActive ? "" : "\nСейчас выбран другой способ отображения: этот переключатель сработает, когда режим «Поверх исходного текста» будет включён в настройках.")
+                text: qsTr("Показывать поверх исходного текста")
+                helpText: qsTr("Показывает или скрывает перевод поверх исходного текста. Распознавание и перевод продолжают работать в фоне.")
+                    + (root.inplaceActive ? "" : qsTr("\nСейчас выбран другой способ отображения: этот переключатель сработает, когда режим «Поверх исходного текста» будет включён в настройках."))
                 onToggled: ctl.setInplaceVisibility(checked, "checkbox")
             }
             ActionButton {
@@ -421,9 +421,9 @@ ApplicationWindow {
                 iconFile: "show-translation-window.svg"
                 checkable: true
                 checked: ctl.translationWindowVisible
-                text: "Показывать окно перевода"
-                helpText: "Показывает или скрывает отдельное окно перевода. Распознавание и перевод продолжают работать в фоне."
-                    + (root.windowActive ? "" : "\nСейчас выбран другой способ отображения: этот переключатель сработает, когда режим «Отдельное окно перевода» будет включён в настройках.")
+                text: qsTr("Показывать окно перевода")
+                helpText: qsTr("Показывает или скрывает отдельное окно перевода. Распознавание и перевод продолжают работать в фоне.")
+                    + (root.windowActive ? "" : qsTr("\nСейчас выбран другой способ отображения: этот переключатель сработает, когда режим «Отдельное окно перевода» будет включён в настройках."))
                 onToggled: ctl.setTranslationWindowVisibility(checked, "checkbox")
             }
         }
@@ -432,7 +432,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.minimumWidth: 0
             visible: ctl.displayNote.length > 0
-            text: "⚠ Поверх исходного текста недоступен: " + ctl.displayNote
+            text: qsTr("⚠ Поверх исходного текста недоступен: ") + ctl.displayNote
             wrapMode: Text.Wrap
         }
         Label {
@@ -441,7 +441,7 @@ ApplicationWindow {
             Layout.minimumWidth: 0
             visible: root.inplaceActive && (root.degradedFields > 0 || root.droppedFields > 0)
             wrapMode: Text.Wrap
-            text: "⚠ Упрощено полей: " + root.degradedFields + "; не показано: " + root.droppedFields + ". Недостаточно места в видимой части окна игры без перекрытия текста."
+            text: qsTr("⚠ Упрощено полей: ") + root.degradedFields + qsTr("; не показано: ") + root.droppedFields + qsTr(". Недостаточно места в видимой части окна игры без перекрытия текста.")
         }
         // ── Original / translation (see TranslationPanels: the text never decides the size of the window) ──
         TranslationPanels {
@@ -488,16 +488,16 @@ ApplicationWindow {
             Label {
                 id: providerFallbackStatus
                 visible: ["deepl", "microsoft"].includes(settingsWin.current.translation.service)
-                text: (settingsWin.current.translation.service === "deepl" ? "DeepL" : "Microsoft") + " · резерв: Google"
+                text: (settingsWin.current.translation.service === "deepl" ? "DeepL" : "Microsoft") + qsTr(" · резерв: Google")
                 font: ui.description
                 elide: Text.ElideRight
                 Layout.maximumWidth: root.width / 3
-                HoverHint { control: providerFallbackStatus; feature: "Резервный сервис"; explanation: "При ошибке запроса выбранного сервиса текст отправляется Google Translate. При отсутствующем API-ключе резерв не используется. Это настроенный порядок обработки, а не подтверждение использования резерва для текущего текста." }
+                HoverHint { control: providerFallbackStatus; feature: qsTr("Резервный сервис"); explanation: qsTr("При ошибке запроса выбранного сервиса текст отправляется Google Translate. При отсутствующем API-ключе резерв не используется. Это настроенный порядок обработки, а не подтверждение использования резерва для текущего текста.") }
             }
             ActionButton {
                 visible: (ctl.statusKind === "error" || ctl.statusKind === "warning") && ctl.hasRegion
-                text: "Повторить"
-                helpText: "Повторяет неудавшееся распознавание и перевод; сбрасывает остановку автоматических повторов."
+                text: qsTr("Повторить")
+                helpText: qsTr("Повторяет неудавшееся распознавание и перевод; сбрасывает остановку автоматических повторов.")
                 onClicked: ctl.translateOnce()
             }
             StatusIndicator {
@@ -506,10 +506,10 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignVCenter
                 state: root.indicatorState
                 reducedMotion: root.reducedMotion
-                description: (root.indicatorState === "running" ? "Автоперевод работает"
-                    : root.indicatorState === "processing" ? "Выполняется обработка (загрузка модели или подбор)"
-                    : root.indicatorState === "error" ? "Ошибка: подробности в нижней строке и в журнале"
-                    : "Автоперевод остановлен")
+                description: (root.indicatorState === "running" ? qsTr("Автоперевод работает")
+                    : root.indicatorState === "processing" ? qsTr("Выполняется обработка (загрузка модели или подбор)")
+                    : root.indicatorState === "error" ? qsTr("Ошибка: подробности в нижней строке и в журнале")
+                    : qsTr("Автоперевод остановлен"))
             }
         }
     }

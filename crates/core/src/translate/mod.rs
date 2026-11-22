@@ -1,6 +1,7 @@
 //! Движки перевода: Google, Yandex, свой API, DeepL, Microsoft и локальный Bergamot.
 
 pub mod bergamot;
+pub mod langid;
 pub mod guard;
 pub mod models;
 
@@ -155,12 +156,19 @@ impl Translate for HttpTranslate {
             cooldowns.get("bergamot").is_some()
         };
         if cooldown { return one_by_one().await; }
-        let path = match models::pair(src, dst) {
-            Ok(pair) => model_paths.get(&pair).cloned().unwrap_or(models_dir),
-            Err(_) => return one_by_one().await,
-        };
+        // `auto` is guessed from the whole batch; a batch that cannot be guessed is reported text by text.
+        let Ok(src) = bergamot::resolve_source(src, &texts.join("\n")) else { return one_by_one().await };
+        let src = src.as_str();
+        let path_of = |pair: &str| model_paths.get(pair).cloned().unwrap_or_else(|| models_dir.clone());
         tracing::debug!(texts = texts.len(), "Пакетный запрос перевода Bergamot");
-        match bergamot::translate_many(&binary, &path, texts, src, dst).await {
+        let result = match bergamot::route(&path_of, src, dst).await {
+            bergamot::Route::ViaEnglish => bergamot::translate_many_via_english(&binary, &path_of, texts, src, dst).await,
+            bergamot::Route::Direct => match models::pair(src, dst) {
+                Ok(pair) => bergamot::translate_many(&binary, &path_of(&pair), texts, src, dst).await,
+                Err(_) => return one_by_one().await,
+            },
+        };
+        match result {
             Ok(lines) => lines.into_iter().zip(texts).map(|(line, text)| {
                 // An empty input has nothing to translate; any other empty answer is a failure, as for one text.
                 if line.is_empty() && !text.trim().is_empty() { Err(TranslateError::Local("Bergamot вернул пустой перевод".into())) } else { Ok(line) }
@@ -184,7 +192,7 @@ impl Translate for HttpTranslate {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum Translator {
     Google,
     Yandex { api_key: String, folder_id: String },
@@ -192,6 +200,21 @@ pub enum Translator {
     DeepL { api_key: String },
     Microsoft { api_key: String, region: String },
     Bergamot { binary: String, models_dir: String, model_paths: std::collections::BTreeMap<String, String> },
+}
+
+impl std::fmt::Debug for Translator {
+    /// API keys never reach a log line: only whether one is set is shown.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use crate::settings::redacted;
+        match self {
+            Self::Google => f.write_str("Google"),
+            Self::Yandex { api_key, folder_id } => f.debug_struct("Yandex").field("api_key", &redacted(api_key)).field("folder_id", folder_id).finish(),
+            Self::Custom { url, api_key } => f.debug_struct("Custom").field("url", url).field("api_key", &redacted(api_key)).finish(),
+            Self::DeepL { api_key } => f.debug_struct("DeepL").field("api_key", &redacted(api_key)).finish(),
+            Self::Microsoft { api_key, region } => f.debug_struct("Microsoft").field("api_key", &redacted(api_key)).field("region", region).finish(),
+            Self::Bergamot { binary, models_dir, model_paths } => f.debug_struct("Bergamot").field("binary", binary).field("models_dir", models_dir).field("model_paths", model_paths).finish(),
+        }
+    }
 }
 
 impl Translator {
@@ -297,9 +320,18 @@ impl Translator {
                 parse_microsoft(&checked(request.send().await?).await?)
             }
             Self::Bergamot { binary, models_dir, model_paths } => {
-                let pair = models::pair(src, dst).map_err(TranslateError::Local)?;
-                let path = model_paths.get(&pair).map(String::as_str).unwrap_or(models_dir);
-                bergamot::translate(binary, path, text, src, dst).await
+                let src = bergamot::resolve_source(src, text)?;
+                let path_of = |pair: &str| model_paths.get(pair).cloned().unwrap_or_else(|| models_dir.clone());
+                match bergamot::route(&path_of, &src, dst).await {
+                    bergamot::Route::ViaEnglish => {
+                        tracing::info!(source_language = %src, target_language = dst, "Bergamot: пары нет, перевод через английский");
+                        bergamot::translate_via_english(binary, path_of, text, &src, dst).await
+                    }
+                    bergamot::Route::Direct => {
+                        let pair = models::pair(&src, dst).map_err(TranslateError::Local)?;
+                        bergamot::translate(binary, &path_of(&pair), text, &src, dst).await
+                    }
+                }
             },
         }
     }

@@ -17,6 +17,8 @@ tracing.workspace = true
 zbus = { version = "5", default-features = false, features = ["tokio"] }
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 libc = "0.2"
+# Gamepad buttons (R-12): evdev nodes are read in the background; hot-plugged pads are found by rescanning.
+evdev = { version = "0.13", default-features = false, features = ["tokio"] }
 httpdate = "1"
 sha2 = "0.10"
 serde_yaml = "0.9"
@@ -65,3 +67,7 @@ path = "../../tests/inplace/rust/dialogue_change.rs"
 [[test]]
 name = "inplace_placement_quality"
 path = "../../tests/inplace/rust/placement_quality.rs"
+
+[[example]]
+name = "sway_probe"
+path = "../../tests/inplace/rust/sway_probe.rs"

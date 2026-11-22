@@ -4,6 +4,7 @@ mod ffi {
         include!("app_icon.h");
         fn createLipaApplication(args: &Vec<String>);
         fn execLipaApplication() -> i32;
+        fn installLipaTranslator(catalogue: &[u8]) -> bool;
         fn destroyLipaApplication();
         fn configureLipaApplication();
         fn lipaRuntimeQtVersion() -> QString;
@@ -48,6 +49,8 @@ impl TextMeasure for QtMeasure {
 
 /// Создаёт `QApplication` (см. `app_icon.h`: трей на теме KDE строится из виджетов).
 pub fn create_application() { ffi::createLipaApplication(&std::env::args().collect()); }
+/// Installs the English catalogue (see `ui_language`). Call after `create_application`, before the QML is loaded.
+pub fn install_translator(catalogue: &'static [u8]) -> bool { ffi::installLipaTranslator(catalogue) }
 pub fn exec_application() -> i32 { ffi::execLipaApplication() }
 pub fn destroy_application() { ffi::destroyLipaApplication(); }
 

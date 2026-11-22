@@ -53,7 +53,9 @@ LipaX — переводчик игрового текста для KDE Plasma 6
 | `capture/kwin.rs`, `capture/geometry.rs`, `capture/geometry.js` | ScreenShot2 и клиентская геометрия окна |
 | `capture/portal.rs` | запасной ScreenCast / PipeWire / GStreamer |
 | `detect.rs`, `pipeline/` | детектор текста, независимое состояние областей, OCR, перевод, повторы. `pipeline/mod.rs` — `Pipeline`, цикл тика, `Io` (перевод, кэш), события; `state.rs` — `Phase` и `RegionState`; `inplace.rs` — `inplace_tick`, `read_field`; `preview.rs` — инспектор (`OcrPreview`, `PreviewBox`, `describe`, `edge_note`); `tests.rs` — общие моки и тесты конвейера |
-| `ocr/mod.rs`, `ocr/paddle.rs` | трейт `Ocr` (`recognize`, `recognize_detailed`: строки, координаты, уверенность), Tesseract (TSV), постоянный Python worker PaddleOCR 3.x, движок `auto` (Tesseract → MeikiOCR для японского, если модель скачана → RapidOCR → PaddleOCR) |
+| `ocr/mod.rs`, `ocr/paddle.rs` | трейт `Ocr` (`recognize`, `recognize_detailed`: строки, координаты, уверенность), Tesseract (TSV), постоянный Python worker PaddleOCR 3.x, движок `auto` (Tesseract → MeikiOCR для японского, если модель скачана → RapidOCR → PaddleOCR) и движок `consensus` (`AnyOcr::consensus`: Tesseract, RapidOCR и MeikiOCR читают один кадр параллельно, результат выбирает `ocr/consensus.rs`; PaddleOCR не участвует) |
+| `ocr/validity.rs`, `ocr/consensus.rs` | замена ML-оценки Translumo (ML.NET): `validity::score(text, language)` — прозрачная оценка правдоподобия 0..1 без обученных данных (письменность языка, доля «похожих на слова» токенов, подмена похожих знаков: смесь латиницы с кириллицей, цифры в словах, слова без гласных; одинокие знаки `\| _ ~`; штраф за очень короткий текст). `consensus::select`: текст, совпавший у `QUORUM` = 3 движков, побеждает; иначе лучшая оценка (+0,08 за каждое совпадающее чтение), при разнице < 0,01 — уверенность движка; чтение длиннее вдвое побеждает при оценке ≥ 0,7. Веса и пороги не калиброваны на размеченных кадрах |
+| `text.rs` | нормализация, сходство по Левенштейну (`similarity`), Jaro (`jaro`), Dice по биграммам (`dice`), `same_reading` (оба коэффициента ≥ порога, регистр и пробелы не в счёт) |
 | `ocr/meiki.rs` | MeikiOCR: детектор и распознаватель японского текста игр (ONNX, та же ONNX Runtime; NMS по символам, вертикальные колонки), модели из того же каталога ([MeikiOCR.md](MeikiOCR.md)) |
 | `ocr/lookalike.rs` | правило похожих глифов для коротких полей наложения (`keeps_earlier`): слабое чтение, отличающееся от уверенного только look-alike символами, не заменяет его |
 | `ocr/rapid.rs`, `ocr/rapid_models.rs` | RapidOCR: PP-OCRv5 (DBNet → ориентация → CTC) в процессе через ONNX Runtime (`ort`, системная `libonnxruntime.so`, `load-dynamic`); каталог моделей `ocr_models_catalog.json` с SHA-256, загрузка только по кнопке ([RapidOCR.md](RapidOCR.md)) |
@@ -79,8 +81,9 @@ DeepL и Microsoft Translator используют общий асинхронн
 регион Azure — через настройки или `MICROSOFT_TRANSLATOR_REGION`. При ошибке этих
 провайдеров запрос переходит на Google Translate (кроме отсутствующего ключа). Кэш
 перевода разделён по сервисам, ответ fallback хранится под ключом Google.
-Локальный Bergamot запускается как нативный CLI в Tokio с таймаутом 45 с; модель
-выбирается по паре языков из каталога конфигураций. При его ошибке сетевой fallback
+Локальный Bergamot работает как постоянный процесс `bergamot-server` (модель загружается
+один раз, простой 3 мин — остановка; `translate/bergamot/worker.rs`) с откатом на
+нативный CLI в Tokio с таймаутом 45 с; модель выбирается по паре языков из каталога конфигураций. При его ошибке сетевой fallback
 не запускается. Установка и ограничения описаны в [Bergamot.md](Bergamot.md).
 QML использует `org.kde.layershell`; blur отдельного окна перевода использует KF6WindowSystem.
 
@@ -102,6 +105,7 @@ QML использует `org.kde.layershell`; blur отдельного окн�
 Debounce ждёт стабилизации; непрерывно меняющаяся сцена допускает OCR не реже раза
 в две секунды. Области обрабатываются последовательно, очередь старых кадров не копится.
 Состояние детектора, ошибки и интервал принадлежат каждой области отдельно.
+Сравнение с прошлым текстом области: сходство по Левенштейну ≥ 0,92 (`SAME_TEXT_RATIO`) или Jaro и Dice оба ≥ 0,93 (`SAME_LINE_JARO_DICE`) — тогда реплика не переводится заново.
 
 После ошибки повтор выполняется даже на неизменном кадре: задержки 2, 4, 8, 16,
 30 секунд. Общий бюджет операции/серии ошибок ограничен 60 секундами; затем
@@ -361,6 +365,20 @@ MMB по наложению **скрывает перевод**, если пол
 относительно эталона). Эталоны создаёт `tests/inplace/prepare-references.sh`; для метрики нужен
 `LIPAX_REFERENCES=tmp/work/refs`.
 
+## Изменения после 1.4.5 (в работе): что где находится
+
+Состояние рабочего дерева поверх 1.4.5; не закоммичено. План и обоснование — [IMPROVEMENTS-ROADMAP.md](IMPROVEMENTS-ROADMAP.md).
+
+| Задача | Где | Как работает |
+|---|---|---|
+| Интерфейс на нескольких языках | `crates/app/qml/*.qml` (`qsTr`), `crates/app/i18n/lipax_{en,fr,zh_CN,ja,es}.ts`, `crates/app/build.rs` (`compile_translations`), `crates/app/src/ui_language.rs`, `crates/app/src/app_icon.h` (`installLipaTranslator`), `crates/app/src/main.rs` | Исходный язык QML — русский: все русские литералы обёрнуты в `qsTr()`, поэтому без каталога интерфейс остаётся русским. `build.rs` компилирует каждый `.ts` утилитой `lrelease` (пакет `qt6-tools`, в `makedepends` и CI) в `OUT_DIR/lipax_<код>.qm`; без `lrelease` или `.ts` пишется пустой каталог и предупреждение сборки. `main.rs` после `create_application()` и до загрузки QML выбирает язык и устанавливает `QTranslator` из встроенных байтов (`include_bytes!`, объект статический). Переводы fr, zh_CN, ja, es выполнены автоматически и не проверялись носителем |
+| Выбор языка интерфейса | `ui_language.rs` (`choose_with_setting`, `from_settings`, `UiLanguage::code`), `settings/mod.rs` (`GeneralSettings.language`, `INTERFACE_LANGUAGES`), `reaction.rs` (`general.language`, `Immediate`), `SettingsWindow.qml` (`languageChoices`, `uiLanguage`) | Порядок: переменная `LIPAX_UI_LANGUAGE` → настройка `general.language` (`auto` или `ru/en/fr/zh_CN/ja/es`) → `LANGUAGE`, `LC_MESSAGES`, `LANG`, `LC_ALL`; значения `C`/`POSIX` пропускаются, поэтому `LC_ALL=C.UTF-8` не скрывает `LANG=ru_RU`. `zh*` даёт упрощённый китайский, любой другой нерусский язык — английский; ничего подходящего — русский. Смена применяется после перезапуска. Сообщения, собранные в Rust (статусы, ошибки, диагностика, трей, уведомления), пока не переводятся |
+| Журнал переводов в окне перевода | `settings/sections.rs` (`WindowAppearance.log_mode`, `log_entries`), `TranslationWindowContent.qml` (`recordLog`, `logPrevious`, `Repeater translationLog`), `SettingsWindow.qml` | Режим выключен по умолчанию. Окно хранит последние `log_entries − 1` предыдущих переводов в памяти сессии (не в `history.rs`, поэтому не зависит от истории) и рисует их над текущим кеглем 0,8 с прозрачностью от 0,6 (новейший) до 0,25 (старейший); вид прокручивается к новейшей записи. Повтор того же текста не записывается; выключение режима очищает журнал. Только отдельное окно, режим «поверх оригинала» не затронут |
+| Состояние GPU у RapidOCR / MeikiOCR | `ocr/rapid.rs` (`gpu_report`, `gpu_providers`), `diagnostics.rs` | Во вкладке «Статус» строка «GPU для RapidOCR / MeikiOCR»: выключено в настройках / включено, но ONNX Runtime без CUDA, MIGraphX, ROCm (предупреждение) / доступны перечисленные провайдеры. Это «доступно», а не «используется»: откроется ли модель на видеокарте, решается при загрузке моделей, при отказе — процессор и запись в журнале |
+| Вложенный KWin для проверок | `tests/inplace/live/run_nested_kwin.sh` | `kwin_wayland --virtual` (2 выхода, масштаб 1,5) на приватной D-Bus с отдельными `XDG_*` в `tmp/nested-kwin/`: изолированная запись `.desktop` с `X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2` и `Exec` на пример `geometry`, окно Konsole, захват через `grab_window`. Не трогает сессию пользователя; код выхода 0 / 1 / 2 (кадр получен / отказ или сбой / окружение). Само приложение в нём пока не запускается |
+| Режим OCR `consensus` | `ocr/mod.rs` (`AnyOcr::consensus`), `ocr/consensus.rs`, `ocr/validity.rs`, `settings/types.rs` (`OcrEngine::Consensus`), `SettingsWindow.qml` (списки движков) | Идея Translumo (оценка правдоподобия + голосование) без ML.NET. Выбирается вручную, по умолчанию не включён: замер R-01 показал, что для английского выбор между Tesseract и RapidOCR выигрыша не даёт. Для японского, китайского, корейского не измерялся |
+| Замеры, не входящие в приложение | `crates/core/examples/engine_disagreement.rs` | CER Tesseract и RapidOCR на одних и тех же кадрах и оценка выигрыша от выбора между ними (результат: выбор не нужен, см. R-01 в роадмапе) |
+
 ## Настройки, история и диагностика
 
 Оформление перевода меняется сразу, конфигурация записывается после 500 мс без изменений
@@ -412,10 +430,12 @@ OCR и GStreamer запущены с `kill_on_drop`), затем уничтож�
 шине (без права замены) и обслуживает `org.freedesktop.Application`
 (`Activate`, `ActivateAction`) по пути `/io/lipa/Translator`. Повторный запуск
 (`lipax --show|--settings|--capture|--start-autotranslate|--stop-autotranslate|--quit`, без
-параметров — «показать») передаёт действие первому процессу и завершается. Токен
+параметров — «показать»; а также `--toggle|--select-region|--translate-once|--toggle-overlay|--toggle-pin` —
+пять действий горячих клавиш для биндов композитора и скриптов, их выполняет тот же `run_hotkey`, что и
+KGlobalAccel) передаёт действие первому процессу и завершается. Токен
 xdg-activation из `XDG_ACTIVATION_TOKEN` передаётся в `platform_data` и применяется через
-`KWindowSystem`, чтобы Wayland разрешил вывести окно вперёд. `--quit` без запущенного
-экземпляра ничего не делает. Без сессионной шины LipaX работает как раньше. `LIPAX_INSTANCE_ID`
+`KWindowSystem`, чтобы Wayland разрешил вывести окно вперёд. `--quit` и пять действий горячих клавиш без запущенного
+экземпляра ничего не делают. Без сессионной шины LipaX работает как раньше. `LIPAX_INSTANCE_ID`
 добавляет суффикс к имени шины (тесты и отладка рядом с рабочим экземпляром).
 Секции `[Desktop Action …]` в `packaging/io.lipa.Translator.desktop` совпадают с этими
 параметрами (проверяется тестом). «Захватить окно» = выбор окна игры (`pickWindow`).
@@ -431,6 +451,7 @@ QML-тесты и создаёт `dist/lipax-1.0.8-1-x86_64.pkg.tar.zst`. Пак
 матрица стилей, масштабы и ограничения описаны в [UI-MODERNIZATION.md](UI-MODERNIZATION.md). Набор QML-тестов проверяет три области/отказ четвёртой, рамки,
 все виды отдельного окна перевода, MMB, перемещение, наложение, вкладки и историю.
 `examples/geometry.rs` позволяет сохранить клиентский кадр по UUID KWin.
+`tests/inplace/live/run_nested_kwin.sh` делает то же во вложенном KWin без пользовательской сессии. Для сборки нужен `lrelease` (`qt6-tools`) — каталоги интерфейса компилируются в `build.rs`.
 Результаты и оставшиеся сценарии перечислены в [IMPROVEMENTS.md](IMPROVEMENTS.md).
 
 ## Централизованный журнал

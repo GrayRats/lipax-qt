@@ -8,6 +8,10 @@ on:
         description: Run full RapidOCR suite on a provisioned self-hosted Linux runner
         type: boolean
         default: false
+      package_build:
+        description: Build the Arch package from the root PKGBUILD (slow, builds the Bergamot engine)
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -17,7 +21,7 @@ jobs:
     container: archlinux:base-devel
     steps:
       - name: Install system dependencies
-        run: pacman -Syu --noconfirm git rust qt6-base qt6-declarative qt6-svg qt6-wayland layer-shell-qt kwindowsystem python python-pytest python-pillow pyside6 pkgconf xz
+        run: pacman -Syu --noconfirm git rust qt6-base qt6-declarative qt6-svg qt6-tools qt6-wayland layer-shell-qt kwindowsystem python python-pytest python-pillow pyside6 pkgconf xz
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
@@ -32,6 +36,13 @@ jobs:
           key: arch-qt-rust-${{ hashFiles('Cargo.lock', 'crates/app/build.rs') }}
       - name: Fetch locked dependencies
         run: cargo fetch --locked
+      - name: Clippy (warnings are errors)
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/tmp/cargo-target
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: rustfmt (advisory, the tree is not rustfmt-formatted yet)
+        continue-on-error: true
+        run: cargo fmt --all --check | grep -c '^Diff in' || true
       - name: Workspace, production Qt helper and QML checks
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/tmp/cargo-target
@@ -67,3 +78,47 @@ jobs:
           path: |
             tmp/inplace-tests
             tmp/visual
+  package:
+    if: github.event_name == 'workflow_dispatch' && inputs.package_build
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    container: archlinux:base-devel
+    steps:
+      - name: Install build dependencies
+        run: pacman -Syu --noconfirm git sudo cargo rust xz cmake ninja qt6-base qt6-declarative qt6-svg qt6-tools qt6-wayland layer-shell-qt kwindowsystem tesseract tesseract-data-eng pcre2 pkgconf
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Build the package as an unprivileged user
+        run: |
+          useradd -m builder
+          chown -R builder "$GITHUB_WORKSPACE"
+          su builder -c "cd '$GITHUB_WORKSPACE' && LIPA_LOCAL_SOURCE=0 makepkg --noconfirm --nodeps"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package
+          path: '*.pkg.tar.*'
+  release:
+    # A tag v<version> publishes a GitHub release. The AUR recipe downloads GitHub's own
+    # archive/refs/tags/v<version>.tar.gz, which exists for every tag, so no asset has to be attached.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: structural
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: The tag must match the package and crate versions
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkgver=$(sed -n 's/^pkgver=//p' PKGBUILD)
+          crate=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          echo "tag=$tag PKGBUILD=$pkgver Cargo.toml=$crate"
+          [ "$tag" = "$pkgver" ] && [ "$tag" = "$crate" ]
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag --title "LipaX ${GITHUB_REF_NAME#v}"

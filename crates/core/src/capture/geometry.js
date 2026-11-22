@@ -82,8 +82,34 @@ function reportFloating(window, reason) {
     send("FloatingMoved", JSON.stringify({ x: g.x, y: g.y, w: g.width, h: g.height, output: o ? o.name : "",
         output_x: o ? o.geometry.x : 0, output_y: o ? o.geometry.y : 0 }), reason);
 }
+// BEGIN keepFloating
+// The translation window is a free window: it must not end up tiled into a layout, maximised or fullscreen. KWin applies such
+// a state when the client has acknowledged it and ignores a change made from inside the signal that announced it, so the state
+// is undone a few turns of the event loop later (a chain of D-Bus calls stands for the turns; the script has no timers).
+function turns(count, next) {
+    if (count <= 0) { next(); return; }
+    callDBus("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "GetId", function() { turns(count - 1, next); });
+}
+function keepFloating(window) {
+    let pending = false;
+    function undo() {
+        if (window.fullScreen) window.fullScreen = false;
+        if (window.tile) window.tile = null;
+        if (window.setMaximize) window.setMaximize(false, false);
+    }
+    function undoLater() {
+        if (pending) return;
+        pending = true;
+        turns(3, function() { pending = false; undo(); });
+    }
+    if (window.fullScreenChanged) window.fullScreenChanged.connect(undoLater);
+    if (window.maximizedChanged) window.maximizedChanged.connect(undoLater);
+    if (window.tileChanged) window.tileChanged.connect(undoLater);
+}
+// END keepFloating
 function adoptFloating(window) {
     window.keepAbove = true;
+    keepFloating(window);
     let userMoved = false;
     let closed = false;
     window.closed.connect(function() { closed = true; });

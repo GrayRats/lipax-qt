@@ -5,12 +5,15 @@
 pub mod autostart;
 pub mod cache;
 pub mod capture;
+pub mod desktop;
 pub mod detect;
+pub mod gamepad;
 pub mod files;
 pub mod hotkeys;
 pub mod layout;
 pub mod ocr;
 pub mod pipeline;
+pub mod secrets;
 pub mod settings;
 pub mod sync;
 pub mod tesseract;

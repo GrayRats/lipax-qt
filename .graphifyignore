@@ -1,2 +1,5 @@
 project/
 tmp/
+
+# Qt Linguist catalogues (XML with the .ts extension, not TypeScript)
+crates/app/i18n/

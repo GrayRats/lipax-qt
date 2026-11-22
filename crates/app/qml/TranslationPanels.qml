@@ -26,7 +26,7 @@ GridLayout {
         Layout.preferredWidth: 1
         Layout.preferredHeight: 0
         Layout.minimumWidth: 0
-        Label { text: "Оригинал"; font: panels.descriptionFont }
+        Label { text: qsTr("Оригинал"); font: panels.descriptionFont }
         ScrollView {
             id: originalScroll
             objectName: "originalScroll"
@@ -41,7 +41,7 @@ GridLayout {
                 objectName: "mainOriginalText"
                 text: panels.originalText
                 textFormat: panels.originalFormat
-                placeholderText: "Текст появится после распознавания"
+                placeholderText: qsTr("Текст появится после распознавания")
                 readOnly: true
                 wrapMode: Text.Wrap
                 color: panels.textColor
@@ -57,7 +57,7 @@ GridLayout {
         Layout.preferredWidth: 1
         Layout.preferredHeight: 0
         Layout.minimumWidth: 0
-        Label { text: "Перевод"; font.bold: true }
+        Label { text: qsTr("Перевод"); font.bold: true }
         ScrollView {
             id: translationScroll
             objectName: "translationScroll"
@@ -72,7 +72,7 @@ GridLayout {
                 objectName: "mainTranslationText"
                 text: panels.translationText
                 textFormat: panels.translationFormat
-                placeholderText: "Здесь будет перевод"
+                placeholderText: qsTr("Здесь будет перевод")
                 readOnly: true
                 wrapMode: Text.Wrap
                 color: panels.textColor

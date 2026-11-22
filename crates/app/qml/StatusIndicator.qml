@@ -9,7 +9,7 @@ Item {
     // "running" | "stopped" | "processing" | "error"
     property string state: "stopped"
     property bool reducedMotion: false
-    readonly property var names: ({ running: "Работает", stopped: "Остановлен", processing: "Обработка", error: "Ошибка" })
+    readonly property var names: ({ running: qsTr("Работает"), stopped: qsTr("Остановлен"), processing: qsTr("Обработка"), error: qsTr("Ошибка") })
     readonly property string label: names[state] || names.stopped
     property string description: label
     property real pulse: 0

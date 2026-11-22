@@ -1,5 +1,5 @@
 pkgname=lipax
-pkgver=1.4.5
+pkgver=1.4.6
 pkgrel=1
 pkgdesc="LipaX — game text OCR and live translation for KDE Plasma / Wayland"
 arch=('x86_64')
@@ -7,7 +7,7 @@ url="https://github.com/GrayRats/lipax-qt"
 license=('MIT' 'OFL-1.1' 'Apache-2.0' 'MPL-2.0' 'BSD-3-Clause')  # Apache-2.0: Roboto Slab; the other bundled fonts are OFL-1.1
 depends=('qt6-base>=6.12' 'qt6-declarative>=6.12' 'qt6-svg>=6.12' 'layer-shell-qt' 'kwindowsystem' 'tesseract' 'tesseract-data-eng' 'pcre2')
 # xz: the bundled fonts are stored compressed and unpacked by crates/app/build.rs
-makedepends=('cargo' 'rust' 'xz' 'git' 'cmake' 'ninja')
+makedepends=('cargo' 'rust' 'xz' 'git' 'cmake' 'ninja' 'qt6-tools')
 provides=('LipaXQT' 'lipa')
 conflicts=('LipaXQT' 'lipa')
 optdepends=(
@@ -80,6 +80,7 @@ package() {
     install -Dm755 "$CARGO_TARGET_DIR/release/lipax" "$pkgdir/usr/bin/lipax"
     ln -s lipax "$pkgdir/usr/bin/lipa"
     install -Dm755 "$CARGO_TARGET_DIR/bergamot-build/app/bergamot" "$pkgdir/usr/lib/lipax/bergamot"
+    install -Dm755 "$CARGO_TARGET_DIR/bergamot-build/app/bergamot-server" "$pkgdir/usr/lib/lipax/bergamot-server"
     # Ship licence notices for the engine and its statically linked dependencies.
     while IFS= read -r -d '' _notice; do
         _relative=${_notice#"$CARGO_TARGET_DIR/bergamot-source/"}

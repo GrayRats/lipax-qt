@@ -364,7 +364,12 @@ impl qobject::Controller {
                 }
             };
             let by_portal = async { shared.capture.portal.select_window().await.map(Some).map_err(|e| e.to_string()) };
-            let res = match backend {
+            // A sway session (R-14): sway has no interactive picker, the next window that takes the focus is the game.
+            let sway = shared.capture.sway().cloned().filter(|_| backend == CaptureSource::Auto);
+            let res = if let Some(sway) = sway {
+                let _ = qt.queue(|mut o| o.as_mut().set_status(QString::from("Sway: щёлкните по окну игры, чтобы оно получило фокус (20 с)")));
+                sway.pick_window(std::process::id()).await.map_err(|e| e.to_string())
+            } else { match backend {
                 CaptureSource::Kwin => by_kwin.await,
                 CaptureSource::Portal => by_portal.await,
                 // KWin недоступен (другой композитор, нет прав на ScreenShot2) — запасной путь через portal.
@@ -381,7 +386,7 @@ impl qobject::Controller {
                         by_portal.await
                     }
                 },
-            };
+            } };
             match res {
                 Ok(Some(key)) => {
                     let title = key.caption.clone();
@@ -575,5 +580,21 @@ impl qobject::Controller {
         lipa_core::layout::font_database::InstalledFontDatabase::reload();
         let _ = self.rust().shared.cmds.send(Cmd::ReanalyzeFonts);
         self.as_mut().set_status(QString::from("Шрифты полей будут определены заново"));
+    }
+}
+
+impl qobject::Controller {
+    pub(super) fn learn_gamepad_chord(self: Pin<&mut Self>, action: &QString) {
+        use std::sync::atomic::Ordering;
+        let action = action.clone();
+        let suspended = self.rust().shared.gamepad_suspended.clone();
+        // A second recording would end the first one's suspension early.
+        if suspended.swap(true, Ordering::SeqCst) { return; }
+        let qt = self.qt_thread();
+        spawn_service(async move {
+            let chord = lipa_core::gamepad::learn().await.unwrap_or_default();
+            suspended.store(false, Ordering::SeqCst);
+            let _ = qt.queue(move |mut o| o.as_mut().gamepad_chord_learned(&action, &QString::from(chord.as_str())));
+        });
     }
 }

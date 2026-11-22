@@ -9,7 +9,7 @@ url="https://github.com/GrayRats/lipax-qt"
 license=('MIT' 'OFL-1.1' 'Apache-2.0' 'MPL-2.0' 'BSD-3-Clause')  # Apache-2.0: Roboto Slab; the other bundled fonts are OFL-1.1
 depends=('qt6-base>=6.12' 'qt6-declarative>=6.12' 'qt6-svg>=6.12' 'layer-shell-qt' 'kwindowsystem' 'tesseract' 'tesseract-data-eng' 'pcre2')
 # xz: the bundled fonts are stored compressed and unpacked by crates/app/build.rs
-makedepends=('cargo' 'rust' 'xz' 'git' 'cmake' 'ninja')
+makedepends=('cargo' 'rust' 'xz' 'git' 'cmake' 'ninja' 'qt6-tools')
 provides=('LipaXQT' 'lipa')
 conflicts=('LipaXQT' 'lipa')
 optdepends=(

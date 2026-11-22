@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QQuickStyle>
 #include <QVersionNumber>
+#include <QTranslator>
 #include <QSaveFile>
 static_assert(QT_VERSION >= QT_VERSION_CHECK(6, 12, 0), "LipaX requires Qt 6.12+");
 inline QString lipaRuntimeQtVersion() { return QString::fromLatin1(qVersion()); }
@@ -35,6 +36,14 @@ inline void createLipaApplication(const rust::Vec<rust::String> &args) {
     a.argv.push_back(nullptr);
     a.argc = int(a.storage.size());
     a.app = std::make_unique<QApplication>(a.argc, a.argv.data());
+}
+// Installs the compiled Qt Linguist catalogue (`.qm`, embedded in the executable and therefore static). An empty or
+// unreadable catalogue installs nothing, and the Russian source strings stay. Returns whether it was installed.
+inline bool installLipaTranslator(rust::Slice<const uint8_t> catalogue) {
+    if (catalogue.empty()) return false;
+    static QTranslator translator;
+    if (!translator.load(reinterpret_cast<const uchar *>(catalogue.data()), int(catalogue.size()))) return false;
+    return QCoreApplication::installTranslator(&translator);
 }
 inline int execLipaApplication() { return QApplication::exec(); }
 inline void destroyLipaApplication() { lipaApplication().app.reset(); }

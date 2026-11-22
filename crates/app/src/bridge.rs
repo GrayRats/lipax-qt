@@ -40,6 +40,8 @@ pub mod qobject {
         #[qproperty(i32, preview_title_bar, cxx_name = "previewTitleBar")]
         #[qproperty(QString, tesseract_json, cxx_name = "tesseractJson")]
         #[qproperty(bool, tesseract_busy, cxx_name = "tesseractBusy")]
+        /// Геймпады, доступные для горячих клавиш (JSON `gamepad::Probe`); пусто — ещё не проверялось.
+        #[qproperty(QString, gamepad_json, cxx_name = "gamepadJson")]
         /// Состояние окружения PaddleOCR для выбранного Python и языка (JSON `PaddleEnv`); пусто — ещё не проверялось.
         #[qproperty(QString, paddle_json, cxx_name = "paddleJson")]
         #[qproperty(bool, paddle_busy, cxx_name = "paddleBusy")]
@@ -208,6 +210,19 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "refreshTesseract"]
         fn refresh_tesseract(self: Pin<&mut Controller>);
+        /// Заново посмотреть, какие геймпады доступны (результат в `gamepadJson`).
+        #[qinvokable]
+        #[cxx_name = "refreshGamepads"]
+        fn refresh_gamepads(self: Pin<&mut Controller>);
+        /// Записать сочетание кнопок геймпада для действия (`toggle`, `select_region`, …): ждёт нажатия до 15 с и
+        /// сообщает результат сигналом `gamepadChordLearned`. Пока идёт запись, нажатия сочетаний не выполняют действий.
+        #[qinvokable]
+        #[cxx_name = "learnGamepadChord"]
+        fn learn_gamepad_chord(self: Pin<&mut Controller>, action: &QString);
+        /// Результат записи: сочетание в формате ядра («L1+R1+Start»); пустая строка — ничего не нажато или нет доступного геймпада.
+        #[qsignal]
+        #[cxx_name = "gamepadChordLearned"]
+        fn gamepad_chord_learned(self: Pin<&mut Controller>, action: &QString, chord: &QString);
         /// Версия приложения (для вкладки «О программе»).
         #[qinvokable]
         #[cxx_name = "appVersion"]
@@ -304,6 +319,8 @@ mod display_tests;
 
 
 /// How often the position of the game window is read.
+/// How long the floating window waits before asking for the KWin script again after a failure.
+const FLOATING_RETRY: std::time::Duration = std::time::Duration::from_secs(35);
 const GEOMETRY_POLL: std::time::Duration = std::time::Duration::from_millis(100);
 
 pub(crate) fn rt() -> &'static tokio::runtime::Runtime {
@@ -352,6 +369,8 @@ struct Shared {
     running: watch::Sender<bool>,
     cmds: mpsc::UnboundedSender<Cmd>,
     hotkeys: watch::Sender<lipa_core::settings::Hotkeys>,
+    /// A gamepad chord is being recorded: the chords that arrive meanwhile do not run their actions.
+    gamepad_suspended: Arc<std::sync::atomic::AtomicBool>,
     capture: Arc<AnyCapture>,
     /// Поколение настроек обработки: растёт при смене окна, области, языка, движка. События pipeline
     /// старого поколения (отправлены до смены, но ещё не доставлены) GUI отбрасывает.
@@ -457,6 +476,7 @@ pub struct ControllerRust {
     original: QString,
     translation: QString,
     tesseract_json: QString,
+    gamepad_json: QString,
     tesseract_busy: bool,
     paddle_json: QString,
     paddle_busy: bool,
@@ -486,6 +506,31 @@ pub struct ControllerRust {
     effective_display: QString,
     display_note: QString,
     capture_capabilities: QString,
+}
+
+/// One of the five hotkey actions, from KGlobalAccel or from the command line (`lipax --toggle-pin` and the like).
+fn run_hotkey(mut o: Pin<&mut qobject::Controller>, action: HotkeyAction) {
+    match action {
+        HotkeyAction::Toggle if *o.running() => o.as_mut().stop(),
+        HotkeyAction::Toggle => { o.as_mut().start_auto_translate(); }
+        HotkeyAction::TranslateOnce => o.as_mut().translate_once(),
+        HotkeyAction::SelectRegion => o.as_mut().select_region_requested(),
+        // Показывает/скрывает перевод активного режима — второй режим не трогается.
+        HotkeyAction::ToggleTranslation => {
+            let source = QString::from("hotkey");
+            if o.effective_display().to_string() == "inplace" {
+                let v = !*o.inplace_visible();
+                o.as_mut().set_inplace_visibility(v, &source);
+            } else {
+                let v = !*o.translation_window_visible();
+                o.as_mut().set_translation_window_visibility(v, &source);
+            }
+        }
+        // Закрепление есть только у окна перевода.
+        HotkeyAction::TogglePin => {
+            if o.effective_display().to_string() == "window" { o.as_mut().toggle_pin_requested(); }
+        }
+    }
 }
 
 impl Default for ControllerRust {
@@ -521,6 +566,7 @@ impl Default for ControllerRust {
             original: QString::default(),
             translation: QString::default(),
             tesseract_json: QString::default(),
+            gamepad_json: QString::default(),
             tesseract_busy: false,
             paddle_json: QString::default(),
             paddle_busy: false,
@@ -552,6 +598,7 @@ impl Default for ControllerRust {
             has_region: !settings.capture_regions().is_empty(),
             shared: Arc::new(Shared {
                 hotkeys: watch::channel(settings.hotkeys.clone()).0,
+                gamepad_suspended: Default::default(),
                 settings: settings_tx,
                 running: running_tx,
                 cmds: cmd_tx,
@@ -612,6 +659,7 @@ impl cxx_qt::Initialize for qobject::Controller {
 
         // Глобальные горячие клавиши (KGlobalAccel). Недоступность не критична — только статус.
         let (hk_tx, mut hk_rx) = mpsc::unbounded_channel();
+        let pad_tx = hk_tx.clone();
         let hk = shared.hotkeys.subscribe();
         let qt = self.qt_thread();
         spawn_service(async move {
@@ -624,6 +672,9 @@ impl cxx_qt::Initialize for qobject::Controller {
             }
         });
         let qt = self.qt_thread();
+        // Кнопки геймпада (R-12): те же действия; читаются, только пока включены в настройках.
+        let (pad_hk, pad_suspended) = (shared.hotkeys.subscribe(), shared.gamepad_suspended.clone());
+        spawn_service(lipa_core::gamepad::listen(pad_hk, pad_suspended, pad_tx));
         spawn_service(async move {
             while let Some(ev) = hk_rx.recv().await {
                 let _ = qt.queue(move |mut o| match ev {
@@ -631,27 +682,7 @@ impl cxx_qt::Initialize for qobject::Controller {
                         tracing::warn!(component = "KGlobalAccel", action = a.title(), "Сочетание занято или недопустимо");
                         o.as_mut().set_status(QString::from(format!("Сочетание для «{}» занято или недопустимо", a.title()).as_str()));
                     },
-                    HotkeyEvent::Pressed(action) => match action {
-                        HotkeyAction::Toggle if *o.running() => o.as_mut().stop(),
-                        HotkeyAction::Toggle => { o.as_mut().start_auto_translate(); }
-                        HotkeyAction::TranslateOnce => o.as_mut().translate_once(),
-                        HotkeyAction::SelectRegion => o.as_mut().select_region_requested(),
-                        // Показывает/скрывает перевод активного режима — второй режим не трогается.
-                        HotkeyAction::ToggleTranslation => {
-                            let source = QString::from("hotkey");
-                            if o.effective_display().to_string() == "inplace" {
-                                let v = !*o.inplace_visible();
-                                o.as_mut().set_inplace_visibility(v, &source);
-                            } else {
-                                let v = !*o.translation_window_visible();
-                                o.as_mut().set_translation_window_visibility(v, &source);
-                            }
-                        }
-                        // Закрепление есть только у окна перевода.
-                        HotkeyAction::TogglePin => {
-                            if o.effective_display().to_string() == "window" { o.as_mut().toggle_pin_requested(); }
-                        }
-                    },
+                    HotkeyEvent::Pressed(action) => run_hotkey(o, action),
                 });
             }
         });
@@ -670,28 +701,43 @@ impl cxx_qt::Initialize for qobject::Controller {
                 }
             };
             let mut settings = sh.settings.subscribe();
-            let placement = floating_placement(&settings.borrow_and_update());
-            if !kwin.set_floating_placement(placement).await {
-                tracing::warn!(target: "translation_window.geometry", "скрипт KWin недоступен: положение свободного окна не восстанавливается");
-                return;
-            }
-            let Some(mut moves) = kwin.floating_moves().await else { return };
+            let mut restarts = kwin.restarts();
+            // After a restart of KWin its script is gone: the placement is sent again and the moves are followed from the new script.
             loop {
-                tokio::select! {
-                    changed = settings.changed() => {
-                        if changed.is_err() { break; }
-                        let placement = floating_placement(&settings.borrow_and_update());
-                        kwin.set_floating_placement(placement).await;
-                    }
-                    changed = moves.changed() => {
-                        if changed.is_err() { break; }
-                        let moved = moves.borrow_and_update().clone();
-                        if let Some((g, reason)) = moved {
-                            store_floating_geometry(&sh, g, &reason);
-                            if qt.queue(|mut o| o.as_mut().publish_settings()).is_err() { break; }
+                restarts.borrow_and_update();
+                let placement = floating_placement(&settings.borrow_and_update());
+                let moves = if kwin.set_floating_placement(placement).await { kwin.floating_moves().await } else { None };
+                let Some(mut moves) = moves else {
+                    tracing::warn!(target: "translation_window.geometry", "скрипт KWin недоступен: положение свободного окна не восстанавливается");
+                    // Retried when KWin comes back, or after the loader's own retry interval.
+                    if tokio::time::timeout(FLOATING_RETRY, restarts.changed()).await.is_ok_and(|r| r.is_err()) { return; }
+                    continue;
+                };
+                loop {
+                    tokio::select! {
+                        changed = settings.changed() => {
+                            if changed.is_err() { return; }
+                            let placement = floating_placement(&settings.borrow_and_update());
+                            kwin.set_floating_placement(placement).await;
+                        }
+                        changed = moves.changed() => {
+                            // The sender is gone with the old script: wait for the new one.
+                            if changed.is_err() { break; }
+                            let moved = moves.borrow_and_update().clone();
+                            if let Some((g, reason)) = moved {
+                                store_floating_geometry(&sh, g, &reason);
+                                if qt.queue(|mut o| o.as_mut().publish_settings()).is_err() { return; }
+                            }
+                        }
+                        changed = restarts.changed() => {
+                            if changed.is_err() { return; }
+                            tracing::info!(target: "translation_window.geometry", "KWin перезапущен: положение свободного окна восстанавливается заново");
+                            break;
                         }
                     }
                 }
+                // The old script is gone: give a fresh KWin a moment to bring its scripting up before loading again.
+                tokio::time::sleep(std::time::Duration::from_millis(500)).await;
             }
         });
 
@@ -705,29 +751,34 @@ impl cxx_qt::Initialize for qobject::Controller {
             ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
             let mut last: Option<String> = None;
             let mut allowed = true;
+            let mut paused = false;
             loop {
                 ticker.tick().await;
                 // Only what this needs: a clone of the whole settings ten times a second would be waste.
                 let (window, fills_monitor, only_active) = { let s = sh.settings.borrow(); (s.capture.window.clone(), s.capture.portal_fills_monitor, s.appearance.inplace.only_when_active) };
                 if window.as_ref().is_some_and(is_portal_window) && fills_monitor {
                     // QML reports the selected Qt screen in logical desktop coordinates.
-                    if !allowed { allowed = true; sh.paused.store(false, std::sync::atomic::Ordering::Relaxed); if qt.queue(|mut o| o.as_mut().set_overlay_allowed(true)).is_err() { break; } }
+                    if !allowed || paused { allowed = true; paused = false; sh.paused.store(false, std::sync::atomic::Ordering::Relaxed); if qt.queue(|mut o| o.as_mut().set_overlay_allowed(true)).is_err() { break; } }
                     continue;
                 }
-                let (geometry, active) = match window.as_ref().filter(|w| !is_portal_window(w)) {
-                    Some(w) => match sh.kwin().await {
-                        // A window KWin does not know (or no script): nothing to hide by.
-                        Ok(k) => (k.window_geometry(&w.uuid).await, if only_active { k.window_active(&w.uuid).await } else { None }),
-                        Err(e) => { tracing::debug!(component = "KWin/D-Bus", error = %e, "Геометрия окна недоступна"); (None, None) },
-                    },
-                    None => (None, None),
+                // The compositor that owns the window answers (KWin, or sway for a `sway:` key); a window it does not know: nothing
+                // to hide by.
+                let (geometry, active, minimized) = match window.as_ref().filter(|w| !is_portal_window(w)) {
+                    Some(w) => { let state = sh.capture.window_state(w, only_active).await; (state.geometry, state.active, state.minimized) },
+                    None => (None, None, false),
                 };
-                let now_allowed = active.unwrap_or(true);
+                let (now_allowed, now_paused) = lipa_core::desktop::overlay_policy(&lipa_core::desktop::WindowState { geometry, active, minimized });
                 if now_allowed != allowed {
                     allowed = now_allowed;
-                    sh.paused.store(!allowed, std::sync::atomic::Ordering::Relaxed);
                     tracing::debug!(target: "inplace.visibility", allowed, "the game window {}", if allowed { "is active again: overlay restored" } else { "is not active: overlay hidden" });
                     if qt.queue(move |mut o| o.as_mut().set_overlay_allowed(now_allowed)).is_err() { break; }
+                }
+                // Recognition stops while the overlay is hidden for focus, and always while the game is minimised: a minimised
+                // window has no picture worth reading, whatever the overlay setting says.
+                if now_paused != paused {
+                    paused = now_paused;
+                    sh.paused.store(paused, std::sync::atomic::Ordering::Relaxed);
+                    if minimized { tracing::debug!(component = "KWin/D-Bus", minimized = paused, "Окно игры {}: распознавание {}", if paused { "свёрнуто" } else { "развёрнуто" }, if paused { "приостановлено" } else { "возобновлено" }); }
                 }
                 // Ignore a result for a window that was replaced during the await.
                 if sh.settings.borrow().capture.window != window { continue; }
@@ -750,8 +801,10 @@ impl cxx_qt::Initialize for qobject::Controller {
             spawn_service(async move {
                 while let Some(request) = requests.recv().await {
                     tracing::info!(target: "instance", action = request.action.name(), "действие извне");
-                    let delivered = qt.queue(move |mut o| {
-                        o.as_mut().action_requested(&QString::from(request.action.name()), &QString::from(request.activation_token.as_str()));
+                    let delivered = qt.queue(move |mut o| match request.action.hotkey() {
+                        // The same code as the keyboard shortcut runs; QML is not involved.
+                        Some(hotkey) => run_hotkey(o, hotkey),
+                        None => o.as_mut().action_requested(&QString::from(request.action.name()), &QString::from(request.activation_token.as_str())),
                     });
                     if delivered.is_err() { break; }
                 }
@@ -901,11 +954,11 @@ impl cxx_qt::Initialize for qobject::Controller {
 /// Рамка вокруг только что выбранного окна. Геометрию отдаёт KWin; рамки областей рисует QML (RegionFrame).
 fn show_frame(shared: Arc<Shared>, qt: cxx_qt::CxxQtThread<qobject::Controller>) {
     spawn_service(async move {
-        let Some(uuid) = shared.settings.borrow().capture.window.clone().filter(|w| !is_portal_window(w)).map(|w| w.uuid) else {
+        let Some(window) = shared.settings.borrow().capture.window.clone().filter(|w| !is_portal_window(w)) else {
             return; // у окна без геометрии (portal) положение на рабочем столе неизвестно
         };
-        let Ok(kwin) = shared.kwin().await else { return };
-        let Some(g) = kwin.window_geometry(&uuid).await else { return };
+        // KWin or sway, whichever owns the window.
+        let Some(g) = shared.capture.window_state(&window, false).await.geometry else { return };
         let _ = qt.queue(move |mut o| o.as_mut().frame_requested(g.x, g.y, g.w, g.h));
     });
 }

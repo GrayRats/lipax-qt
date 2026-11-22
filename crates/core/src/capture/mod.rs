@@ -7,6 +7,7 @@ pub use geometry::{arm_floating_focus_restore, clear_floating_focus_restore};
 pub mod kwin;
 pub mod portal;
 pub mod process;
+pub mod sway;
 pub mod title_bar;
 
 use crate::settings::{NormRect, Settings, WindowKey};
@@ -48,6 +49,9 @@ pub struct CaptureCapabilities {
 impl CaptureCapabilities {
     /// KWin ScreenShot2 plus the KWin script that reports client geometry.
     pub const KWIN: Self = Self { window_geometry: true, global_coordinates: true, exclude_decorations: true, inplace_translation: true, native_resolution: true };
+    /// A wlroots compositor (sway): the window rectangle and the focus come from its IPC, the pixels from `wlr-screencopy`
+    /// cut to the client area, at the scale of the output.
+    pub const WLROOTS: Self = Self { window_geometry: true, global_coordinates: true, exclude_decorations: true, inplace_translation: true, native_resolution: true };
     /// ScreenCast through xdg-desktop-portal: the compositor tells neither where the window is nor what is around it.
     pub const PORTAL: Self = Self { window_geometry: false, global_coordinates: false, exclude_decorations: false, inplace_translation: false, native_resolution: false };
     /// The same, when the user says the window fills a whole monitor (a fullscreen game): the monitor is its
@@ -74,6 +78,7 @@ impl CaptureCapabilities {
 /// Capabilities of the backend that serves `window` (the key decides, see [`AnyCapture`]); the user's
 /// statement that a portal window fills its monitor (`CaptureSettings::portal_fills_monitor`) counts.
 pub fn capabilities_for(window: &WindowKey, settings: &Settings) -> CaptureCapabilities {
+    if sway::is_sway_window(window) { return CaptureCapabilities::WLROOTS; }
     match (portal::is_portal_window(window), settings.capture.portal_fills_monitor && !settings.translation_window.screen.is_empty()) {
         (false, _) => CaptureCapabilities::KWIN,
         (true, false) => CaptureCapabilities::PORTAL,
@@ -83,7 +88,7 @@ pub fn capabilities_for(window: &WindowKey, settings: &Settings) -> CaptureCapab
 
 /// Name of that backend for messages.
 pub fn backend_name(window: &WindowKey) -> &'static str {
-    if portal::is_portal_window(window) { "xdg-desktop-portal" } else { "KWin ScreenShot2" }
+    if portal::is_portal_window(window) { "xdg-desktop-portal" } else if sway::is_sway_window(window) { "sway (wlr-screencopy)" } else { "KWin ScreenShot2" }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -129,22 +134,46 @@ impl<T: Capture> Capture for std::sync::Arc<T> {
 /// подключается только когда действительно нужен.
 pub struct AnyCapture {
     kwin: tokio::sync::OnceCell<std::sync::Arc<kwin::KwinCapture>>,
+    /// The sway of this session, if there is one (`$SWAYSOCK`); a window whose key says `sway:` is served by it.
+    sway: Option<std::sync::Arc<sway::SwayCapture>>,
     pub portal: portal::PortalCapture,
 }
 
 impl AnyCapture {
     pub fn new(portal_token: String) -> Self {
-        Self { kwin: tokio::sync::OnceCell::new(), portal: portal::PortalCapture::new(portal_token) }
+        Self { kwin: tokio::sync::OnceCell::new(), sway: sway::SwayCapture::from_env().map(std::sync::Arc::new), portal: portal::PortalCapture::new(portal_token) }
     }
 
     pub async fn kwin(&self) -> Result<std::sync::Arc<kwin::KwinCapture>, CaptureError> {
         self.kwin.get_or_try_init(|| async { kwin::KwinCapture::connect().await.map(std::sync::Arc::new) }).await.cloned()
     }
 
+    /// The sway of this session, when the session is sway.
+    pub fn sway(&self) -> Option<&std::sync::Arc<sway::SwayCapture>> { self.sway.as_ref() }
+
+    /// The sway that serves `window`, or the reason there is none.
+    fn sway_for(&self, window: &WindowKey) -> Result<&sway::SwayCapture, CaptureError> {
+        self.sway.as_deref().ok_or_else(|| CaptureError::Unavailable("sway не запущен (нет SWAYSOCK)".into()))
+            .inspect(|_| debug_assert!(sway::is_sway_window(window)))
+    }
+
+    /// Where the window is, whether it has the focus and whether it is minimised, from the compositor that owns it. A window
+    /// of the portal has no such answer (the default: nothing known).
+    pub async fn window_state(&self, window: &WindowKey, want_active: bool) -> crate::desktop::WindowState {
+        use crate::desktop::DesktopBackend;
+        if portal::is_portal_window(window) { return Default::default(); }
+        if sway::is_sway_window(window) {
+            return match self.sway_for(window) { Ok(sway) => sway.window_state(&window.uuid, want_active).await, Err(_) => Default::default() };
+        }
+        match self.kwin().await { Ok(kwin) => kwin.window_state(&window.uuid, want_active).await, Err(_) => Default::default() }
+    }
+
     /// Полный кадр окна (для выбора области).
     pub async fn grab_full(&self, window: &WindowKey) -> Result<DynamicImage, CaptureError> {
         if portal::is_portal_window(window) {
             self.portal.grab_full().await
+        } else if sway::is_sway_window(window) {
+            self.sway_for(window)?.grab(window, NormRect { x: 0.0, y: 0.0, w: 1.0, h: 1.0 }).await
         } else {
             self.kwin().await?.grab_window_of(window).await
         }
@@ -157,6 +186,8 @@ impl Capture for AnyCapture {
     async fn grab(&self, window: &WindowKey, rect: NormRect) -> Result<DynamicImage, CaptureError> {
         if portal::is_portal_window(window) {
             self.portal.grab(window, rect).await
+        } else if sway::is_sway_window(window) {
+            self.sway_for(window)?.grab(window, rect).await
         } else {
             self.kwin().await?.grab(window, rect).await
         }

@@ -83,6 +83,12 @@ impl Default for State {
 }
 
 impl State {
+    /// `Some(true)`: the window exists and is minimised. `None`: KWin does not know the window.
+    fn is_minimized(&self, uuid: &str) -> Option<bool> {
+        self.windows.lock_recover().get(uuid)?;
+        Some(self.minimized.lock_recover().contains(uuid))
+    }
+
     fn is_active(&self, uuid: &str) -> Option<bool> {
         self.windows.lock_recover().get(uuid)?;
         if self.minimized.lock_recover().contains(uuid) { return Some(false); }
@@ -276,6 +282,12 @@ impl ClientGeometry {
     /// `None`: KWin does not know the window (closed).
     pub fn is_active(&self, uuid: &str) -> Option<bool> {
         self.state.is_active(uuid)
+    }
+
+    /// Whether the window is minimised: nothing of it can be seen, so there is nothing to read.
+    /// `None`: KWin does not know the window (closed).
+    pub fn is_minimized(&self, uuid: &str) -> Option<bool> {
+        self.state.is_minimized(uuid)
     }
 
     pub fn set_floating_placement(&self, json: String) {
@@ -507,7 +519,10 @@ mod tests {
         assert_eq!(state.is_active("game"), Some(false), "another window is in front");
         service.focus("game", false);
         assert_eq!(state.is_active("game"), Some(true));
+        assert_eq!(state.is_minimized("game"), Some(false));
         service.minimized("game", true);
+        assert_eq!(state.is_minimized("game"), Some(true));
+        assert_eq!(state.is_minimized("unknown"), None);
         assert_eq!(state.is_active("game"), Some(false), "minimised");
         service.minimized("game", false);
         service.focus("lipax-settings", true);

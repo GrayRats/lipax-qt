@@ -31,7 +31,24 @@ Item {
     readonly property bool autoShrink: settings.translation_window.auto_shrink !== false
     readonly property bool wrapOverflow: autoShrink && settings.appearance.window.text_wrap === false
         && fitProbe.fontInfo.pixelSize <= 14 && fitProbe.contentWidth > textScroll.width
-    onTranslationChanged: textScroll.contentY = 0
+    onTranslationChanged: { recordLog(); textScroll.contentY = 0; if (logMode) Qt.callLater(function() { textScroll.contentY = Math.max(0, textScroll.contentHeight - textScroll.height) }) }
+
+    // ── Rolling log: earlier translations stay above the current one (appearance.window.log_mode) ──
+    readonly property bool logMode: settings.appearance.window.log_mode === true && !previewOnly
+    readonly property int logLimit: Math.max(2, Math.min(10, settings.appearance.window.log_entries || 5))
+    // Oldest first, the current translation excluded; it is the Text below that shows it.
+    property var logPrevious: []
+    property string logLast: ""
+    function recordLog() {
+        if (translation === logLast) return
+        if (logLast.length > 0 && logMode) {
+            const kept = logPrevious.concat([logLast])
+            logPrevious = kept.slice(Math.max(0, kept.length - (logLimit - 1)))
+        }
+        logLast = translation
+    }
+    onLogModeChanged: if (!logMode) logPrevious = []
+    onLogLimitChanged: if (logPrevious.length > logLimit - 1) logPrevious = logPrevious.slice(logPrevious.length - (logLimit - 1))
 
     // ── Display style: blur / transparent / dim (or its light inverse) / solid ──
     readonly property string style: settings.appearance.window.background_style || "solid"
@@ -121,6 +138,30 @@ Item {
             width: parent.width
             y: Math.max(0, (textScroll.height - implicitHeight) / 2)
             spacing: 4
+            Repeater {
+                id: logRepeater
+                objectName: "translationLog"
+                model: content.logMode ? content.logPrevious : []
+                Text {
+                    required property string modelData
+                    required property int index
+                    width: textColumn.width
+                    text: modelData
+                    textFormat: Text.PlainText
+                    color: content.textColor
+                    // The older, the fainter: the newest earlier entry is at 0.6, the oldest down to 0.25.
+                    opacity: content.logPrevious.length <= 1 ? 0.6 : 0.25 + 0.35 * index / (content.logPrevious.length - 1)
+                    wrapMode: translatedText.wrapMode
+                    horizontalAlignment: translatedText.horizontalAlignment
+                    lineHeight: translatedText.lineHeight
+                    font.family: translatedText.font.family
+                    font.pixelSize: Math.max(12, Math.round(translatedText.font.pixelSize * 0.8))
+                    font.bold: translatedText.font.bold
+                    font.italic: translatedText.font.italic
+                    style: translatedText.style
+                    styleColor: translatedText.styleColor
+                }
+            }
             Text {
                 id: originalText
                 width: parent.width
@@ -177,8 +218,8 @@ Item {
             font.pixelSize: 14
         }
     }
-    HoverHint { control: pinHandle; feature: content.pinned ? "Открепить окно" : "Закрепить окно"; explanation: "Средняя кнопка мыши переключает закрепление. Свободное окно можно перемещать мышью; закреплённое остаётся поверх игры." }
-    HoverHint { control: closeButton; feature: "Скрыть перевод"; explanation: "Скрывает окно перевода. Распознавание продолжается; показать окно можно из главного окна или сочетанием клавиш." }
+    HoverHint { control: pinHandle; feature: content.pinned ? qsTr("Открепить окно") : qsTr("Закрепить окно"); explanation: qsTr("Средняя кнопка мыши переключает закрепление. Свободное окно можно перемещать мышью; закреплённое остаётся поверх игры.") }
+    HoverHint { control: closeButton; feature: qsTr("Скрыть перевод"); explanation: qsTr("Скрывает окно перевода. Распознавание продолжается; показать окно можно из главного окна или сочетанием клавиш.") }
     Text {
         anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
         text: "⌄"; color: content.settings.appearance.window.text_color || "white"

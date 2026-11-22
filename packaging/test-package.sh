@@ -31,6 +31,12 @@ lipa_engine="$lipa_test_dir/root/usr/lib/lipax/bergamot"
 "$lipa_engine" --help > "$lipa_test_dir/bergamot-help.log"
 ldd "$lipa_engine" > "$lipa_test_dir/bergamot-libraries.log"
 if grep -q 'not found' "$lipa_test_dir/bergamot-libraries.log"; then cat "$lipa_test_dir/bergamot-libraries.log" >&2; exit 1; fi
+# The long-lived translation front end sits next to the CLI; the app falls back to the CLI without it.
+lipa_server="$lipa_test_dir/root/usr/lib/lipax/bergamot-server"
+[[ -x $lipa_server ]]
+"$lipa_server" --help > "$lipa_test_dir/bergamot-server-help.log"
+ldd "$lipa_server" > "$lipa_test_dir/bergamot-server-libraries.log"
+if grep -q 'not found' "$lipa_test_dir/bergamot-server-libraries.log"; then cat "$lipa_test_dir/bergamot-server-libraries.log" >&2; exit 1; fi
 [[ $(readlink "$lipa_test_dir/root/usr/bin/lipa") == lipax ]]
 [[ -s $lipa_test_dir/root/usr/share/doc/lipax/Bergamot.md ]]
 [[ -s $lipa_test_dir/root/usr/share/applications/io.lipa.Translator.desktop ]]

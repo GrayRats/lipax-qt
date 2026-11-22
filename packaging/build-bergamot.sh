@@ -7,6 +7,7 @@ lipa_engine_target=$(realpath -m -- "$2")
 lipa_engine_source="$lipa_engine_target/bergamot-source"
 lipa_engine_build="$lipa_engine_target/bergamot-build"
 lipa_engine_commit=5ae1b1ebb3fa9a3eabed8a64ca6798154bd486eb
+lipa_script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 case $1 in
     prepare)
         if [[ ! -d $lipa_engine_source/.git ]]; then
@@ -32,6 +33,12 @@ case $1 in
         sed -i '/^execute_process(COMMAND git submodule update --init --recursive --no-fetch/,/WORKING_DIRECTORY .*})/d' "$lipa_engine_source/3rd_party/marian-dev/CMakeLists.txt"
         # Keep upstream warnings visible, but do not promote new compiler warnings to errors.
         sed -i 's/-Wall; -Werror; -Wextra;/-Wall; -Wextra;/' "$lipa_engine_source/3rd_party/marian-dev/CMakeLists.txt"
+        # LipaX's long-lived front end (model loaded once) is built next to the stock CLI.
+        install -m644 "$lipa_script_dir/bergamot-server.cpp" "$lipa_engine_source/app/bergamot-server.cpp"
+        if ! grep -q bergamot-server "$lipa_engine_source/app/CMakeLists.txt"; then
+            printf '%s\n' 'add_executable(bergamot-server bergamot-server.cpp)' \
+                'target_link_libraries(bergamot-server PRIVATE bergamot-translator)' >> "$lipa_engine_source/app/CMakeLists.txt"
+        fi
         ;;
     build)
         [[ $(git -C "$lipa_engine_source" rev-parse HEAD) == "$lipa_engine_commit" ]]
@@ -41,8 +48,11 @@ case $1 in
             -DCOMPILE_TESTS=OFF -DCOMPILE_UNIT_TESTS=OFF -DBUILD_ARCH=x86-64 \
             -DCMAKE_CXX_FLAGS='-include cstdint -include stddef.h' \
             -DSSPLIT_USE_INTERNAL_PCRE2=OFF
-        cmake --build "$lipa_engine_build" --target bergamot --parallel "${LIPAX_BUILD_JOBS:-6}"
+        # Pick up an edited bergamot-server.cpp even when prepare is not re-run.
+        install -m644 "$lipa_script_dir/bergamot-server.cpp" "$lipa_engine_source/app/bergamot-server.cpp"
+        cmake --build "$lipa_engine_build" --target bergamot bergamot-server --parallel "${LIPAX_BUILD_JOBS:-6}"
         "$lipa_engine_build/app/bergamot" --help >/dev/null
+        "$lipa_engine_build/app/bergamot-server" --help >/dev/null
         ;;
     *) echo "Unknown action: $1" >&2; exit 2 ;;
 esac

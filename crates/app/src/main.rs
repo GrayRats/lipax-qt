@@ -4,6 +4,7 @@ mod icon;
 mod instance;
 mod logging;
 mod notify;
+mod ui_language;
 mod ui_settings;
 
 use cxx_qt_lib::{QQmlApplicationEngine, QUrl};
@@ -64,6 +65,19 @@ fn main() {
     apply_general(&general);
     icon::create_application();
     icon::configure();
+    // Russian is the language of the QML source; every other interface language has an embedded catalogue.
+    let language = ui_language::from_settings(&general.language);
+    if let Some(code) = language.code() {
+        let catalogue: &'static [u8] = match code {
+            "fr" => include_bytes!(concat!(env!("OUT_DIR"), "/lipax_fr.qm")),
+            "zh_CN" => include_bytes!(concat!(env!("OUT_DIR"), "/lipax_zh_CN.qm")),
+            "ja" => include_bytes!(concat!(env!("OUT_DIR"), "/lipax_ja.qm")),
+            "es" => include_bytes!(concat!(env!("OUT_DIR"), "/lipax_es.qm")),
+            _ => include_bytes!(concat!(env!("OUT_DIR"), "/lipax_en.qm")),
+        };
+        if icon::install_translator(catalogue) { tracing::info!(component = "i18n", language = code, "язык интерфейса"); }
+        else { tracing::warn!(component = "i18n", language = code, "каталог перевода пуст или не читается; интерфейс остаётся русским"); }
+    }
     tracing::info!(build_qt = env!("LIPAX_BUILD_QT_VERSION"), runtime_qt = %icon::qt_version(), style = %icon::quick_style(), "Qt diagnostics");
     let mut engine = QQmlApplicationEngine::new();
     if let Some(engine) = engine.as_mut() {

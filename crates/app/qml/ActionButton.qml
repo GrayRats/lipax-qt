@@ -51,7 +51,7 @@ Button {
     HoverHint {
         control: button
         feature: button.text
-        explanation: button.text + (button.checkable ? (button.checked ? " — включено" : " — выключено") : "")
+        explanation: button.text + (button.checkable ? (button.checked ? qsTr(" — включено") : qsTr(" — выключено")) : "")
             + (button.helpText.length > 0 ? "\n\n" + button.helpText : "")
         active: (button.helpText.length > 0 || button.iconOnly) && (button.enabled || button.iconOnly)
     }

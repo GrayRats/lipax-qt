@@ -15,7 +15,7 @@ Window {
     id: win
     objectName: "translationWindow"
     // Matched exactly by the KWin script (capture/geometry.js); keep both in sync.
-    title: "LipaX · окно перевода"
+    title: qsTr("LipaX · окно перевода")
     property var controller
     property var settings: ({capture: {}, recognition: {}, translation: {}, translation_window: {}, appearance: {window: {}, inplace: {}}})
     property string translation: ""

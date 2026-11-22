@@ -23,12 +23,12 @@ ApplicationWindow {
     readonly property int minimumConfidence: region && region.minimum_confidence !== undefined ? region.minimum_confidence : 30
     readonly property var boxes: region ? region.boxes : []
 
-    title: "Просмотр OCR — LipaX"
+    title: qsTr("Просмотр OCR — LipaX")
     width: 860; height: 640
     minimumWidth: 560; minimumHeight: 420
     visible: false
     function stageName(stage) {
-        return ({capture: "захват", detect: "детектор", ocr: "OCR", layout: "раскладка", translate: "перевод", autotune: "автоподбор"})[stage] || stage
+        return ({capture: qsTr("захват"), detect: qsTr("детектор"), ocr: "OCR", layout: qsTr("раскладка"), translate: qsTr("перевод"), autotune: qsTr("автоподбор")})[stage] || stage
     }
     // Raw frame or the frame after the filters of the recognition settings.
     property bool showFiltered: false
@@ -81,7 +81,7 @@ ApplicationWindow {
             visible: !win.region
             wrapMode: Text.Wrap
             opacity: 0.75
-            text: "Кадра пока нет. Запустите слежение или нажмите «Распознать сейчас»: здесь появится кадр области захвата, найденные блоки текста и результат распознавания."
+            text: qsTr("Кадра пока нет. Запустите слежение или нажмите «Распознать сейчас»: здесь появится кадр области захвата, найденные блоки текста и результат распознавания.")
         }
 
         Rectangle {
@@ -123,8 +123,8 @@ ApplicationWindow {
                         ToolTip.visible: boxHover.hovered
                         ToolTip.delay: 200
                         ToolTip.text: (modelData.confidence !== null && modelData.confidence !== undefined
-                                      ? "Уверенность: " + Math.round(modelData.confidence) + "% (порог " + win.minimumConfidence + "%)\n"
-                                      : "Уверенность не сообщается\n") + modelData.original
+                                      ? qsTr("Уверенность: ") + Math.round(modelData.confidence) + qsTr("% (порог ") + win.minimumConfidence + "%)\n"
+                                      : qsTr("Уверенность не сообщается\n")) + modelData.original
                         Label {
                             anchors.left: parent.left
                             anchors.bottom: parent.top
@@ -140,7 +140,7 @@ ApplicationWindow {
 
         Label {
             visible: !!win.region
-            text: win.region ? "Кадр " + win.region.width + "×" + win.region.height + " px · блоков: " + win.boxes.length : ""
+            text: win.region ? qsTr("Кадр ") + win.region.width + "×" + win.region.height + qsTr(" px · блоков: ") + win.boxes.length : ""
             opacity: 0.7
             font.pointSize: ui.description.pointSize
         }
@@ -150,8 +150,8 @@ ApplicationWindow {
             wrapMode: Text.Wrap
             font.pointSize: ui.description.pointSize
             opacity: 0.8
-            text: !win.region ? "" : "Состояние области захвата: " + win.region.phase + "\n" + (win.region.timings.length === 0 ? "Времена этапов пока не измерены"
-                : "Этапы (последний / p50 / p95, мс): " + win.region.timings.map(t => win.stageName(t.stage) + " "
+            text: !win.region ? "" : qsTr("Состояние области захвата: ") + win.region.phase + "\n" + (win.region.timings.length === 0 ? qsTr("Времена этапов пока не измерены")
+                : qsTr("Этапы (последний / p50 / p95, мс): ") + win.region.timings.map(t => win.stageName(t.stage) + " "
                     + t.last_ms.toFixed(0) + " / " + t.p50_ms.toFixed(0) + " / " + t.p95_ms.toFixed(0)).join(" · "))
         }
         // Try the filters here: a change goes to the settings and the next frame shows the result.
@@ -161,45 +161,45 @@ ApplicationWindow {
             spacing: 10
             Switch {
                 objectName: "ocrShowFiltered"
-                text: "Кадр после фильтров"
+                text: qsTr("Кадр после фильтров")
                 enabled: !!win.region && !!win.region.filtered_image
                 checked: win.showFiltered
                 onToggled: win.showFiltered = checked
             }
             CheckBox {
                 objectName: "ocrFilterBinarize"
-                text: "Бинаризация"
+                text: qsTr("Бинаризация")
                 checked: !!win.filters.binarize
                 onToggled: win.setRecognition("binarize", checked)
             }
             CheckBox {
                 objectName: "ocrFilterInvert"
-                text: "Авто-инверсия"
+                text: qsTr("Авто-инверсия")
                 checked: !!win.filters.auto_invert
                 onToggled: win.setRecognition("auto_invert", checked)
             }
             CheckBox {
                 objectName: "ocrFilterSharpen"
-                text: "Резкость"
+                text: qsTr("Резкость")
                 checked: !!win.filters.sharpen
                 onToggled: win.setRecognition("sharpen", checked)
             }
             CheckBox {
                 objectName: "ocrFilterNoise"
-                text: "Убирать мусор"
+                text: qsTr("Убирать мусор")
                 checked: !!win.filters.filter_noise
                 onToggled: win.setRecognition("filter_noise", checked)
             }
             Button {
                 objectName: "ocrAutoTune"
-                text: win.tuning ? "Подбор…" : "Автоподбор"
+                text: win.tuning ? qsTr("Подбор…") : qsTr("Автоподбор")
                 enabled: !!win.region && !win.tuning
                 ToolTip.visible: hovered
                 ToolTip.delay: 400
-                ToolTip.text: "Прогоняет текущий кадр через несколько наборов фильтров, оценивает результат (средняя уверенность × число осмысленных строк) и сохраняет лучший набор в настройках игры."
+                ToolTip.text: qsTr("Прогоняет текущий кадр через несколько наборов фильтров, оценивает результат (средняя уверенность × число осмысленных строк) и сохраняет лучший набор в настройках игры.")
                 onClicked: { win.tuning = true; win.controller.autoTuneFilters() }
             }
-            Label { text: "Контраст" }
+            Label { text: qsTr("Контраст") }
             Slider {
                 objectName: "ocrFilterContrast"
                 from: -100; to: 100; stepSize: 10
@@ -207,7 +207,7 @@ ApplicationWindow {
                 value: win.filters.contrast || 0
                 onPressedChanged: if (!pressed) win.setRecognition("contrast", Math.round(value))
             }
-            Label { text: "Порог, %" }
+            Label { text: qsTr("Порог, %") }
             Slider {
                 objectName: "ocrFilterMinConfidence"
                 from: 0; to: 95; stepSize: 5
@@ -223,7 +223,7 @@ ApplicationWindow {
             wrapMode: Text.Wrap
             font.pointSize: ui.description.pointSize
             opacity: 0.85
-            text: "Для этого кадра автоматически включены бинаризация и инверсия: фон шумный. Если результат неуверенный, кадр читается ещё раз без них (подробности — в списке блоков ниже)."
+            text: qsTr("Для этого кадра автоматически включены бинаризация и инверсия: фон шумный. Если результат неуверенный, кадр читается ещё раз без них (подробности — в списке блоков ниже).")
         }
         Label {
             objectName: "ocrAutoTuneResult"
@@ -232,10 +232,10 @@ ApplicationWindow {
             wrapMode: Text.Wrap
             font.pointSize: ui.description.pointSize
             opacity: 0.85
-            text: !win.tuned ? "" : (win.tuned.applied ? "Применено: " + win.tuned.results[win.tuned.best].name + ".  " : "Текст не найден ни с одним набором.  ")
+            text: !win.tuned ? "" : (win.tuned.applied ? qsTr("Применено: ") + win.tuned.results[win.tuned.best].name + ".  " : qsTr("Текст не найден ни с одним набором.  "))
                   + win.tuned.results.map(r => r.name + " — " + Math.round(r.score)).join(" · ")
         }
-        Label { visible: !!win.region; text: "Распознанный текст и перевод"; font.bold: true }
+        Label { visible: !!win.region; text: qsTr("Распознанный текст и перевод"); font.bold: true }
         ScrollView {
             Layout.fillWidth: true
             Layout.preferredHeight: 170
@@ -259,7 +259,7 @@ ApplicationWindow {
                     anchors.centerIn: parent
                     visible: blockList.count === 0
                     opacity: 0.7
-                    text: "Текст в кадре не найден"
+                    text: qsTr("Текст в кадре не найден")
                 }
             }
         }
@@ -271,20 +271,20 @@ ApplicationWindow {
             visible: !!win.region && win.region.translation.length > 0 && win.boxes.every(b => !b.translation)
             wrapMode: Text.Wrap
             textFormat: Text.PlainText
-            text: win.region ? "Перевод текста области захвата:  " + win.region.translation : ""
+            text: win.region ? qsTr("Перевод текста области захвата:  ") + win.region.translation : ""
         }
         RowLayout {
             Button {
-                text: "Распознать сейчас"
+                text: qsTr("Распознать сейчас")
                 objectName: "ocrPreviewRefresh"
                 onClicked: win.controller.translateOnce()
             }
             Button {
-                text: "Копировать оригинал"
+                text: qsTr("Копировать оригинал")
                 id: copyRecognizedText
                 enabled: !!win.region && win.region.original.length > 0
                 Accessible.description: copyRecognizedTextHint.accessibleExplanation
-                UnavailableHint { id: copyRecognizedTextHint; control: copyRecognizedText; feature: "Копировать распознанный текст"; reason: "Нет распознанного текста выбранной области захвата."; remedy: "Выберите область с результатом распознавания." }
+                UnavailableHint { id: copyRecognizedTextHint; control: copyRecognizedText; feature: qsTr("Копировать распознанный текст"); reason: qsTr("Нет распознанного текста выбранной области захвата."); remedy: qsTr("Выберите область с результатом распознавания.") }
                 onClicked: win.controller.copyText(win.region.original)
             }
             Item { Layout.fillWidth: true }

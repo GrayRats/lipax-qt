@@ -86,7 +86,7 @@ When you choose a language pair, LipaX looks for a model in this order: the save
 - Every file is checked by size and SHA-256. An unfinished download is never treated as an installed model.
 - Searching and downloading run in the background. Progress is shown in the settings and in the tray tooltip, and minimizing the application does not interrupt the download.
 - You can point to your own installation with **Set model path manually**. A manual set must also match the verified models in the catalogue.
-- Once a model is installed, translation works without a network connection. The first download needs the internet. Only the language directions in the catalogue are available; there is no automatic pivoting through another language.
+- Once a model is installed, translation works without a network connection. The first download needs the internet. Only the language directions in the catalogue are available; a pair that has no model of its own is translated through English when both `xx→en` and `en→yy` models are installed (two hops, so the quality is lower than a direct model).
 
 Default cache: `~/.local/share/LipaX/bergamot-models/<pair>/` (respects `XDG_DATA_HOME`). More: [Bergamot setup](docs/Bergamot.md).
 
@@ -126,6 +126,16 @@ LipaX uses KWin ScreenShot2, with capture through the Portal as the fallback. Ov
 A middle click on the translation window toggles pinning. In overlay mode a middle click on a field hides the translation; the switch "Показывать поверх исходного текста" in the main window or the hotkey "Показать / скрыть перевод" (default Ctrl+Alt+H) brings it back. An optional setting, "Пропускать клики сквозь перевод" (off by default, in the appearance tab), lets clicks pass through to the game; then the middle click does not hide the overlay. Display over a fullscreen game and placement across monitors with different scales depend on your desktop environment.
 
 <a id="quick-start"></a>
+### Desktop support
+
+| Desktop | What LipaX promises | Status |
+|---|---|---|
+| KDE Plasma / KWin (Wayland) | window capture, geometry and focus, translation over the game, global shortcuts, gamepad chords | the only one that has been run (a nested KWin; a live Proton game has not been run) |
+| Sway, Hyprland, niri and other wlroots-based | intended: portal capture, a separate translation window, shortcuts through the command line (`lipax --toggle`, `--translate-once`, …) | sway: **backend present**, the whole application ran in a headless sway (capture, recognition, window geometry); the overlay over a game and a real screen were not tried. Others of this family: no backend, **not verified** |
+| GNOME and others | intended: portal capture only, a separate window, a manual region; no translation over the game | **not verified** |
+
+The Status tab shows which row applies to the running desktop. Nothing outside KDE is claimed to work until it has been run there.
+
 ## Quick start
 
 1. **[Install LipaX](#installation)** and start `lipax` from the application menu or a terminal.
@@ -141,10 +151,10 @@ If no translation appears, open "OCR view" and check whether the original is rea
 
 ### Arch Linux package
 
-If you have a package file, for example `lipax-1.4.5-1-x86_64.pkg.tar.zst`, install it with:
+If you have a package file, for example `lipax-1.4.6-1-x86_64.pkg.tar.zst`, install it with:
 
 ```bash
-sudo pacman -U ./lipax-1.4.5-1-x86_64.pkg.tar.zst
+sudo pacman -U ./lipax-1.4.6-1-x86_64.pkg.tar.zst
 ```
 
 The package installs the `lipax` command, the application launcher, the bundled fonts and the Bergamot engine. Translation and OCR models are downloaded separately, from the settings. After an update, quit LipaX from the tray menu and start it again.
@@ -166,7 +176,7 @@ To build the current project files, including local changes, use the script:
 
 ```bash
 ./packaging/build-local.sh -s
-sudo pacman -U dist/lipax-1.4.5-1-x86_64.pkg.tar.zst
+sudo pacman -U dist/lipax-1.4.6-1-x86_64.pkg.tar.zst
 ```
 
 Additional components are installed as needed:

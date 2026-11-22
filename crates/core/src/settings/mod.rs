@@ -70,6 +70,9 @@ impl<'de> Deserialize<'de> for TranslationDisplayMode {
 #[serde(default)]
 pub struct GeneralSettings {
     pub theme: String,
+    /// Interface language: `auto` (from the environment/locale) or one of `INTERFACE_LANGUAGES`. Read at start, so a
+    /// change needs a restart. `LIPAX_UI_LANGUAGE` in the environment still wins.
+    pub language: String,
     /// UI typography only; does not alter translation fonts.
     pub ui_text_scale: String,
     /// Start LipaX when the user logs in (an autostart entry in `~/.config/autostart`).
@@ -83,6 +86,9 @@ pub struct GeneralSettings {
     /// Remember the position, size and screen of the main and the translation window. When off, nothing is
     /// saved and the saved geometry is neither applied nor overwritten.
     pub remember_window_geometry: bool,
+    /// Keep the translation API keys in the user's wallet (Secret Service: KWallet, GNOME Keyring) instead of
+    /// `config.toml`. A key moves there with the next save; when the wallet cannot be used the key stays in the file.
+    pub keys_in_wallet: bool,
     /// Where the main window was left (set by the application, never by the settings form).
     pub main_window: Option<WindowRecord>,
 }
@@ -112,10 +118,13 @@ impl WindowRecord {
     }
 }
 
+/// Interface languages the application ships catalogues for (`ru` is the language of the source).
+pub const INTERFACE_LANGUAGES: [&str; 6] = ["ru", "en", "fr", "zh_CN", "ja", "es"];
+
 impl Default for GeneralSettings {
     fn default() -> Self {
-        Self { theme: "dark".into(), ui_text_scale: "normal".into(), autostart: false, notify_errors: false, notify_retries: false, log_level: "info".into(),
-            remember_window_geometry: true, main_window: None }
+        Self { theme: "dark".into(), language: "auto".into(), ui_text_scale: "normal".into(), autostart: false, notify_errors: false, notify_retries: false, log_level: "info".into(),
+            remember_window_geometry: true, keys_in_wallet: false, main_window: None }
     }
 }
 
@@ -123,10 +132,14 @@ impl GeneralSettings {
     fn sanitize(&mut self) {
         if !["small", "normal", "large", "extra_large"].contains(&self.ui_text_scale.as_str()) { self.ui_text_scale = "normal".into(); }
         if !THEMES.contains(&self.theme.as_str()) { self.theme = "dark".into(); }
+        if self.language != "auto" && !INTERFACE_LANGUAGES.contains(&self.language.as_str()) { self.language = "auto".into(); }
         if !LOG_LEVELS.contains(&self.log_level.as_str()) { self.log_level = "info".into(); }
         if self.main_window.as_ref().is_some_and(|g| !g.is_valid()) { self.main_window = None; }
     }
 }
+
+/// The keys could not be read from the wallet at the last load, so an empty key is not known to be empty.
+static WALLET_KEYS_UNREAD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
@@ -179,6 +192,8 @@ pub struct Hotkeys {
     #[serde(alias = "toggle_overlay")]
     pub toggle_translation: String,
     pub toggle_pin: String,
+    /// The same actions on a gamepad (Steam Deck, couch setups); off until the user turns it on.
+    pub gamepad: GamepadHotkeys,
 }
 
 impl Default for Hotkeys {
@@ -189,8 +204,23 @@ impl Default for Hotkeys {
             translate_once: "Ctrl+Alt+Y".into(),
             toggle_translation: "Ctrl+Alt+H".into(),
             toggle_pin: "Ctrl+Alt+U".into(),
+            gamepad: GamepadHotkeys::default(),
         }
     }
+}
+
+/// Gamepad chords (`"L1+R1+Start"`, see `gamepad::parse_chord`) for the hotkey actions. Empty: not assigned. The game
+/// still receives the buttons: LipaX only listens, so a chord should be one the game does not use (`Select+Start`).
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct GamepadHotkeys {
+    /// Read the gamepads at all. Off by default: nothing under `/dev/input` is opened while it is off.
+    pub enabled: bool,
+    pub toggle: String,
+    pub select_region: String,
+    pub translate_once: String,
+    pub toggle_translation: String,
+    pub toggle_pin: String,
 }
 
 impl Settings {
@@ -233,7 +263,46 @@ impl Settings {
         if settings.capture.regions.iter().all(|r| r.rect.is_none())
             && let Some(first) = settings.capture.regions.first_mut() { first.rect = settings.capture.region; }
         settings.sanitize();
+        settings.fetch_keys_from_wallet(&crate::secrets::Wallet);
         settings
+    }
+
+    /// The API keys and the names they have in the wallet.
+    fn api_keys_mut(&mut self) -> [(&'static str, &mut String); 4] {
+        let t = &mut self.translation;
+        [("yandex_api_key", &mut t.yandex_api_key), ("custom_api_key", &mut t.custom_api_key), ("deepl_api_key", &mut t.deepl_api_key), ("microsoft_api_key", &mut t.microsoft_api_key)]
+    }
+
+    /// With `keys_in_wallet`: a key that is not in the file comes from the wallet. A key still in the file wins
+    /// (it has not been moved yet, or the wallet was unavailable at the last save). A wallet that cannot be used
+    /// leaves the keys empty and is reported once.
+    fn fetch_keys_from_wallet(&mut self, wallet: &dyn crate::secrets::SecretStore) {
+        if !self.general.keys_in_wallet { return; }
+        WALLET_KEYS_UNREAD.store(false, std::sync::atomic::Ordering::SeqCst);
+        for (name, key) in self.api_keys_mut() {
+            if !key.is_empty() { continue; }
+            match wallet.get(name) {
+                Ok(Some(value)) => *key = value,
+                Ok(None) => {}
+                Err(reason) => {
+                    tracing::warn!(component = "settings", reason, "Кошелёк недоступен: API-ключи не прочитаны");
+                    WALLET_KEYS_UNREAD.store(true, std::sync::atomic::Ordering::SeqCst);
+                    return;
+                }
+            }
+        }
+    }
+
+    /// With `keys_in_wallet`: put every key in the wallet (an empty one removes the item). All or nothing:
+    /// the keys are blanked in the file only when the wallet took all of them. After a failed read at start an
+    /// empty key may only mean "not read": it must not delete what the wallet holds.
+    fn move_keys_to_wallet(&self, wallet: &dyn crate::secrets::SecretStore) -> Result<(), String> {
+        let unread = WALLET_KEYS_UNREAD.load(std::sync::atomic::Ordering::SeqCst);
+        let t = &self.translation;
+        for (name, key) in [("yandex_api_key", &t.yandex_api_key), ("custom_api_key", &t.custom_api_key), ("deepl_api_key", &t.deepl_api_key), ("microsoft_api_key", &t.microsoft_api_key)] {
+            if !key.is_empty() { wallet.set(name, key)?; } else if !unread { wallet.remove(name)?; }
+        }
+        Ok(())
     }
 
     /// Parse a saved config, migrating older formats. A file from a newer LipaX is read as far as
@@ -502,14 +571,23 @@ impl Settings {
         true
     }
 
-    pub fn save(&self) -> std::io::Result<()> {
+    pub fn save(&self) -> std::io::Result<()> { self.save_with(&crate::secrets::Wallet) }
+
+    fn save_with(&self, wallet: &dyn crate::secrets::SecretStore) -> std::io::Result<()> {
         static SAVE: std::sync::Mutex<()> = std::sync::Mutex::new(());
         let _guard = SAVE.lock().unwrap_or_else(|e| e.into_inner());
         let path = Self::path();
         if let Some(dir) = path.parent() {
             std::fs::create_dir_all(dir)?;
         }
-        let s = toml::to_string_pretty(self).map_err(std::io::Error::other)?;
+        let mut file = self.clone();
+        if self.general.keys_in_wallet {
+            match self.move_keys_to_wallet(wallet) {
+                Ok(()) => for (_, key) in file.api_keys_mut() { key.clear(); },
+                Err(reason) => tracing::warn!(component = "settings", reason, "Кошелёк недоступен: API-ключи остаются в config.toml"),
+            }
+        }
+        let s = toml::to_string_pretty(&file).map_err(std::io::Error::other)?;
         // Атомарная запись (в файле могут лежать API-ключи: доступ только владельцу с первого байта).
         crate::files::write_atomic(&path, s.as_bytes(), 0o600)
     }

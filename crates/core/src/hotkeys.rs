@@ -28,7 +28,7 @@ pub enum HotkeyAction {
 }
 
 impl HotkeyAction {
-    const ALL: [HotkeyAction; 5] = [Self::Toggle, Self::SelectRegion, Self::TranslateOnce, Self::ToggleTranslation, Self::TogglePin];
+    pub(crate) const ALL: [HotkeyAction; 5] = [Self::Toggle, Self::SelectRegion, Self::TranslateOnce, Self::ToggleTranslation, Self::TogglePin];
 
     fn id(self) -> &'static str {
         match self {

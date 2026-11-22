@@ -16,6 +16,8 @@ pub use state::Phase;
 use state::{ERROR_BUDGET, RegionState};
 
 const SAME_TEXT_RATIO: f32 = 0.92;
+/// Jaro and Dice (both) at this level also make two readings one line: a small OCR slip does not translate it again.
+const SAME_LINE_JARO_DICE: f32 = 0.93;
 /// Сколько полей одной сцены распознаются/переводятся одновременно: достаточно для имени, реплики
 /// и пары кнопок и не заваливает Tesseract процессами и API перевода запросами.
 const FIELD_CONCURRENCY: usize = 3;
@@ -704,7 +706,7 @@ impl<C: Capture, O: Ocr, T: Translate + 'static> Io<C, O, T> {
             }
             return;
         }
-        if !force && text::similarity(&original, &state.last_text) >= SAME_TEXT_RATIO { state.enter(&region.id, Phase::Showing); state.settle(region, out); self.status("Ожидание текста", out); return; }
+        if !force && (text::similarity(&original, &state.last_text) >= SAME_TEXT_RATIO || text::same_reading(&original, &state.last_text, SAME_LINE_JARO_DICE)) { state.enter(&region.id, Phase::Showing); state.settle(region, out); self.status("Ожидание текста", out); return; }
         let src = s.translation_source_language();
         let translated = match self.cached(s, src, &s.translation.target_language, &original) {
             Some(t) => t,

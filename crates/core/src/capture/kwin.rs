@@ -17,9 +17,8 @@ use zbus::zvariant::{Fd, OwnedValue, Value};
 
 pub struct KwinCapture {
     conn: zbus::Connection,
-    geometry: tokio::sync::OnceCell<super::geometry::ClientGeometry>,
-    /// Failed script loads are retried at most every `GEOMETRY_RETRY`, not on every frame.
-    geometry_failed: std::sync::Mutex<Option<std::time::Instant>>,
+    /// The KWin script client; dropped when KWin restarts (its scripts are gone with it) and loaded again on the next use.
+    geometry: std::sync::Arc<Slot<super::geometry::ClientGeometry>>,
     /// Chosen window uuid -> the uuid of the same program after a restart of the game.
     aliases: std::sync::Mutex<HashMap<String, String>>,
 }
@@ -27,6 +26,74 @@ pub struct KwinCapture {
 const GEOMETRY_RETRY: std::time::Duration = std::time::Duration::from_secs(30);
 /// How long KWin may take to answer a window screenshot; a compositor that does not answer must not hold the pipeline for ever.
 const CAPTURE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+
+/// A lazily created client of KWin that can be thrown away when KWin restarts.
+pub(super) struct Slot<T> {
+    value: tokio::sync::Mutex<Option<std::sync::Arc<T>>>,
+    /// Failed loads are retried at most every `GEOMETRY_RETRY`, not on every frame.
+    failed: std::sync::Mutex<Option<std::time::Instant>>,
+    /// Counts the restarts of KWin seen so far; whoever holds state of the old client re-creates it when this changes.
+    restarts: tokio::sync::watch::Sender<u64>,
+}
+
+impl<T> Slot<T> {
+    fn new() -> Self {
+        Self { value: Default::default(), failed: Default::default(), restarts: tokio::sync::watch::channel(0).0 }
+    }
+
+    /// The client, created by `init` on first use. `None` while a failed creation is being waited out.
+    async fn get<E: std::fmt::Display>(&self, init: impl AsyncFnOnce() -> Result<T, E>) -> Option<std::sync::Arc<T>> {
+        let mut value = self.value.lock().await;
+        if let Some(v) = &*value {
+            return Some(v.clone());
+        }
+        if self.failed.lock_recover().is_some_and(|t| t.elapsed() < GEOMETRY_RETRY) {
+            return None;
+        }
+        match init().await {
+            Ok(v) => { *value = Some(std::sync::Arc::new(v)); value.clone() }
+            Err(e) => {
+                tracing::warn!("KWin client geometry unavailable: {e}");
+                *self.failed.lock_recover() = Some(std::time::Instant::now());
+                None
+            }
+        }
+    }
+
+    /// KWin lost its bus name: the script is gone with the process; drop the client so that nothing keeps talking to it.
+    async fn lost(&self) {
+        *self.value.lock().await = None;
+    }
+
+    /// A new KWin owns the name: forget the old client and the failure timer, and tell those who hold state of the old one.
+    async fn restarted(&self) {
+        *self.value.lock().await = None;
+        *self.failed.lock_recover() = None;
+        self.restarts.send_modify(|n| *n += 1);
+    }
+
+    fn restarts(&self) -> tokio::sync::watch::Receiver<u64> {
+        self.restarts.subscribe()
+    }
+}
+
+/// Follows `org.freedesktop.DBus.NameOwnerChanged` for KWin until the slot is no longer used.
+async fn watch_kwin_restarts<T: Send + Sync + 'static>(conn: zbus::Connection, slot: std::sync::Weak<Slot<T>>) {
+    use futures_util::StreamExt;
+    let Ok(dbus) = zbus::fdo::DBusProxy::new(&conn).await else { return };
+    let Ok(mut changes) = dbus.receive_name_owner_changed_with_args(&[(0, "org.kde.KWin")]).await else { return };
+    while let Some(change) = changes.next().await {
+        let Some(slot) = slot.upgrade() else { return };
+        let Ok(args) = change.args() else { continue };
+        if args.new_owner().is_some() {
+            tracing::info!(target: "capture.kwin", "KWin перезапущен: скрипт геометрии загружается заново");
+            slot.restarted().await;
+        } else {
+            tracing::warn!(target: "capture.kwin", "KWin пропал с шины: геометрия окон недоступна до его возвращения");
+            slot.lost().await;
+        }
+    }
+}
 
 fn unavailable(e: impl std::fmt::Display) -> CaptureError {
     CaptureError::Unavailable(e.to_string())
@@ -130,7 +197,9 @@ impl KwinCapture {
     pub async fn connect() -> Result<Self, CaptureError> {
         tracing::debug!("Подключение к KWin через сессионную D-Bus");
         let conn = zbus::Connection::session().await.map_err(unavailable)?;
-        Ok(Self { conn, geometry: tokio::sync::OnceCell::new(), geometry_failed: Default::default(), aliases: Default::default() })
+        let geometry = std::sync::Arc::new(Slot::new());
+        tokio::spawn(watch_kwin_restarts(conn.clone(), std::sync::Arc::downgrade(&geometry)));
+        Ok(Self { conn, geometry, aliases: Default::default() })
     }
 
     /// Пользователь кликает по окну; возвращает его ключ. Отмена (Esc) даёт `None`.
@@ -234,22 +303,14 @@ impl KwinCapture {
         }
     }
 
-    /// Скрипт KWin (геометрия окон и свободное окно перевода); загружается один раз.
-    async fn tracker(&self) -> Option<&super::geometry::ClientGeometry> {
-        if let Some(tracker) = self.geometry.get() {
-            return Some(tracker);
-        }
-        if self.geometry_failed.lock_recover().is_some_and(|t| t.elapsed() < GEOMETRY_RETRY) {
-            return None;
-        }
-        match self.geometry.get_or_try_init(super::geometry::ClientGeometry::connect).await {
-            Ok(tracker) => Some(tracker),
-            Err(e) => {
-                tracing::warn!("KWin client geometry unavailable: {e}");
-                *self.geometry_failed.lock_recover() = Some(std::time::Instant::now());
-                None
-            }
-        }
+    /// Скрипт KWin (геометрия окон и свободное окно перевода): загружается при первом обращении и заново после перезапуска KWin.
+    async fn tracker(&self) -> Option<std::sync::Arc<super::geometry::ClientGeometry>> {
+        self.geometry.get(super::geometry::ClientGeometry::connect).await
+    }
+
+    /// Счётчик перезапусков KWin: меняется, когда скрипт загружен заново и состояние старого (подписки) устарело.
+    pub fn restarts(&self) -> tokio::sync::watch::Receiver<u64> {
+        self.geometry.restarts()
     }
 
     /// Прямоугольники окна (логические координаты KWin), если окно существует.
@@ -275,6 +336,11 @@ impl KwinCapture {
     /// Окно видно и в фокусе (или в фокусе окно самого LipaX); `None` — KWin не знает такого окна или скрипт недоступен.
     pub async fn window_active(&self, uuid: &str) -> Option<bool> {
         self.tracker().await?.is_active(&self.resolve(uuid))
+    }
+
+    /// Окно свёрнуто; `None` — KWin не знает такого окна или скрипт недоступен.
+    pub async fn window_minimized(&self, uuid: &str) -> Option<bool> {
+        self.tracker().await?.is_minimized(&self.resolve(uuid))
     }
 
     /// Клиентская область окна на рабочем столе (без рамки и заголовка KWin).
@@ -391,6 +457,36 @@ impl Capture for KwinCapture {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn restart_of_kwin_drops_the_client_and_forgets_a_failure() {
+        let slot = Slot::<u32>::new();
+        let mut restarts = slot.restarts();
+        let created = std::sync::atomic::AtomicU32::new(0);
+        let make = async || Ok::<_, String>(created.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1);
+        assert_eq!(*slot.get(make).await.unwrap(), 1);
+        assert_eq!(*slot.get(make).await.unwrap(), 1, "the client is created once");
+        slot.restarted().await;
+        assert!(restarts.has_changed().unwrap(), "holders of state of the old client are told");
+        restarts.borrow_and_update();
+        assert_eq!(*slot.get(make).await.unwrap(), 2, "a new KWin gets a new client");
+        // A failed creation waits out GEOMETRY_RETRY, unless KWin has just been restarted.
+        slot.lost().await;
+        assert!(slot.get(async || Err::<u32, _>("no script")).await.is_none());
+        assert!(slot.get(make).await.is_none(), "retry is throttled");
+        slot.restarted().await;
+        assert_eq!(*slot.get(make).await.unwrap(), 3);
+    }
+
+    #[tokio::test]
+    async fn loss_of_kwin_drops_the_client_without_announcing_a_restart() {
+        let slot = Slot::<u32>::new();
+        let restarts = slot.restarts();
+        slot.get(async || Ok::<_, String>(7)).await.unwrap();
+        slot.lost().await;
+        assert!(!restarts.has_changed().unwrap());
+        assert_eq!(*slot.get(async || Ok::<_, String>(8)).await.unwrap(), 8);
+    }
 
     fn method_error(name: &str) -> zbus::Error {
         let message = zbus::Message::method_call("/test", "Test").unwrap().build(&()).unwrap();

@@ -39,7 +39,7 @@ TestCase {
         property int patchCalls: 0
         property string pickedSource: ""
         function pickWindow() { pickedSource = JSON.parse(saved).capture.source }
-        function defaultSettingsJson() { return JSON.stringify(Fixture.make({"general.log_level": "info", "general.autostart": false, "general.theme": "dark", "appearance.main_window.font_size": 16, "appearance.main_window.background": "gray", "appearance.main_window.font_family": "Inter", "appearance.main_window.cjk_font_family": "", "appearance.window.font_size": 20, "translation_window.border_color": "#ff00ff", "translation_window.pinned_corner_radius": 0, hotkeys: {toggle: "Ctrl+Alt+P"},
+        function defaultSettingsJson() { return JSON.stringify(Fixture.make({"general.log_level": "info", "general.autostart": false, "general.theme": "dark", "general.language": "auto", "appearance.main_window.font_size": 16, "appearance.main_window.background": "gray", "appearance.main_window.font_family": "Inter", "appearance.main_window.cjk_font_family": "", "appearance.window.font_size": 20, "translation_window.border_color": "#ff00ff", "translation_window.pinned_corner_radius": 0, hotkeys: {toggle: "Ctrl+Alt+P"},
             "capture.regions": [{id: "subtitles", name: "Субтитры", enabled: true, rect: null, recognition_language: "", target_language: "", engine: null, interval_ms: 500, debounce_ms: 400}]})) }
         function editableSettingsPaths() { return JSON.stringify(Fixture.paths()) }
         function refreshDiagnostics() {}
@@ -83,6 +83,11 @@ TestCase {
         function installLanguage(code) { installCalls = installCalls.concat([["download", code]]) }
         function installPackage(pkg) { installCalls = installCalls.concat([["package", pkg]]) }
         function refreshTesseract() {}
+        property string gamepadJson: ""
+        property var learned: []
+        signal gamepadChordLearned(string action, string chord)
+        function refreshGamepads() { gamepadJson = JSON.stringify({gamepads: ["Test Pad"], denied: 0}) }
+        function learnGamepadChord(action) { learned = learned.concat([action]) }
         function bundledFonts() { return JSON.stringify(["Inter", "PT Serif", "Roboto Slab", "JetBrains Mono", "Noto Sans CJK SC"]) }
     }
     Lipa.SettingsWindow { id: settings; controller: controller }
@@ -269,6 +274,49 @@ TestCase {
         page.contentItem.contentY = 0
         tabs.currentIndex = 0
         tryVerify(() => !hint.visible && !hint.popupVisible)
+    }
+
+    // Rows made by a Repeater are not QObject children of the page: ask the Repeater for them.
+    function padButton(prefix, key) {
+        const rows = findChild(settings, "gamepadRows")
+        for (let i = 0; i < rows.count; ++i) {
+            const b = findChild(rows.itemAt(i), prefix + key)
+            if (b) return b
+        }
+        return null
+    }
+
+    function test_gamepadChordsAreRecordedAndKeptPerAction() {
+        settings.reload()
+        const sw = findChild(settings, "gamepadSwitch")
+        verify(sw !== null)
+        verify(!sw.checked, "off by default: nothing under /dev/input is read")
+        compare(padButton("gamepadChord_", "toggle").enabled, false)
+        sw.toggle()
+        sw.toggled()
+        compare(settings.current.hotkeys.gamepad.enabled, true)
+        compare(findChild(settings, "gamepadStatus").text.indexOf("Test Pad") >= 0, true, "the pads found are listed")
+        const chord = padButton("gamepadChord_", "toggle")
+        compare(chord.enabled, true)
+        chord.clicked()
+        compare(controller.learned, ["toggle"])
+        compare(settings.learningPadKey, "toggle")
+        // The answer of another action is not ours; ours is kept.
+        controller.gamepadChordLearned("select_region", "L1+R1")
+        compare(settings.gamepadChord("select_region"), "")
+        controller.gamepadChordLearned("toggle", "Select+Start")
+        compare(settings.current.hotkeys.gamepad.toggle, "Select+Start")
+        compare(settings.learningPadKey, "")
+        // An empty answer (nothing pressed in time) changes nothing.
+        chord.clicked()
+        controller.gamepadChordLearned("toggle", "")
+        compare(settings.current.hotkeys.gamepad.toggle, "Select+Start")
+        // The same chord on two actions is flagged; clearing removes it.
+        settings.set("hotkeys.gamepad.translate_once", "Select+Start")
+        verify(settings.gamepadDuplicate("toggle"))
+        padButton("gamepadClear_", "translate_once").clicked()
+        compare(settings.current.hotkeys.gamepad.translate_once, "")
+        verify(!settings.gamepadDuplicate("toggle"))
     }
 
     function test_appearanceResetAndSourceLanguageAreIndependent() {
@@ -936,7 +984,7 @@ TestCase {
         findChild(settings, "settingsTabs").currentIndex = 0
         const box = findChild(settings, "ocrEngineBox")
         verify(box !== null)
-        compare(box.count, 5)
+        compare(box.count, 6)
         settings.set("recognition.engine", "tesseract")
         compare(box.currentIndex, 0)
         settings.set("recognition.engine", "meikiocr")

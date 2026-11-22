@@ -27,6 +27,28 @@ fn unpack_fonts() {
     }
 }
 
+/// Interface languages besides the Russian source: `i18n/lipax_<code>.ts` is compiled into `OUT_DIR/lipax_<code>.qm`,
+/// which `main.rs` embeds. Without `lrelease` (package `qt6-tools`) or without a `.ts` file the build still works: an empty
+/// catalogue is written and that language falls back to Russian at run time.
+const LANGUAGES: [&str; 5] = ["en", "fr", "zh_CN", "ja", "es"];
+
+fn compile_translations() {
+    let out_dir = std::path::PathBuf::from(std::env::var_os("OUT_DIR").expect("OUT_DIR"));
+    let tool = ["lrelease6", "lrelease", "/usr/lib/qt6/bin/lrelease"].into_iter()
+        .find(|t| Command::new(t).arg("-version").output().is_ok_and(|o| o.status.success()));
+    for code in LANGUAGES {
+        let source = format!("i18n/lipax_{code}.ts");
+        let out = out_dir.join(format!("lipax_{code}.qm"));
+        println!("cargo:rerun-if-changed={source}");
+        let built = Path::new(&source).is_file() && tool.is_some_and(|t| Command::new(t).args(["-silent", &source, "-qm"]).arg(&out)
+            .status().is_ok_and(|s| s.success()));
+        if !built {
+            println!("cargo:warning=no compiled catalogue for `{code}` (missing {source} or lrelease from qt6-tools): that language stays Russian");
+            let _ = fs::write(&out, b"");
+        }
+    }
+}
+
 fn main() {
     // Use exactly the discovery implementation used by CXX-Qt (including QMAKE).
     let qt = qt_build_utils::QtBuild::new(vec!["Core".into()]).expect("System Qt 6.12+ is required");
@@ -37,6 +59,7 @@ fn main() {
     println!("cargo:warning=Building LipaX with system Qt {version}");
     println!("cargo:rerun-if-env-changed=QMAKE");
     unpack_fonts();
+    compile_translations();
     let builder = CxxQtBuilder::new_qml_module(QmlModule::new("io.lipa").qml_files([
         "qml/main.qml",
         "qml/SettingsWindow.qml",

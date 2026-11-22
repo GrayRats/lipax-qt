@@ -26,7 +26,7 @@ Window {
         selH = Math.max(0, bottom - barHeight)
     }
 
-    title: "Выбрать область захвата"
+    title: qsTr("Выбрать область захвата")
     width: 960
     height: 640
     visible: false
@@ -104,7 +104,7 @@ Window {
                     Label {
                         anchors.centerIn: parent
                         visible: parent.height > 14
-                        text: "заголовок окна"
+                        text: qsTr("заголовок окна")
                         font.pixelSize: 11
                         color: "#ffe9a8"
                     }
@@ -129,15 +129,15 @@ Window {
             wrapMode: Text.Wrap
             color: win.overlapsBar ? "#ff8a80" : "#ffd54f"
             text: win.overlapsBar
-                ? "Выделение захватывает собственный заголовок окна (≈" + win.barPx + " px сверху): его текст и кнопки будут читаться как текст игры."
-                : "Окно рисует собственный заголовок (≈" + win.barPx + " px сверху, подсвечен): выделяйте область ниже него."
+                ? qsTr("Выделение захватывает собственный заголовок окна (≈") + win.barPx + qsTr(" px сверху): его текст и кнопки будут читаться как текст игры.")
+                : qsTr("Окно рисует собственный заголовок (≈") + win.barPx + qsTr(" px сверху, подсвечен): выделяйте область ниже него.")
         }
         RowLayout {
             Layout.margins: 8
-            Label { Layout.fillWidth: true; text: "Выделите мышью область с текстом. Enter — сохранить, Esc — отмена." ; color: "white" }
-            Button { objectName: "belowTitleBar"; text: "Начать ниже заголовка"; visible: win.overlapsBar; onClicked: win.belowTitleBar() }
-            Button { text: "Сбросить область захвата"; onClicked: { win.selW = 0; win.selH = 0 } }
-            Button { text: "Сохранить"; enabled: win.hasSel; id: saveCaptureRegion; Accessible.description: saveCaptureRegionHint.accessibleExplanation; UnavailableHint { id: saveCaptureRegionHint; control: saveCaptureRegion; feature: "Сохранить область захвата"; reason: "Область захвата ещё не выделена."; remedy: "Выделите мышью область с текстом." } highlighted: true; onClicked: win.accept() }
+            Label { Layout.fillWidth: true; text: qsTr("Выделите мышью область с текстом. Enter — сохранить, Esc — отмена.") ; color: "white" }
+            Button { objectName: "belowTitleBar"; text: qsTr("Начать ниже заголовка"); visible: win.overlapsBar; onClicked: win.belowTitleBar() }
+            Button { text: qsTr("Сбросить область захвата"); onClicked: { win.selW = 0; win.selH = 0 } }
+            Button { text: qsTr("Сохранить"); enabled: win.hasSel; id: saveCaptureRegion; Accessible.description: saveCaptureRegionHint.accessibleExplanation; UnavailableHint { id: saveCaptureRegionHint; control: saveCaptureRegion; feature: qsTr("Сохранить область захвата"); reason: qsTr("Область захвата ещё не выделена."); remedy: qsTr("Выделите мышью область с текстом.") } highlighted: true; onClicked: win.accept() }
         }
     }
 }

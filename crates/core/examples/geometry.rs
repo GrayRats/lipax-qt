@@ -13,6 +13,17 @@ async fn main() {
         let frame = capture.grab_window(&uuid).await.expect("capture client area");
         println!("capture: {}x{}", frame.width(), frame.height());
         frame.save(out).expect("save capture");
+        // LIPAX_GRAB_LOOP=N: time N further captures (R-13, P-09: the cost of the capture stage and of a re-capture during OCR).
+        if let Some(n) = std::env::var("LIPAX_GRAB_LOOP").ok().and_then(|n| n.parse::<u32>().ok()) {
+            let mut times: Vec<f64> = Vec::new();
+            for _ in 0..n {
+                let started = std::time::Instant::now();
+                capture.grab_window(&uuid).await.expect("capture client area");
+                times.push(started.elapsed().as_secs_f64() * 1000.0);
+            }
+            times.sort_by(f64::total_cmp);
+            println!("grab-loop: n={n} min={:.1} ms median={:.1} ms p95={:.1} ms max={:.1} ms", times[0], times[times.len() / 2], times[(times.len() * 95 / 100).min(times.len() - 1)], times[times.len() - 1]);
+        }
     }
     drop(capture);
     lipa_core::capture::shutdown_geometry().await;

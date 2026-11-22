@@ -78,6 +78,35 @@ fn exec_program(exec: &str) -> Option<String> {
     Some(word.replace("%%", "%"))
 }
 
+/// `KWin version: 6.8.3` from the text of `org.kde.KWin.supportInformation`.
+fn kwin_version(support_information: &str) -> Option<String> {
+    support_information.lines().find_map(|line| line.strip_prefix("KWin version:")).map(|v| v.trim().to_owned()).filter(|v| !v.is_empty())
+}
+
+/// The running KWin and the version of its ScreenShot2 interface, for the Status tab and for bug reports: a
+/// Plasma update that changes the scripting or capture interface is then visible next to the symptom.
+/// Only reported, not enforced: no minimum interface version has been established for the options LipaX passes.
+async fn kwin_row(conn: &zbus::Connection) -> Check {
+    let version = async {
+        let reply = conn.call_method(Some("org.kde.KWin"), "/KWin", Some("org.kde.KWin"), "supportInformation", &()).await.ok()?;
+        kwin_version(&reply.body().deserialize::<String>().ok()?)
+    };
+    let interface = async {
+        let reply = conn.call_method(Some("org.kde.KWin"), "/org/kde/KWin/ScreenShot2", Some("org.freedesktop.DBus.Properties"), "Get", &("org.kde.KWin.ScreenShot2", "Version")).await.ok()?;
+        reply.body().deserialize::<zbus::zvariant::OwnedValue>().ok().and_then(|v| u32::try_from(v).ok())
+    };
+    let (version, interface) = tokio::join!(
+        async { tokio::time::timeout(std::time::Duration::from_secs(3), version).await.ok().flatten() },
+        async { tokio::time::timeout(std::time::Duration::from_secs(3), interface).await.ok().flatten() },
+    );
+    let version = version.unwrap_or_else(|| "версия не определена".into());
+    match interface {
+        Some(v) => row("KWin", "ready", format!("KWin {version}, интерфейс ScreenShot2 версии {v}"), ""),
+        None => row("KWin", "warning", format!("KWin {version}, но интерфейс ScreenShot2 не отвечает"),
+            "Захват окна через KWin работать не будет: «Авто» выберет portal. Проверьте, что запущен kwin_wayland (Plasma 6) и обновлён пакет kwin."),
+    }
+}
+
 /// The directories KDE reads desktop files from.
 fn application_dirs() -> Vec<std::path::PathBuf> {
     let home = std::env::var_os("XDG_DATA_HOME").map(std::path::PathBuf::from).or_else(|| dirs::home_dir().map(|h| h.join(".local/share")));
@@ -120,16 +149,29 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
         },
         Err(e) => rows.push(row("Python / PaddleOCR", "error", e, "Укажите путь к Python из venv; инструкция: docs/PaddleOCR.md.")),
     }
+    if s.general.keys_in_wallet {
+        let help = "Если кошелёк недоступен, API-ключи остаются в config.toml. Разблокируйте кошелёк (KWallet, GNOME Keyring) и сохраните настройки ещё раз.";
+        // The check is a D-Bus round trip with a time limit: not on the async worker thread.
+        match tokio::task::spawn_blocking(crate::secrets::Wallet::check).await.unwrap_or_else(|e| Err(e.to_string())) {
+            Ok(()) => rows.push(row("Кошелёк для API-ключей", "ready", "Secret Service доступна, ключи хранятся в ней", "")),
+            Err(reason) => rows.push(row("Кошелёк для API-ключей", "warning", reason, help)),
+        }
+    }
     let engine = s.recognition.engine.as_str();
     let japanese = crate::tesseract::primary_lang(&s.recognition.language) == "jpn";
-    if matches!(engine, "rapidocr" | "meikiocr" | "auto") {
+    if matches!(engine, "rapidocr" | "meikiocr" | "auto" | "consensus") {
         use crate::ocr::rapid;
         match rapid::library_path(None) {
-            Ok(path) => rows.push(row("ONNX Runtime", "ready", path.display().to_string(), "")),
+            Ok(path) => {
+                rows.push(row("ONNX Runtime", "ready", path.display().to_string(), ""));
+                let (state, detail) = rapid::gpu_report(s.recognition.rapid_use_gpu);
+                rows.push(row("GPU для RapidOCR / MeikiOCR", state, detail,
+                    "Для видеокарты нужна сборка ONNX Runtime с CUDA, MIGraphX или ROCm (docs/RapidOCR.md). Пакет onnxruntime-cpu работает только на процессоре."));
+            }
             Err(e) => rows.push(row("ONNX Runtime", "error", e, &format!("Arch: {}. Инструкция: docs/RapidOCR.md.", rapid::INSTALL_COMMAND))),
         }
     }
-    if matches!(engine, "rapidocr" | "auto") {
+    if matches!(engine, "rapidocr" | "auto" | "consensus") {
         use crate::ocr::rapid_models;
         match rapid_models::select(&s.recognition.language, &s.recognition.rapid_variant) {
             Ok(model) if rapid_models::present(&rapid_models::cache_root(), model) => rows.push(row("Модель RapidOCR", "ready", format!("{} ({})", model.label, model.id), "")),
@@ -161,7 +203,12 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
         Ok(conn) => conn.call_method(Some("org.freedesktop.DBus"), "/org/freedesktop/DBus", Some("org.freedesktop.DBus"), "NameHasOwner", &("org.kde.KWin",)).await.ok().and_then(|r| r.body().deserialize::<bool>().ok()).unwrap_or(false),
         Err(_) => false,
     };
+    // What this desktop is promised (R-14): nothing but KWin has been run, and the row says so.
+    let support = crate::desktop::support_for(&std::env::var("XDG_CURRENT_DESKTOP").unwrap_or_default());
+    rows.push(row("Рабочий стол", if support.verified { "ready" } else { "warning" },
+        format!("{}: {}", if support.desktop.is_empty() { "не определён" } else { &support.desktop }, support.note), ""));
     if kwin_running {
+        if let Ok(conn) = zbus::Connection::session().await { rows.push(kwin_row(&conn).await); }
         let exe = std::env::current_exe().unwrap_or_default();
         match screenshot_permission(&exe, &application_dirs()) {
             Some(file) => rows.push(row("KWin: разрешение на захват", "ready", format!("{} разрешает {}", file.display(), exe.display()), "")),
@@ -177,6 +224,25 @@ pub async fn inspect(s: &Settings) -> Vec<Check> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_kwin_version_is_read_from_the_support_information() {
+        let text = "KWin Support Information:\n\nVersion\n=======\nKWin version: 6.8.3\nQt Version: 6.12.0\n";
+        assert_eq!(kwin_version(text).as_deref(), Some("6.8.3"));
+        assert_eq!(kwin_version("KWin version:   \n"), None);
+        assert_eq!(kwin_version("nothing here"), None);
+    }
+
+    /// `cargo test -p lipa-core -- --ignored live_kwin_row --nocapture` in a KWin session.
+    #[tokio::test]
+    #[ignore = "needs a running KWin on the session bus"]
+    async fn live_kwin_row() {
+        let conn = zbus::Connection::session().await.unwrap();
+        let check = kwin_row(&conn).await;
+        println!("{} | {} | {}", check.name, check.state, check.detail);
+        assert_eq!(check.state, "ready", "{}", check.detail);
+        assert!(check.detail.starts_with("KWin 6."), "{}", check.detail);
+    }
 
     fn entry(dir: &std::path::Path, name: &str, exec: &str, interfaces: Option<&str>) {
         let restricted = interfaces.map(|i| format!("X-KDE-DBUS-Restricted-Interfaces={i}\n")).unwrap_or_default();

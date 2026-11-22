@@ -11,6 +11,20 @@ are isolated under `tmp/overlay-bugfix/`.
 and switching the persistent window surfaces preserve a native resize. It also
 checks the remembered-size setting and explicit size edits.
 
+## Nested KWin (no user session needed)
+
+`tests/inplace/live/run_nested_kwin.sh` runs a virtual KWin (`kwin_wayland --virtual`, 2 outputs, scale 1.5 by default)
+on a private D-Bus with its own `XDG_*` directories under `tmp/nested-kwin/`, authorizes the `geometry` example for
+`org.kde.KWin.ScreenShot2` through an isolated desktop entry, and captures a Konsole window. It touches nothing of the
+user's session. Exit code 0 = frame captured, 1 = capture refused or failed, 2 = missing tool or environment problem.
+`LIPAX_NESTED_SCALE`, `LIPAX_NESTED_OUTPUTS` and `LIPAX_NESTED_KEEP=1` change the scale, the output count and keep the logs.
+It needs `kwin_wayland`, `dbus-run-session`, `busctl`, `kbuildsycoca6` and `konsole`.
+
+`tests/inplace/live/run_nested_app.sh` does the same with the whole application: `lipax` (`target/debug/lipax` or `LIPAX_BIN`)
+is authorized through an isolated desktop entry, started with a settings file that selects the Konsole window and one
+full-window area, and must capture frames of it through ScreenShot2 and recognise text (Tesseract). The translation service
+is `custom` without a URL, so no text leaves the machine. Exit code 0 = frames captured and text recognised, 1 = not, 2 = environment.
+
 The following opt-in tests require the actual user's KWin session and PySide6:
 
 ```sh

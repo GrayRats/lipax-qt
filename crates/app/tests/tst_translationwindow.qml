@@ -55,6 +55,29 @@ TestCase {
         tryVerify(() => !ctl.passthrough && ctl.rects.length === 0, 1000, "floating window captures input")
     }
 
+    function test_logKeepsEarlierTranslationsAboveTheCurrentOne() {
+        ov.translation = "один"; wait(30)   // log off: nothing is recorded
+        ov.settings = base({ "appearance.window.log_mode": true, "appearance.window.log_entries": 3 })
+        tryVerify(() => ov.window !== null && ov.window.visible, 2000)
+        const log = child("translationLog")
+        compare(log.count, 0, "nothing earlier yet")
+        ov.translation = "два"; wait(30)
+        compare(log.count, 1)
+        compare(log.itemAt(0).text, "один")
+        ov.translation = "три"; wait(30)
+        ov.translation = "четыре"; wait(30)
+        compare(log.count, 2, "at most log_entries - 1 earlier entries")
+        compare(log.itemAt(0).text, "два")
+        compare(log.itemAt(1).text, "три")
+        verify(log.itemAt(0).opacity < log.itemAt(1).opacity, "older entries are fainter")
+        compare(child("translatedText").text, "четыре")
+        ov.translation = "четыре"; wait(30)
+        compare(log.count, 2, "the same translation twice is not logged twice")
+        ov.settings = base({ "appearance.window.log_mode": false })
+        wait(30)
+        compare(log.count, 0, "turning the log off clears it")
+    }
+
     function test_textShrinksTo14ThenScrollsAndResets() {
         ov.settings = base({ "translation_window.size": [240, 140], "appearance.window.font_size": 40, "appearance.window.font_family": "Inter",
                              "translation_window.auto_shrink": true, "appearance.window.text_wrap": true })

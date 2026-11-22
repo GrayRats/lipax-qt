@@ -47,6 +47,18 @@ impl qobject::Controller {
         });
     }
 
+    pub(super) fn refresh_gamepads(self: Pin<&mut Self>) {
+        let qt = self.qt_thread();
+        spawn_service(async move {
+            let probe = tokio::task::spawn_blocking(lipa_core::gamepad::probe).await;
+            let _ = qt.queue(move |mut o| {
+                if let Ok(probe) = probe {
+                    o.as_mut().set_gamepad_json(QString::from(serde_json::to_string(&probe).unwrap_or_default().as_str()));
+                }
+            });
+        });
+    }
+
     pub(super) fn install_package(mut self: Pin<&mut Self>, package: &QString) {
         let package = package.to_string();
         let manager = TesseractManager::system();

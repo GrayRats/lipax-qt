@@ -1,6 +1,8 @@
 //! Optional local Bergamot CLI adapter for Linux.
 //! Each language pair uses `<models_dir>/<source>-<target>.yml`, a patched Bergamot config.
 
+mod worker;
+
 use super::TranslateError;
 use std::{path::{Path, PathBuf}, process::Stdio, time::Duration};
 use tokio::{io::AsyncWriteExt, process::Command};
@@ -46,7 +48,10 @@ fn language_code(code: &str) -> Result<String, TranslateError> {
 }
 
 /// A resolved engine invocation: executable plus model config (its directory is the child's cwd).
-struct Engine { executable: PathBuf, config: PathBuf }
+/// `server` is the long-lived `bergamot-server` shipped next to the CLI, when there is one.
+struct Engine { executable: PathBuf, server: Option<PathBuf>, config: PathBuf }
+
+const CPU_THREADS: u32 = 2;
 
 async fn engine(binary: &str, models_dir: &str, src: &str, dst: &str) -> Result<Engine, TranslateError> {
     let executable = executable(binary)?;
@@ -61,14 +66,29 @@ async fn engine(binary: &str, models_dir: &str, src: &str, dst: &str) -> Result<
     }).await.map_err(|e| TranslateError::Local(e.to_string()))?
         .map_err(TranslateError::Local)?;
     let config = config.canonicalize().map_err(|e| TranslateError::Local(e.to_string()))?;
-    Ok(Engine { executable, config })
+    let server = worker::server_for(&executable);
+    Ok(Engine { executable, server, config })
+}
+
+/// The text translated: by the persistent worker when it is available (no model load per call), otherwise by
+/// a one-shot process. The result is not trimmed.
+async fn run(engine: &Engine, input: &str, timeout: Duration) -> Result<String, TranslateError> {
+    if let Some(server) = &engine.server {
+        let spec = worker::Spec { server: server.clone(), config: engine.config.clone(), threads: CPU_THREADS };
+        match worker::request(&spec, input, timeout).await {
+            Ok(text) => return Ok(text),
+            Err(worker::Fail::Error(error)) => return Err(error),
+            Err(worker::Fail::Unavailable(why)) => tracing::debug!(%why, "Bergamot: перевод одноразовым процессом"),
+        }
+    }
+    run_once(engine, input, timeout).await
 }
 
 /// One process: `input` on stdin, UTF-8 stdout back (not trimmed).
-async fn run(engine: &Engine, input: &str, timeout: Duration) -> Result<String, TranslateError> {
+async fn run_once(engine: &Engine, input: &str, timeout: Duration) -> Result<String, TranslateError> {
     let child = Command::new(&engine.executable)
         .arg("--model-config-paths").arg(&engine.config)
-        .arg("--cpu-threads").arg("2")
+        .arg("--cpu-threads").arg(CPU_THREADS.to_string())
         .current_dir(engine.config.parent().expect("model config has parent"))
         .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped())
         .kill_on_drop(true).spawn()
@@ -81,6 +101,57 @@ async fn run(engine: &Engine, input: &str, timeout: Duration) -> Result<String, 
         return Err(TranslateError::Local(format!("Bergamot завершился с {}: {detail}", output.status)));
     }
     String::from_utf8(output.stdout).map_err(|_| TranslateError::Local("Bergamot вернул текст не в UTF-8".into()))
+}
+
+/// The language everything is translated through when a pair has no model of its own.
+const PIVOT: &str = "en";
+
+/// How a language pair is translated.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Route {
+    /// The model of the pair itself (or none at all: the error says which model is missing).
+    Direct,
+    /// `src -> en`, then `en -> dst`: both models are installed and the pair has none.
+    ViaEnglish,
+}
+
+/// Pure choice of the route; `installed(pair)` says whether the model of `pair` (like `en-ru`) is usable.
+fn choose_route(installed: impl Fn(&str) -> bool, src: &str, dst: &str) -> Route {
+    let (src, dst) = (src.to_ascii_lowercase(), dst.to_ascii_lowercase());
+    if src == dst || src == PIVOT || dst == PIVOT || installed(&format!("{src}-{dst}")) { return Route::Direct; }
+    if installed(&format!("{src}-{PIVOT}")) && installed(&format!("{PIVOT}-{dst}")) { Route::ViaEnglish } else { Route::Direct }
+}
+
+/// The route for a pair; `path_of(pair)` is where the model of that pair is looked for first (the setting).
+pub async fn route(path_of: impl Fn(&str) -> String, src: &str, dst: &str) -> Route {
+    let (Ok(source), Ok(target)) = (language_code(src), language_code(dst)) else { return Route::Direct };
+    let paths: std::collections::HashMap<String, String> = [format!("{source}-{target}"), format!("{source}-{PIVOT}"), format!("{PIVOT}-{target}")]
+        .into_iter().map(|pair| { let path = path_of(&pair); (pair, path) }).collect();
+    tokio::task::spawn_blocking(move || choose_route(|pair| {
+        let explicit = paths.get(pair).map(PathBuf::from).unwrap_or_default();
+        super::models::installed_config(&explicit, pair).or_else(|| super::models::installed_config(&super::models::cache_root().join(pair), pair)).is_some()
+    }, &source, &target)).await.unwrap_or(Route::Direct)
+}
+
+/// A source language of `auto` is guessed from the script of `text` (see [`super::langid`]); any other is returned as is.
+pub fn resolve_source(src: &str, text: &str) -> Result<String, TranslateError> {
+    if !src.eq_ignore_ascii_case("auto") { return Ok(src.to_owned()); }
+    super::langid::detect(text).map(str::to_owned).ok_or_else(|| TranslateError::Local(
+        "Не удалось определить язык исходного текста по его письменности (латиница не определяется). Выберите язык источника явно в настройках перевода.".into()))
+}
+
+/// `translate_many` through English: both hops are batches of one process each.
+pub async fn translate_many_via_english(binary: &str, path_of: impl Fn(&str) -> String, texts: &[String], src: &str, dst: &str) -> Result<Vec<String>, TranslateError> {
+    let (src, dst) = (src.to_ascii_lowercase(), dst.to_ascii_lowercase());
+    let english = translate_many(binary, &path_of(&format!("{src}-{PIVOT}")), texts, &src, PIVOT).await?;
+    translate_many(binary, &path_of(&format!("{PIVOT}-{dst}")), &english, PIVOT, &dst).await
+}
+
+/// `translate` through English.
+pub async fn translate_via_english(binary: &str, path_of: impl Fn(&str) -> String, text: &str, src: &str, dst: &str) -> Result<String, TranslateError> {
+    let (src, dst) = (src.to_ascii_lowercase(), dst.to_ascii_lowercase());
+    let english = translate(binary, &path_of(&format!("{src}-{PIVOT}")), text, &src, PIVOT).await?;
+    translate(binary, &path_of(&format!("{PIVOT}-{dst}")), &english, PIVOT, &dst).await
 }
 
 pub async fn translate(binary: &str, models_dir: &str, text: &str, src: &str, dst: &str) -> Result<String, TranslateError> {
@@ -228,5 +299,23 @@ mod tests {
         assert!(error.to_string().contains("путь к CLI"));
         std::fs::set_permissions(&manual, std::fs::Permissions::from_mode(0o644)).unwrap();
         assert!(resolve_executable("bergamot", &bundled, &[root.path().into()]).is_err());
+    }
+
+    #[test]
+    fn route_goes_through_english_only_when_the_pair_has_no_model_and_both_hops_do() {
+        let has = |list: &'static [&'static str]| move |pair: &str| list.contains(&pair);
+        assert_eq!(choose_route(has(&["ja-en", "en-ru"]), "ja", "ru"), Route::ViaEnglish);
+        assert_eq!(choose_route(has(&["ja-en", "en-ru", "ja-ru"]), "ja", "ru"), Route::Direct, "a direct model wins");
+        assert_eq!(choose_route(has(&["ja-en"]), "ja", "ru"), Route::Direct, "one hop missing: the error names the pair");
+        assert_eq!(choose_route(has(&["en-ru"]), "en", "ru"), Route::Direct);
+        assert_eq!(choose_route(has(&["ja-en", "en-ja"]), "ja", "ja"), Route::Direct);
+        assert_eq!(choose_route(has(&["JA-en", "en-ru"]), "JA", "ru"), Route::Direct, "pair names are lower case");
+    }
+
+    #[test]
+    fn auto_source_is_guessed_from_the_script_or_refused() {
+        assert_eq!(resolve_source("ja", "x").unwrap(), "ja");
+        assert_eq!(resolve_source("auto", "こんにちは").unwrap(), "ja");
+        assert!(matches!(resolve_source("auto", "hello"), Err(TranslateError::Local(_))));
     }
 }

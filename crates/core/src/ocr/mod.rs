@@ -1,6 +1,7 @@
 //! OCR. Tesseract вызывается как процесс: PNG на stdin, текст из stdout —
 //! без временных файлов и гонок между запусками.
 
+pub mod consensus;
 pub mod filter;
 pub mod lookalike;
 pub mod meiki;
@@ -8,6 +9,7 @@ pub mod paddle;
 pub mod paddle_env;
 pub mod rapid;
 pub mod rapid_models;
+pub mod validity;
 
 use crate::sync::LockExt;
 use crate::layout::CropRect;
@@ -195,10 +197,46 @@ impl AnyOcr {
     }
 }
 
+impl AnyOcr {
+    /// `consensus`: every available engine reads the same frame at once; the text is chosen by the validity score and
+    /// the vote (`consensus::select`). Tesseract, RapidOCR and (for Japanese, when its model is installed) MeikiOCR
+    /// take part; PaddleOCR does not, every start of its Python process is too slow for a frame-by-frame mode.
+    async fn consensus(&self, img: &DynamicImage, settings: &Settings, filters: filter::Preprocess) -> Result<OcrResult, OcrError> {
+        let manual = filter::FilterPlan::of(&settings.recognition).without_addition();
+        let prepared;
+        let image = if manual.is_identity() { img } else { prepared = filtered(img, manual).await?; &prepared };
+        let rapid_on = !is_down(&self.rapid_down_until);
+        let meiki_on = self.meiki.installed(&settings.recognition.language) && !is_down(&self.meiki_down_until);
+        let (tess, rapid, meiki) = tokio::join!(
+            Tesseract.run_detailed_with(img, &settings.recognition.language, filters),
+            async { if rapid_on { Some(self.rapid.recognize_detailed(image, settings).await) } else { None } },
+            async { if meiki_on { Some(self.meiki.recognize_detailed(image, settings).await) } else { None } },
+        );
+        let mut readings = Vec::new();
+        let mut first_error = None;
+        match tess { Ok(r) => readings.push(r), Err(e) => first_error = Some(e) }
+        for (down, outcome) in [(&self.rapid_down_until, rapid), (&self.meiki_down_until, meiki)] {
+            match outcome {
+                Some(Ok(mut r)) => { r.filters = manual; readings.push(r); }
+                Some(Err(e)) => {
+                    tracing::debug!(engine = "consensus", error = %e, "OCR: an engine is unavailable, the rest decide");
+                    *down.lock_recover() = Some(std::time::Instant::now() + RAPID_RETRY_AFTER);
+                    first_error.get_or_insert(e);
+                }
+                None => {}
+            }
+        }
+        if readings.is_empty() { return Err(first_error.unwrap_or_else(|| OcrError::Setup("нет доступного OCR-движка".into()))); }
+        // Every engine said nothing: the frame is empty, not an error.
+        let empty = readings.iter().find(|r| r.text.trim().is_empty()).cloned();
+        Ok(consensus::select(readings, &settings.recognition.language).or(empty).unwrap_or_default())
+    }
+}
+
 impl Ocr for AnyOcr {
     async fn recognize(&self, img: &DynamicImage, settings: &Settings) -> Result<String, OcrError> {
         match settings.recognition.engine.as_str() {
-            "tesseract" | "paddleocr" | "rapidocr" | "meikiocr" | "auto" => Ok(self.recognize_detailed(img, settings).await?.text),
+            "tesseract" | "paddleocr" | "rapidocr" | "meikiocr" | "auto" | "consensus" => Ok(self.recognize_detailed(img, settings).await?.text),
             _ => Err(OcrError::UnknownEngine(settings.recognition.engine.as_str().to_owned())),
         }
     }
@@ -255,6 +293,7 @@ impl AnyOcr {
             "meikiocr" if filters.is_identity() => self.meiki.recognize_detailed(img, settings).await,
             "meikiocr" => self.meiki.recognize_detailed(&filtered(img, filters).await?, settings).await,
             "auto" => self.auto(img, settings, filters).await,
+            "consensus" => self.consensus(img, settings, filters).await,
             _ => Err(OcrError::UnknownEngine(r.engine.as_str().to_owned())),
         }
     }

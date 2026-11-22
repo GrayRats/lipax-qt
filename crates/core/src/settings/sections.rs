@@ -91,7 +91,7 @@ impl Default for TextRecognitionSettings {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct TranslationSettings {
     pub target_language: String,
@@ -111,6 +111,33 @@ pub struct TranslationSettings {
     /// paragraphs not translated before are sent; the others come from the cache.
     pub changes_only: bool,
     pub source_language: TranslationSourceLanguage,
+}
+
+/// An API key as `Debug` shows it: only whether one is set, never the value.
+pub(crate) fn redacted(key: &str) -> &'static str {
+    if key.is_empty() { "<unset>" } else { "<redacted>" }
+}
+
+impl std::fmt::Debug for TranslationSettings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TranslationSettings")
+            .field("target_language", &self.target_language)
+            .field("service", &self.service)
+            .field("yandex_api_key", &redacted(&self.yandex_api_key))
+            .field("yandex_folder_id", &self.yandex_folder_id)
+            .field("custom_url", &self.custom_url)
+            .field("custom_api_key", &redacted(&self.custom_api_key))
+            .field("deepl_api_key", &redacted(&self.deepl_api_key))
+            .field("microsoft_api_key", &redacted(&self.microsoft_api_key))
+            .field("microsoft_region", &self.microsoft_region)
+            .field("bergamot_binary", &self.bergamot_binary)
+            .field("bergamot_models_dir", &self.bergamot_models_dir)
+            .field("bergamot_model_paths", &self.bergamot_model_paths)
+            .field("auto_translate", &self.auto_translate)
+            .field("changes_only", &self.changes_only)
+            .field("source_language", &self.source_language)
+            .finish()
+    }
 }
 
 impl Default for TranslationSettings {
@@ -202,6 +229,10 @@ pub struct WindowAppearance {
     pub outline_color: String,
     pub line_spacing: f64,
     pub show_original: bool,
+    /// A rolling log: the previous translations stay above the current one, fading with age.
+    pub log_mode: bool,
+    /// How many entries the log keeps (the current one included), 2..=10.
+    pub log_entries: u32,
     pub original_font_family: String,
     pub original_font_size: u32,
     pub original_color: String,
@@ -227,6 +258,8 @@ impl Default for WindowAppearance {
             outline_color: "#000000".into(),
             line_spacing: 1.0,
             show_original: false,
+            log_mode: false,
+            log_entries: 5,
             original_font_family: String::new(),
             original_font_size: 14,
             original_color: "#b0b0b0".into(),

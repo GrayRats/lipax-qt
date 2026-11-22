@@ -120,12 +120,12 @@ pub enum TranslationSourceLanguage { #[default] RecognitionLanguage, Explicit(St
 /// Unknown engines are retained so diagnostics can explain an invalid configuration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(from = "String", into = "String")]
-pub enum OcrEngine { Tesseract, PaddleOcr, RapidOcr, MeikiOcr, Auto, Unknown(String) }
+pub enum OcrEngine { Tesseract, PaddleOcr, RapidOcr, MeikiOcr, Auto, Consensus, Unknown(String) }
 impl OcrEngine {
-    pub fn as_str(&self) -> &str { match self { Self::Tesseract => "tesseract", Self::PaddleOcr => "paddleocr", Self::RapidOcr => "rapidocr", Self::MeikiOcr => "meikiocr", Self::Auto => "auto", Self::Unknown(name) => name } }
+    pub fn as_str(&self) -> &str { match self { Self::Tesseract => "tesseract", Self::PaddleOcr => "paddleocr", Self::RapidOcr => "rapidocr", Self::MeikiOcr => "meikiocr", Self::Auto => "auto", Self::Consensus => "consensus", Self::Unknown(name) => name } }
 }
 impl From<&str> for OcrEngine {
-    fn from(name: &str) -> Self { match name { "tesseract" => Self::Tesseract, "paddleocr" => Self::PaddleOcr, "rapidocr" => Self::RapidOcr, "meikiocr" => Self::MeikiOcr, "auto" => Self::Auto, _ => Self::Unknown(name.into()) } }
+    fn from(name: &str) -> Self { match name { "tesseract" => Self::Tesseract, "paddleocr" => Self::PaddleOcr, "rapidocr" => Self::RapidOcr, "meikiocr" => Self::MeikiOcr, "auto" => Self::Auto, "consensus" => Self::Consensus, _ => Self::Unknown(name.into()) } }
 }
 impl From<String> for OcrEngine { fn from(name: String) -> Self { Self::from(name.as_str()) } }
 impl From<OcrEngine> for String { fn from(engine: OcrEngine) -> Self { engine.as_str().into() } }
