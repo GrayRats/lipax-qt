@@ -1,6 +1,6 @@
 pkgbase = lipax
 	pkgdesc = LipaX — game text OCR and live translation for KDE Plasma / Wayland
-	pkgver = 1.4.5
+	pkgver = 1.4.6
 	pkgrel = 1
 	url = https://github.com/GrayRats/lipax-qt
 	arch = x86_64
@@ -15,6 +15,7 @@ pkgbase = lipax
 	makedepends = git
 	makedepends = cmake
 	makedepends = ninja
+	makedepends = qt6-tools
 	depends = qt6-base>=6.12
 	depends = qt6-declarative>=6.12
 	depends = qt6-svg>=6.12
@@ -42,7 +43,7 @@ pkgbase = lipax
 	conflicts = lipa
 	options = !lto
 	options = !debug
-	source = lipax-1.4.5.tar.gz::https://github.com/GrayRats/lipax-qt/archive/refs/tags/v1.4.5.tar.gz
-	sha256sums = 559c5ec453064c0ea2297ecbc4ab48c46a3b0fc8d33c03117b43c33c73309d04
+	source = lipax-1.4.6.tar.gz::https://github.com/GrayRats/lipax-qt/archive/refs/tags/v1.4.6.tar.gz
+	sha256sums = fb4103c242edb758bfb6db9b42222416ecf64576a95cb2e980e3255b014efb4c
 
 pkgname = lipax
